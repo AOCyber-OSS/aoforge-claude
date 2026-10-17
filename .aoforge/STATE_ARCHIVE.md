@@ -879,3 +879,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 80 P04 | 4min | 2 tasks | 4 files |
 | Objective 80 P02 | 9min | 3 tasks | 5 files |
 | Objective 80 P03 | 14min | 3 tasks | 3 files |
+| Objective 80 P05 | 6min | 2 tasks | 4 files |

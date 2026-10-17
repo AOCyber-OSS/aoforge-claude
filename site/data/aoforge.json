@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-17T03:42:21.033Z",
+  "generatedAt": "2026-10-17T07:40:11.902Z",
   "version": "3.1.0",
   "packageVersion": "3.1.0",
   "repo": "AO-Cyber-Systems/aoforge-claude",
@@ -22,14 +22,17 @@
       "notes": [
         "and STACK.md, scaffold config/STATE/ROADMAP, add the CLAUDE.md block, and make one recorded",
         "change on an aoforge/adopt branch. Never asks a question — uncertain inferences are written down",
-        "with their confidence and evidence for review.",
+        "with their confidence and evidence for review. Also brings a pre-rename project onto .aoforge/:",
+        "moves its planning directory with git mv and renames its config stamp key and CLAUDE.md block",
+        "markers, as the same one recorded change.",
         "Use when the user has an existing repository they want AOForge set up in, without answering",
         "setup questions themselves."
       ],
       "triggers": [
         "adopt this repo",
         "set up aoforge here",
-        "bootstrap this repo"
+        "bootstrap this repo",
+        "move this project to aoforge"
       ],
       "args": "[path]",
       "tools": [
