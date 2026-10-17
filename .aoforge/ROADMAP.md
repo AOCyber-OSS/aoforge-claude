@@ -514,7 +514,28 @@ TRDs:
   3. Runs execute in the order A, B, D, E, C within $100; results are scored against the keys (false-pass, false-fail, detection, false alarms, checklist recall/errors/fabrications, per-state accuracy and escalations) and reported per role with n and intervals.
   4. 76-08's report compares 3.0.0 and 3.1.0 per role and per run (first-turn input tokens, total tokens, cache writes, cost, wall time, tests and verification outcome) and the static resident-prompt bytes per spawn.
   5. A recommendation per role follows the pre-registered rule (Haiku only with zero false passes in A and within ~10 points of Sonnet in A/B/D); any tier change is presented to the user as a proposal and not applied without approval; 76-06 and 76-08 are recorded closed (or explicitly not met) in the 76 records, and MEF-05/MEF-06 updated from evidence.
-**TRDs**: to be planned
+**TRDs**: 19 plans (9 waves)
+
+TRDs:
+- [ ] 81-01-harness-core-contract-ledger-results-TRD.md — (W1, TDD) run contract, stream-json parser, $100 ledger with batch caps and order A, B, D, E, C, caps from calibration p90, token kept out of argv/logs
+- [ ] 81-02-decision-rule-stats-and-report-TRD.md — (W1, TDD) pre-registered decision rule committed first; Wilson intervals, decide() and proposals; score CLI; 76-06 report renderer
+- [ ] 81-03-verifier-fixtures-a-TRD.md — (W1) six verifier fixture repos (3 clean, stub / never-wired / missing-file twins), answer key, planted-defect proofs
+- [ ] 81-04-job-checker-fixtures-b-TRD.md — (W1) six TRD sets (2 clean; same-wave overlap, missing verify, later-wave dependency, uncovered criterion), answer key, proofs with the trd-pre view
+- [ ] 81-05-ui-judge-fixtures-d-TRD.md — (W1) ~20 labelled docs-site screenshots on 4 surfaces (Hugo, Chrome, port 8091; 74's pair from 7a2a07ee), PNG decoder, region-diff proofs
+- [ ] 81-06-mapper-researcher-fixtures-c-TRD.md — (W1) synthetic Go codebase and checklists, private fleet-copy checklists committed by hash, research topic and checklists, blind grader prompt
+- [ ] 81-07-static-resident-prompt-comparison-TRD.md — (W1, TDD) static resident-prompt bytes per spawn, 3.0.0 vs 3.1.0 (free half of 76-08)
+- [ ] 81-08-harness-runner-sandbox-dry-run-TRD.md — (W2, TDD) sandbox HOME, runtime pre-mirror, plugin trees, `claude -p --agent`, resumable queue, rate-limit pause, budget stop, tripwire, zero-API dry run
+- [ ] 81-09-batch-specs-and-scorers-a-b-TRD.md — (W2, TDD) batches A and B with production spawn prompts; scorers
+- [ ] 81-10-batch-spec-and-scorer-d-TRD.md — (W2, TDD) batch D through the engine's own rubric in a headless session; scorer with the engine's vote rules
+- [ ] 81-11-batch-spec-grader-and-scorer-c-TRD.md — (W2, TDD) batch C mapper, researcher and grader runs; scorer and spot-check sampler
+- [ ] 81-12-e-fixture-spec-and-role-metrics-TRD.md — (W2, TDD) test E fixture, hidden acceptance checks, ABBA workload, per-role transcript metrics, 76-08 renderer
+- [ ] 81-13-rehearsal-and-preregistration-freeze-TRD.md — (W3) trees, ledger, dry run of every batch, fake-claude rehearsal, hash manifest committed before any live run
+- [ ] 81-14-live-batch-a-verifier-TRD.md — (W4, checkpoint) confirm spend, then batch A live (36 runs, ~$5), score, spot-check
+- [ ] 81-15-live-batch-b-job-checker-TRD.md — (W5, checkpoint) confirm spend, then batch B live (36 runs, ~$4)
+- [ ] 81-16-live-batch-d-ui-judge-TRD.md — (W6, checkpoint) confirm spend, then batch D live (24 runs, ~$2)
+- [ ] 81-17-live-batch-e-3-0-vs-3-1-TRD.md — (W7, checkpoint) confirm spend, pilot pair, then batch E live (10 runs, ~$44); 81-MEASUREMENT.md
+- [ ] 81-18-live-batch-c-mapper-researcher-TRD.md — (W8, checkpoint) confirm spend, then batch C live last (48 runs + 48 grader runs, ~$28)
+- [ ] 81-19-report-76-records-and-proposals-TRD.md — (W9, checkpoint:decision) 76-06 report, 76 records and MEF-05/MEF-06 from evidence, tier proposals put to the user (never applied here)
 
 ## Progress
 
