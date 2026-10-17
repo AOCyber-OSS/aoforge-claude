@@ -71,8 +71,8 @@ Parse the JSON. `route` is one of `refuse`, `new-project`, `upgrade`, `resume`, 
 On the migrate path the command below also moves the planning trees itself, with `git mv`. Nothing
 is edited by hand, and a project whose planning lives only in component directories has no root
 planning directory to hold a skill marker, so do not run `skill-active --start` afterwards.
-Continue to `scaffold`. A `refuse` from it (`move-failed`) is printed and stops the run;
-re-running `/aoforge:adopt` resumes the move.
+Continue to `scaffold`. A `refuse` from it (`move-failed`, or `branch-failed` before anything
+moved) is printed and stops the run; re-running `/aoforge:adopt` resumes the move.
 
 Run:
 
