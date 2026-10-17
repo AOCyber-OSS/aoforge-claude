@@ -4,20 +4,7 @@ All notable changes to the aoforge-stack-flutter stack pack. Released with tags 
 
 ## [Unreleased]
 
-### Added
-
-- `verify flutter-ui-eval --judge live --judge-tier haiku|sonnet|opus` sets the rung the live vision calls use. The
-  flag is valid only with `--judge live`, and an unknown or missing value is a usage error (exit 1). Live rollups
-  report `judge_tier`.
-- Every scored rollup carries `tier_escalation` `{requested, trigger, from_tier, states}`. Only a live run whose
-  expect:pass reviews include a split vote (`flake: true`) requests escalation (`trigger: 'split-votes'`); credential,
-  network or refusal reviews, advisory (labels) runs and expect:fail states never do. The engine never escalates
-  itself.
-- The ui-evaluator agent returns `## ESCALATION REQUESTED` on that signal, and `/aoforge:ui-eval` re-spawns it once,
-  one rung up, from `resolve-model ui-evaluator --escalate-from <judge tier>` with `--judge-tier` set. At the ceiling
-  it reports the first rollup and the split states stay on human verification. (objective 76 SC6 / MEF-06, quick 42)
-
-## [1.0.0] - 2026-10-16
+## [1.0.0] - 2026-10-17
 
 ### Added
 
@@ -34,3 +21,13 @@ All notable changes to the aoforge-stack-flutter stack pack. Released with tags 
   (`~/.claude/aoforge/stacks/aoforge-stack-flutter/profiles/<name>.md`); they said "bundled with AOForge". The header
   comment of the vendored `hooks/sync-pack.cjs` names `stack-packs.test.cjs`, the test that keeps it byte-identical
   across packs (objective 79).
+- `verify flutter-ui-eval --judge live --judge-tier haiku|sonnet|opus` sets the rung the live vision calls use. The
+  flag is valid only with `--judge live`, and an unknown or missing value is a usage error (exit 1). Live rollups
+  report `judge_tier`.
+- Every scored rollup carries `tier_escalation` `{requested, trigger, from_tier, states}`. Only a live run whose
+  expect:pass reviews include a split vote (`flake: true`) requests escalation (`trigger: 'split-votes'`); credential,
+  network or refusal reviews, advisory (labels) runs and expect:fail states never do. The engine never escalates
+  itself.
+- The ui-evaluator agent returns `## ESCALATION REQUESTED` on that signal, and `/aoforge:ui-eval` re-spawns it once,
+  one rung up, from `resolve-model ui-evaluator --escalate-from <judge tier>` with `--judge-tier` set. At the ceiling
+  it reports the first rollup and the split states stay on human verification. (objective 76 SC6 / MEF-06, quick 42)

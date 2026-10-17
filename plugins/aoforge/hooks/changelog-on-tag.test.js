@@ -618,11 +618,11 @@ describe('this repository: release tags pass the gate (quick 37)', () => {
     }
   });
 
-  test('20: 3.1.0 and both packs\' 1.0.0 carry their release date, 2026-10-16', () => {
+  test('20: 3.1.0 and both packs\' 1.0.0 carry their release date, 2026-10-17', () => {
     const heading = (rel, version) => {
       const text = fs.readFileSync(path.join(REPO, rel), 'utf8');
       const line = text.split('\n').find((l) => l.startsWith(`## [${version}]`));
-      assert.equal(line, `## [${version}] - 2026-10-16`, `${rel}: ${line}`);
+      assert.equal(line, `## [${version}] - 2026-10-17`, `${rel}: ${line}`);
     };
     heading('CHANGELOG.md', '3.1.0');
     heading('plugins/aoforge-stack-flutter/CHANGELOG.md', '1.0.0');

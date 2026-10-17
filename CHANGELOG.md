@@ -6,66 +6,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-### Added
-
-- `model-placeholders.repo.test.cjs` fails CI on a spawn `model` placeholder that is not a key its file's own
-  `init <cmd>` prints (run in a fixture project), a `NAME=$(… resolve-model …)` assignment in the file, or a
-  `<!-- model-source: NAME from SRC -->` annotation whose source is itself supplied. It scans core workflows, core
-  skills and every stack pack's skills, workflows and fragments. (quick 42)
-
-### Removed
-
-- `resolve-model` and the compound `init` commands no longer read the pre-plugin `df-` agent prefix. A prefixed name
-  such as `df-planner` is an unknown agent (stderr warning, `sonnet` fallback), and an `agent_models` or
-  `model_overrides` key spelled `df-<agent>` no longer binds. Use the bare agent name. (quick 40)
-
-### Changed
-
-- The rename guard (`rename-guard.repo.test.cjs`) fails on a `df-<agent>` or `df-<skill>` name in agents, skills,
-  workflows, references, templates, live docs and the docs site. `.df-worktrees`, `df/ws-` and `df/exec-` stay
-  allowed. (quick 40)
-
-### Fixed
-
-- `calibrate`'s agent-overhead scan lost the spawns recorded before the checkout moved (TRD 72-26). Those transcripts
-  name the former path, so the scan counted them as foreign: on this repository it matched 22 spawns (planner 8,
-  job-checker 7, verifier 7) against 127 on 2026-10-08, and objective-researcher, integration-checker and roadmapper
-  had no samples. `calibrate --also-root <dir>` (repeatable, relative to cwd) names former checkout roots of the one
-  project, and the scan also claims a spawn whose REPO_ROOT line names one, whose cwd is inside one or its worktree
-  directory, or whose prompt names a path under its current or legacy planning directory. The roots are recorded in
-  `method.also_roots` (so in `inputs_digest`, with a note); without the flag the file is byte-identical. With the
-  former root the scan matches 164 (planner 49, job-checker 44, verifier 53, objective-researcher 11,
-  integration-checker 5, roadmapper 2). Matching for the project root itself is unchanged, and `tokens` does not take
-  the flag. (quick 41)
-- execute-objective spawned the gap-closure planner and the autonomous checkpoint verifier with model placeholders
-  nothing supplied (`{planner_model}`, `{resolved_verifier_model}`). The planner is now resolved with
-  `resolve-model planner --objective`, the verifier uses init's `verifier_model`, and the per-plan executor model is
-  declared where step 3 picks it. build, new-milestone and research-objective name their model sources too
-  (objective 76 SC1, quick 42).
-- `aof-tools benchmark per-objective` counted no executor spawns: `executor_calls` was always 0 because the check
-  compared a pre-rename agent name. It now counts `aoforge:executor` and, in older transcripts, the pre-rename and
-  install-prefixed executors. (quick 42)
-- `adopt preflight` and `adopt begin` routed a migrated project whose planning tree git ignores to `resume` after the
-  adopt commit, because the report never reaches `HEAD`. A migrate adopt with an ignored report now counts as finished
-  once the report step ran and `HEAD`'s history holds the adopt commit, or the `aoforge/adopt` branch's commit is
-  reachable from `HEAD`. Such a project routes to `upgrade`, also after the merge. (quick 43)
-- Migration 0005 ended the `# Development Rules` section only at the next `# ` heading. In a block whose other sections
-  are `##` headings, the inserted rules ran to the end of the block: `upgrade --check` reported drift after the first
-  apply, and a second `upgrade --apply` deleted those sections. The section now ends at the next heading of any level,
-  so one apply converges and nothing after the rules is removed. (quick 43)
-- `adopt begin` returned a `next` naming `adopt begin` itself. It now names `adopt scaffold`. (quick 43)
-
-## [3.1.0] - 2026-10-16
+## [3.1.0] - 2026-10-17
 
 3.1.0 ends the rename's one-release compatibility. AOForge now reads `.aoforge/` and the AOForge names only, so a 2.x
 project moves with `/aoforge:adopt` (or through 3.0.x, or by hand; [migration guide](docs/MIGRATING-TO-AOFORGE.md)), and
 a GitHub repository that still carries the pre-rename labels, markers or PR template needs `aof-tools gh rebrand --apply` before 3.1 writes to it.
+The pre-plugin `df-` agent names no longer resolve either: an `agent_models` or `model_overrides` key spelled
+`df-<agent>` must use the bare agent name.
 Flutter, Dart and web procedure moved out of core into the `aoforge-stack-flutter` and `aoforge-stack-web` stack packs,
 with no forwarding shim: install the pack your project needs (`/plugin install aoforge-stack-flutter@aocyber`,
 `/plugin install aoforge-stack-web@aocyber`). The release also ships objective 72's post-release work, objectives 73 to
-78 and quick 34 to 39.
+80 and quick 34 to 43, among them `calibrate --also-root`, which counts the agent spawns recorded before a checkout
+moved.
 
-### Removed: the one-release rename shims (objective 78)
+### Removed: the one-release rename shims (objective 78) and the `df-` agent prefix (quick 40)
 
 - **The one-release rename shims** (objective 78, for 3.1.0, as `SHIM_REMOVAL` and the 3.0.0 migration guide promised).
   3.1 reads AOForge names only; "Upgrading from 2.x" in `docs/MIGRATING-TO-AOFORGE.md` gives the 3.0.x path and the
@@ -96,6 +50,9 @@ with no forwarding shim: install the pack your project needs (`/plugin install a
   the history readers, `PRESERVE`, and the first-generation `<!-- df:state -->` sticky-comment reader, which predates
   the rename and rewrites its own input on the next sync (TRD 78-12). They go in a later release once no repository
   needs them.
+- **`resolve-model` and the compound `init` commands no longer read the pre-plugin `df-` agent prefix** (quick 40). A
+  prefixed name such as `df-planner` is an unknown agent (stderr warning, `sonnet` fallback), and an `agent_models` or
+  `model_overrides` key spelled `df-<agent>` no longer binds. Use the bare agent name.
 
 ### Added: adopt migrates pre-rename projects (objective 80)
 
@@ -169,6 +126,10 @@ with no forwarding shim: install the pack your project needs (`/plugin install a
   stale. It never deletes or overwrites a file, and it only reports while a daemon there is live, an installed service
   still logs there or the directory holds planning files. Files it does not know, such as a `.DS_Store`, are listed and
   left in place, so the directory stays.
+- **`model-placeholders.repo.test.cjs` fails CI on a spawn `model` placeholder nothing supplies** (quick 42): one that
+  is not a key its file's own `init <cmd>` prints (run in a fixture project), a `NAME=$(… resolve-model …)` assignment
+  in the file, or a `<!-- model-source: NAME from SRC -->` annotation whose source is itself supplied. It scans core
+  workflows, core skills and every stack pack's skills, workflows and fragments.
 
 ### Changed
 
@@ -247,6 +208,9 @@ with no forwarding shim: install the pack your project needs (`/plugin install a
   read-only key forms it used to accept. User allowlist entries still match the whole command.
 - **A key read with `-y` and no `-P` is handed off even when the command passes `-N`** (objective 73 gap closure, HND-02,
   TRD 73-10). A `-N` anywhere in the command used to exempt it.
+- **The rename guard fails on a `df-<agent>` or `df-<skill>` name** (quick 40). `rename-guard.repo.test.cjs` checks
+  agents, skills, workflows, references, templates, live docs and the docs site. `.df-worktrees`, `df/ws-` and
+  `df/exec-` stay allowed.
 
 ### Fixed
 
@@ -296,6 +260,36 @@ with no forwarding shim: install the pack your project needs (`/plugin install a
   (Node's default is 1 MiB) and a paginated read gets 5 minutes instead of 30 seconds, so a dry run no longer fails
   with `spawnSync gh ENOBUFS` on a repository whose issue list is larger than 1 MiB. A read that still overflows or
   times out says so (`ENOBUFS` or `ETIMEDOUT`) after the read and the repository it was for.
+- **`calibrate`'s agent-overhead scan counts the spawns recorded before the checkout moved** (quick 41). It lost them
+  (TRD 72-26). Those transcripts name the former path, so the scan counted them as foreign: on this repository it
+  matched 22 spawns (planner 8, job-checker 7, verifier 7) against 127 on 2026-10-08, and objective-researcher,
+  integration-checker and roadmapper had no samples. `calibrate --also-root <dir>` (repeatable, relative to cwd) names
+  former checkout roots of the one project, and the scan also claims a spawn whose REPO_ROOT line names one, whose cwd
+  is inside one or its worktree directory, or whose prompt names a path under its current or legacy planning
+  directory. The roots are recorded in `method.also_roots` (so in `inputs_digest`, with a note); without the flag the
+  file is byte-identical. With the former root the scan matches 164 (planner 49, job-checker 44, verifier 53,
+  objective-researcher 11, integration-checker 5, roadmapper 2). Matching for the project root itself is unchanged, and
+  `tokens` does not take the flag.
+- **Every spawn model placeholder has a source** (objective 76 SC1, quick 42). execute-objective spawned the
+  gap-closure planner and the autonomous checkpoint verifier with model placeholders nothing supplied
+  (`{planner_model}`, `{resolved_verifier_model}`). The planner is now resolved with `resolve-model planner
+  --objective`, the verifier uses init's `verifier_model`, and the per-plan executor model is declared where step 3
+  picks it. build, new-milestone and research-objective name their model sources too.
+- **`aof-tools benchmark per-objective` counts executor spawns** (quick 42). `executor_calls` was always 0 because the
+  check compared a pre-rename agent name. It now counts `aoforge:executor` and, in older transcripts, the pre-rename
+  and install-prefixed executors.
+- **A migrated project whose planning tree git ignores routes to `upgrade` after adopt** (quick 43). `adopt preflight`
+  and `adopt begin` routed it to `resume` after the adopt commit, because the report never reaches `HEAD`. A migrate
+  adopt with an ignored report now counts as finished once the report step ran and `HEAD`'s history holds the adopt
+  commit, or the `aoforge/adopt` branch's commit is reachable from `HEAD`. Such a project routes to `upgrade`, also
+  after the merge.
+- **Migration 0005 no longer deletes the sections after the rules it inserts** (quick 43). It ended the `# Development
+  Rules` section only at the next `# ` heading. In a block whose other sections are `##` headings, the inserted rules
+  ran to the end of the block: `upgrade --check` reported drift after the first apply, and a second `upgrade --apply`
+  deleted those sections. The section now ends at the next heading of any level, so one apply converges and nothing
+  after the rules is removed.
+- **`adopt begin` names the right next step** (quick 43). It returned a `next` naming `adopt begin` itself. It now names
+  `adopt scaffold`.
 
 ### Release tooling and security sweep (quick 34)
 
@@ -394,7 +388,7 @@ with no forwarding shim: install the pack your project needs (`/plugin install a
   workflow triggers on tags.
 - **`scripts/tag-rules.cjs`** lists the tag rulesets, including inherited ones, that match a tag, read-only. GitHub has
   no rules-for-a-tag endpoint, so it reads the tag-target rulesets and matches their ref_name patterns locally.
-- **Release dates.** 3.1.0 and the stack packs' 1.0.0 are dated 2026-10-16.
+- **Release dates.** 3.1.0 and the stack packs' 1.0.0 are dated 2026-10-17.
 
 ### Stack packs: Flutter web selects the web pack; web executor self-check (quick 38)
 
