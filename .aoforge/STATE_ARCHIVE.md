@@ -642,6 +642,7 @@ STATE.md stays lean; this file grows over time.
 - [Objective 79]: 79-08: objective 76 stays unticked in the v1.6 checklist (main left 76-06 and 76-08 open); 77 is ticked
 - [Objective 80]: Only the project W069 fix names /aoforge:adopt; the global CLAUDE.md text and managed-block refusal stay without it because adopt never touches that file
 - [Objective 80]: Adopt finished-detection reads HEAD, not the index; a migrate marker records its plan before git mv so an interrupted move resumes from the marker
+- [Objective 80]: 80-07: the two real fleet layouts (aodex, smartWellness) migrate through the adopt workflow text in one commit each; D1 and D2 did not reproduce on them, so no product code changed and todo rows 13 and 14 stay
 
 ## Performance Metrics
 
@@ -881,3 +882,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 80 P03 | 14min | 3 tasks | 3 files |
 | Objective 80 P05 | 6min | 2 tasks | 4 files |
 | Objective 80 P06 | 13min | 2 tasks | 2 files |
+| Objective 80 P07 | 9min | 2 tasks | 0 files |
