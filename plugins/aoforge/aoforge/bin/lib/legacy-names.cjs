@@ -16,7 +16,8 @@
 //     CLAUDE.md block), gh-setup (a pre-rename PR-template block), gh-legacy-labels
 //     (an un-rebranded repository), checks-pin (a pre-rename checks caller), stack-mcp
 //     (a pre-rename .mcp.json owner key), doctor checks 15 and 16
-//   - the converter: gh-rebrand and legacy-rewrite (every key NAMES and LEGACY share)
+//   - the converter: gh-rebrand, legacy-rewrite and legacy-migrate (every key NAMES and LEGACY share; the
+//     migrator is adopt's move of a pre-rename project onto .aoforge/, objective 80)
 //   - history readers: session-audit and agent-overhead (transcripts recorded before
 //     the rename), and token-usage (the planning paths of former checkout roots for
 //     `calibrate --also-root`)

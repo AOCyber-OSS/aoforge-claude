@@ -91,6 +91,10 @@ const ALLOW = [
     reason: 'the one module that spells every legacy name; every other module builds them from LEGACY (3.1: detectors, gh rebrand, history readers)',
   },
   {
+    pattern: '**/legacy-migrate.cjs',
+    reason: 'the adopt migrator (objective 80): detects and converts a pre-rename project, so its comments and messages name the old layout it moves',
+  },
+  {
     pattern: '**/__fixtures__/legacy-*',
     reason: 'fixtures that build pre-rename projects, homes and GitHub artefacts as input',
   },
