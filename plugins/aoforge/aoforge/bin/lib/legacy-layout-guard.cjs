@@ -16,8 +16,10 @@
 //            question, never an instruction: issue #87), and every EXEMPT_COMMANDS entry
 //
 // An exemption is granted only with evidence that the command never writes the planning tree: its library holds no
-// planningRoot / planningRel / findProjectRoot write path (grep), or the command reports the layout itself. The
-// reason for each is kept beside it. A new mutating command is refused by default, the safe direction.
+// planningRoot / planningRel / findProjectRoot write path (grep), or the command reports the layout itself, or it is
+// the command that moves the layout (`adopt`: preflight routes a pre-rename project to migrate or refuses with the
+// fix, begin moves it as one recorded change). The reason for each is kept beside it. A new mutating command is
+// refused by default, the safe direction.
 
 const path = require('path');
 const { findLegacyLayoutRoot, legacyLayoutMessage } = require('./planning-layout.cjs');
@@ -25,6 +27,7 @@ const { hasTopLevelHelpFlag } = require('./help.cjs');
 
 /** command -> why it runs in a legacy-only project. */
 const EXEMPT_COMMANDS = Object.freeze({
+  adopt: 'handles the layout itself: preflight routes a pre-rename project to migrate (or refuses with the fix) and begin moves it as adopt\'s one recorded change (objective 80)',
   doctor: 'reports the layout itself: no project is resolved for a legacy-only root and the note carries the message (TRD 78-01)',
   validate: 'reports the layout itself: `validate health` returns the one broken W066 and writes nothing, --repair included (TRD 78-01)',
   'transcript-export': 'reads Claude Code transcripts and appends ~/.claude/aoforge/transcript-index.jsonl only',

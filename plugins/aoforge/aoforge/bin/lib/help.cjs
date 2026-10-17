@@ -174,7 +174,7 @@ const COMMANDS = {
     usage: 'aof-tools adopt <preflight|begin|scaffold|report> [--raw]',
     summary: 'Adopt an existing repo as an AOForge project (routes, branches, scaffolds, reports; never pushes).',
     mutates: true,
-    details: 'preflight is read-only: it routes to adopt | resume | upgrade | new-project | refuse. begin creates the aoforge/adopt branch and a progress marker in the git dir. scaffold writes config/STATE/state.json/ROADMAP/STACK.md and the CLAUDE.md block, then stamps. report writes .aoforge/ADOPT-REPORT.md and prints the files to commit. Refusals (dirty tree, rebase/merge, detached HEAD, not a repo) change nothing and exit 3. Combine with the global --cwd <dir> flag to target another repo.',
+    details: 'preflight is read-only: it routes to adopt | migrate | resume | upgrade | new-project | refuse. begin creates the aoforge/adopt branch and a progress marker in the git dir. scaffold writes config/STATE/state.json/ROADMAP/STACK.md and the CLAUDE.md block, then stamps. report writes .aoforge/ADOPT-REPORT.md and prints the files to commit. A project that still has the pre-rename planning directory (or the pre-rename stamp key or CLAUDE.md block) routes to migrate: begin moves the planning trees with git mv on aoforge/adopt, scaffold renames the config stamp key and the CLAUDE.md block markers, and report writes ADOPT-REPORT.md with the migration; a re-run resumes. Refusals (dirty tree, rebase/merge, detached HEAD, not a repo, both planning directories, a malformed pre-rename CLAUDE.md block) change nothing and exit 3. Combine with the global --cwd <dir> flag to target another repo.',
   },
   'intent': {
     usage: 'aof-tools intent resolve [--objective N] [--trd path] [--raw]',

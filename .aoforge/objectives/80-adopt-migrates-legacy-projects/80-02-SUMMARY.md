@@ -12,5 +12,5 @@ status: checkpoint
 
 ## Progress
 - [x] Task 1: RED tests for the migrate route — bb97f56d
-- [x] Task 2: preflight, decideRoute, begin and resume for migrate — (this commit)
-- [ ] Task 3: Guard exemption and help — next step: commit the `adopt` reason string already added to EXEMPT_COMMANDS in legacy-layout-guard.cjs, and add the migrate sentence to the `adopt` entry in help.cjs (test 15)
+- [x] Task 2: preflight, decideRoute, begin and resume for migrate — 211fafc9
+- [x] Task 3: Guard exemption and help — (this commit)
