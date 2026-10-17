@@ -6,6 +6,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Removed
+
+- `resolve-model` and the compound `init` commands no longer read the pre-plugin `df-` agent prefix. A prefixed name
+  such as `df-planner` is an unknown agent (stderr warning, `sonnet` fallback), and an `agent_models` or
+  `model_overrides` key spelled `df-<agent>` no longer binds. Use the bare agent name. (quick 40)
+
+### Changed
+
+- The rename guard (`rename-guard.repo.test.cjs`) fails on a `df-<agent>` or `df-<skill>` name in agents, skills,
+  workflows, references, templates, live docs and the docs site. `.df-worktrees`, `df/ws-` and `df/exec-` stay
+  allowed. (quick 40)
+
 ## [3.1.0] - 2026-10-16
 
 3.1.0 ends the rename's one-release compatibility. AOForge now reads `.aoforge/` and the AOForge names only, so a 2.x
