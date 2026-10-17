@@ -50,7 +50,7 @@ on:
         description: The AOForge repository (owner/name) the runner script is checked out from.
         type: string
         required: false
-        default: AO-Cyber-Systems/aoforge-claude
+        default: AOCyberAI/aoforge-claude
       app-client-id:
         description: Client ID of the AOForge GitHub App. Empty means use GITHUB_TOKEN.
         type: string
