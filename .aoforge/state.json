@@ -2,7 +2,7 @@
   "current_objective": "81",
   "current_job": 1,
   "total_jobs": 19,
-  "progress_pct": 100,
+  "progress_pct": 97,
   "status": "executing",
   "last_activity": "2026-10-17",
   "metrics": {
@@ -1894,6 +1894,11 @@
     {
       "objective": "80",
       "summary": "80-09: the legacy-adopt fixture constant is LEGACY_EXCLUDE_LINE, because repo-state-delegation forbids any declaration starting with the EXCLUDE token outside repo-state.cjs",
+      "rationale": null
+    },
+    {
+      "objective": "81",
+      "summary": "81-03: test A fixtures are string literals in a builder, materialised to temp dirs; commit author is Project Author because the word fixture must not appear in the repo",
       "rationale": null
     }
   ],

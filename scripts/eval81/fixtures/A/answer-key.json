@@ -1,0 +1,105 @@
+{
+  "batch": "A",
+  "fixtures": [
+    {
+      "id": "A1",
+      "domain": "textkit",
+      "objective": "1",
+      "expected": "passed",
+      "planted": null,
+      "twin": "A4",
+      "evidence_flags": false,
+      "evidence_reports": [],
+      "health_warnings": []
+    },
+    {
+      "id": "A2",
+      "domain": "tempconv",
+      "objective": "1",
+      "expected": "passed",
+      "planted": null,
+      "twin": "A6",
+      "evidence_flags": false,
+      "evidence_reports": [],
+      "health_warnings": []
+    },
+    {
+      "id": "A3",
+      "domain": "notes",
+      "objective": "1",
+      "expected": "passed",
+      "planted": null,
+      "twin": "A5",
+      "evidence_flags": false,
+      "evidence_reports": [],
+      "health_warnings": []
+    },
+    {
+      "id": "A4",
+      "domain": "textkit",
+      "objective": "1",
+      "expected": "gaps_found",
+      "planted": {
+        "kind": "stub",
+        "artifact": "src/slugify.js",
+        "must_mention": ["slugify"],
+        "any_of": [
+          "hard-coded",
+          "hardcoded",
+          "hard coded",
+          "constant",
+          "stub",
+          "placeholder",
+          "always return",
+          "fixed value",
+          "ignores its input",
+          "same value"
+        ]
+      },
+      "twin": "A1",
+      "evidence_flags": false,
+      "evidence_reports": [],
+      "health_warnings": []
+    },
+    {
+      "id": "A5",
+      "domain": "notes",
+      "objective": "1",
+      "expected": "gaps_found",
+      "planted": {
+        "kind": "missing_file",
+        "artifact": "src/report.js",
+        "must_mention": ["report.js"],
+        "any_of": [
+          "missing",
+          "does not exist",
+          "doesn't exist",
+          "absent",
+          "not found",
+          "MODULE_NOT_FOUND",
+          "no such file"
+        ]
+      },
+      "twin": "A3",
+      "evidence_flags": true,
+      "evidence_reports": ["artifacts_failed", "missing_key_files"],
+      "health_warnings": []
+    },
+    {
+      "id": "A6",
+      "domain": "tempconv",
+      "objective": "1",
+      "expected": "gaps_found",
+      "planted": {
+        "kind": "unwired",
+        "artifact": "src/cli.js",
+        "must_mention": ["kelvin"],
+        "any_of": ["cli", "wired", "import", "require", "route", "command", "usage"]
+      },
+      "twin": "A2",
+      "evidence_flags": true,
+      "evidence_reports": ["key_links_failed"],
+      "health_warnings": []
+    }
+  ]
+}
