@@ -71,8 +71,10 @@ Parse the JSON. `route` is one of `refuse`, `new-project`, `upgrade`, `resume`, 
 On the migrate path the command below also moves the planning trees itself, with `git mv`. Nothing
 is edited by hand, and a project whose planning lives only in component directories has no root
 planning directory to hold a skill marker, so do not run `skill-active --start` afterwards.
-Continue to `scaffold`. A `refuse` from it (`move-failed`, or `branch-failed` before anything
-moved) is printed and stops the run; re-running `/aoforge:adopt` resumes the move.
+On the migrate path, go on to `scaffold` after the command; the `map` text at the end of this step
+is for the other routes. On the migrate path, a `refuse` from the command (`move-failed`, or
+`branch-failed` before anything moved) is printed and stops the run; re-running `/aoforge:adopt`
+resumes the move.
 
 Run:
 
@@ -145,10 +147,11 @@ Continue to `scaffold`.
 
 <step name="scaffold">
 On the migrate path the command below renames the config stamp key, the CLAUDE.md block markers
-and the ignore lines, after a backup, and writes nothing else (it prints `migrated: <n> converted`).
-Exit 1 means the move is not finished: stop and report, fix nothing by hand; re-running
-`/aoforge:adopt` resumes. Continue to `report` (skipping `confirm_stack_profile` and `health`);
-the rest of this step is for the other routes.
+and the ignore lines, after a backup, and writes nothing else (its JSON carries a `converted` count;
+with `--raw` it prints `migrated: <n> converted`). On the migrate path, exit 1 means the move is not
+finished: stop and report, fix nothing by hand; re-running `/aoforge:adopt` resumes.
+Continue to `report` on the migrate path (skipping `confirm_stack_profile` and `health`); the text
+after the command is for the other routes.
 
 Run:
 
@@ -234,8 +237,8 @@ Continue to `commit`.
 
 <step name="commit">
 On the migrate path no skill marker was started, so skip `skill-active --end` and run only the
-`commit` command below. An empty `commit_files`, or a result whose `reason` is `nothing_to_commit`,
-means nothing is left to record: do not commit, go on to `summary`. That is the normal outcome of
+`commit` command below. On the migrate path, an empty `commit_files`, or a result whose `reason` is
+`nothing_to_commit`, means nothing is left to record: do not commit, go on to `summary`. That is the normal outcome of
 a re-run after the change was recorded: a planning tree that git ignores keeps the report out of
 the change, so `adopt preflight` still routes such a project to `resume`.
 
