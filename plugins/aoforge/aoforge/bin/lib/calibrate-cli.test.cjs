@@ -544,6 +544,100 @@ describe('aof-tools calibrate agent overhead (end to end)', () => {
   });
 });
 
+// ─── quick 41: --also-root <dir> (repeatable) ────────────────────────────────
+//   12 --also-root OLD twice, once relative to cwd: method.also_roots [OLD], the verifier recorded under OLD is counted,
+//      the --raw line names the roots, and a rerun is changed:false with an identical file
+//   13 --also-root with no value, with --no-overhead, with two projects, or containing the project: exit 1, usage, no file
+//   14 calibrate --help, USAGE, the help usage and the case comment name --also-root
+// OLD is a former path of the project that is never created. Every run has HOME = a fresh temp dir.
+
+describe('aof-tools calibrate --also-root (end to end)', () => {
+  const formerOf = (root) => path.join(path.dirname(root), 'former-' + path.basename(root));
+
+  // overheadRoot's p1, v1 (repo) and f1 (foreign), plus a verifier v-old recorded with cwd OLD.
+  function aliasRoot(repo, old) {
+    const root = overheadRoot(repo);
+    fx.writeOverheadTranscript(root, {
+      projectKey: fx.projectKeyFor(old), session: 's2', agentId: 'v-old', spawn: fx.VERIFIER_SPAWN, cwd: old,
+    });
+    return root;
+  }
+
+  test('q41-12. --also-root (repeatable, relative to cwd) counts the former root\'s spawns, is recorded, and reruns unchanged', () => {
+    const sb = sandbox();
+    const beta = project(BETA_SPEC);
+    const OLD = formerOf(beta);
+    const troot = aliasRoot(beta, OLD);
+    const out = path.join(sb.tmp, 'c.json');
+    const args = ['--paths', beta, '--out', out, '--root', troot, '--also-root', OLD, '--also-root', path.relative(sb.tmp, OLD)];
+
+    const result = okJson(sb, sb.tmp, args);
+    assert.equal(result.changed, true);
+    assert.deepEqual(result.method.also_roots, [OLD]);
+    assert.deepEqual(result.overhead, {
+      scanned: true, spawns: 4, matched: 3, foreign: 1, quick: 0, unreadable: 0, agents: { planner: 1, verifier: 2 },
+    });
+    const written = JSON.parse(fs.readFileSync(out, 'utf-8'));
+    assert.deepEqual(written.method.also_roots, [OLD]);
+    assert.equal(written.agent_overhead.verifier.samples, 2);
+    assert.equal(fs.existsSync(OLD), false, 'the former root is never created');
+    const first = fs.readFileSync(out);
+
+    const raw = run(sb, sb.tmp, [...args, '--raw']);
+    assert.equal(raw.status, 0, raw.stderr);
+    const line = raw.stdout.replace(/\n$/, '');
+    assert.ok(line.includes(' · also roots '), line);
+    assert.ok(line.endsWith(` · minutes trd_level · also roots ${OLD}`), line);
+
+    assert.equal(okJson(sb, sb.tmp, args).changed, false);
+    assert.ok(first.equals(fs.readFileSync(out)), 'bytes are identical');
+  });
+
+  test('q41-13. --also-root usage errors exit 1 with the usage line and write nothing', () => {
+    const sb = sandbox();
+    const beta = project(BETA_SPEC);
+    const alpha = project(ALPHA_SPEC);
+    const OLD = formerOf(beta);
+    const troot = aliasRoot(beta, OLD);
+    const out = path.join(sb.tmp, 'c.json');
+
+    const cases = [
+      [['--paths', beta, '--out', out, '--root', troot, '--also-root'], [/--also-root needs a value/]],
+      [['--paths', beta, '--out', out, '--root', troot, '--also-root', '--dry-run'], [/--also-root needs a value/]],
+      [['--paths', beta, '--out', out, '--also-root', OLD, '--no-overhead'], [/--also-root/, /--no-overhead/]],
+      [['--paths', `${beta},${alpha}`, '--out', out, '--root', troot, '--also-root', OLD], [/exactly one project; found 2/]],
+      [['--paths', beta, '--out', out, '--root', troot, '--also-root', path.dirname(beta)], [/contains the project/]],
+    ];
+    for (const [args, patterns] of cases) {
+      const r = run(sb, sb.tmp, args);
+      assert.equal(r.status, 1, `${args.join(' ')}\n${r.stdout}\n${r.stderr}`);
+      for (const p of patterns) assert.match(r.stderr, p, args.join(' '));
+      assert.match(r.stderr, USAGE, args.join(' '));
+    }
+    assert.equal(fs.existsSync(out), false);
+    assert.equal(fs.existsSync(sb.defaultOut), false);
+  });
+
+  test('q41-14. calibrate --help, USAGE, the help usage and the case comment name --also-root', () => {
+    const { COMMANDS } = require('./help.cjs');
+    const cli = require('./calibrate-cli.cjs');
+    const caseComment = fs.readFileSync(DF_TOOLS, 'utf-8').split('\n').find((l) => l.trim().startsWith('// aof-tools calibrate '));
+    for (const [where, text] of [['USAGE', cli.USAGE], ['help usage', COMMANDS.calibrate.usage], ['case comment', caseComment]]) {
+      assert.ok(text.includes('--also-root'), `${where} names --also-root`);
+    }
+    assert.ok(cli.USAGE.includes('[--also-root <dir>]...'), cli.USAGE);
+    assert.equal(COMMANDS.calibrate.usage, cli.USAGE);
+    assert.ok(COMMANDS.calibrate.details.includes('--also-root'), 'details explain --also-root');
+
+    const sb = sandbox();
+    const help = spawnSync(process.execPath, [DF_TOOLS, '--cwd', sb.tmp, 'calibrate', '--help'], {
+      cwd: sb.tmp, env: { ...process.env, HOME: sb.home }, encoding: 'utf-8', timeout: 60000,
+    });
+    assert.equal(help.status, 0, help.stderr);
+    assert.ok(help.stdout.includes('--also-root'), help.stdout);
+  });
+});
+
 // ─── 64-08: --window <N|all> ─────────────────────────────────────────────────
 //   11 --window 2 on SLOPE: exit 0, the summary names `window 2 objectives (dropped 10 TRDs)`, the file has window.objectives 2
 //      and samples.trds 4

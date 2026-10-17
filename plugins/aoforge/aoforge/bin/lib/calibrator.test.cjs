@@ -1236,3 +1236,98 @@ describe('67-05 the default minutes method is the one 67-VALIDATION.md shipped',
     assert.equal(build([past], { minutes: 'task_sum' }).method.minutes, 'task_sum', 'task_sum stays opt-in');
   });
 });
+
+// ─── quick 41: alsoRoots (calibrate --also-root) ─────────────────────────────────────────────────────────────────────
+//   8  no alsoRoots and alsoRoots [] give the same bytes; method keeps exactly its three keys
+//   9  a former root claims the spawn recorded under it; method.also_roots, a note and the digest record it
+//   10 the roots are resolved, de-duplicated and sorted; the project root itself is dropped
+//   11 no transcripts root, two projects, or a root containing the project are errors
+// OLD is a former path of the project: a sibling directory that is never created, like the real former checkout.
+describe('quick-41 alsoRoots', () => {
+  const formerOf = (root) => path.join(path.dirname(root), 'former-' + path.basename(root));
+
+  // A planner spawn recorded under the project (p1) and a verifier spawn recorded with cwd OLD (v-old).
+  function aliasRoot(repo, old) {
+    const troot = makeTroot();
+    fx.writeOverheadTranscript(troot, {
+      projectKey: fx.projectKeyFor(repo), session: 's1', agentId: 'p1', spawn: fx.PLANNER_SPAWN, cwd: repo,
+    });
+    fx.writeOverheadTranscript(troot, {
+      projectKey: fx.projectKeyFor(old), session: 's2', agentId: 'v-old', spawn: fx.VERIFIER_SPAWN, cwd: old,
+    });
+    return troot;
+  }
+
+  test('q41-8: no alsoRoots and alsoRoots [] give identical bytes, and method has exactly three keys', () => {
+    const beta = makeProject(BETA_SPEC);
+    const troot = aliasRoot(beta, formerOf(beta));
+    const plain = buildCalibration({ paths: [beta], ratesPath: ci.RATES_PATH, transcriptsRoot: troot });
+    const empty = buildCalibration({ paths: [beta], ratesPath: ci.RATES_PATH, transcriptsRoot: troot, alsoRoots: [] });
+    assert.equal(stableStringify(empty), stableStringify(plain));
+    assert.deepEqual(Object.keys(plain.method).sort(), ['minutes', 'through_objective', 'window_objectives']);
+    assert.equal(plain.notes.some((n) => n.includes('also_roots')), false);
+  });
+
+  test('q41-9: a former root claims its verifier spawn and is recorded in method, a note and inputs_digest', () => {
+    const beta = makeProject(BETA_SPEC);
+    const OLD = formerOf(beta);
+    const troot = aliasRoot(beta, OLD);
+    const build = (extra = {}) => buildCalibration({ paths: [beta], ratesPath: ci.RATES_PATH, transcriptsRoot: troot, ...extra });
+    const plain = build();
+    const aliased = build({ alsoRoots: [OLD] });
+    assert.equal(fs.existsSync(OLD), false, 'the former root is not on disk');
+
+    assert.equal(plain.agent_overhead.verifier.samples, 0);
+    assert.equal(aliased.agent_overhead.verifier.samples, 1);
+    assert.equal(aliased.agent_overhead.planner.samples, 1);
+    assert.equal(aliased.agent_overhead_sources.matched, plain.agent_overhead_sources.matched + 1);
+    assert.equal(aliased.agent_overhead_sources.foreign, plain.agent_overhead_sources.foreign - 1);
+
+    assert.deepEqual(aliased.method.also_roots, [OLD]);
+    assert.deepEqual(aliased.notes.slice(0, -1), plain.notes, 'the note is appended after the others');
+    assert.ok(aliased.notes[aliased.notes.length - 1].includes('method.also_roots'), aliased.notes.join('\n'));
+    assert.notEqual(aliased.inputs_digest, plain.inputs_digest);
+    assert.equal(stableStringify(build({ alsoRoots: [OLD] })), stableStringify(aliased), 'a rebuild is byte-identical');
+  });
+
+  test('q41-10: alsoRoots are resolved, de-duplicated and sorted; an alias equal to the project root is dropped', () => {
+    const beta = makeProject(BETA_SPEC);
+    const OLD = formerOf(beta);
+    const troot = aliasRoot(beta, OLD);
+    const build = (alsoRoots) => buildCalibration({ paths: [beta], ratesPath: ci.RATES_PATH, transcriptsRoot: troot, alsoRoots });
+
+    assert.deepEqual(build([OLD, OLD + '/', OLD]).method.also_roots, [OLD]);
+
+    const A = path.join(path.dirname(beta), 'a-former');
+    const B = path.join(path.dirname(beta), 'b-former');
+    const ab = build([A, B]);
+    assert.deepEqual(ab.method.also_roots, [A, B]);
+    assert.equal(stableStringify(build([B, A])), stableStringify(ab));
+
+    for (const self of [[beta], [beta + '/']]) {
+      const cal = build(self);
+      assert.equal('also_roots' in cal.method, false, self[0]);
+      assert.equal(stableStringify(cal), stableStringify(build(undefined)), self[0]);
+    }
+  });
+
+  test('q41-11: alsoRoots without a transcripts root, with two projects, or containing the project throw', () => {
+    const beta = makeProject(BETA_SPEC);
+    const alpha = makeProject(ALPHA_SPEC);
+    const OLD = formerOf(beta);
+    const troot = aliasRoot(beta, OLD);
+
+    assert.throws(
+      () => buildCalibration({ paths: [beta], ratesPath: ci.RATES_PATH, transcriptsRoot: null, alsoRoots: [OLD] }),
+      /alsoRoots .*needs the agent-overhead scan.*--no-overhead/);
+    assert.throws(
+      () => buildCalibration({ paths: [beta, alpha], ratesPath: ci.RATES_PATH, transcriptsRoot: troot, alsoRoots: [OLD] }),
+      /alsoRoots .*needs exactly one project; found 2/);
+    assert.throws(
+      () => buildCalibration({ paths: [beta], ratesPath: ci.RATES_PATH, transcriptsRoot: troot, alsoRoots: [path.dirname(beta)] }),
+      /contains the project .*it would claim every checkout under it/);
+    assert.throws(
+      () => buildCalibration({ paths: [beta], ratesPath: ci.RATES_PATH, transcriptsRoot: troot, alsoRoots: ['former-beta'] }),
+      (e) => e instanceof TypeError && /alsoRoots/.test(e.message));
+  });
+});
