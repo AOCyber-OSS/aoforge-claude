@@ -577,7 +577,8 @@ function boundedDocument(text) {
 
 /** makeBatch({repo, privateFile, commitmentFile}): the batch module bound to a checkout and a private file. */
 function makeBatch(options = {}) {
-  const cfg = { repo: DEFAULT_REPO, privateFile: null, commitmentFile: DEFAULT_COMMITMENT, ...options };
+  const cfg = { repo: DEFAULT_REPO, privateFile: null, commitmentFile: DEFAULT_COMMITMENT };
+  for (const [key, value] of Object.entries(options)) if (value !== undefined && value !== null) cfg[key] = value;
 
   const loadPrivate = (opts) => loadPrivateFrom(cfg, opts);
 

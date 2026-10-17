@@ -10,5 +10,5 @@ status: checkpoint
 
 ## Progress
 - [x] Task 1: Canned C outputs (fixture builder) — adf4fc7f
-- [x] Task 2: Batch C module (mapper, researcher, grader) — (this commit)
-- [ ] Task 3: Scorer C and spot-check sampler — next step: write scripts/eval81/score/C.test.cjs (RED) for test list 7-10, then scripts/eval81/score/C.cjs
+- [x] Task 2: Batch C module (mapper, researcher, grader) — d1d4230c
+- [x] Task 3: Scorer C and spot-check sampler — (this commit)
