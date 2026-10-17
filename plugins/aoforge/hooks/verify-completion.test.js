@@ -111,7 +111,8 @@ describe('appendAuditLog filesystem behavior', () => {
     assert.equal(JSON.parse(lines[1]).second, 2);
   });
 
-  test('returns ok:false on filesystem error (unwritable path)', () => {
+  // Root can create /nonexistent-root-dir/, so the write succeeds there: skipped under root, as todo-sync.test.js 11.
+  test('returns ok:false on filesystem error (unwritable path)', { skip: typeof process.getuid === 'function' && process.getuid() === 0 }, () => {
     const result = appendAuditLog('{}', '/nonexistent-root-dir/audit.log');
     assert.equal(result.ok, false);
     assert.ok(result.reason, 'reason should be set');
