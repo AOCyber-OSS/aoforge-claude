@@ -12,13 +12,14 @@ differently.
 <!-- rename-guard:ignore-end -->
 
 AOForge 3.0.0 kept the old names working for one release. **AOForge 3.1.0 removed those one-release shims.** 3.1 reads
-only the AOForge names. It still detects what the rename left behind and tells you how to fix it, but it no longer
-converts anything for you.
+only the AOForge names. It still detects what the rename left behind and tells you how to fix it. It moves a project
+when you run `/aoforge:adopt` there; everything else it reports and leaves to you.
 
 - **On 3.0.x, with the 3.0.0 checklist done:** nothing to do. Run the checks under [Check it](#check-it) once after you
   install 3.1.
-- **Coming from 2.x, or a project that 3.0.x never moved:** see [Upgrading from 2.x](#upgrading-from-2x). Every 3.1
-  message about the old layout points there.
+- **Coming from 2.x, or a project that 3.0.x never moved:** run `/aoforge:adopt` in the project (3.1 moves it for
+  you), or see [Upgrading from 2.x](#upgrading-from-2x). Every 3.1 message about the old layout names
+  `/aoforge:adopt` or points there.
 
 The rename changes no behaviour. If something works differently after the move, that is a bug: open an issue.
 
@@ -101,23 +102,28 @@ Everything 3.0.0 kept working "until the next release" is gone:
 
 - **A project still on `.planning/`.** `aof-tools validate health` returns one broken result, **W066**, and writes
   nothing (`--repair` included). `aof-tools doctor` resolves no project and prints the same message as a note. Every
-  `aof-tools` command that writes the planning tree, and `init` (which every skill calls first), refuses with it:
+  `aof-tools` command that writes the planning tree, and `init` (which every skill calls first), refuses with it. The
+  message names `/aoforge:adopt` first:
 
   ```text
-  <root> still uses the pre-rename planning directory .planning/, which AOForge no longer reads. Move it with
-  AOForge 3.0.x (`aof-tools upgrade --apply`) or by hand: `git mv .planning .aoforge`, then rename a "devflow" key in
+  <root> still uses the pre-rename planning directory .planning/, which AOForge no longer reads. Run `/aoforge:adopt`
+  there (AOForge 3.1.0 moves it to .aoforge/ as one recorded change on aoforge/adopt), or move it with AOForge 3.0.x
+  (`aof-tools upgrade --apply`) or by hand: `git mv .planning .aoforge`, then rename a "devflow" key in
   .aoforge/config.json to "aoforge" (see docs/MIGRATING-TO-AOFORGE.md, "Upgrading from 2.x").
   ```
 
-  Read-only commands, and commands that touch only the runtime home, git config or transcripts, still run. At session
-  start, the
-  `upgrade-project` hook queues the same message once as a global notice; it runs no migration and commits nothing.
+  Read-only commands, and commands that touch only the runtime home, git config or transcripts, still run, and so does
+  `aof-tools adopt`, the command that moves the layout. At session start, the `upgrade-project` hook queues the same
+  message once as a global notice; it runs no migration and commits nothing.
 - **Both `.planning/` and `.aoforge/` in one project.** W066 as a warning: the old directory is ignored.
+  `/aoforge:adopt` refuses such a project (it will not guess which tree to keep): move what you still need into
+  `.aoforge/` and delete `.planning/` yourself first.
 - **The old config key.** **W067** when `.aoforge/config.json` has the `devflow{}` key: alone, rename it to
-  `aoforge`; beside an `aoforge{}` key, delete it.
+  `aoforge`; beside an `aoforge{}` key, delete it. `/aoforge:adopt` does either as part of moving the project.
 - **The old CLAUDE.md markers.** **W069** `legacy-claude-md-block` when the project CLAUDE.md holds a block under the
   `DEVFLOW` markers: rename `<!-- DEVFLOW:START` and `<!-- DEVFLOW:END` to `AOFORGE`, and the next upgrade refreshes
-  the block. Migrations 0005 and 0007 skip such a file with the same reason. In `~/.claude/CLAUDE.md`, a pre-rename
+  the block, or run `/aoforge:adopt`, which renames both markers and the old names inside the block. Migrations 0005
+  and 0007 skip such a file with the same reason. In `~/.claude/CLAUDE.md`, a pre-rename
   block or a hand-written "DevFlow Routing" section is left untouched with one notice: rename the markers, or delete
   that section so the next upgrade adds the AOForge block.
 - **Leftovers in your home** (the `coexistence-guard` SessionStart hook, one notice per session): the old plugin still
@@ -142,9 +148,39 @@ Everything 3.0.0 kept working "until the next release" is gone:
 ## Upgrading from 2.x
 
 <!-- rename-guard:ignore-start -->
-3.1 cannot move a 2.x install or project. Pick one path.
+3.1 moves a project with `/aoforge:adopt` (Option A). It does not touch what lives outside the project: the old
+runtime home, the `~/.claude/CLAUDE.md` block, the old environment variables, the old plugin and a GitHub repository's
+pre-rename labels. For those, use AOForge 3.0.x once (Option B) or the manual steps (Option C). Pick one path.
 
-**Option A: AOForge 3.0.x once (recommended).** It runs every conversion for you.
+**Option A: `/aoforge:adopt` in each project (3.1).** Open the project in Claude Code and run `/aoforge:adopt` (or
+`/aoforge:adopt <path>`). It runs unattended and asks nothing. On a new `aoforge/adopt` branch it:
+
+- moves every planning tree in the repository, the root `.planning/` and component ones such as `api/.planning/`, to
+  `.aoforge/` with `git mv`, so history follows (an untracked tree is renamed instead);
+- renames the `devflow` key in each `config.json` to `aoforge` (merging it into an existing `aoforge` key);
+- renames the project CLAUDE.md block markers to `AOFORGE`, and the old names inside the block. Text outside the block
+  is never touched;
+- rewrites `.gitignore` lines that name `.planning/` to `.aoforge/`, and adds the matching lines to
+  `.git/info/exclude`;
+- writes `.aoforge/ADOPT-REPORT.md`, which lists every change in a Migration table, after taking a backup of each
+  planning root under `~/.claude/aoforge/backups/`.
+
+Everything lands in one commit on `aoforge/adopt`, which is never pushed. Planning content is otherwise untouched:
+adopt maps nothing, infers no PROJECT.md, scaffolds nothing and runs no upgrade migration. When it finishes:
+
+1. Merge `aoforge/adopt` yourself.
+2. Run `aof-tools upgrade --check` (`aof-tools` is short for `node ~/.claude/aoforge/bin/aof-tools.cjs`). The next
+   session start applies the automatic migrations.
+3. In each repository with GitHub integration, run `aof-tools gh rebrand --apply` (see [Repositories with GitHub
+   integration](#repositories-with-github-integration)). Adopt does not rebrand a repository.
+
+Adopt refuses, and changes nothing, when the working tree has uncommitted changes, a merge, rebase or similar operation
+is in progress, HEAD is detached, a directory holds both `.planning/` and `.aoforge/`, or a CLAUDE.md holds an old block
+it cannot convert (no END marker, or more than one block). Run again after the fix. Re-running it after an interruption
+resumes the same adopt rather than starting a new one.
+
+**Option B: AOForge 3.0.x once.** It runs every conversion for you, including the ones in your home that adopt leaves
+alone.
 
 1. Get the release: clone the `v3.0.0` tag of the repository (the latest `v3.0.*` tag, if there is a later one),
    remove the `aocyber` marketplace if you have it (`/plugin marketplace remove aocyber`), and add the checkout as
@@ -165,7 +201,7 @@ Everything 3.0.0 kept working "until the next release" is gone:
    (`/plugin marketplace add AO-Cyber-Systems/aoforge-claude`) and update the plugin.
 4. Run the checks under [Check it](#check-it).
 
-**Option B: by hand.** For each project, on a clean tree:
+**Option C: by hand.** For each project, on a clean tree:
 
 1. Move the planning directory and commit the move:
 
@@ -185,7 +221,7 @@ Everything 3.0.0 kept working "until the next release" is gone:
 6. In each repository with GitHub integration, run `aof-tools gh rebrand --apply` (see [Repositories with GitHub
    integration](#repositories-with-github-integration)).
 
-Then, once per machine:
+Then, once per machine (after Option A or C, which leave your home alone):
 
 1. Disable the old plugin: `claude plugin disable devflow@aocyber`.
 2. Rename your `DEVFLOW_*` variables to `AOFORGE_*` wherever you set them (shell profile, the environment Claude Code
@@ -208,7 +244,7 @@ Then, once per machine:
 ## The 3.0.0 checklist
 
 <!-- rename-guard:ignore-start -->
-This is what AOForge **3.0.x** does and asks of you (Option A above). 3.1 does none of the automatic steps, and steps
+This is what AOForge **3.0.x** does and asks of you (Option B above). 3.1 does none of the automatic steps, and steps
 5, 6 and 9 below need 3.0.x: under 3.1 `--global --confirm` no longer rewrites text outside the block, `doctor --global
 --fix` no longer moves the old runtime home, and opening a project no longer moves it.
 <!-- rename-guard:ignore-end -->
@@ -269,7 +305,7 @@ In this order. `aof-tools` below is short for `node ~/.claude/aoforge/bin/aof-to
 
    The repository was renamed to `AO-Cyber-Systems/aoforge-claude`, and GitHub redirects the old name. If the update
    fails, remove the `aocyber` marketplace and add it again with `/plugin marketplace add AO-Cyber-Systems/aoforge-claude`.
-   For 3.0.x specifically, use the `v3.0.0` checkout from Option A.
+   For 3.0.x specifically, use the `v3.0.0` checkout from Option B.
 
 2. **Restart Claude Code.** The first session mirrors the runtime and does everything under "On the first AOForge
    3.0.x session" above.
@@ -350,10 +386,10 @@ Run the last two inside each project. What to look for under 3.1:
 | doctor check 15 `legacy-df-install` | `df-*` skills or agents are back under `~/.claude` (report-only) | `aof-tools upgrade --global --apply` moves them into `backups/legacy-<timestamp>/` (a session start after a plugin update does the same), or move them by hand |
 | doctor check 16 `legacy-plugin-runtime` | the old plugin is still enabled, the old runtime home was never migrated, it is left over after a 3.0.x migration, or `DEVFLOW_*` variables are set (report-only) | disable the old plugin; for a home never migrated, run 3.0.x once or copy by hand ([Upgrading from 2.x](#upgrading-from-2x)); for a leftover, run the `mv` the check prints; rename the variables |
 | doctor check 17 `user-dot-dir` | `~/.aoforge/` still holds files AOForge 3.0.0 wrote, which 3.1 no longer reads | `aof-tools doctor --global --fix` moves them into `~/.claude/aoforge/` (report-only while a 3.0.0 daemon there is alive) |
-| W066 `legacy-planning-dir` (broken; doctor prints a note) | the project has only `.planning/`, which 3.1 does not read | [Upgrading from 2.x](#upgrading-from-2x) |
-| W066 `legacy-planning-dir` (warning, doctor check 27) | the project holds both directories; the old one is ignored | move what you still need into `.aoforge/` and delete `.planning/` yourself |
-| W067 `legacy-config-key` (doctor check 27) | `.aoforge/config.json` has the `devflow{}` key | alone: rename it to `aoforge`; beside `aoforge{}`: delete it |
-| W069 `legacy-claude-md-block` (doctor check 27) | the project CLAUDE.md holds a managed block under the `DEVFLOW` markers | rename the two markers to `AOFORGE`; the next upgrade refreshes the block |
+| W066 `legacy-planning-dir` (broken; doctor prints a note) | the project has only `.planning/`, which 3.1 does not read | `/aoforge:adopt`, or [Upgrading from 2.x](#upgrading-from-2x) |
+| W066 `legacy-planning-dir` (warning, doctor check 27) | the project holds both directories; the old one is ignored | move what you still need into `.aoforge/` and delete `.planning/` yourself (`/aoforge:adopt` refuses this layout until you do) |
+| W067 `legacy-config-key` (doctor check 27) | `.aoforge/config.json` has the `devflow{}` key | alone: rename it to `aoforge`; beside `aoforge{}`: delete it; or run `/aoforge:adopt`, which does either |
+| W069 `legacy-claude-md-block` (doctor check 27) | the project CLAUDE.md holds a managed block under the `DEVFLOW` markers | rename the two markers to `AOFORGE`; the next upgrade refreshes the block; or run `/aoforge:adopt` |
 | W062 (doctor check 26) on `.github/workflows/devflow.yml` | the checks caller still has its old name | `aof-tools gh rebrand --dry-run`, then `--apply` (never a re-pin with `gh setup`) |
 | `... still has the pre-rename label "devflow:<name>"` from a `gh` command | the repository was never rebranded | `aof-tools gh rebrand --apply`, then retry |
 
