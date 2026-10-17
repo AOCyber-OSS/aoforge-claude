@@ -13,7 +13,7 @@ A dry run (`--dry-run`) makes **zero API calls**: it never spawns the claude bin
 ```
 node scripts/eval81/run.cjs --batch X --root <R> --token-file <T> [--dry-run [--materialize none|first|all]]
      [--init-ledger] [--stop-after N] [--reopen --reason <text>] [--claude-bin <bin>|node:<path>]
-     [--results-dir <dir>] [--calibration <path>] [--repo <checkout>] [--batch-dir <dir>] [--raw]
+     [--results-dir <dir>] [--calibration <path>] [--repo <checkout>] [--batch-dir <dir>] [--sandbox-root <S>] [--raw]
 node scripts/eval81/run.cjs --rebuild-ledger --root <R> [--results-dir <dir>] [--charge-lost X=<usd>]... [--raw]
 node scripts/eval81/run.cjs --close-batch X --reason <text> --root <R> [--raw]
 ```
@@ -40,6 +40,7 @@ context section.
 | `--calibration` | Read-only calibration for the batch modules' caps. Default `<real home>/.claude/aoforge/calibration.json`. |
 | `--repo` | This checkout. Default `git rev-parse --show-toplevel`. Its parent directory is a deny root, and it is tripwired. |
 | `--batch-dir` | Where `<X>.cjs` batch modules live. Default `scripts/eval81/batches/`. |
+| `--sandbox-root S` | **Post-hoc 3.** Put what each run sees (home, config dir, tmp, work, settings.json) under `S/runs/<X>/<id>/` and read the plugin trees from `S/trees.json` (`sandbox.exportTrees`); the record dir stays under R. The runner refuses (exit 2, nothing spawned) when S, a plugin dir or any path handed to a run names the user or the checkout after realpath (`lib/opaque.cjs`). |
 | `--raw` | Print the JSON report on stdout instead of a short summary. |
 | `--real-home <dir>` | **Test only.** A stand-in for the real home. Default `os.userInfo().homedir`. The live TRDs never pass it. |
 | `--rates <file>` | **Test only.** A model-rates file for transcript pricing. Default `references/model-rates.json`. The live TRDs never pass it. |
@@ -107,6 +108,18 @@ R/runs/<X>/<id>.prev-<n>/           an earlier dir for the same id, moved aside,
 R/tripwire/<X>-before.json, <X>-after.json
 R/.runner.lock                      one runner per root (pid); a stale lock from a dead pid is taken over
 ```
+
+With `--sandbox-root S` (post-hoc 3, TRD 81-17) the layout splits:
+
+```
+S/trees.json, S/trees/v<version>/   plain copies of each ref's plugins/ (git archive, no .git), sandbox.exportTrees
+S/runs/<X>/<id>/home|tmp|work/      what the run sees; S/runs/<X>/<id>/settings.json is its --settings
+R/runs/<X>/<id>/                    record.json, stream.jsonl, stderr.txt, argv.json, transcripts/, outputs/
+```
+
+S is an opaque directory (`/private/tmp/claude-501/e81-<hex>` in the live TRDs): no path a run is handed names the
+user or the checkout, even after realpath, so an agent cannot infer the real home from its cwd. argv.json records the
+check (`opaque: {tokens, checked, violations}`).
 
 The runner resolves plugin dirs from the paths in `trees.json`. So another root can reuse the same trees by copying
 `trees.json`.
@@ -193,6 +206,12 @@ runs those ids.
   Agent`. The check now treats `Agent` and `Task` as one tool, counts `Grep` and `Glob` as present when `Bash` is
   listed, and allows `Edit` when `Write` is declared. Any other missing tool, and an undeclared Edit, Write, WebFetch,
   WebSearch or NotebookEdit, still fails. The record's `tools_check.satisfied_by` names each tool met another way.
+- **Opaque paths (post-hoc 3, TRD 81-17, user 2026-10-17).** Batch E's build pilot b31-r1 had an executor resolve
+  `~/.claude/...` to the real home it read off the cwd (the scratchpad name encodes it); the deny list refused the
+  read. From then on E and C run with `--sandbox-root`: cwd, HOME, CLAUDE_CONFIG_DIR, TMPDIR, `--settings`,
+  `--plugin-dir` and the fixture copy are checked after realpath against the tokens `forbiddenTokens` derives from
+  the real home and the checkout (here `justin`, `aoforge-claude`, `Users-`). The deny list is unchanged. Not covered:
+  the parent's own argv (visible to `ps`), and PATH, USER and LOGNAME, which the child env still passes through.
 - **Order.** A, B, D, E, C. A live run of a batch refuses (exit 2) until every earlier batch is `complete` or
   `stopped`. A `complete` batch whose `runs()` lists new runs (C's graders) goes back to `running`, runs only the new
   ids and completes again.

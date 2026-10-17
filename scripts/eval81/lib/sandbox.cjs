@@ -9,6 +9,8 @@
  *   R/runs/<batch>/<id>/work/            the session cwd (a fresh materialised fixture copy)
  *   R/trees/v<version>/                  detached git worktrees of this repo, one per plugin version
  *   R/trees.json                         {"<version>": {ref, sha, path}} with absolute paths
+ * Post-hoc 3 (TRD 81-17): with a sandbox root S, home/tmp/work live in S/runs/<batch>/<id>/ and the plugin trees are
+ * plain copies in S/trees/ (exportTrees, recorded in S/trees.json); only the record dir stays under R.
  * A run dir is never reused and never deleted: an existing one (a dry run, a rate-limited attempt, an attempt that
  * died) is renamed to `<id>.prev-<n>` before a new sandbox is made. Scorers read `R/runs/<batch>/<id>/record.json`
  * only, never `*.prev-*`.
@@ -40,21 +42,33 @@ function moveAside(dir) {
 
 /**
  * A fresh sandbox for one run. Any existing run dir for the id is moved aside first (`previous` names it).
- * @returns {{runDir, home, configDir, tmp, work, previous: string|null}}
+ * With `sandboxRoot` (post-hoc 3, TRD 81-17): what the run sees (home, its .claude config dir, tmp, work; the runner
+ * adds settings.json) lives in `<sandboxRoot>/runs/<batch>/<id>/` (`sandboxDir`, moved aside the same way,
+ * `previousSandbox`), while the record dir `runDir` (record, stream, stderr, argv, transcripts, outputs) stays under
+ * the eval root. Without it, sandboxDir is runDir (the original layout).
+ * @returns {{runDir, sandboxDir, home, configDir, tmp, work, previous: string|null, previousSandbox: string|null}}
  */
-function makeSandbox({ root, batch, id }) {
+function makeSandbox({ root, batch, id, sandboxRoot = null }) {
   assertAbsolute(root, 'makeSandbox: root');
+  if (sandboxRoot !== null) assertAbsolute(sandboxRoot, 'makeSandbox: sandboxRoot');
   if (!BATCHES.includes(batch)) throw new TypeError(`makeSandbox: unknown batch ${batch}`);
   if (typeof id !== 'string' || !ID_RE.test(id)) throw new TypeError(`makeSandbox: id must match [A-Za-z0-9._-]+ (got ${JSON.stringify(id)})`);
   const runDir = path.join(root, 'runs', batch, id);
   fs.mkdirSync(path.dirname(runDir), { recursive: true });
   const previous = moveAside(runDir);
-  const home = path.join(runDir, 'home');
+  let sandboxDir = runDir;
+  let previousSandbox = null;
+  if (sandboxRoot !== null) {
+    sandboxDir = path.join(sandboxRoot, 'runs', batch, id);
+    fs.mkdirSync(path.dirname(sandboxDir), { recursive: true });
+    previousSandbox = moveAside(sandboxDir);
+  }
+  const home = path.join(sandboxDir, 'home');
   const configDir = path.join(home, '.claude');
-  const tmp = path.join(runDir, 'tmp');
-  const work = path.join(runDir, 'work');
-  for (const d of [runDir, home, configDir, tmp, work]) fs.mkdirSync(d, { recursive: true });
-  return { runDir, home, configDir, tmp, work, previous };
+  const tmp = path.join(sandboxDir, 'tmp');
+  const work = path.join(sandboxDir, 'work');
+  for (const d of [runDir, sandboxDir, home, configDir, tmp, work]) fs.mkdirSync(d, { recursive: true });
+  return { runDir, sandboxDir, home, configDir, tmp, work, previous, previousSandbox };
 }
 
 function pluginVersion(pluginDir) {
@@ -145,6 +159,52 @@ function ensureTrees({ repo, root, refs }) {
   return { trees, added };
 }
 
+/**
+ * Post-hoc 3 (TRD 81-17): plain copies of each ref's `plugins/` under `<root>/trees/v<version>/` (git archive | tar,
+ * so there is no .git file naming the checkout), each checked for its plugin.json version, recorded in
+ * `<root>/trees.json` as {ref, sha, path}. `root` is the opaque sandbox root. An existing tree is reused only when
+ * trees.json already records it at the same sha; otherwise it throws rather than touch it.
+ * @param {{repo: string, root: string, refs: Object<string, string>}} opts
+ * @returns {{trees: object, added: string[]}}
+ */
+function exportTrees({ repo, root, refs }) {
+  assertAbsolute(repo, 'exportTrees: repo');
+  assertAbsolute(root, 'exportTrees: root');
+  if (refs === null || typeof refs !== 'object' || Object.keys(refs).length === 0) throw new TypeError('exportTrees: refs must map version -> ref');
+  const file = path.join(root, 'trees.json');
+  const current = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf-8')) : {};
+  const trees = { ...current };
+  const added = [];
+  for (const [version, ref] of Object.entries(refs)) {
+    const sha = git(['-C', repo, 'rev-parse', '--verify', `${ref}^{commit}`]);
+    const dest = path.join(root, 'trees', `v${version}`);
+    if (fs.existsSync(dest)) {
+      if (!current[version] || current[version].sha !== sha || current[version].path !== dest) {
+        throw new Error(`exportTrees: ${dest} exists but trees.json does not record it at ${ref} (${sha}); inspect it before reusing`);
+      }
+    } else {
+      const tar = execFileSync('git', ['-C', repo, 'archive', '--format=tar', sha, 'plugins'], { stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 1024 * 1024 * 1024 });
+      fs.mkdirSync(dest, { recursive: true });
+      execFileSync('tar', ['-x', '-f', '-', '-C', dest], { input: tar, stdio: ['pipe', 'pipe', 'pipe'] });
+      added.push(version);
+    }
+    let found;
+    try {
+      found = pluginVersion(path.join(dest, 'plugins', 'aoforge'));
+    } catch (err) {
+      throw new Error(`exportTrees: ${dest} has no readable plugins/aoforge/.claude-plugin/plugin.json (${err.message})`);
+    }
+    if (found !== version) {
+      if (added.includes(version)) fs.rmSync(dest, { recursive: true, force: true });
+      throw new Error(`exportTrees: ${ref} carries plugin version ${found}, not ${version}`);
+    }
+    trees[version] = { ref, sha, path: dest };
+  }
+  fs.mkdirSync(root, { recursive: true });
+  fs.writeFileSync(file, `${JSON.stringify(trees, null, 2)}\n`);
+  return { trees, added };
+}
+
 function listFiles(dir) {
   const out = [];
   const walk = (abs, rel) => {
@@ -172,4 +232,4 @@ function copyTranscripts(configDir, dest) {
   return { files: listFiles(dest) };
 }
 
-module.exports = { makeSandbox, mirrorRuntime, ensureTrees, copyTranscripts, moveAside, pluginVersion };
+module.exports = { makeSandbox, mirrorRuntime, ensureTrees, exportTrees, copyTranscripts, moveAside, pluginVersion };

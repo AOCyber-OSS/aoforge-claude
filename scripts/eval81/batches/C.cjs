@@ -437,8 +437,10 @@ function collectAgent(desc, workDir, ctx) {
   const key = mapper ? fx.focus : fx.dimension;
   const sub = mapper ? 'codebase' : 'research';
   const names = mapper ? DOC_ORDER[key] : [RESEARCH_DOC[key]];
-  const runDir = runDirOf(desc, workDir, ctx);
-  const drafts = draftDirs(path.join(runDir, 'tmp'), sub);
+  // Post-hoc 3 (TRD 81-17): with an opaque sandbox root the run's TMPDIR is not under <root>/runs/C/<id>; the runner
+  // passes it as ctx.tmp.
+  const tmpDir = typeof ctx.tmp === 'string' && ctx.tmp !== '' ? ctx.tmp : path.join(runDirOf(desc, workDir, ctx), 'tmp');
+  const drafts = draftDirs(tmpDir, sub);
   const published = [path.join(workDir, '.aoforge', sub)];
   const order = mapper ? [['drafts', drafts], ['published', published]] : [['published', published], ['drafts', drafts]];
 

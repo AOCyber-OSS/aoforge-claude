@@ -70,7 +70,8 @@ function isolationCheck({ realHome, configDir, workDir, root }) {
   return {
     sandbox_project: keys.some((k) => exists(path.join(configDir, 'projects', k))),
     real_project: keys.some((k) => exists(path.join(realHome, '.claude', 'projects', k))),
-    real_entries_under_root: realProjectsEntries({ realHome, roots: [root] }),
+    // `root` may be an array (post-hoc 3: the eval root and the opaque sandbox root).
+    real_entries_under_root: realProjectsEntries({ realHome, roots: Array.isArray(root) ? root : [root] }),
   };
 }
 

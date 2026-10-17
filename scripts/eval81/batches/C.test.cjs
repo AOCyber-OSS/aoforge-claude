@@ -540,6 +540,24 @@ describe('batch C: collect()', () => {
     assert.equal(out.documents['INTEGRATIONS.md'].location, 'published');
   });
 
+  test('6b2. post-hoc 3: with an opaque sandbox root, drafts are read from the run\'s sandbox tmp (ctx.tmp), not <root>/runs/C/<id>/tmp', () => {
+    const s = setup();
+    const d = descFor(s, 'codebase-mapper:tech', 'synthetic');
+    // The record dir exists under the eval root (the runner made it) but holds no tmp: the sandbox is elsewhere.
+    fs.mkdirSync(path.join(s.root, 'runs', 'C', d.id), { recursive: true });
+    const sbx = tempDir('eval81-c-sbx-');
+    const work = path.join(sbx, 'work');
+    fs.mkdirSync(work, { recursive: true });
+    const drafts = path.join(sbx, 'tmp', 'aoforge-drafts', 'k', 'codebase');
+    fs.mkdirSync(drafts, { recursive: true });
+    fs.writeFileSync(path.join(drafts, 'STACK.md'), fx.SYNTHETIC_STACK);
+    fs.writeFileSync(path.join(drafts, 'INTEGRATIONS.md'), fx.SYNTHETIC_INTEGRATIONS);
+    const out = s.batch.collect(d, work, { root: s.root, home: path.join(sbx, 'home'), tmp: path.join(sbx, 'tmp'), record: {} });
+    assert.equal(out.location, 'drafts');
+    assert.deepEqual(out.missing_documents, []);
+    assert.ok(out.document.indexOf('===== STACK.md =====') < out.document.indexOf('===== INTEGRATIONS.md ====='));
+  });
+
   test('6c. a mapper that wrote nothing yields an empty document and location none', () => {
     const s = setup();
     const d = descFor(s, 'codebase-mapper:concerns', 'fleet');

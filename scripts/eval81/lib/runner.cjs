@@ -36,6 +36,7 @@ const { basePromptUsd } = require('./caps.cjs');
 const { makeSandbox, mirrorRuntime, copyTranscripts, moveAside } = require('./sandbox.cjs');
 const { buildArgv, buildSettings, denyRoots, underDenyRoot } = require('./command.cjs');
 const tripwire = require('./tripwire.cjs');
+const { forbiddenTokens, opaqueViolations } = require('./opaque.cjs');
 const { loadRates } = require('../../../plugins/aoforge/aoforge/bin/lib/calibration-inputs.cjs');
 
 const EXIT = Object.freeze({ OK: 0, USAGE: 2, BUDGET: 3, PAUSED: 4, BREACH: 5, HARNESS: 6 });
@@ -109,11 +110,26 @@ function context(opts, deps) {
     killGraceMs: Number.isFinite(deps.killGraceMs) ? deps.killGraceMs : KILL_GRACE_MS,
     parentEnv: deps.parentEnv || process.env,
     stderrFn: deps.stderr || ((s) => process.stderr.write(s)),
+    // Post-hoc 3: the opaque sandbox root (realpath'd in plan()) and the tokens no handed path may name.
+    sandboxRoot: null,
+    opaqueTokens: [],
     token: '',
     logFile: null,
     roots: [],
     report: {},
   };
+}
+
+/** Post-hoc 3: the paths a run is handed, checked after realpath; refuses (exit 2, nothing spawned) on a violation. */
+function opaqueCheck(ctx, entries, what) {
+  if (!ctx.sandboxRoot) return null;
+  const out = opaqueViolations(entries, ctx.opaqueTokens);
+  if (out.violations.length) {
+    const v = out.violations[0];
+    const more = out.violations.length > 1 ? ` (and ${out.violations.length - 1} more)` : '';
+    throw new RunnerExit(EXIT.USAGE, `${what}: ${v.what} ${v.real} names ${v.token} (component ${v.component})${more}; every path handed to a run must be opaque (post-hoc 3), so nothing was spawned`);
+  }
+  return { tokens: ctx.opaqueTokens, checked: out.checked, violations: out.violations };
 }
 
 function log(ctx, msg) {
@@ -484,12 +500,24 @@ async function prepare(ctx, plan, desc, sb, pluginDir) {
   }
 }
 
-/** settings.json and the redacted argv.json; returns the argv and the child env. */
+/**
+ * settings.json (in the sandbox dir: the run is handed its path) and the redacted argv.json (in the record dir);
+ * returns the argv and the child env. With a sandbox root, every handed path is checked first (post-hoc 3).
+ */
 function writeCommandFiles(ctx, desc, sb, pluginDir, token) {
-  const settingsPath = path.join(sb.runDir, 'settings.json');
+  const sandboxDir = sb.sandboxDir || sb.runDir;
+  const settingsPath = path.join(sandboxDir, 'settings.json');
   writeJson(settingsPath, buildSettings(ctx.roots), ctx.token);
   const args = buildArgv(desc, { pluginDirs: pluginDir ? [pluginDir] : [], settingsPath });
   const env = childEnv({ home: sb.home, configDir: sb.configDir, tmpdir: sb.tmp, token, extra: desc.env, parentEnv: ctx.parentEnv });
+  const opaque = opaqueCheck(ctx, [
+    { what: 'cwd (the fixture copy)', path: sb.work },
+    { what: 'HOME', path: env.HOME },
+    { what: 'CLAUDE_CONFIG_DIR', path: env.CLAUDE_CONFIG_DIR },
+    { what: 'TMPDIR', path: env.TMPDIR },
+    { what: '--settings', path: settingsPath },
+    { what: '--plugin-dir', path: pluginDir },
+  ], `run ${desc.id}`);
   // The env is shown with the token value redacted (the dry run's placeholder too), so argv.json never holds it.
   writeJson(path.join(sb.runDir, 'argv.json'), {
     bin: ctx.opts.claudeBin,
@@ -498,6 +526,7 @@ function writeCommandFiles(ctx, desc, sb, pluginDir, token) {
     stdin: '/dev/null',
     timeout_ms: desc.timeoutMs,
     env: JSON.parse(redact(JSON.stringify(env), token)),
+    opaque,
   }, ctx.token);
   return { args, env };
 }
@@ -512,7 +541,7 @@ function tripwireSpec(ctx, watched) {
       path.join(claude, 'aoforge', '.plugin-version'),
       path.join(claude, 'aoforge', 'calibration.json'),
     ],
-    projects: { realHome: ctx.realHome, roots: [ctx.root] },
+    projects: { realHome: ctx.realHome, roots: [ctx.root, ctx.sandboxRoot].filter(Boolean) },
   };
 }
 
@@ -549,7 +578,7 @@ async function finishRun(ctx, plan, desc, sb, pluginDir, start, proc, attempt, s
   let status = proc.timedOut ? 'timeout' : parsed.status;
   const problems = [];
 
-  const isolation = tripwire.isolationCheck({ realHome: ctx.realHome, configDir: sb.configDir, workDir: sb.work, root: ctx.root });
+  const isolation = tripwire.isolationCheck({ realHome: ctx.realHome, configDir: sb.configDir, workDir: sb.work, root: [ctx.root, ctx.sandboxRoot].filter(Boolean) });
   const expectSession = ['ok', 'error', 'cap_hit'].includes(parsed.status) || parsed.assistant_messages > 0;
   const newReal = isolation.real_entries_under_root.filter((n) => !(plan.before.projects || []).includes(n));
   const breach = [];
@@ -559,7 +588,7 @@ async function finishRun(ctx, plan, desc, sb, pluginDir, start, proc, attempt, s
   if (breach.length) problems.push({ code: EXIT.BREACH, message: `isolation breach on ${desc.id} (${sb.runDir}): ${breach.join('; ')}` });
 
   const treeDirs = Object.values(plan.trees).filter((t) => isPlainObject(t) && typeof t.path === 'string').map((t) => t.path);
-  const den = classifyDenials(parsed.permission_denials, { insideDirs: [sb.runDir, pluginDir, ...treeDirs], roots: ctx.roots });
+  const den = classifyDenials(parsed.permission_denials, { insideDirs: [sb.runDir, sb.sandboxDir, pluginDir, ...treeDirs], roots: ctx.roots });
   if (den.inside.length) {
     status = 'harness_error';
     problems.push({ code: EXIT.HARNESS, message: `run ${desc.id}: the deny list blocked a path the agent needs (${den.inside.join(', ')}); fix the deny roots before resuming` });
@@ -578,7 +607,7 @@ async function finishRun(ctx, plan, desc, sb, pluginDir, start, proc, attempt, s
   let collectError = null;
   if (status !== 'rate_limited') {
     try {
-      const got = await plan.mod.collect(desc, sb.work, { root: ctx.root, home: sb.home, record: { ...parsed, status } });
+      const got = await plan.mod.collect(desc, sb.work, { root: ctx.root, home: sb.home, tmp: sb.tmp, record: { ...parsed, status } });
       outputs = got === undefined ? null : got;
     } catch (err) {
       collectError = err.message;
@@ -699,7 +728,7 @@ async function runOne(ctx, plan, desc) {
     const attempt = (Number(queue.attempts[desc.id]) || 0) + 1;
     queue.attempts[desc.id] = attempt;
     saveQueue(ctx, queue);
-    const sb = makeSandbox({ root: ctx.root, batch, id: desc.id });
+    const sb = makeSandbox({ root: ctx.root, batch, id: desc.id, sandboxRoot: ctx.sandboxRoot });
     sb.streamPath = path.join(sb.runDir, 'stream.jsonl');
     await prepare(ctx, plan, desc, sb, pluginDir);
     const { args, env } = writeCommandFiles(ctx, desc, sb, pluginDir, ctx.token);
@@ -799,7 +828,15 @@ async function plan(ctx) {
   if (!order.ok && !dry) throw new RunnerExit(EXIT.USAGE, order.message);
 
   const mod = loadBatchModule(opts.batchDir, batch);
-  const trees = readTrees(ctx.root);
+  // Post-hoc 3: with --sandbox-root the plugin trees come from <sandbox root>/trees.json (sandbox.exportTrees), and
+  // the sandbox root itself must be opaque before anything is made under it.
+  if (opts.sandboxRoot) {
+    fs.mkdirSync(path.resolve(opts.sandboxRoot), { recursive: true });
+    ctx.sandboxRoot = fs.realpathSync(path.resolve(opts.sandboxRoot));
+    ctx.opaqueTokens = forbiddenTokens({ realHome: ctx.realHome, repo: opts.repo });
+    opaqueCheck(ctx, [{ what: 'sandbox root', path: ctx.sandboxRoot }], 'refused');
+  }
+  const trees = readTrees(ctx.sandboxRoot || ctx.root);
   const calibration = readCalibration(opts.calibration ? path.resolve(opts.calibration) : path.join(ctx.realHome, '.claude', 'aoforge', 'calibration.json'));
   const descs = await planRuns(mod, batch, { root: ctx.root, trees, calibration });
 
@@ -814,7 +851,9 @@ async function plan(ctx) {
   const watched = watchedRepos(mod, ctx.root);
   ctx.roots = denyRoots({ repo: opts.repo, realHome: ctx.realHome, watched: watched.map((w) => w.path) });
   const inputs = [['eval root', ctx.root]];
+  if (ctx.sandboxRoot) inputs.push(['sandbox root', ctx.sandboxRoot]);
   for (const p of used) inputs.push([`tree ${p}`, trees[p].path], [`plugin dir ${p}`, pluginDirs[p]]);
+  opaqueCheck(ctx, used.map((p) => ({ what: `plugin dir ${p}`, path: pluginDirs[p] })), 'refused');
   for (const [what, p] of inputs) {
     for (const form of forms(p)) {
       const r = underDenyRoot(form, ctx.roots);
@@ -842,7 +881,7 @@ async function dryRun(ctx, p) {
   let base = 0;
   for (const [i, d] of pending.entries()) {
     const start = ledgerLib.canStart(l, { batch, role: d.role, capUsd: d.capUsd });
-    const sb = makeSandbox({ root: ctx.root, batch, id: d.id });
+    const sb = makeSandbox({ root: ctx.root, batch, id: d.id, sandboxRoot: ctx.sandboxRoot });
     const pluginDir = d.plugin ? p.pluginDirs[d.plugin] : null;
     const materialized = opts.materialize === 'all' || (opts.materialize === 'first' && i === 0);
     if (materialized) await prepare(ctx, p, d, sb, pluginDir);

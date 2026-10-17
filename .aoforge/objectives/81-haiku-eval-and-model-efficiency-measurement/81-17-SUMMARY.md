@@ -10,9 +10,9 @@ status: checkpoint
 
 ## Progress
 - [x] Task 1: Confirm spend for batch E — 6db987e4
-- [x] Task 2: Quick pilot pair, then build pilot pair — quick pair 77da5312, build pair (this commit)
-- [ ] Task 3: Review the pilots before the remaining 6 E runs — next step: AWAITING THE USER. Batch E is `running` with 6 pending (q30-r2, q31-r2, q31-r3, q30-r3, b30-r2, b31-r2). On "go E rest", run `node scripts/eval81/run.cjs --batch E --root <R> --token-file <T> --raw` in the background; on "stop E", run `node scripts/eval81/run.cjs --close-batch E --root <R> --reason "user stopped after the pilots" --raw`, then score
-- [ ] Task 4: The remaining E runs, then score and publish the 76-08 measurement
+- [x] Task 2: Quick pilot pair, then build pilot pair — quick pair 77da5312, build pair 3998f900
+- [x] Task 3: Review the pilots before the remaining 6 E runs — user: "Opaque paths + continue" and "Go E rest and C"; post-hoc 3 (this commit)
+- [ ] Task 4: The remaining E runs, then score and publish the 76-08 measurement — next step: run `node scripts/eval81/run.cjs --batch E --root <R> --token-file <T> --sandbox-root /private/tmp/claude-501/e81-5752f4931a905580 --raw` in the background (6 pending: q30-r2, q31-r2, q31-r3, q30-r3, b30-r2, b31-r2), then `score.cjs --batch E`
 
 ## User gate decision (2026-10-17)
 
@@ -148,3 +148,41 @@ stop and report."
 - **What b30-r1 showed.** No escape attempt, and no real-home path in any tool input.
 - **What it means.** The deny layer did its job. But the remaining six E runs (and C) can produce the same
   attempt, because the cwd path names the real user. Whether to continue is the user's call.
+
+## Finding: the b31-r1 escape attempt
+
+- **What happened.** In b31-r1 (the 3.1.0 build pilot), the TRD 01-01 executor (sonnet, spawn depth 2, under the
+  general-purpose "Execute Objective 1" agent) was told to read `~/.claude/aoforge/references/tdd.md`.
+  - It first issued `Read /Users/justin/.claude/aoforge/references/tdd.md`. The run's `--settings` deny list refused
+    it, and the runner recorded `escape_attempt: true` with `escape_paths` naming that file.
+  - It then read the sandbox copy at `<run>/home/.claude/aoforge/references/tdd.md` and went on. The run passed.
+- **Cause.** The session cwd was `/private/tmp/claude-501/-Users-justin-dev-aoforge-claude/.../runs/E/b31-r1/work`.
+  The scratchpad name encodes the real home, and the agent resolved `~` from it instead of from `$HOME`.
+- **Reach.**
+  - Only the one denied Read. No Bash, Grep or Glob in any of the four pilot transcripts names a real-home path.
+  - The isolation proof was clean (a sandbox project dir and no real projects entry), and so was the tripwire.
+- **Reading.**
+  - The deny layer works under `bypassPermissions` for Read.
+  - The real exposure was the path, not the permission: Bash is not path-scoped, so a `cat` of the same path would
+    have succeeded.
+  - Post-hoc 3 removes the cause.
+
+## User decisions after the pilot checkpoint (2026-10-17)
+
+1. **"Opaque paths + continue."** Make a test-first post-hoc harness change so that no run's cwd, sandbox HOME, config
+   dir or work dir contains the username or the checkout name, even after realpath.
+   - Per-run roots go under a fresh opaque sibling, `/private/tmp/claude-501/e81-<hex>/`, which holds the plugin
+     trees, fixture copies and sandbox HOMEs.
+   - The ledger, results and token file stay where they are, and the deny list is kept.
+   - Add a test that every handed path has no `justin`, `aoforge-claude` or `Users-` component after realpath.
+   - Re-freeze, record b31-r1 as a finding, and delete `e81-*` at the very end of C.
+2. **"Go E rest and C."** Run the remaining six E runs, score E, write 81-MEASUREMENT.md and commit. Then run 81-18
+   batch C (its human-action gate is satisfied by this decision), score it and commit. Stop before 81-19.
+
+## Post-hoc 3: opaque run paths (81-PREREG section 9.3)
+
+- **RED/GREEN.** The new tests failed 9 of 31, then passed 40/40. The full eval81 suite passed 495/495 (477 before),
+  and the repo guards 372/372.
+- **Sandbox root.** S = `/private/tmp/claude-501/e81-5752f4931a905580`. Its trees were exported at the pinned SHAs
+  (`sandbox.exportTrees`), and `diff -rq` against `<R>/trees/v*/plugins` printed nothing.
+- **New manifest.** sha256 8080f63b..., 85 files.

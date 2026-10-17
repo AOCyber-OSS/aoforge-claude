@@ -448,3 +448,56 @@ None replaces the text it amends.
 - **New manifest:** sha256 `e5cb39631065c33c6c3ff2ed2da805d8e095e42129c3a0336981f091f528dd33`, 84 files, written at
   head `14963158`. It is committed by `docs(81-14): post-hoc 2, resize batch caps from the A pilot and freeze the C
   decisions`.
+
+### 9.3 Post-hoc 3 (2026-10-17, TRD 81-17): opaque run paths
+
+- **Why.** In batch E's build pilot, b31-r1's TRD 01-01 executor tried to Read
+  `/Users/justin/.claude/aoforge/references/tdd.md`, the real home. The run's cwd sat under the session scratchpad,
+  whose name encodes the home (`-Users-justin-dev-aoforge-claude`), and the agent resolved `~` from it.
+  - The deny list refused the read, and the runner recorded `escape_attempt: true`.
+  - The agent then read the sandbox copy.
+  - Nothing outside the sandbox was read or written, and the tripwire was clean.
+- **The user's words** (2026-10-17): "Opaque paths + continue".
+  - Make a test-first post-hoc harness change so that no run's cwd, sandbox HOME, config dir or work dir contains the
+    username or the repo/checkout name, even after realpath.
+  - Place the per-run roots under a new opaque sibling directory, `/private/tmp/claude-501/e81-<random hex>/`, holding
+    the plugin trees, fixture copies and sandbox HOMEs. The ledger, results and token file stay where they are, and
+    the token is passed only through the env.
+  - Keep the deny list.
+  - Add a test that every path handed to a run has no `justin`, `aoforge-claude` or `Users-` component after
+    `fs.realpathSync`.
+  - Re-freeze, and delete `/private/tmp/claude-501/e81-*` at the very end of C.
+- **What changed.** Everything below was written test-first. RED was 9 failures across the four test files, GREEN
+  40/40, and the full eval81 suite went from 477 to 495/495.
+  - `lib/opaque.cjs` (new): `forbiddenTokens({realHome, repo})` gives `['justin', 'aoforge-claude', 'Users-']` here,
+    and `opaqueViolations` checks every component of each path's real form. Tests: `lib/opaque.test.cjs`.
+  - `lib/sandbox.cjs`: `makeSandbox({sandboxRoot})` puts home, tmp and work under `S/runs/<X>/<id>/` and keeps the
+    record dir under R. `exportTrees` writes plain copies of each ref's `plugins/` (`git archive`, no `.git`) to
+    `S/trees/` and records them in `S/trees.json`. Tests: `lib/sandbox-opaque.test.cjs`.
+  - `lib/runner.cjs` and `run.cjs`: a new `--sandbox-root S` flag.
+    - Trees are read from `S/trees.json`, and `settings.json` is written in the sandbox dir.
+    - The runner refuses with exit 2, nothing spawned, when S, a plugin dir or any handed path (cwd, HOME,
+      CLAUDE_CONFIG_DIR, TMPDIR, `--settings`, `--plugin-dir`) names a token after realpath. argv.json records the
+      check.
+    - The isolation and tripwire project roots cover S, denials inside S count as inside the sandbox, and collect
+      receives `tmp`.
+    - Test: `run-opaque.test.cjs` (fake claude, stand-in home `<base>/Users/justin`, checkout `<base>/dev/aoforge-claude`).
+  - `lib/tripwire.cjs`: `isolationCheck` accepts a list of roots.
+  - `batches/C.cjs`: collect reads drafts from `ctx.tmp` when the runner passes it. Test: `C.test.cjs` 6b2.
+  - `README.md`: the flag, the split layout, and the safety rule with its known gaps. The parent's argv is visible to
+    `ps`, and PATH, USER and LOGNAME still pass through the child env.
+- **Live use.**
+  - S is `/private/tmp/claude-501/e81-5752f4931a905580`, made fresh. Its trees were exported at the pinned SHAs, and
+    `diff -rq` against `<R>/trees/v*/plugins` printed nothing.
+  - The remaining six E runs and all of C pass `--sandbox-root S`. R keeps the ledger, queue, tripwire snapshots and
+    every record dir.
+  - The deny list is unchanged.
+- **Effect on the measurement.** E's four pilots ran with their cwd under the scratchpad path, and the remaining six
+  under the shorter S path. The session's environment text and tool outputs carry the cwd, so first-turn input can
+  differ by a few tokens. Each version has one quick run and one build run in each group, so the version comparison
+  stays balanced.
+- **Frozen files whose hashes changed:**
+  - `scripts/eval81/lib/runner.cjs`, `lib/sandbox.cjs`, `lib/tripwire.cjs`, `run.cjs`, `batches/C.cjs`, `README.md`;
+  - added: `scripts/eval81/lib/opaque.cjs`.
+- **New manifest:** sha256 `8080f63b0655061d9196467f39588e275bb63ad9af13c9a4a2c08280a857fdcd`, 85 files, written at
+  head `4f3619dc`.

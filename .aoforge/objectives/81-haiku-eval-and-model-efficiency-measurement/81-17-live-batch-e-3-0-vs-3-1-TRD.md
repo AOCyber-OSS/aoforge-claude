@@ -54,6 +54,9 @@ Output: `results/E.json`, `results/E.md`, `81-MEASUREMENT.md`.
 - `R` = `/private/tmp/claude-501/-Users-justin-dev-aoforge-claude/29d3d902-73eb-439c-9c64-ba469a668a6e/scratchpad/eval81`
 - `T` = `/private/tmp/claude-501/-Users-justin-dev-aoforge-claude/29d3d902-73eb-439c-9c64-ba469a668a6e/scratchpad/eval-auth/oauth-token`
 - `O` = `.aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement`
+- Post-hoc 3 (TRD 81-17, user 2026-10-17, 81-PREREG section 9.3): `S` = `/private/tmp/claude-501/e81-5752f4931a905580`. Every live
+  runner command and dry run from here on adds `--sandbox-root <S>`: the run sees only opaque paths, while R keeps the
+  ledger and the record dirs. Delete `/private/tmp/claude-501/e81-*` at the very end of C.
 - Batch E (81-12): 10 runs in order q31-r1, q30-r1, b31-r1, b30-r1, q30-r2, q31-r2, q31-r3, q30-r3, b30-r2, b31-r2
   (pilot pairs first; ABBA within each workflow); roles `workflow:quick` / `workflow:build`; session model
   `SESSION_MODEL` (opus) and `model_profile: balanced` for both versions; caps quick $6, build $15 (each including

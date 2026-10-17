@@ -5,12 +5,16 @@
 //
 //   node scripts/eval81/run.cjs --batch X --root <R> --token-file <T> [--claude-bin claude] [--dry-run]
 //        [--materialize none|first|all] [--stop-after N] [--init-ledger] [--reopen --reason <text>]
-//        [--results-dir <dir>] [--calibration <path>] [--repo <checkout>] [--batch-dir <dir>] [--raw]
+//        [--results-dir <dir>] [--calibration <path>] [--repo <checkout>] [--batch-dir <dir>] [--sandbox-root <dir>] [--raw]
 //   node scripts/eval81/run.cjs --rebuild-ledger --root <R> [--results-dir <dir>] [--charge-lost X=<usd>]... [--raw]
 //   node scripts/eval81/run.cjs --close-batch X --reason <text> --root <R> [--raw]
 //
 // Test-only flags (the live TRDs never pass them): --real-home <dir> (a stand-in for the real home, default
 // os.userInfo().homedir) and --rates <file> (a model-rates file, default references/model-rates.json).
+//
+// --sandbox-root <dir> (post-hoc 3, TRD 81-17): put what each run sees (home, config dir, tmp, work, settings) and the
+// plugin trees (<dir>/trees.json, sandbox.exportTrees) under an opaque directory; the runner refuses (exit 2) when any
+// path handed to a run names the user or the checkout after realpath (lib/opaque.cjs).
 //
 // Exit codes: 0 complete, 2 usage / order / ledger, 3 budget stop, 4 paused (rate limit), 5 tripwire or isolation
 // breach, 6 harness error. A dry run makes zero API calls: it never spawns the claude binary.
@@ -23,7 +27,7 @@ const { runBatch, EXIT, OBJECTIVE_RESULTS } = require('./lib/runner.cjs');
 const USAGE = [
   'usage: node scripts/eval81/run.cjs --batch A|B|C|D|E --root <eval root> --token-file <file> [--claude-bin <bin|node:path>]',
   '         [--dry-run [--materialize none|first|all]] [--stop-after N] [--init-ledger] [--reopen --reason <text>]',
-  '         [--results-dir <dir>] [--calibration <path>] [--repo <checkout>] [--batch-dir <dir>] [--raw]',
+  '         [--results-dir <dir>] [--calibration <path>] [--repo <checkout>] [--batch-dir <dir>] [--sandbox-root <dir>] [--raw]',
   '       node scripts/eval81/run.cjs --rebuild-ledger --root <eval root> [--results-dir <dir>] [--charge-lost X=<usd>]... [--raw]',
   '       node scripts/eval81/run.cjs --close-batch X --reason <text> --root <eval root> [--raw]',
 ].join('\n');
@@ -44,6 +48,7 @@ const VALUE_FLAGS = {
   '--batch-dir': 'batchDir',
   '--real-home': 'realHome',
   '--rates': 'rates',
+  '--sandbox-root': 'sandboxRoot',
 };
 const BOOL_FLAGS = {
   '--dry-run': 'dryRun',
@@ -101,7 +106,7 @@ function gitTopLevel() {
 
 function resolveDefaults(o) {
   const out = { ...o, root: path.resolve(o.root) };
-  for (const key of ['tokenFile', 'batchDir', 'calibration', 'realHome', 'rates', 'resultsDir']) {
+  for (const key of ['tokenFile', 'batchDir', 'calibration', 'realHome', 'rates', 'resultsDir', 'sandboxRoot']) {
     if (out[key] !== undefined) out[key] = path.resolve(out[key]);
   }
   if (out.closeBatch) return out;

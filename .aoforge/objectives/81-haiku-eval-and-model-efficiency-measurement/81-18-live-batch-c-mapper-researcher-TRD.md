@@ -48,6 +48,9 @@ Output: `results/C.json`, `results/C.md`, `results/C-spotcheck.md`.
 - `R` = `/private/tmp/claude-501/-Users-justin-dev-aoforge-claude/29d3d902-73eb-439c-9c64-ba469a668a6e/scratchpad/eval81`
 - `T` = `/private/tmp/claude-501/-Users-justin-dev-aoforge-claude/29d3d902-73eb-439c-9c64-ba469a668a6e/scratchpad/eval-auth/oauth-token`
 - `O` = `.aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement`
+- Post-hoc 3 (TRD 81-17, user 2026-10-17, 81-PREREG section 9.3): `S` = `/private/tmp/claude-501/e81-5752f4931a905580`. Every live
+  runner command and dry run from here on adds `--sandbox-root <S>`: the run sees only opaque paths, while R keeps the
+  ledger and the record dirs. Delete `/private/tmp/claude-501/e81-*` at the very end of C.
 - Batch C (81-11): first invocation runs the 48 agent runs; the second lists and runs the 48 grader runs for the
   collected outputs. Spot-check sample: `R/spotcheck/C.md` (quotes stay there).
 - Runner exit codes, the commit scan command, the spend rules and the lost-root recovery as in TRD 81-14. C has no
