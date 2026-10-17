@@ -132,7 +132,7 @@ Sequencing: 65 releases v1.5 first, so the installed runtime carries the v1.5 co
 - [x] **Objective 78: Remove the rename shims** - The one-release rename shims, migrations 0012/0013, the dual-namespace GitHub readers and the devflow pointer plugin go in 3.1.0, as promised for the release after 3.0.0 (completed 2026-10-17)
 - [ ] **Objective 79: Reconcile and release 3.1.0** - The fix branch (main + quick 34-39), PR #129 and objective 78 meet in one integration branch, the merged tree passes every guard, and 3.1.0 ships through one PR after per-step approval
 - [x] **Objective 80: Adopt migrates legacy projects** - 3.1.0's `/aoforge:adopt` moves a pre-rename `.planning/` project to `.aoforge/` as one recorded change, and adopt runs end to end on fresh, brownfield and legacy repos (completed 2026-10-17)
-- [ ] **Objective 81: Haiku eval and model-efficiency measurement** - 76-06's Haiku 5.5 eval (verifier, job-checker, mapper, researcher, UI judge vs Sonnet on seeded fixtures) and 76-08's 3.0.0 vs 3.1.0 token measurement, run headless in a sandbox under a $100 cap; tier changes only by proposal
+- [x] **Objective 81: Haiku eval and model-efficiency measurement** - 76-06's Haiku 5.5 eval (verifier, job-checker, mapper, researcher, UI judge vs Sonnet on seeded fixtures) and 76-08's 3.0.0 vs 3.1.0 token measurement, run headless in a sandbox under a $100 cap; tier changes only by proposal (completed 2026-10-17)
 
 ### Objective 65: Release v1.5
 
@@ -535,7 +535,7 @@ TRDs:
 - [x] 81-16-live-batch-d-ui-judge-TRD.md — (W6, checkpoint) confirm spend, then batch D live (24 runs, ~$2)
 - [x] 81-17-live-batch-e-3-0-vs-3-1-TRD.md — (W7, checkpoint) confirm spend, pilot pair, then batch E live (10 runs, ~$44); 81-MEASUREMENT.md
 - [x] 81-18-live-batch-c-mapper-researcher-TRD.md — (W8, checkpoint) confirm spend, then batch C live last (48 runs + 48 grader runs, ~$28)
-- [ ] 81-19-report-76-records-and-proposals-TRD.md — (W9, checkpoint:decision) 76-06 report, 76 records and MEF-05/MEF-06 from evidence, tier proposals put to the user (never applied here)
+- [x] 81-19-report-76-records-and-proposals-TRD.md — (W9, checkpoint:decision) 76-06 report, 76 records and MEF-05/MEF-06 from evidence, tier proposals put to the user (never applied here)
 
 ## Progress
 
@@ -563,4 +563,4 @@ TRDs:
 | 78. Remove the rename shims | v1.6 | 12/12 | Complete | 2026-10-17 |
 | 79. Reconcile and release 3.1.0 | v1.6 | 8/10 | In Progress | - |
 | 80. Adopt migrates legacy projects | v1.6 | 9/9 | Complete | 2026-10-17 |
-| 81. Haiku eval and model-efficiency measurement | v1.6 | 18/19 | In Progress | - |
+| 81. Haiku eval and model-efficiency measurement | v1.6 | 19/19 | Complete | 2026-10-17 |
