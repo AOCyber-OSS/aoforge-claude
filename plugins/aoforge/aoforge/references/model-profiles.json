@@ -5,8 +5,7 @@
     "  Messages API for the vision judge. A stale id here is a real runtime defect.",
     "agents{}: agent -> tier per profile. Consumed by aof-tools resolve-model, which",
     "  emits a Task() model ALIAS (opus resolves to 'inherit' so the agent keeps the",
-    "  session model). Keys are canonical without the df- prefix; resolve-model accepts",
-    "  either form (TRD 28-02).",
+    "  session model). Keys are the bare agent names, the only spelling resolve-model reads.",
     "effort is NOT set here: Task() takes no effort argument, so it lives in each",
     "  agent's frontmatter. Note Haiku 4.5 rejects `effort` entirely — do not add it there."
   ],

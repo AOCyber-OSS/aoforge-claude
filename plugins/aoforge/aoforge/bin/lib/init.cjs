@@ -263,19 +263,16 @@ function _buildAwarenessPreview(cwd) {
 }
 
 /**
- * Canonicalise an agent key (TRD 28-02).
+ * The agent key, as given (TRD 28-02, quick 40).
  *
- * Two spellings were in circulation: compound init commands passed `df-planner`
- * while skills calling `aof-tools resolve-model` passed `planner`. Profile keys
- * carried the `df-` prefix, so every un-prefixed call missed the table and fell
- * through to the hard-coded 'sonnet' default — silently, and regardless of the
- * configured profile. Measured in the 2026-08-18 audit: resolve-model returned
- * 'sonnet' with unknown_agent:true for all 7 agents the skills ask about.
- *
- * Profile keys are now canonical WITHOUT the prefix; both spellings resolve.
+ * The table and every caller use the bare agent name (`planner`). TRD 28-02 made
+ * the table bind: its keys had carried the pre-plugin install prefix while the
+ * skills passed bare names, so every lookup fell through to 'sonnet'. Quick 40
+ * removed the prefixed alias that fix kept, so a prefixed name is now an unknown
+ * agent like any other name the table does not hold.
  */
 function normalizeAgentKey(agentType) {
-  return String(agentType || '').replace(/^df-/, '');
+  return String(agentType || '');
 }
 
 /**
@@ -287,7 +284,7 @@ function agentTierMap(config, agentType, focus) {
   const key = normalizeAgentKey(agentType);
   // A stack pack's own agent (`<plugin>:<agent>` or bare) takes its tiers from the pack manifest
   // `models` field (objective 77); core's table names only core agents.
-  let base = MODEL_PROFILES[key] || MODEL_PROFILES[`df-${key}`] || null;
+  let base = MODEL_PROFILES[key] || null;
   if (!base) {
     try {
       const hit = require('./stack-packs.cjs').packAgentTiers(key);
@@ -301,7 +298,7 @@ function agentTierMap(config, agentType, focus) {
     {},
     base || {},
     focusTiers,
-    config.agent_models?.[key] || config.agent_models?.[`df-${key}`] || {}
+    config.agent_models?.[key] || {}
   );
   return Object.keys(merged).length ? merged : null;
 }
@@ -403,13 +400,10 @@ function tierAlias(tier) {
   return tier === 'opus' ? 'inherit' : tier;
 }
 
-/** A project's model_overrides entry for an agent, either spelling (bare wins); undefined when there is none. */
+/** A project's model_overrides entry for an agent, under its bare name; undefined when there is none. */
 function overrideFor(config, key) {
-  const overrides = config.model_overrides || {};
-  for (const k of [key, `df-${key}`]) {
-    const v = overrides[k];
-    if (typeof v === 'string' && v.trim()) return v.trim();
-  }
+  const v = (config.model_overrides || {})[key];
+  if (typeof v === 'string' && v.trim()) return v.trim();
   return undefined;
 }
 
@@ -420,7 +414,7 @@ function overrideFor(config, key) {
 function tierLayer(config, key, focus, agentModels, profile) {
   const picked = agentModels[profile] ? profile : agentModels.balanced ? 'balanced' : null;
   if (!picked) return 'table';
-  const project = config.agent_models?.[key] || config.agent_models?.[`df-${key}`] || {};
+  const project = config.agent_models?.[key] || {};
   if (project[picked]) return 'agent_models';
   const focusTiers = (focus && MODEL_FOCUS[key] && MODEL_FOCUS[key][focus]) || {};
   if (focusTiers[picked]) return 'focus';
@@ -434,7 +428,7 @@ function tierLayer(config, key, focus, agentModels, profile) {
  *   1. --escalate-from <model the attempt ran on>: one rung above it, whatever supplied it      tier_source escalation
  *   2. model_overrides[agent]: a tier, `inherit` or a model id, on every profile and focus, and
  *      for an agent missing from the table too. NOT floored: the explicit escape               tier_source model_overrides
- *   3. the project's agent_models[agent][profile] (bare key wins over `df-`)                   tier_source agent_models
+ *   3. the project's agent_models[agent][profile]                                               tier_source agent_models
  *   4. the focus{} tier for --focus                                                             tier_source focus
  *   5. the package table row, then its `balanced` entry, then `sonnet`                          tier_source table
  * Over 3-5 the verdict floor raises verifier and job-checker to verdict_floor.tier (tier_source verdict_floor).
