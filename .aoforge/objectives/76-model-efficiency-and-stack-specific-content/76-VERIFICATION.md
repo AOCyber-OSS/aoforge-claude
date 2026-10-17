@@ -1,10 +1,18 @@
 ---
 objective: 76-model-efficiency-and-stack-specific-content
 verified: 2026-10-17T00:00:00Z
-status: gaps_found
-score: 5/7 must-haves verified (2 partial; deferred items 76-06 eval and 76-08 measurement excluded, not failures)
+status: passed
+score: 7/7 must-haves verified (deferred items 76-06 Haiku eval and 76-08 measurement stay open by design, not failures)
 retroactive: true
-retroactive_note: "Objective 76 landed on main through plain PRs #132/#133/#134 on 2026-10-16, outside the AOForge flow (no TRDs, SUMMARYs or VERIFICATION carried here). Verified goal-backward against branch integrate/3.1.0 at HEAD a589d306, with quick 34-39 fixes in the tree."
+retroactive_note: "Objective 76 landed on main through plain PRs #132/#133/#134 on 2026-10-16, outside the AOForge flow (no TRDs, SUMMARYs or VERIFICATION carried here). Initially verified goal-backward against integrate/3.1.0 at a589d306; re-verified at 9050bd64 after quick 42 (commits cd389f39..1cb50783) closed SC1 and SC6."
+re_verification:
+  previous_status: gaps_found
+  previous_score: 5/7
+  gaps_closed:
+    - "SC1: no agent spawn in a workflow or skill names a model placeholder its init does not emit"
+    - "SC6: the UI judge escalates one rung on a recorded signal"
+  gaps_remaining: []
+  regressions: []
 deferred:
   - item: "76-06 Haiku 5.5 eval"
     criterion: "SC5 (haiku tier re-pinned after a recorded eval)"
@@ -14,37 +22,19 @@ deferred:
     criterion: "SC6 starting-tier half (debugger / UI judge start on a cheaper tier)"
     state: open
     note: "ROADMAP: starting tiers unchanged pending 76-08; needs real runs after release, not doable in CI. Not a code gap."
-gaps:
-  - truth: "SC1: no agent spawn in a workflow or skill names a model placeholder its init does not emit"
-    status: partial
-    reason: "execute-objective.md has two spawns whose model placeholder is neither emitted by `init execute-objective` (which emits only executor_model and verifier_model) nor resolved anywhere in the workflow or skill. The same defect class TRD 76-01 fixed in build.md."
-    artifacts:
-      - path: "plugins/aoforge/aoforge/workflows/execute-objective.md"
-        issue: "line ~1323 auto_gap_closure spawns subagent_type=planner with model=\"{planner_model}\"; init execute-objective emits no planner_model and the file has no `resolve-model planner`"
-      - path: "plugins/aoforge/aoforge/workflows/execute-objective.md"
-        issue: "line ~910 autonomous human-verify checkpoint spawns the verifier with model=\"{resolved_verifier_model}\", a name defined nowhere (step 3 only defines executor overrides; init emits verifier_model)"
-    missing:
-      - "Resolve the gap-closure planner model (`resolve-model planner --objective N --raw`, or emit planner_model from init execute-objective) and use that name"
-      - "Rename {resolved_verifier_model} to {verifier_model} (or define it)"
-      - "Optional: a repo test that cross-checks every model=\"{x}\" placeholder against the init/resolve-model output its file uses (the ad-hoc scan in this report found exactly these two)"
-  - truth: "SC6: the UI judge escalates one rung on a recorded signal"
-    status: partial
-    reason: "Escalation is wired for the executor (execute-objective 5e) and debugger (/aoforge:debug, diagnose-issues) via `resolve-model --escalate-from`. The UI judge (ui-evaluator, now in aoforge-stack-flutter) has no escalation return and its ui-eval/design-review skills never re-spawn one rung up; `flutter-ui-eval.cjs` 'escalation' is a verdict rule (flake budget -> fail), not a tier change. The 'start cheaper' half is deferred with 76-08; the escalate half for the judge is not implemented."
-    artifacts:
-      - path: "plugins/aoforge-stack-flutter/agents/ui-evaluator.md"
-        issue: "no ESCALATION REQUESTED return"
-      - path: "plugins/aoforge-stack-flutter/skills/ui-eval/SKILL.md"
-        issue: "spawns with resolve-model ui-evaluator but never --escalate-from"
-    missing:
-      - "Either add an escalation return + one-rung re-spawn to the ui-eval/design-review skills, or record that the judge's escalation is folded into 76-08 and reword SC6/MEF-06"
+notes:
+  - kind: requirements_traceability
+    note: "This report now marks MEF-01 and MEF-06 SATISFIED. 76-RETROACTIVE-SUMMARY.md lists only MEF-02..05 in requirements-completed, so `validate requirements --objective 76` (health W065) will flag MEF-01 and MEF-06 until they are added there. REQUIREMENTS.md still shows MEF-01..06 Pending."
+  - kind: escalation_alias
+    note: "resolve-model ui-evaluator --escalate-from sonnet returns model \"inherit\" (opus tier). The skill passes the tier separately as --judge-tier, so the vision calls use the escalated rung whatever the Task alias; the agent itself runs on the parent model, consistent with how the profile table maps opus elsewhere."
 ---
 
 # Objective 76: Model efficiency and stack-specific content Verification Report
 
 **Objective Goal:** Each agent spends top-model tokens only on judgment. The configured tier is the tier that runs, mechanical work runs as aof-tools code, each spawn loads only the instructions it needs, and stack-specific procedure lives in the stack profiles rather than in agent prompts.
-**Verified:** 2026-10-17
-**Status:** gaps_found (two small wiring gaps; deferred items are not counted)
-**Re-verification:** No — retroactive initial verification (objective landed outside the AOForge flow)
+**Verified:** 2026-10-17 (re-verification at HEAD 9050bd64)
+**Status:** passed
+**Re-verification:** Yes — after gap closure by quick 42
 
 ## Goal Achievement
 
@@ -52,26 +42,28 @@ gaps:
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | resolve-model and every init model field honour the objective's model_profile; no spawn omits model= or names an unemitted placeholder; UI judge reads the project profile | PARTIAL | `resolveAgentModel` (init.cjs:444) is the single resolver for resolve-model and init (quick 35); `resolveProfile` binds intent `model_profile` (objective/TRD override, `auto` -> defaults table). Scratch project `model_profile: budget` -> verifier/job-checker sonnet (verdict_floor). UI judge `flutter-ui-eval.cjs:510-517` reads config `model_profile`. build.md now resolves executor/verifier. Scan of 26 typed spawns: only the 3 `general-purpose` hand-offs (build.md:246, discuss-objective.md:468, plan-objective.md:831) lack model=, which the objective scopes out. **Gap:** execute-objective.md `{planner_model}` (gap closure) and `{resolved_verifier_model}` (checkpoint verifier) are not emitted/resolved. |
-| 2 | No spawn carries `@` refs across the Task boundary; mapper/researcher load only their own templates | VERIFIED | Scan of every Task/Agent spawn in skills/ and workflows/: zero `@...md` references inside prompts. codebase-mapper.md:161 per-focus template table; new-project.md:623-782 one `research-project/<DIM>.md` template per researcher spawn. |
-| 3 | `verify trd-pre` runs before the job-checker; mechanical failures go straight to revision; checker covers judgment only | VERIFIED | plan-objective.md:620-640 runs trd-pre before every checker spawn and skips the spawn on mechanical blockers; verify-work.md:536 likewise. job-checker.md Step 4 reads the pre-check, Step 5 "Check the judgment dimensions". `verify trd-pre 79` ran: passed, 5 checks. |
-| 4 | Post-TRD bookkeeping, verifier evidence, codebase facts, roadmap coverage, security sweep are aof-tools commands agents call once | VERIFIED | `trd finalize` (executor.md:864), `verify objective-evidence` (verifier.md:130), `validate roadmap-coverage` (roadmapper.md:471), `codebase facts --focus` (codebase-mapper.md:85), `security sweep --focus` (security-auditor.md:43). All five ran on this repo: evidence 8/10 final SUMMARYs for 79; coverage 41/41; facts and sweep output with `[REDACTED]` values. |
-| 5 | Tiers per focus/dimension; haiku re-pinned after recorded eval; verdicts at Sonnet+ on every profile | VERIFIED (eval DEFERRED) | model-profiles.json `focus{}` (mapper concerns; researcher architecture/pitfalls) and `verdict_floor {tier: sonnet, agents: [verifier, job-checker]}`. `resolve-model codebase-mapper --focus concerns` -> tier_source focus. Haiku pin `claude-haiku-5-5`; the eval itself is 76-06, OPEN by design. |
-| 6 | Debugger and UI judge start cheaper and escalate on a recorded signal; ESCALATION REQUESTED re-spawns one rung up | PARTIAL (start-tier DEFERRED) | `resolve-model debugger --escalate-from sonnet` -> opus, `ceiling:false`; from opus -> `ceiling:true`. execute-objective 5e, skills/debug/SKILL.md:207, diagnose-issues.md:157 act on `## ESCALATION REQUESTED`; debugger.md:569 has the return. **Gap:** no escalation path for the UI judge. Starting tiers unchanged pending 76-08 (deferred). |
-| 7 | Flutter/Go/Dart/web procedure is delivered via profiles/packs; non-Flutter executor/verifier/planner prompts carry none | VERIFIED | Delivered by objective 77 (76-05 superseded). Core executor/verifier/planner contain no Flutter/Dart/Maestro/Playwright procedure; only the decided `mcp__gopls__*`/`mcp__dart__*` grants, the executor's five read-only browser grants (quick 38, guarded by GRANT_ALLOW), and generic `go test` examples in the worktree command-discipline section. `stack context verifier` in a no-pack project emits no Stack packs block. stack-neutrality.repo.test.cjs passes. |
+| 1 | resolve-model and every init model field honour the objective's model_profile; no spawn omits model= or names an unemitted placeholder; UI judge reads the project profile | VERIFIED (was PARTIAL) | execute-objective.md:1315-1317 now resolves `PLANNER_MODEL=$(… resolve-model planner --objective …)` and the gap-closure spawn uses `model="{PLANNER_MODEL}"` (:1331); the autonomous checkpoint verifier spawn uses `model="{verifier_model}"` (:913), which `init execute-objective` emits (:25). `resolve-model planner --objective 76 --raw` -> `inherit`. New guard `model-placeholders.repo.test.cjs` checks every identifier placeholder in core workflows/skills and every stack pack against the file's own `init <cmd>` JSON (run, not parsed), `NAME=$(… resolve-model …)` lines, or a `model-source` annotation: 8/8 pass. **Mutation check:** in a `git archive HEAD` copy under the scratchpad, putting back `{planner_model}` and `{resolved_verifier_model}` makes test 1 fail, naming exactly `execute-objective.md:913 {resolved_verifier_model}` and `:1331 {planner_model}`. The guard is in the `npm test` glob (`plugins/aoforge/**/*.test.cjs`). Quick 42 also fixed 6 more unsupplied placeholders in build.md, new-milestone.md and research-objective.md (guard green). Prior evidence for the single resolver, intent binding and verdict floor stands (regression tests pass). |
+| 2 | No spawn carries `@` refs across the Task boundary; mapper/researcher load only their own templates | VERIFIED (regression) | Unchanged by quick 42; prior scan evidence stands. |
+| 3 | `verify trd-pre` runs before the job-checker; mechanical failures go straight to revision; checker covers judgment only | VERIFIED (regression) | trd-pre-check.test.cjs passes. |
+| 4 | Post-TRD bookkeeping, verifier evidence, codebase facts, roadmap coverage, security sweep are aof-tools commands agents call once | VERIFIED (regression) | mechanical-verbs, codebase-facts, security-sweep tests pass. |
+| 5 | Tiers per focus/dimension; haiku re-pinned after recorded eval; verdicts at Sonnet+ on every profile | VERIFIED (eval DEFERRED) | model-profiles.test.cjs passes; 76-06 open by design. |
+| 6 | Debugger and UI judge start cheaper and escalate on a recorded signal; ESCALATION REQUESTED re-spawns one rung up | VERIFIED (escalation); start-tier DEFERRED (76-08) | Engine: `flutter-ui-eval.cjs` adds `--judge-tier haiku|sonnet|opus` (live only; rejected otherwise, :762-770), `judgeTier()` override (:534), `judgeModel()` uses the override's pinned id, and `judgeEscalation()` (:561) records `tier_escalation {requested, trigger:'split-votes', from_tier, states}` only for a live run whose expect:pass review states had split samples (`flake: true`); credential/network/refusal reviews, labels runs and expect:fail states never request it. Rollup carries `judge_tier` and `tier_escalation` (:993, :1006). Agent: ui-evaluator.md `escalate` step (:88-92) returns `## ESCALATION REQUESTED` with `Judge tier: {from_tier}` (:113-129); a `<prior_attempt>` re-spawn re-scores with `--judge-tier` and never escalates again; design-review is excluded. Skill: ui-eval/SKILL.md:80-95 calls `resolve-model ui-evaluator --escalate-from "{Judge tier}"`, re-spawns once with the result's model and `--judge-tier {tier}`, stops at `ceiling: true`, `unknown_agent: true` or a second escalation; inline runs follow the same rule. CLI check with the Flutter pack mirrored (`AOFORGE_STACKS_DIR` scratch copy): base `sonnet`; `--escalate-from haiku` -> sonnet, `ceiling:false`; `sonnet` -> opus (`inherit`), `ceiling:false`; `opus` -> `ceiling:true`. Without the pack mirrored, resolve-model reports `unknown_agent: true`, which the skill handles. Tests E1-E4e (flutter-ui-eval.test.cjs) and J1-J6 (flutter-ui-eval-dogfood.test.cjs) pass. Debugger/executor escalation from the prior report stands. |
+| 7 | Flutter/Go/Dart/web procedure is delivered via profiles/packs; non-Flutter executor/verifier/planner prompts carry none | VERIFIED (regression) | stack-neutrality.repo.test.cjs passes; quick 42's judge changes live in the Flutter pack, not core prompts. |
 
-**Score:** 5/7 truths verified (SC1 and SC6 partial)
+**Score:** 7/7 truths verified (the 76-06 eval and the 76-08 starting-tier measurement remain deferred, not counted as failures)
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `plugins/aoforge/aoforge/bin/lib/init.cjs` | resolveAgentModel / resolveProfile / escalation | VERIFIED | single resolver, tier_source provenance |
+| `plugins/aoforge/aoforge/bin/lib/init.cjs` | resolveAgentModel / resolveProfile / escalation / pack agent tiers | VERIFIED | packAgentTiers lookup for ui-evaluator confirmed |
 | `plugins/aoforge/aoforge/references/model-profiles.json` | focus{}, verdict_floor, model pins | VERIFIED | |
-| `plugins/aoforge/aoforge/bin/lib/trd-pre-check.cjs` | mechanical checker dimensions | VERIFIED | wired from plan-objective and verify-work |
-| `.../lib/trd-finalize.cjs`, `objective-evidence.cjs`, `roadmap-coverage.cjs`, `codebase-facts.cjs`, `security-sweep.cjs` | mechanical verbs | VERIFIED | all run; agents call them |
-| `plugins/aoforge/aoforge/workflows/execute-objective.md` | every spawn has a resolvable model | PARTIAL | two unresolved placeholders (see gaps) |
-| `plugins/aoforge-stack-flutter/lib/flutter-ui-eval.cjs` | judge reads project profile | VERIFIED | escalation not present (SC6 gap) |
+| `plugins/aoforge/aoforge/workflows/execute-objective.md` | every spawn has a resolvable model | VERIFIED (was PARTIAL) | :913 `{verifier_model}`, :1317/:1331 `PLANNER_MODEL` |
+| `plugins/aoforge/aoforge/bin/lib/model-placeholders.repo.test.cjs` | CI guard for unsupplied placeholders | VERIFIED | 8/8; non-vacuous (mutation check fails it) |
+| `plugins/aoforge-stack-flutter/lib/flutter-ui-eval.cjs` | judge reads profile; `--judge-tier`; `tier_escalation` | VERIFIED | |
+| `plugins/aoforge-stack-flutter/agents/ui-evaluator.md` | `## ESCALATION REQUESTED` return | VERIFIED | escalate step + output block |
+| `plugins/aoforge-stack-flutter/skills/ui-eval/SKILL.md` | one-rung re-spawn | VERIFIED | `--escalate-from`, once, ceiling/unknown_agent handled |
+| `.aoforge/objectives/76-…/76-RETROACTIVE-SUMMARY.md` | objective-level requirements record | VERIFIED | lists MEF-02..05; `validate requirements --objective 76` -> no findings at this HEAD |
 
 ### Key Link Verification
 
@@ -82,57 +74,46 @@ gaps:
 | plan-objective.md | job-checker | trd-pre JSON in prompt | WIRED |
 | executor / verifier / roadmapper / mapper / auditor | mechanical verbs | Bash calls in agent bodies | WIRED |
 | debugger `## ESCALATION REQUESTED` | re-spawn one rung up | resolve-model --escalate-from | WIRED |
-| ui-evaluator | escalation | — | NOT_WIRED |
-| execute-objective gap-closure planner | planner model | `{planner_model}` | NOT_WIRED |
+| flutter-ui-eval live split votes | ui-evaluator | rollup `tier_escalation` | WIRED (was NOT_WIRED) |
+| ui-evaluator `## ESCALATION REQUESTED` | /aoforge:ui-eval re-spawn | resolve-model ui-evaluator --escalate-from + `--judge-tier` | WIRED (was NOT_WIRED) |
+| execute-objective gap-closure planner | planner model | `PLANNER_MODEL=$(resolve-model planner --objective …)` | WIRED (was NOT_WIRED) |
+| execute-objective checkpoint verifier | verifier model | init `verifier_model` | WIRED (was NOT_WIRED) |
 
 ### Requirements Coverage
 
 | Requirement | Description | Status | Evidence |
 |-------------|-------------|--------|----------|
-| MEF-01 | configured tier runs; every spawn passes an emitted model; judge reads profile | PARTIAL | SC1 gap |
+| MEF-01 | configured tier runs; every spawn passes an emitted model; judge reads profile | SATISFIED (was PARTIAL) | SC1; placeholder guard |
 | MEF-02 | no unusable instructions/templates per spawn | SATISFIED | SC2 |
 | MEF-03 | trd-pre before checker | SATISFIED | SC3 |
 | MEF-04 | mechanical verbs | SATISFIED | SC4 |
 | MEF-05 | per-focus tiers, verdict floor, haiku re-pin after eval | SATISFIED except deferred eval (76-06) | SC5 |
-| MEF-06 | debugger and UI judge start cheap and escalate | PARTIAL | debugger done; judge not wired; start tiers deferred (76-08) |
+| MEF-06 | debugger and UI judge start cheap and escalate; orchestrators act on ESCALATION REQUESTED | SATISFIED for escalation; start-tier lowering deferred (76-08) | SC6 |
 
-REQUIREMENTS.md still lists MEF-01..06 as Pending; updating traceability is the orchestrator's call.
-
-### Defects found by the 2026-10-16 end-to-end test and closed by quick tasks
-
-| Quick | Defect (76 surface) | Closed? | Evidence on this tree |
-|-------|---------------------|---------|-----------------------|
-| 34 | `security sweep` copied secret bodies into transcripts; regex rows backtracked catastrophically; missing `--root` reported clean | CLOSED | sweep output shows `[REDACTED]`; security-sweep.test.cjs passes |
-| 35 | `agent_models` / `model_overrides` ignored by resolve-model and init | CLOSED | resolveAgentModel with tier_source; model-profiles/config/init tests pass |
-| 35 | no-progress guard matcher missed MCP and several tools | CLOSED | hooks.json `^(?!Bash$).*`; pre-bash and hook-coexistence tests pass |
-| 35 | `state advance-job` archive rows not committed in worktrees | CLOSED | state-archive-commit.repo.test.cjs passes |
-| 36 | `validate roadmap-coverage` own regex: false orphans/false mapped | CLOSED | shared parser; ran 41/41 on this repo |
-| 36 | `verify objective-evidence` counted checkpoint SUMMARYs as done | CLOSED | evidence reports "final SUMMARY"; mechanical-verbs tests pass |
-| 36 | `trd finalize` re-run duplicated archive rows | CLOSED | record-metric upsert, add-decision dedupe; tests pass |
-| 36 | planning verbs wrote the main checkout from a worktree | CLOSED | resolveVerbRoot; planning-verbs-worktree.test.cjs passes |
-| 37 | Sonnet 5.5 cache-read rate $0.20 (should be $0.10) | CLOSED | model-rates.json claude-sonnet-5-5 cache_read 0.1, as_of 2026-10-16 |
+76-RETROACTIVE-SUMMARY.md `requirements-completed` lists MEF-02..05 only. MEF-01 and MEF-06 must be added there, or the requirements-agreement check (W065) will flag them against this report. REQUIREMENTS.md traceability (all six still Pending) is the orchestrator's call.
 
 ### Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
 |------|------|---------|----------|--------|
-| execute-objective.md | ~1323, ~910 | model placeholder with no source | Warning | spawn may run on an empty or guessed model |
-| execute-objective.md | ~380-385 | complexity rule hard-codes sonnet/opus for executor | Info | pre-existing; bypasses profile for simple/complex TRDs (documented behaviour, not new) |
-| security-sweep.cjs | 37 | SKIP_DIRS does not skip gitignored `.claude/` worktrees | Info | 103 duplicate hits from `.claude/worktrees/agent-*` on this repo; noise, values redacted |
+| execute-objective.md | ~380-385 | complexity rule hard-codes sonnet/opus for executor | Info | pre-existing, documented behaviour (carried from the prior report) |
+| security-sweep.cjs | 37 | SKIP_DIRS does not skip gitignored `.claude/` worktrees | Info | duplicate redacted hits; noise (carried) |
+
+The two placeholder warnings from the prior report are resolved.
 
 ### Functional Verification
 
-_Skipped (UI): not a UI objective; runtime is the aof-tools CLI._ CLI exercised in a scratch project under the session scratchpad with a scratch HOME (resolve-model across profiles, focus and escalation; trd-pre; objective-evidence; roadmap-coverage; codebase facts; security sweep). Targeted test run: 851/851 pass (model-profiles, mechanical-verbs, stack-packs, stack-neutrality, trd-pre-check, security-sweep, codebase-facts, changelog, state-archive-commit, planning-verbs-worktree, init, config, changelog-on-tag, pre-bash, hook-coexistence, flutter pack lib, release-tag, tag-rules).
+_UI drive skipped: not a UI objective; runtime is the aof-tools CLI. No server started._ CLI exercised with a scratch HOME under the session scratchpad: `resolve-model planner --objective 76`, `resolve-model ui-evaluator` with and without the Flutter pack mirrored (`AOFORGE_STACKS_DIR` scratch copy), `--escalate-from haiku|sonnet|opus`, `validate requirements --objective 76`. Targeted tests: 172/172 (model-placeholders, flutter-ui-eval, flutter-ui-eval-dogfood, benchmark, requirements-agreement, validate-requirements, model-profiles) and 545/545 regression (codebase-facts, config, init, mechanical-verbs, model-profiles, security-sweep, stack-neutrality, stack-packs, trd-pre-check, all Flutter pack lib tests). Guard mutation check run in a `git archive` copy; the checkout was not modified.
 
 ### Human Verification Required
 
-None beyond the deferred measurement items (76-06 Haiku eval, 76-08 before/after `context` / `tokens trd` comparison on real runs).
+None beyond the deferred measurement items (76-06 Haiku eval; 76-08 before/after `context` / `tokens trd` comparison on real runs, which is also where the debugger and UI judge starting tiers would be lowered).
 
 ### Gaps Summary
 
-The objective's mechanisms are real and wired: one resolver binds the intent profile and overrides, the verdict floor and focus tiers apply, trd-pre runs before the checker, the five mechanical verbs exist and agents call them, spawns carry no dead `@` lists, and stack procedure left the core prompts. Two small gaps remain. (1) execute-objective.md still has two spawns whose model placeholders nothing produces: the gap-closure planner (`{planner_model}`) and the autonomous checkpoint verifier (`{resolved_verifier_model}`), the same defect class 76-01 fixed in build.md. (2) The UI judge has no escalation path, so MEF-06 holds only for the executor and debugger. The Haiku eval (76-06) and the measurement that would lower starting tiers (76-08) are OPEN by design and are recorded as deferred, not as failures.
+Both gaps from the retroactive verification are closed in code and tests. Execute-objective's gap-closure planner and autonomous checkpoint verifier now spawn with a model the workflow actually supplies. A repo test runs every `init` command named in the scanned files and fails CI on any placeholder with no source; it catches these two defects when they are put back. The UI judge now escalates one rung: the engine records a split-vote `tier_escalation`, ui-evaluator returns `## ESCALATION REQUESTED`, and `/aoforge:ui-eval` re-spawns it once with `--escalate-from` and `--judge-tier`. No regressions in the five truths that already passed. The Haiku eval (76-06) and the starting-tier measurement (76-08) stay open by design.
 
 ---
 
-_Verified: 2026-10-17 (retroactive)_
+_Verified: 2026-10-17 (re-verification after quick 42)_
 _Verifier: Claude (verifier)_
