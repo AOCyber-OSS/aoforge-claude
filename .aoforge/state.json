@@ -1905,6 +1905,16 @@
       "objective": "81",
       "summary": "81-04: test B sets are TRD data rendered by one function; only B4 is flagged by verify trd-pre (task_completeness 02-02), B3/B5/B6 are judgment-only, recorded as precheck_flags in answer-key.json",
       "rationale": null
+    },
+    {
+      "objective": "81",
+      "summary": "81-05: 390 px test D states are captured through a 390x844 iframe wrapper because headless=new Chrome clamps its window to 500 px wide",
+      "rationale": null
+    },
+    {
+      "objective": "81",
+      "summary": "81-05: test D shown states.json carries no label word (expected text reworded from 74's overlaps/blank); labels.json holds the key; min_share = max(0.05, floor(0.9 x measured)) per region, never below 0.05",
+      "rationale": null
     }
   ],
   "blockers": [

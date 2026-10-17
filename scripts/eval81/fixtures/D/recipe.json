@@ -1,0 +1,136 @@
+{
+  "batch": "D",
+  "note": "How every test D image was made (TRD 81-05). Captures only: no generated images. Never shown to the judge (it names the defect injected into each broken state). Ids d01..d20 were assigned by a fixed seeded shuffle (mulberry32, seed 81) of the logical state list, so the order is neither ok-first nor grouped by surface.",
+  "port": 8091,
+  "site_commit": "8ba149b6bd7610e61e13ed04a8abc78577ed61ff",
+  "tools": {
+    "hugo": "hugo v0.168.0+extended+withdeploy darwin/arm64",
+    "chrome": "Google Chrome 155.0.8059.85",
+    "python": "Python 3.14.3"
+  },
+  "build": "hugo --source site --minify --baseURL http://127.0.0.1:8091/ --destination <scratch>/site-8091",
+  "serve": "python3 -m http.server 8091 --bind 127.0.0.1 --directory <scratch>/site-8091",
+  "capture": "Google Chrome --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=W,H --screenshot=<png> <url>. Headless=new clamps its window to 500 px wide, so the 390 px states load their page inside one 390x844 iframe on a wrapper page (media queries then see 390 px).",
+  "history_commit": "7a2a07ee0678bf7ccadf2653bd6c4750ce279eb3",
+  "states": [
+    {
+      "id": "d01",
+      "url": "/docs/guides/ui-eval/",
+      "viewport": { "width": 1280, "height": 800 },
+      "css": ".content{visibility:hidden !important}"
+    },
+    {
+      "id": "d02",
+      "url": "/docs/commands/",
+      "viewport": { "width": 1280, "height": 800 },
+      "css": ""
+    },
+    {
+      "id": "d03",
+      "url": "/docs/troubleshooting/",
+      "viewport": { "width": 1280, "height": 800 },
+      "css": "h2{height:50px !important;overflow:hidden !important}"
+    },
+    {
+      "id": "d04",
+      "url": "/docs/troubleshooting/",
+      "viewport": { "width": 1280, "height": 800 },
+      "css": ".content{margin-left:330px !important}"
+    },
+    {
+      "id": "d05",
+      "url": "/",
+      "viewport": { "width": 1280, "height": 800 },
+      "css": ".hero{overflow:visible !important}.hero-inner{position:relative !important;top:-140px !important;z-index:100 !important}"
+    },
+    {
+      "id": "d06",
+      "url": "/docs/guides/ui-eval/",
+      "viewport": { "width": 390, "height": 844 },
+      "css": ".highlight pre{width:max-content !important;min-width:150% !important;max-width:none !important;overflow:visible !important;font-size:17px !important}.page-head .lede,.content>p{white-space:nowrap !important}"
+    },
+    {
+      "id": "d07",
+      "url": "/docs/troubleshooting/",
+      "viewport": { "width": 1280, "height": 800 },
+      "css": "body::after{content:\"\";position:fixed;left:640px;right:0;top:60px;bottom:0;background:#fff;z-index:60}"
+    },
+    {
+      "id": "d08",
+      "url": "/",
+      "viewport": { "width": 1280, "height": 800 },
+      "css": ".hero .lede,.hero .microlabel,.install div{color:#454545 !important}"
+    },
+    {
+      "id": "d09",
+      "history": "7a2a07ee:scripts/__fixtures__/visual-judge/docs-home.png",
+      "viewport": { "width": 1280, "height": 800 }
+    },
+    {
+      "id": "d10",
+      "url": "/docs/troubleshooting/",
+      "viewport": { "width": 1280, "height": 800 },
+      "css": ""
+    },
+    {
+      "id": "d11",
+      "url": "/docs/commands/",
+      "viewport": { "width": 1280, "height": 800 },
+      "css": ".site-header{position:fixed !important;top:130px !important;left:0 !important;right:0 !important}"
+    },
+    {
+      "id": "d12",
+      "url": "/docs/commands/",
+      "viewport": { "width": 1280, "height": 800 },
+      "css": "tbody td,td code{color:#3c3c3c !important}"
+    },
+    {
+      "id": "d13",
+      "url": "/docs/commands/",
+      "viewport": { "width": 1280, "height": 800 },
+      "css": "",
+      "strip_stylesheets": true
+    },
+    {
+      "id": "d14",
+      "url": "/docs/commands/",
+      "viewport": { "width": 1280, "height": 800 },
+      "css": ".table-wrap{overflow:visible !important}table{width:max-content !important}td,th{white-space:nowrap !important}"
+    },
+    {
+      "id": "d15",
+      "history": "7a2a07ee:scripts/__fixtures__/visual-judge/docs-home-broken.png",
+      "viewport": { "width": 1280, "height": 800 }
+    },
+    {
+      "id": "d16",
+      "url": "/",
+      "viewport": { "width": 1280, "height": 800 },
+      "css": ""
+    },
+    {
+      "id": "d17",
+      "url": "/docs/guides/ui-eval/",
+      "viewport": { "width": 1280, "height": 800 },
+      "css": ".sidebar{position:relative !important;top:0 !important;left:40px !important}"
+    },
+    {
+      "id": "d18",
+      "url": "/docs/guides/ui-eval/",
+      "viewport": { "width": 390, "height": 844 },
+      "css": ""
+    },
+    {
+      "id": "d19",
+      "url": "/docs/guides/ui-eval/",
+      "viewport": { "width": 1280, "height": 800 },
+      "css": ""
+    },
+    {
+      "id": "d20",
+      "url": "/docs/troubleshooting/",
+      "viewport": { "width": 390, "height": 844 },
+      "css": ""
+    }
+  ]
+}

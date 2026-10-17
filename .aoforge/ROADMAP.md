@@ -521,7 +521,7 @@ TRDs:
 - [ ] 81-02-decision-rule-stats-and-report-TRD.md — (W1, TDD) pre-registered decision rule committed first; Wilson intervals, decide() and proposals; score CLI; 76-06 report renderer
 - [x] 81-03-verifier-fixtures-a-TRD.md — (W1) six verifier fixture repos (3 clean, stub / never-wired / missing-file twins), answer key, planted-defect proofs
 - [ ] 81-04-job-checker-fixtures-b-TRD.md — (W1) six TRD sets (2 clean; same-wave overlap, missing verify, later-wave dependency, uncovered criterion), answer key, proofs with the trd-pre view
-- [ ] 81-05-ui-judge-fixtures-d-TRD.md — (W1) ~20 labelled docs-site screenshots on 4 surfaces (Hugo, Chrome, port 8091; 74's pair from 7a2a07ee), PNG decoder, region-diff proofs
+- [x] 81-05-ui-judge-fixtures-d-TRD.md — (W1) ~20 labelled docs-site screenshots on 4 surfaces (Hugo, Chrome, port 8091; 74's pair from 7a2a07ee), PNG decoder, region-diff proofs
 - [ ] 81-06-mapper-researcher-fixtures-c-TRD.md — (W1) synthetic Go codebase and checklists, private fleet-copy checklists committed by hash, research topic and checklists, blind grader prompt
 - [ ] 81-07-static-resident-prompt-comparison-TRD.md — (W1, TDD) static resident-prompt bytes per spawn, 3.0.0 vs 3.1.0 (free half of 76-08)
 - [ ] 81-08-harness-runner-sandbox-dry-run-TRD.md — (W2, TDD) sandbox HOME, runtime pre-mirror, plugin trees, `claude -p --agent`, resumable queue, rate-limit pause, budget stop, tripwire, zero-API dry run

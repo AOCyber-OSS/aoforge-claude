@@ -646,6 +646,8 @@ STATE.md stays lean; this file grows over time.
 - [Objective 80]: 80-09: the legacy-adopt fixture constant is LEGACY_EXCLUDE_LINE, because repo-state-delegation forbids any declaration starting with the EXCLUDE token outside repo-state.cjs
 - [Objective 81]: 81-03: test A fixtures are string literals in a builder, materialised to temp dirs; commit author is Project Author because the word fixture must not appear in the repo
 - [Objective 81]: 81-04: test B sets are TRD data rendered by one function; only B4 is flagged by verify trd-pre (task_completeness 02-02), B3/B5/B6 are judgment-only, recorded as precheck_flags in answer-key.json
+- [Objective 81]: 81-05: 390 px test D states are captured through a 390x844 iframe wrapper because headless=new Chrome clamps its window to 500 px wide
+- [Objective 81]: 81-05: test D shown states.json carries no label word (expected text reworded from 74's overlaps/blank); labels.json holds the key; min_share = max(0.05, floor(0.9 x measured)) per region, never below 0.05
 
 ## Performance Metrics
 
@@ -890,3 +892,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 80 P09 | 24min | 3 tasks | 8 files |
 | Objective 81 P03 | 12min | 2 tasks | 3 files |
 | Objective 81 P04 | 15min | 2 tasks | 3 files |
+| Objective 81 P05 | 12min | 3 tasks | 27 files |
