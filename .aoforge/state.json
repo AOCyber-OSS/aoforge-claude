@@ -1,6 +1,6 @@
 {
   "current_objective": "81",
-  "current_job": 13,
+  "current_job": 14,
   "total_jobs": 19,
   "progress_pct": 99,
   "status": "executing",
@@ -1944,6 +1944,21 @@
     {
       "objective": "81",
       "summary": "81-13: caps and batch caps not amended; A and B risk INSUFFICIENT above 1.17x and 1.10x of their estimates; options in 81-PREREG.md section 5 for the batch-A checkpoint",
+      "rationale": null
+    },
+    {
+      "objective": "81",
+      "summary": "81-14 post-hoc 1: init-tools check accepts CLI 2.1.302 naming (Agent=Task, Grep/Glob via Bash, Edit with Write); first run re-keyed to @attempt1 and re-run (user: relax, re-run)",
+      "rationale": null
+    },
+    {
+      "objective": "81",
+      "summary": "81-14 post-hoc 2: batch caps A 10, B 10, D 5, E 55, C remainder (>= $20) from the A pilot; C decisions frozen (fleet backup out of R, project-researcher, negated claims exempt from the path check)",
+      "rationale": null
+    },
+    {
+      "objective": "81",
+      "summary": "81-14 batch A: haiku and sonnet both at ceiling (detection 9/9, false pass 0/9, false fail 0/9); A gate established with 0 Haiku false passes; $2.69 spent",
       "rationale": null
     }
   ],
