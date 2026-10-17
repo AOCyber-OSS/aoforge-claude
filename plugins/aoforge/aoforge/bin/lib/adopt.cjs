@@ -1087,6 +1087,7 @@ function report(root, opts = {}) {
   if (pf.route !== 'resume') {
     return { ...pf };
   }
+  if (markerMode(pf.adopt.marker) === 'migrate') return reportMigrate(pf, opts);
   if (!pf.adopt.steps || !pf.adopt.steps.scaffolded) {
     throw new Error('run adopt scaffold first');
   }
@@ -1405,6 +1406,373 @@ function scaffoldMigrate(pf, opts) {
     converted: convertedCount(done),
     changes: done,
     migration: marker.migration,
+    marker,
+  };
+}
+
+// ─── the migrate route: report and the one recorded change (TRD 80-03) ──────
+//
+// report() on a migrate adopt writes ADOPT-REPORT.md and returns what the workflow commits. Unlike the fresh report
+// it reads no inference, redacts nothing and writes no STACK-REPORT: it adds no planning content. It lists the
+// migration (the record scaffold kept), the health findings of each planning root, the upgrade migrations still
+// pending, and a compact `commit_files` (a directory entry per moved tree, never thousands of paths) so that
+// `aof-tools commit <commit_message> --files <commit_files>` records the whole change as one commit.
+
+const TRANSIENT_BASENAMES = new Set(['.skill-active', INFERENCES_FILE, NAMES.notices]);
+const LEGACY_CODES = [layout.CODE, layout.CONFIG_CODE, layout.CLAUDE_MD_CODE];
+const REVIEW_RANK = { priority: 0, low: 1, medium: 2 };
+
+/** Entries of `git status --porcelain=v1 -z`: [{ xy, path }], a rename giving both its paths. */
+function parsePorcelainEntries(out) {
+  const parts = out.split('\0');
+  const entries = [];
+  for (let i = 0; i < parts.length; i++) {
+    const entry = parts[i];
+    if (!entry || entry.length < 4) continue;
+    const xy = entry.slice(0, 2);
+    entries.push({ xy, path: entry.slice(3) });
+    if (/[RC]/.test(xy) && i + 1 < parts.length) entries.push({ xy, path: parts[++i] });
+  }
+  return entries;
+}
+
+function statusEntries(root, env) {
+  const r = git(root, env, ['status', '--porcelain=v1', '--untracked-files=all', '-z']);
+  return r.ok ? parsePorcelainEntries(r.out) : [];
+}
+
+/** The directories (posix, relative to the root) a tracked move covers: where it was and where it went. */
+function trackedMoveDirs(marker) {
+  return markerMoves(marker).filter((mv) => mv.tracked).flatMap((mv) => [mv.from, mv.to]);
+}
+
+const dirCovering = (dirs, rel) => dirs.find((dir) => rel === dir || rel.startsWith(`${dir}/`));
+
+/** This repository's local exclude file: { rel, abs } (rel is the display path), or null. */
+function excludeFileOf(root, env) {
+  const r = git(root, env, ['rev-parse', '--git-path', 'info/exclude']);
+  if (!r.ok || !r.out.trim()) return null;
+  const abs = path.resolve(root, r.out.trim());
+  const rel = path.relative(root, abs).split(path.sep).join('/');
+  return { rel: rel.startsWith('..') ? abs : rel, abs };
+}
+
+/**
+ * `git add <moved tree>` sweeps untracked files that are not ignored. A runtime file inside a moved tree (the skill
+ * marker, an inference file, the notices file) must not ride along, so each one is added to the local, never
+ * committed `.git/info/exclude`. -> { file, added: [lines] }
+ */
+function excludeTransients(root, env, marker) {
+  const dirs = trackedMoveDirs(marker);
+  const lines = statusEntries(root, env)
+    .filter((e) => e.xy === '??' && dirCovering(dirs, e.path) && TRANSIENT_BASENAMES.has(path.posix.basename(e.path)))
+    .map((e) => `/${e.path}`);
+  const ex = lines.length > 0 ? excludeFileOf(root, env) : null;
+  if (!ex) return { file: null, added: [] };
+  let text = '';
+  try { text = fs.readFileSync(ex.abs, 'utf-8'); } catch { /* a missing file is created */ }
+  const have = new Set(text.split('\n'));
+  const added = lines.filter((line) => !have.has(line));
+  if (added.length > 0) {
+    fs.mkdirSync(path.dirname(ex.abs), { recursive: true });
+    fs.writeFileSync(ex.abs, `${text}${text && !text.endsWith('\n') ? '\n' : ''}${added.join('\n')}\n`, 'utf-8');
+  }
+  return { file: ex.rel, added };
+}
+
+/**
+ * The paths the one commit names, sorted: a directory entry per tracked moved tree (both its old and new names, so the
+ * commit records the deletions and the additions), and any other changed path the migration owns (a `.gitignore`, a
+ * CLAUDE.md, a file in a planning directory that did not move) by name, minus runtime files. An untracked moved tree
+ * contributes nothing: git knows no path under either name, and an unknown pathspec fails the whole commit.
+ */
+function computeMigrateCommitFiles(root, env, marker) {
+  const dirs = trackedMoveDirs(marker);
+  const files = new Set();
+  for (const e of statusEntries(root, env)) {
+    const dir = dirCovering(dirs, e.path);
+    if (dir) files.add(dir);
+    else if (legacyMigrate.ownsMigratePath(e.path) && !TRANSIENT_BASENAMES.has(path.posix.basename(e.path))) files.add(e.path);
+  }
+  return [...files].sort();
+}
+
+/** `validate health` and the in-process legacy detectors at each planning root -> { rows, codes, found }. */
+function migrateHealth(target, env, roots) {
+  const rows = [];
+  const codes = [];
+  const addCode = (dir, code) => {
+    if (!codes.some((c) => c.root === dir && c.code === code)) codes.push({ root: dir, code });
+  };
+  let found = false;
+
+  for (const dir of roots) {
+    const prefix = dir ? `${dir}/: ` : '';
+    const health = runValidateHealth(absRoot(target, dir), env);
+    if (!health) {
+      rows.push({
+        confidence: 'priority',
+        item: `${prefix}health not checked`,
+        inferred: 'validate health could not be run or read for this planning root',
+        evidence: `${NAMES.cli} --cwd ${dir || '.'} validate health`,
+      });
+      continue;
+    }
+    const errors = Array.isArray(health.errors) ? health.errors : [];
+    const warnings = Array.isArray(health.warnings) ? health.warnings : [];
+    for (const e of errors) {
+      found = true;
+      rows.push({ confidence: 'priority', item: `${prefix}validate health error ${e.code}`, inferred: e.message, evidence: e.fix || '(no fix suggested)' });
+    }
+    for (const w of warnings) {
+      found = true;
+      rows.push({ confidence: 'low', item: `${prefix}validate health warning ${w.code}`, inferred: w.message, evidence: w.fix || '(no fix suggested)' });
+    }
+    for (const x of [...errors, ...warnings]) if (LEGACY_CODES.includes(x.code)) addCode(dir, x.code);
+  }
+
+  // The same three detectors in-process: they cover a root `validate health` was not run at (CLAUDE.md of a
+  // repository with nested trees only) and a root where it could not run.
+  for (const dir of [...new Set(['', ...roots])]) {
+    const rootAbs = absRoot(target, dir);
+    for (const issue of [layout.legacyPlanningIssue(rootAbs), layout.legacyConfigKeyIssue(rootAbs), layout.legacyClaudeMdIssue(rootAbs)]) {
+      if (issue) addCode(dir, issue.code);
+    }
+  }
+  codes.sort((a, b) => byRoot(a.root, b.root) || (a.code < b.code ? -1 : a.code > b.code ? 1 : 0));
+  return { rows, codes, found };
+}
+
+/** Pending upgrade migrations at each planning root, as review rows (the report never applies them). */
+function pendingUpgradeRows(target, roots, { userHome, pluginVersion }) {
+  const rows = [];
+  const pending = [];
+  for (const dir of roots) {
+    const prefix = dir ? `${dir}/: ` : '';
+    let chk;
+    try {
+      chk = upgrade.check({ projectRoot: absRoot(target, dir), userHome, pluginVersion });
+    } catch (e) {
+      rows.push({ confidence: 'low', item: `${prefix}upgrade migrations not checked`, inferred: e && e.message ? e.message : String(e), evidence: `${NAMES.cli} upgrade --check` });
+      continue;
+    }
+    const auto = chk.pending.map((p) => p.id);
+    const confirm = chk.pending_confirm.map((p) => p.id);
+    if (auto.length > 0) {
+      rows.push({
+        confidence: 'low',
+        item: `${prefix}${plural(auto.length, 'automatic upgrade migration')} pending (${auto.join(', ')})`,
+        inferred: `applied by the next session start, or by ${NAMES.cli} upgrade --apply`,
+        evidence: `${NAMES.cli} upgrade --check`,
+      });
+    }
+    if (confirm.length > 0) {
+      rows.push({
+        confidence: 'low',
+        item: `${prefix}${plural(confirm.length, 'upgrade migration')} need${confirm.length === 1 ? 's' : ''} confirmation (${confirm.join(', ')})`,
+        inferred: 'a confirm-level migration is never applied unattended',
+        evidence: `${NAMES.commandNs}status check --migrate`,
+      });
+    }
+    pending.push({ root: dir, pending: auto, pending_confirm: confirm });
+  }
+  return { rows, pending };
+}
+
+/** True when git would ignore `rel` (a path git tracks is never ignored). */
+const isGitIgnored = (root, env, rel) => git(root, env, ['check-ignore', '-q', '--', rel]).ok;
+
+/**
+ * Why the commit must not be made as listed, or null. A pre-rename leftover (`legacyCodes`) means scaffold did not
+ * finish the conversion. With `planning.commit_docs` false, `aof-tools commit` skips the planning paths it is given,
+ * so a tracked moved tree (or the report) would be committed as deletions only.
+ */
+function migrateCommitBlock(target, env, marker, legacyCodes) {
+  if (legacyCodes.length > 0) {
+    return {
+      reason: 'legacy-layout-remains',
+      message: `the pre-rename layout is still present after scaffold (${legacyCodes.map((c) => `${c.code} at ${c.root || '.'}`).join(', ')}); `
+        + 'committing now would record a half-migrated project',
+      fix: `run ${NAMES.cli} validate health at each root named, fix what it reports, then run adopt scaffold and adopt report again`,
+    };
+  }
+  if (loadConfig(target).commit_docs !== false) return null;
+  const reportRel = marker.report_path;
+  const planned = PLANNING_DIR_NAMES.some((dir) => reportRel === dir || reportRel.startsWith(`${dir}/`));
+  const reportCommitted = planned && !isGitIgnored(target, env, reportRel);
+  if (!markerMoves(marker).some((mv) => mv.tracked) && !reportCommitted) return null;
+  const configRel = planningRel(target, 'config.json');
+  return {
+    reason: 'commit-docs-false',
+    message: `${NAMES.cli} commit skips planning paths while planning.commit_docs is false in ${configRel}, so the move would be committed `
+      + `without its planning files; set planning.commit_docs to true in ${configRel}, or record the staged move yourself`,
+    fix: `set planning.commit_docs to true in ${configRel}, then run adopt report again`,
+  };
+}
+
+/**
+ * The previous ADOPT-REPORT.md, as bytes: the one HEAD holds at the path the move came from (or the report path
+ * itself when nothing moved), else a file already on disk that this adopt did not write (kept in the record so a
+ * re-run renders the same file). -> string | null
+ */
+function previousReport(target, env, marker, record) {
+  if (typeof record.previous === 'string') return record.previous;
+  const reportRel = marker.report_path;
+  const treeDir = path.posix.dirname(reportRel);
+  const moved = markerMoves(marker).find((mv) => mv.to === treeDir);
+  const head = git(target, env, ['show', `HEAD:${moved ? `${moved.from}/${REPORT_FILE}` : reportRel}`]);
+  if (head.ok) return head.out;
+  if (!(marker.steps && marker.steps.reported)) {
+    const onDisk = safeReadFile(path.join(target, ...reportRel.split('/')));
+    if (onDisk !== null) {
+      record.previous = onDisk;
+      return onDisk;
+    }
+  }
+  return null;
+}
+
+function renderMigrateReview(rows) {
+  return rows.length === 0 ? 'Nothing needs review.\n' : renderNeedsReviewTable(rows);
+}
+
+function migrateDidLines(record) {
+  const moves = record.moves || [];
+  const gitMoves = moves.filter((mv) => mv.via === 'git mv').length;
+  const renames = moves.length - gitMoves;
+  const stamps = (record.stamps || []).filter((s) => s.action).length;
+  const blocks = (record.blocks || []).length;
+  const ignores = (record.ignores || []).reduce((n, ig) => n + ig.changes.length, 0);
+  const lines = [];
+  if (moves.length === 0) lines.push('- Moved no planning tree: the planning directory was already in place.');
+  else {
+    const how = [gitMoves > 0 ? `${plural(gitMoves, 'tree')} with \`git mv\` (history is kept)` : null, renames > 0 ? `${plural(renames, 'untracked tree')} by rename` : null];
+    lines.push(`- Moved ${how.filter(Boolean).join(' and ')}.`);
+  }
+  lines.push(`- Renamed the config stamp key in ${plural(stamps, 'file')}, the CLAUDE.md block markers in ${plural(blocks, 'file')}, and rewrote ${plural(ignores, 'ignore line')}.`);
+  const added = (record.exclude && record.exclude.added) || [];
+  if (added.length > 0) lines.push(`- Added ${plural(added.length, 'line')} to \`${record.exclude.file || 'the local exclude file'}\` (local only, never committed).`);
+  const backups = record.backups || [];
+  lines.push(backups.length > 0
+    ? `- Backed up each planning directory and CLAUDE.md before converting: ${backups.map((b) => `\`${b}\``).join(', ')}.`
+    : '- Took no backup: nothing needed converting.');
+  lines.push('- Wrote nothing else: no PROJECT.md, STATE.md, ROADMAP.md or STACK.md, no new CLAUDE.md block, and no upgrade migration was applied.');
+  return lines;
+}
+
+function renderMigrateReport(ctx) {
+  const {
+    name, date, version, branch, baseBranch, baseSha7, rows, migrationSection, didLines, previous,
+  } = ctx;
+  return (
+    `# Adopt report — ${name}\n\n` +
+    `**Adopted:** ${date} · **${NAMES.product}:** v${version} · **Branch:** \`${branch}\` (from \`${baseBranch}\` @ \`${baseSha7}\`) · **Pushed:** no · **Mode:** migrate\n\n` +
+    `${migrationSection}\n` +
+    '## Needs review\n\n' +
+    `${renderMigrateReview(rows)}\n` +
+    '## What adopt did\n\n' +
+    `${didLines.join('\n')}\n\n` +
+    '## Next steps\n\n' +
+    '1. Work through **Needs review**; the findings come from the project\'s own files.\n' +
+    `2. When satisfied: \`git switch ${baseBranch} && git merge ${branch}\`. Nothing was pushed.\n` +
+    `3. Bring the project up to date: \`${NAMES.cli} upgrade --check\`, then the next session start applies the automatic migrations, or run \`${NAMES.cli} upgrade --apply\`.\n` +
+    `4. Other branches of this repository still on the old layout move when they merge this one, or by running ${NAMES.commandNs}adopt there.\n` +
+    (previous === null ? '' : `\n## Previous adopt report\n\n${previous}`)
+  );
+}
+
+function reportMigrate(pf, opts) {
+  const { env = process.env, userHome = null, pluginVersion = '0.0.0' } = opts;
+  if (!pf.adopt.steps || !pf.adopt.steps.scaffolded) throw new Error('run adopt scaffold first');
+  if (!pf.adopt.steps.moved) throw new Error('run adopt begin first: the move is not finished');
+
+  const target = pf.target;
+  const marker = { ...pf.adopt.marker };
+  const roots = migrateRoots(pf, marker);
+  const record = {
+    moves: markerMoves(marker).map((mv) => ({ ...mv, via: mv.tracked ? 'git mv' : 'rename' })),
+    stamps: [], blocks: [], malformed: [], ignores: [],
+    exclude: { file: null, added: [] },
+    skipped: [], backups: [],
+    ...(marker.migration || {}),
+  };
+
+  // Runtime files inside a moved tree stay out of the commit: excluded locally, and named in the record.
+  const transient = excludeTransients(target, env, marker);
+  if (transient.added.length > 0) {
+    record.exclude = {
+      file: record.exclude.file || transient.file,
+      added: [...new Set([...record.exclude.added, ...transient.added])],
+    };
+  }
+
+  const health = migrateHealth(target, env, roots);
+  const pendingUpgrades = pendingUpgradeRows(target, roots, { userHome, pluginVersion });
+  const commitBlocked = migrateCommitBlock(target, env, marker, health.codes);
+
+  const rows = [];
+  if (commitBlocked) {
+    rows.push({ confidence: 'priority', item: `commit blocked: ${commitBlocked.reason}`, inferred: commitBlocked.message, evidence: commitBlocked.fix });
+  }
+  for (const s of record.stamps) {
+    if (!s.action && s.error) {
+      rows.push({ confidence: 'priority', item: `${s.file}: stamp key not renamed`, inferred: s.error, evidence: 'rename the key by hand' });
+    }
+  }
+  for (const m of record.malformed) {
+    rows.push({ confidence: 'priority', item: `${m.file}: block left as it was`, inferred: m.message, evidence: m.fix });
+  }
+  rows.push(...health.rows);
+  if (health.found) {
+    rows.push({
+      confidence: 'priority',
+      item: 'adopt changed no planning content beyond the stamp key',
+      inferred: 'the findings above come from the project\'s own files, not from the move',
+      evidence: 'compare the planning files with the base branch: every moved file is a 100% rename',
+    });
+  }
+  rows.push(...pendingUpgrades.rows);
+  rows.sort((a, b) => REVIEW_RANK[a.confidence] - REVIEW_RANK[b.confidence]);
+
+  const firstRoot = roots.length > 0 ? roots[0] : '';
+  const projectMd = safeReadFile(path.join(absRoot(target, firstRoot), ...planningRel(target, 'PROJECT.md').split('/')));
+  const name = (projectMd && extractHeading(stripFrontmatter(projectMd))) || path.basename(target);
+  const started = marker.started_at ? new Date(marker.started_at) : new Date();
+
+  const previous = previousReport(target, env, marker, record);
+  const reportText = renderMigrateReport({
+    name,
+    date: localDate(started),
+    version: pluginVersion,
+    branch: pf.adopt.branch,
+    baseBranch: marker.base_branch || 'main',
+    baseSha7: (marker.base_sha || '').slice(0, 7),
+    rows,
+    migrationSection: legacyMigrate.renderMigrationSection(record),
+    didLines: migrateDidLines(record),
+    previous,
+  });
+
+  const reportPath = path.join(target, ...marker.report_path.split('/'));
+  fs.mkdirSync(path.dirname(reportPath), { recursive: true });
+  fs.writeFileSync(reportPath, reportText, 'utf-8');
+
+  marker.steps = { ...(marker.steps || {}), reported: true };
+  marker.migration = record;
+  writeMarker(target, env, marker);
+
+  return {
+    route: 'report',
+    mode: 'migrate',
+    target,
+    report_path: marker.report_path,
+    needs_review: rows,
+    migration: record,
+    legacy_codes: health.codes,
+    pending_upgrades: pendingUpgrades.pending,
+    commit_files: computeMigrateCommitFiles(target, env, marker),
+    commit_message: `chore(${NAMES.slug}): adopt — move the pre-rename planning layout (${NAMES.product} v${pluginVersion})`,
+    commit_blocked: commitBlocked,
     marker,
   };
 }

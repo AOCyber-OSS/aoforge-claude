@@ -415,13 +415,14 @@ test('12. an untracked transient file under a moved tree is excluded locally and
   assert.ok(!report.commit_files.some((f) => f.endsWith(NAMES.notices)));
   assert.ok(section(readFile(repo, report.report_path), '## Migration').includes(`/${notices}`), 'and the report records it');
 
-  committed(repo, report);
+  const second = adopt.report(repo.root, o);
+  assert.deepEqual(second.migration, report.migration, 'a re-run keeps the record');
+  assert.deepEqual(second.commit_files, report.commit_files);
+
+  committed(repo, second);
   assert.equal(repo.git(['ls-tree', '-r', '--name-only', 'HEAD']).split('\n').includes(notices), false, 'not in the commit');
   assert.ok(exists(repo, notices), 'the file is still on disk');
   assert.deepEqual(statusLines(repo), []);
-
-  const second = adopt.report(repo.root, o);
-  assert.deepEqual(second.migration, report.migration, 'a re-run keeps the record');
 });
 
 // ─── 13-14: the CLI ──────────────────────────────────────────────────────────

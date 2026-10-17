@@ -10,5 +10,5 @@ status: checkpoint
 
 ## Progress
 - [x] Task 1: RED tests for migrate scaffold/report/commit — be8baf70
-- [x] Task 2: Migrate scaffold — (this commit)
-- [ ] Task 3: Migrate report and compact commit files — next step: add `reportMigrate` to lib/adopt.cjs (health per root, upgrade.check per root, renderMigrateReport, computeMigrateCommitFiles with the info/exclude transient guard) and branch to it from `report`; add the `report: <n> to review` CLI line
+- [x] Task 2: Migrate scaffold — 69b38ef1
+- [x] Task 3: Migrate report and compact commit files — (this commit)
