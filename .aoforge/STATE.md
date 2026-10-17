@@ -98,6 +98,7 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 - **`feature/v1.1-coordination` is duplicative** — same content as `feature/v1.1`. Should be deleted to avoid confusion. Its worktree at `/Users/markemerson/Source/devflow-claude-v11` can be removed.
 - G5 (73-08): the aoforge-watch home ~/.aoforge/ makes HOME resolve as an AOForge project root (compat.findProjectRoot walks up unbounded); every repo under HOME without its own .aoforge/ is treated as ambient AOForge by gate-edits, gate-commits, route-intent, classify-session and others; 4 classify-session tests fail on this machine. Fix before the release (move the daemon home or bound the walk).
 - 79-09 blocked by the org cutover freeze (rulesets cutover-freeze-branches 25294524 and cutover-freeze-tags 25294526, active since 2026-10-17 02:45): the push of integrate/3.1.0 (local 3627c4a9, origin a589d306) was rejected. Resume 79-09 after the freeze lifts; re-check the remote URL and rulesets first.
+- 81-18: batch C stopped after 12 of 48 agent runs for the user: 2 Bash permission denials of cd ~/.claude (CLI applies the real-home deny rule to ~) and guessed /Users/<x> reads in fleet runs; fleet copy names real /Users paths
 
 ### Quick Tasks Completed
 
@@ -158,6 +159,6 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 
 ## Session Continuity
 
-Last session: 2026-10-17T21:18:09.971Z
+Last session: 2026-10-17T21:33:25.672Z
 Resume file: `None`
-Stopped at: Completed 81-17-TRD.md
+Stopped at: 81-18 Task 2: batch C stopped after 12/48 agent runs, awaiting user
