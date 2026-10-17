@@ -18,6 +18,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   workflows, references, templates, live docs and the docs site. `.df-worktrees`, `df/ws-` and `df/exec-` stay
   allowed. (quick 40)
 
+### Fixed
+
+- `calibrate`'s agent-overhead scan lost the spawns recorded before the checkout moved (TRD 72-26). Those transcripts
+  name the former path, so the scan counted them as foreign: on this repository it matched 22 spawns (planner 8,
+  job-checker 7, verifier 7) against 127 on 2026-10-08, and objective-researcher, integration-checker and roadmapper
+  had no samples. `calibrate --also-root <dir>` (repeatable, relative to cwd) names former checkout roots of the one
+  project, and the scan also claims a spawn whose REPO_ROOT line names one, whose cwd is inside one or its worktree
+  directory, or whose prompt names a path under its current or legacy planning directory. The roots are recorded in
+  `method.also_roots` (so in `inputs_digest`, with a note); without the flag the file is byte-identical. With the
+  former root the scan matches 164 (planner 49, job-checker 44, verifier 53, objective-researcher 11,
+  integration-checker 5, roadmapper 2). Matching for the project root itself is unchanged, and `tokens` does not take
+  the flag. (quick 41)
+
 ## [3.1.0] - 2026-10-16
 
 3.1.0 ends the rename's one-release compatibility. AOForge now reads `.aoforge/` and the AOForge names only, so a 2.x
