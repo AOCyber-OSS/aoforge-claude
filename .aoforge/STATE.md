@@ -145,6 +145,7 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 | 39 | Core neutrality sweep: web/Flutter procedure leaves verify-work, checkpoints, templates; guard scans all of core and browser_ tools | 2026-10-16 | 68dab58c | Done | [39-move-remaining-web-and-flutter-procedure](./quick/39-move-remaining-web-and-flutter-procedure/) |
 | 40 | df- agent alias removed from model resolution, df- wording reworded, rename guard catches df- agent/skill names, root skip in verify-completion test | 2026-10-17 | 9ff86db7 | Done | [40-remove-df-leftovers-tighten-the-rename-g](./quick/40-remove-df-leftovers-tighten-the-rename-g/) |
 | 41 | calibrate --also-root counts a moved checkout's agent overhead; live calibration rebuilt (164 spawns, Sonnet 5.5 cache 0.05x) | 2026-10-17 | 7983bacd | Done | [41-calibrate-matches-pre-move-transcripts](./quick/41-calibrate-matches-pre-move-transcripts/) |
+| 42 | Objective 76 gaps: every workflow model placeholder supplied (guard), ui-evaluator escalation, benchmark counts executors, retroactive 76/77 SUMMARYs | 2026-10-17 | 1cb50783 | Done | [42-close-objective-76-gaps](./quick/42-close-objective-76-gaps/) |
 
 ## Accumulated Context
 
