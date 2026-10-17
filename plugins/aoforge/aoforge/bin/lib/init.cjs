@@ -383,7 +383,7 @@ function escalationRung(value) {
 /** One model per project-research dimension (TRD 76-06), for new-project and new-milestone. */
 function researcherModels(cwd) {
   return Object.fromEntries(['stack', 'features', 'architecture', 'pitfalls']
-    .map((f) => [f, resolveModelInternal(cwd, 'df-project-researcher', undefined, f)]));
+    .map((f) => [f, resolveModelInternal(cwd, 'project-researcher', undefined, f)]));
 }
 
 /**
@@ -599,8 +599,8 @@ function cmdInitExecuteObjective(cwd, objective, includes, raw, args = []) {
 
   const result = {
     // Models
-    executor_model: resolveModelInternal(cwd, 'df-executor', objective),
-    verifier_model: resolveModelInternal(cwd, 'df-verifier', objective),
+    executor_model: resolveModelInternal(cwd, 'executor', objective),
+    verifier_model: resolveModelInternal(cwd, 'verifier', objective),
 
     // Config flags
     commit_docs: config.commit_docs,
@@ -724,9 +724,9 @@ function cmdInitPlanObjective(cwd, objective, includes, raw, args = []) {
 
   const result = {
     // Models
-    researcher_model: resolveModelInternal(cwd, 'df-objective-researcher', objective),
-    planner_model: resolveModelInternal(cwd, 'df-planner', objective),
-    checker_model: resolveModelInternal(cwd, 'df-job-checker', objective),
+    researcher_model: resolveModelInternal(cwd, 'objective-researcher', objective),
+    planner_model: resolveModelInternal(cwd, 'planner', objective),
+    checker_model: resolveModelInternal(cwd, 'job-checker', objective),
 
     // Workflow flags
     research_enabled: config.research,
@@ -875,11 +875,11 @@ function cmdInitNewProject(cwd, raw, args = []) {
 
   const result = {
     // Models
-    researcher_model: resolveModelInternal(cwd, 'df-project-researcher'),
+    researcher_model: resolveModelInternal(cwd, 'project-researcher'),
     // per research dimension (TRD 76-06): the new-project workflow spawns each researcher with its own
     researcher_models: researcherModels(cwd),
-    synthesizer_model: resolveModelInternal(cwd, 'df-research-synthesizer'),
-    roadmapper_model: resolveModelInternal(cwd, 'df-roadmapper'),
+    synthesizer_model: resolveModelInternal(cwd, 'research-synthesizer'),
+    roadmapper_model: resolveModelInternal(cwd, 'roadmapper'),
 
     // Config
     commit_docs: config.commit_docs,
@@ -916,10 +916,10 @@ function cmdInitNewMilestone(cwd, raw, args = []) {
 
   const result = {
     // Models
-    researcher_model: resolveModelInternal(cwd, 'df-project-researcher'),
+    researcher_model: resolveModelInternal(cwd, 'project-researcher'),
     researcher_models: researcherModels(cwd),
-    synthesizer_model: resolveModelInternal(cwd, 'df-research-synthesizer'),
-    roadmapper_model: resolveModelInternal(cwd, 'df-roadmapper'),
+    synthesizer_model: resolveModelInternal(cwd, 'research-synthesizer'),
+    roadmapper_model: resolveModelInternal(cwd, 'roadmapper'),
 
     // Config
     commit_docs: config.commit_docs,
@@ -960,10 +960,10 @@ function cmdInitQuick(cwd, description, raw, args = []) {
 
   const result = {
     // Models
-    planner_model: resolveModelInternal(cwd, 'df-planner'),
-    executor_model: resolveModelInternal(cwd, 'df-executor'),
-    checker_model: resolveModelInternal(cwd, 'df-job-checker'),
-    verifier_model: resolveModelInternal(cwd, 'df-verifier'),
+    planner_model: resolveModelInternal(cwd, 'planner'),
+    executor_model: resolveModelInternal(cwd, 'executor'),
+    checker_model: resolveModelInternal(cwd, 'job-checker'),
+    verifier_model: resolveModelInternal(cwd, 'verifier'),
 
     // Config
     commit_docs: config.commit_docs,
@@ -1030,8 +1030,8 @@ function cmdInitVerifyWork(cwd, objective, raw, args = []) {
 
   const result = {
     // Models
-    planner_model: resolveModelInternal(cwd, 'df-planner', objective),
-    checker_model: resolveModelInternal(cwd, 'df-job-checker', objective),
+    planner_model: resolveModelInternal(cwd, 'planner', objective),
+    checker_model: resolveModelInternal(cwd, 'job-checker', objective),
 
     // Config
     commit_docs: config.commit_docs,
@@ -1246,10 +1246,10 @@ function cmdInitMapCodebase(cwd, raw, args = []) {
 
   const result = {
     // Models
-    mapper_model: resolveModelInternal(cwd, 'df-codebase-mapper'),
+    mapper_model: resolveModelInternal(cwd, 'codebase-mapper'),
     // per focus (TRD 76-06): the map-codebase workflow spawns each mapper with its own
     mapper_models: Object.fromEntries(['tech', 'arch', 'quality', 'concerns']
-      .map((f) => [f, resolveModelInternal(cwd, 'df-codebase-mapper', undefined, f)])),
+      .map((f) => [f, resolveModelInternal(cwd, 'codebase-mapper', undefined, f)])),
 
     // Config
     commit_docs: config.commit_docs,
@@ -1277,7 +1277,7 @@ function cmdInitSecurityAudit(cwd, raw, args = []) {
   const config = loadConfig(cwd);
 
   // Resolve auditor model
-  const auditorModel = resolveModelInternal(cwd, 'df-security-auditor');
+  const auditorModel = resolveModelInternal(cwd, 'security-auditor');
 
   // Check for existing audit report
   const planningExists = pathExistsInternal(cwd, planningRel(cwd));
@@ -1391,8 +1391,8 @@ function cmdInitProgress(cwd, includes, raw, args = []) {
 
   const result = {
     // Models
-    executor_model: resolveModelInternal(cwd, 'df-executor'),
-    planner_model: resolveModelInternal(cwd, 'df-planner'),
+    executor_model: resolveModelInternal(cwd, 'executor'),
+    planner_model: resolveModelInternal(cwd, 'planner'),
 
     // Config
     commit_docs: config.commit_docs,
