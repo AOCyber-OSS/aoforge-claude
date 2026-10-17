@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "created_at": "2026-10-17T18:22:54.951Z",
-  "head": "fed025502a25160b90b63397435a6238ea19d744",
+  "created_at": "2026-10-17T18:32:03.333Z",
+  "head": "14963158243ceb2a2db21fa53ce99023944da10e",
   "trees": {
     "3.0.0": {
       "ref": "v3.0.0",
@@ -487,6 +487,326 @@
           }
         }
       }
+    },
+    "post_hoc_2_pilot_resize": {
+      "source": "TRD 81-14 post-hoc 2 (user 2026-10-17): batch A 4-run pilot (A-A1-haiku-r1 attempts 1-2, A-A2-sonnet-r1, A-A4-haiku-r1, A-A5-sonnet-r1), replayed from the real ledger through ledger.cjs canStart/recordRun; A and B at m x the pilot per-model mean (B uses A as its proxy), D at m x 81-10 upper end (sonnet 0.20, haiku 0.04), E at its estimate (x1.25 in the m>=2 scenarios), C at its estimate",
+      "batch_caps_usd": {
+        "A": 10,
+        "B": 10,
+        "D": 5,
+        "E": 55,
+        "C": null
+      },
+      "batch_caps_before_usd": {
+        "A": 7.5,
+        "B": 6,
+        "D": 3,
+        "E": 55,
+        "C": null
+      },
+      "batch_estimates_usd": {
+        "A": 3,
+        "B": 4,
+        "D": 2,
+        "E": 44,
+        "C": 28
+      },
+      "pilot_charged_usd": {
+        "haiku": {
+          "mean": 0.009259666666666668,
+          "max": 0.011115,
+          "n": 3
+        },
+        "sonnet": {
+          "mean": 0.14839,
+          "max": 0.152767,
+          "n": 2
+        }
+      },
+      "ledger_total_at_resize_usd": 0.324559,
+      "completes_up_to_x": {
+        "A": 3.2,
+        "B": 3,
+        "D": 1.65
+      },
+      "scenarios": {
+        "pilot_x1": {
+          "A": {
+            "ran": 36,
+            "planned": 36,
+            "graders": 0,
+            "spent_usd": 2.846959,
+            "total_after_usd": 2.846959,
+            "stopped": null,
+            "by_model": {
+              "haiku": {
+                "planned": 18,
+                "ran": 18
+              },
+              "sonnet": {
+                "planned": 18,
+                "ran": 18
+              }
+            }
+          },
+          "B": {
+            "ran": 36,
+            "planned": 36,
+            "graders": 0,
+            "spent_usd": 2.8377,
+            "total_after_usd": 5.684659,
+            "stopped": null,
+            "by_model": {
+              "haiku": {
+                "planned": 18,
+                "ran": 18
+              },
+              "sonnet": {
+                "planned": 18,
+                "ran": 18
+              }
+            }
+          },
+          "D": {
+            "ran": 24,
+            "planned": 24,
+            "graders": 0,
+            "spent_usd": 2.88,
+            "total_after_usd": 8.564659,
+            "stopped": null,
+            "by_model": {
+              "haiku": {
+                "planned": 12,
+                "ran": 12
+              },
+              "sonnet": {
+                "planned": 12,
+                "ran": 12
+              }
+            }
+          },
+          "E": {
+            "ran": 10,
+            "planned": 10,
+            "graders": 0,
+            "spent_usd": 44,
+            "total_after_usd": 52.564659,
+            "stopped": null,
+            "by_model": {
+              "opus": {
+                "planned": 10,
+                "ran": 10
+              }
+            }
+          },
+          "C": {
+            "ran": 48,
+            "planned": 48,
+            "graders": 48,
+            "spent_usd": 27.999992,
+            "total_after_usd": 80.564651,
+            "stopped": null,
+            "by_model": {
+              "sonnet": {
+                "planned": 24,
+                "ran": 24
+              },
+              "haiku": {
+                "planned": 24,
+                "ran": 24
+              }
+            }
+          }
+        },
+        "pilot_x2_E_x1_25": {
+          "A": {
+            "ran": 36,
+            "planned": 36,
+            "graders": 0,
+            "spent_usd": 5.369343,
+            "total_after_usd": 5.369343,
+            "stopped": null,
+            "by_model": {
+              "haiku": {
+                "planned": 18,
+                "ran": 18
+              },
+              "sonnet": {
+                "planned": 18,
+                "ran": 18
+              }
+            }
+          },
+          "B": {
+            "ran": 36,
+            "planned": 36,
+            "graders": 0,
+            "spent_usd": 5.675382,
+            "total_after_usd": 11.044725,
+            "stopped": null,
+            "by_model": {
+              "haiku": {
+                "planned": 18,
+                "ran": 18
+              },
+              "sonnet": {
+                "planned": 18,
+                "ran": 18
+              }
+            }
+          },
+          "D": {
+            "ran": 20,
+            "planned": 24,
+            "graders": 0,
+            "spent_usd": 4.8,
+            "total_after_usd": 15.844725,
+            "stopped": {
+              "at": "D-commands-haiku-r3",
+              "reason": "batch_cap"
+            },
+            "by_model": {
+              "haiku": {
+                "planned": 12,
+                "ran": 10
+              },
+              "sonnet": {
+                "planned": 12,
+                "ran": 10
+              }
+            }
+          },
+          "E": {
+            "ran": 9,
+            "planned": 10,
+            "graders": 0,
+            "spent_usd": 46.40625,
+            "total_after_usd": 62.250975,
+            "stopped": {
+              "at": "b31-r2",
+              "reason": "batch_cap"
+            },
+            "by_model": {
+              "opus": {
+                "planned": 10,
+                "ran": 9
+              }
+            }
+          },
+          "C": {
+            "ran": 48,
+            "planned": 48,
+            "graders": 48,
+            "spent_usd": 27.999992,
+            "total_after_usd": 90.250967,
+            "stopped": null,
+            "by_model": {
+              "sonnet": {
+                "planned": 24,
+                "ran": 24
+              },
+              "haiku": {
+                "planned": 24,
+                "ran": 24
+              }
+            }
+          }
+        },
+        "pilot_x3_E_x1_25": {
+          "A": {
+            "ran": 36,
+            "planned": 36,
+            "graders": 0,
+            "spent_usd": 7.891743,
+            "total_after_usd": 7.891743,
+            "stopped": null,
+            "by_model": {
+              "haiku": {
+                "planned": 18,
+                "ran": 18
+              },
+              "sonnet": {
+                "planned": 18,
+                "ran": 18
+              }
+            }
+          },
+          "B": {
+            "ran": 36,
+            "planned": 36,
+            "graders": 0,
+            "spent_usd": 8.513082,
+            "total_after_usd": 16.404825,
+            "stopped": null,
+            "by_model": {
+              "haiku": {
+                "planned": 18,
+                "ran": 18
+              },
+              "sonnet": {
+                "planned": 18,
+                "ran": 18
+              }
+            }
+          },
+          "D": {
+            "ran": 13,
+            "planned": 24,
+            "graders": 0,
+            "spent_usd": 4.44,
+            "total_after_usd": 20.844825,
+            "stopped": {
+              "at": "D-commands-sonnet-r2",
+              "reason": "batch_cap"
+            },
+            "by_model": {
+              "haiku": {
+                "planned": 12,
+                "ran": 7
+              },
+              "sonnet": {
+                "planned": 12,
+                "ran": 6
+              }
+            }
+          },
+          "E": {
+            "ran": 9,
+            "planned": 10,
+            "graders": 0,
+            "spent_usd": 46.40625,
+            "total_after_usd": 67.251075,
+            "stopped": {
+              "at": "b31-r2",
+              "reason": "batch_cap"
+            },
+            "by_model": {
+              "opus": {
+                "planned": 10,
+                "ran": 9
+              }
+            }
+          },
+          "C": {
+            "ran": 48,
+            "planned": 48,
+            "graders": 48,
+            "spent_usd": 27.999992,
+            "total_after_usd": 95.251067,
+            "stopped": null,
+            "by_model": {
+              "sonnet": {
+                "planned": 24,
+                "ran": 24
+              },
+              "haiku": {
+                "planned": 24,
+                "ran": 24
+              }
+            }
+          }
+        }
+      }
     }
   },
   "command": "node scripts/eval81/prereg.cjs --write --out .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results --extra .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/private/fleet-checklists.json --calibration /Users/justin/.claude/aoforge/calibration.json --trees /private/tmp/claude-501/-Users-justin-dev-aoforge-claude/29d3d902-73eb-439c-9c64-ba469a668a6e/scratchpad/eval81/trees.json --claude-version '2.1.302 (Claude Code)' --projection /private/tmp/claude-501/-Users-justin-dev-aoforge-claude/29d3d902-73eb-439c-9c64-ba469a668a6e/scratchpad/eval81/projection-manifest.json",
@@ -522,10 +842,10 @@
     "~/.claude/aoforge/calibration.json"
   ],
   "files": {
-    ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-DECISION-RULE.md": "0e579d42a1b95cd189015d4509c4f5b732ff120bc6acb3d440d5f3fe1671cda4",
+    ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-DECISION-RULE.md": "59ad1e053ce7a85b083b9708dfd554e284639991b42fbf485efa5781bbf32450",
     ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/private/fleet-checklists.json": "86f909f54de3ea4f95933be99d6eb23da932435b8bb6da71c5be63cd4be05115",
     ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/static-prompt.json": "cd57eaa512941dfc3b995375c7b67a0a2fd156bcfd06518a512fe03e1cccfeb7",
-    "scripts/eval81/README.md": "7dcbc0ef75638b277baebc0a1e967c4e47cfbe76359a19e173139167492e1b04",
+    "scripts/eval81/README.md": "3c936b280fdd1dca5e551d8669e81229d4de53e68246d88235a75572b9826ff0",
     "scripts/eval81/__fixtures__/agent-outputs.cjs": "bcba66e838a1a8e1aed9db6c32d069e3ca420486e75f28d94ad9e48cc11a7506",
     "scripts/eval81/__fixtures__/c-outputs.cjs": "03444b00fb419358af731b7dfe98cc487928db8b1d3e3343bde8aff7ec95b605",
     "scripts/eval81/__fixtures__/calibration.cjs": "9b7383a5e3e0383b6f94b3310803afff20ebe1d0a5d5c1cc32039d2710db7dd9",
@@ -587,7 +907,7 @@
     "scripts/eval81/lib/command.cjs": "e114a9d1c581f54bb8589f611b79c0b0fa3201c6e0ae744b340c49bdf807a3c5",
     "scripts/eval81/lib/contract.cjs": "cc06c5244c32765f91d30cce3ebf788b15edac382782516f2bb6694d1d2743eb",
     "scripts/eval81/lib/decide.cjs": "bb7aa9af7cb5b4b069326e9a8253b1ada1da4ce6d63922b327961cb0116f2f53",
-    "scripts/eval81/lib/ledger.cjs": "e7ba6cf8b152ca6b453d7f9798c5535477d7aa40d0e4c409d4ae61dec361bf87",
+    "scripts/eval81/lib/ledger.cjs": "663ec7c3698875ae099cb632426a1ea7cf5a0775eca9886e44aa40eff49364fd",
     "scripts/eval81/lib/report.cjs": "a4f571697e211a72a3f9a7b71481650bb521fdf3280a4bcb4e2d149adf618dfb",
     "scripts/eval81/lib/result.cjs": "7f361e3ce34feca5b8f3ff8eb99ac46974864dc4189495bfb86ffe42f025a34d",
     "scripts/eval81/lib/roles.cjs": "bbfcd5700249816fb1a0f8f9d6e5f10974cee4a12da72009dece73e8b73c8040",
@@ -601,7 +921,7 @@
     "scripts/eval81/score.cjs": "b13a3dc60e6a23825671fe09b191f4669780fbf409519eb12f8f18f503b58259",
     "scripts/eval81/score/A.cjs": "6f066a19b6b6948aafdd5062f6d7403180fc1d191c6efae16402d4cc26cfc685",
     "scripts/eval81/score/B.cjs": "535ec81f5ca6c0caaa7d3d6bc87dfa8684677807781bb471822c20d26ab23356",
-    "scripts/eval81/score/C.cjs": "651591e86348e4e45f58128a019f05e262535738ffc9c554cc0a386b8f7c98cd",
+    "scripts/eval81/score/C.cjs": "f21f235c94b35d22c602b822e7cfeb26db16eedac97aa38346bb4b07b508cb28",
     "scripts/eval81/score/D.cjs": "00c4a23d13af0c0c5ae12a02aeab2389b1601f887386cf495cdddd23824f0382",
     "scripts/eval81/score/E.cjs": "bb107f4e8eae875bde0cd42d91f01958d0608da5cf9496117f019bf3cf2fb591",
     "scripts/eval81/static-prompt.cjs": "ed68a28831e1f655201790916b1f3f15eecdcbbb875be7654134c634d5bdd5b6",

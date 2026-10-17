@@ -55,6 +55,19 @@ describe('loadLedger', () => {
   });
 });
 
+describe('batch caps (81-14 post-hoc 2)', () => {
+  // 81-DECISION-RULE.md / 81-PREREG.md post-hoc 2 (2026-10-17): "resize the per-batch caps so A and B can complete
+  // all 36 runs each and D its 24, keeping the global $100 limit, the reserve rule and the order A,B,D,E,C (C absorbs
+  // any shortfall)", sized from batch A's 4-run pilot.
+  test('17b. A 10, B 10, D 5, E 55, C none; A estimate 3; the A-E caps sum to at most 80', () => {
+    const { BATCH_CAPS, BATCH_ESTIMATES, GLOBAL_CAP_USD } = load();
+    assert.deepEqual(BATCH_CAPS, { A: 10, B: 10, D: 5, E: 55, C: null });
+    assert.deepEqual(BATCH_ESTIMATES, { A: 3, B: 4, D: 2, E: 44, C: 28 });
+    assert.equal(GLOBAL_CAP_USD, 100);
+    assert.ok(BATCH_CAPS.A + BATCH_CAPS.B + BATCH_CAPS.D + BATCH_CAPS.E <= 80);
+  });
+});
+
 describe('canStart and reserveFor', () => {
   test('18. the global check uses the reserve, the batch check the cap', () => {
     const { canStart } = load();
@@ -73,7 +86,7 @@ describe('canStart and reserveFor', () => {
     assert.equal(over.reason, 'global_cap');
     assert.equal(over.projected, 100.1);
 
-    const batch = canStart(seeded(7, 'A'), { batch: 'A', role: 'verifier', capUsd: 0.6 });
+    const batch = canStart(seeded(load().BATCH_CAPS.A - 0.5, 'A'), { batch: 'A', role: 'verifier', capUsd: 0.6 });
     assert.equal(batch.ok, false);
     assert.equal(batch.reason, 'batch_cap');
 

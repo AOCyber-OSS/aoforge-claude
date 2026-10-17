@@ -53,6 +53,14 @@ Output: `results/C.json`, `results/C.md`, `results/C-spotcheck.md`.
 - Runner exit codes, the commit scan command, the spend rules and the lost-root recovery as in TRD 81-14. C has no
   batch cap: it runs on the remainder under the reserve rule (total + reserve <= $100), so the last runs may be
   refused while the plain caps would still fit; the dry run shows where C is expected to stop.
+- Private backup, moved out of R (81-14 post-hoc 2, user decision a, 2026-10-17):
+  `/private/tmp/claude-501/-Users-justin-dev-aoforge-claude/29d3d902-73eb-439c-9c64-ba469a668a6e/scratchpad/eval81-private-backup/`
+  holds `fleet/` (81-06's checklist copy, sha256 86f909f5..., and its prepared clone) and `d-capture/` (81-05's capture
+  work). Before the C dry run, check that `R/fleet` and `R/d-capture` are absent. Never move them back into R. The
+  batch reads the checklist from `<O>/private/fleet-checklists.json`, never from the backup.
+- Also decided in 81-14 post-hoc 2 (81-DECISION-RULE.md section 9): the research dimensions use project-researcher, and
+  the mechanical path check exempts negated claims (`spotcheck/C-paths.md` lists flagged and exempt paths). C's
+  remainder is at least $20 (batch caps A 10, B 10, D 5, E 55).
 </codebase_examples>
 
 <anti_patterns>

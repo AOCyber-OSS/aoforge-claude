@@ -82,6 +82,9 @@ A fixed Sonnet grader marks each checklist item `found`, `wrong` or `missing` an
 - **error** = items wrong / checklist items. **missing** = items missing / checklist items (reported).
 - **fabrications per run** = (grader fabrications + mechanical path fabrications) / scored runs. A mechanical path
   fabrication is a backticked repository path that does not exist in the run's codebase.
+  - **Post-hoc 2 (2026-10-17, section 9):** a path every mention of which says it is absent ("there is no `go.sum`",
+    "`config.yaml` does not exist") is exempt and is not a mechanical path fabrication. One asserted mention still
+    counts. The text above is kept as registered.
 - A run whose grader output is missing or unparseable is ungraded and excluded with its reason.
 
 ### Contamination
@@ -189,3 +192,40 @@ Proposals are text for the user's `checkpoint:decision` in TRD 81-19. Nothing in
   `81-MEASUREMENT.md`, not a tier decision.
 - **The debugger's start tier** is not measured by this design; it stays as configured.
 - **Opus** is not compared: every comparison is Haiku 5.5 against Sonnet 5.5.
+
+## 9. Post-hoc amendments
+
+The amendment below was made after batch A's first live run, so it is **post-hoc** (section 1). It never replaces
+the text it amends. It does not change `decide.cjs`, and it does not change how A, B or D are scored.
+
+Post-hoc 1, the relaxed init-tools check, is a harness change. It is recorded in 81-PREREG.md section 9.1.
+
+### Post-hoc 2 (2026-10-17, TRD 81-14): C decisions recorded before C runs
+
+The user's words (2026-10-17): "Also record the C decisions now so the plan is frozen once: (a) move `R/fleet` and
+`R/d-capture` (private [fleet] checklist + planning copy, D capture) out of the eval root to a sibling dir before C and
+point the batch-C spec at the new location; (b) C's research dimensions use project-researcher; (c) the mapper
+fabrication check exempts negated claims (e.g. "there is no go.sum") — implement test-first in the scorer."
+
+1. **Negated claims are exempt from the mechanical path check** (decision c). This amends section 3 (C,
+   fabrications per run). A mention counts as negated in two cases:
+   - it follows a negator (no, not, without, lacks, missing, absent, never, nor, neither) with only filler words
+     between them;
+   - it is directly followed by an absence phrase ("does not exist", "is absent", "is missing", "is not checked
+     in", "(missing)").
+
+   A path is exempt only when every mention of it is negated. The code is `score/C.cjs` `negatedMention` and
+   `pathCheck`, written test-first (`score/C.test.cjs` 8g and 8h). `spotcheck/C-paths.md` lists flagged and exempt
+   paths for a person to read. The decision rule's fabrication bound (section 5, step 5) is unchanged; only what
+   counts as a mechanical path fabrication changed.
+2. **C's four research dimensions use project-researcher** (decision b). This confirms what
+   `batches/C.cjs` `AGENTS.researcher` already does. objective-researcher has no dimensions.
+3. **The private fleet material leaves the eval root before C** (decision a). This changes nothing about the
+   rule.
+   - `R/fleet` and `R/d-capture` were moved to the sibling `<scratchpad>/eval81-private-backup/` on 2026-10-17,
+     after batch A's pilot.
+   - The batch-C spec (TRD 81-18) names the new location.
+   - The C batch module never read `R/fleet`. It clones the fleet source named in the private checklist.
+
+Batch caps were resized at the same time (TRD 81-14 post-hoc 2, `lib/ledger.cjs` BATCH_CAPS). That is a harness
+change, recorded in 81-PREREG.md section 9.

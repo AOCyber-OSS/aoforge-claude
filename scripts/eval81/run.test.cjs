@@ -163,7 +163,7 @@ describe('dry run, ledger and order', () => {
     }
     assert.equal(r.report.worst_case_usd, 1.875);
     assert.equal(r.report.sum_caps_usd, 1.5);
-    assert.equal(r.report.estimate_usd, 5);
+    assert.equal(r.report.estimate_usd, ledgerLib.BATCH_ESTIMATES.A); // 3 since 81-14 post-hoc 2 (was 5)
     assert.equal(r.report.ledger.total_usd, 0);
     // --materialize first (the default): only the first run has a fixture and a runtime mirror.
     assert.ok(fs.existsSync(path.join(s.runDir('A-stub-1'), 'work', '.fake-scenario')));

@@ -225,6 +225,41 @@ Task 1), and post-hoc after it.
    `cap_usd` in `<R>/ledger.json` and re-run the same command, recorded as a post-hoc deviation. Or the user can
    close the batch with `--close-batch X --reason <text>`.
 
+### Post-hoc 2 (2026-10-17, TRD 81-14): caps resized from batch A's pilot
+
+The user took option 1 and then option 2. The pilot was 4 runs plus one re-run, on different fixtures, with a planted
+fixture for each model. Their charged costs:
+
+| Run | Model | Fixture | Verdict | Charged |
+|---|---|---|---|---|
+| `A-A1-haiku-r1@attempt1` | haiku | A1 clean | passed (run excluded: tools check, 9.1) | $0.011115 |
+| `A-A1-haiku-r1` (attempt 2) | haiku | A1 clean | passed | $0.005823 |
+| `A-A2-sonnet-r1` | sonnet | A2 clean | passed | $0.152767 |
+| `A-A4-haiku-r1` | haiku | A4 planted | gaps_found, gap named | $0.010841 |
+| `A-A5-sonnet-r1` | sonnet | A5 planted | gaps_found, gap named | $0.144013 |
+
+- **Means.** Haiku $0.00926 per run (n 3), sonnet $0.14839 (n 2). That is about 2% and 7.4% of the per-run caps.
+  Each run's first-turn input was about 25.0K tokens.
+- **New batch caps.** A $10, B $10, D $5, E $55 (unchanged), C the remainder. They live in `lib/ledger.cjs`
+  `BATCH_CAPS` and in `<R>/ledger.json`'s rows. A's estimate is now $3. Per-run caps and the reserve rule are
+  unchanged.
+- **Projection.** It replays the order from the real ledger through `ledger.cjs`. A and B run at m x the pilot
+  per-model means, with B using A as its proxy. D runs at m x 81-10's upper end (sonnet $0.20, haiku $0.04). E
+  runs at its estimate (x1.25 for m >= 2), and C at its estimate. The full numbers are embedded in the manifest's
+  `projection.post_hoc_2_pilot_resize`.
+
+| m | A | B | D | E | C | Total |
+|---|---|---|---|---|---|---|
+| 1 | 36/36, $2.85 | 36/36, $2.84 | 24/24, $2.88 | 10/10, $44 | complete | $80.56 |
+| 2 | 36/36, $5.37 | 36/36, $5.68 | stops at 20/24 (10/12 each, 2/3 ok) | 9/10 (`b31-r2`) | complete | $90.25 |
+| 3 | 36/36, $7.89 | 36/36, $8.51 | stops at 13/24 (haiku 7/12, sonnet 6/12: INSUFFICIENT) | 9/10 | complete | $95.25 |
+
+- **Completes all runs up to:** A 3.2x the pilot, B 3.0x, D 1.65x 81-10's upper end. Under the old caps these were
+  A 2.15x, B 1.55x and D 0.9x.
+- **The user's gate for the remaining 32 A runs** was "A <= $15 and A+B+D+E projected <= $80". Projected A is $2.85,
+  and its cap is $10. Projected A+B+D+E is $52.56, and the four batch caps sum to $80. Both hold.
+- **D is unmeasured.** Its cap is re-checked against its own first runs at the D checkpoint (TRD 81-16).
+
 ## 6. Rehearsal (Task 2): every batch end to end on the fake claude
 
 **Setup.**
@@ -306,6 +341,8 @@ Task 1), and post-hoc after it.
    - **Recommended before batch C (the user's call):** move `<R>/fleet` and `<R>/d-capture` out of R, for example
      `mv <R>/fleet <scratchpad>/eval81-private-backup`. That keeps the backup. A direct read of a path naming
      `fleet-checklists` is still flagged by C's contamination patterns.
+   - **Done (post-hoc 2, 2026-10-17, user decision a):** both now sit in
+     `<scratchpad>/eval81-private-backup/{fleet,d-capture}`. The checklist copy's sha256 is still `86f909f5...`.
 4. **81-08's first-live-run risks.**
    - The prompt goes last, after `--`. Commander treats `--` as the end of options, but this has not been observed
      live.
@@ -323,6 +360,10 @@ Task 1), and post-hoc after it.
      path, and `spotcheck/C-paths.md` lists such lines.
    - Researcher roles need 2 of 2 scored runs, so a single excluded researcher run makes that dimension INSUFFICIENT
      for that model.
+   - **Answered (post-hoc 2, 2026-10-17):**
+     - project-researcher (decision b);
+     - caps: C has no batch cap and keeps the remainder, at least $20 now (section 5, post-hoc 2);
+     - negated claims are exempt from the path check (decision c; 81-DECISION-RULE.md section 9).
 7. **E.** The session model is opus. `EVAL81_E_SESSION_MODEL=sonnet` before the runner command switches every E run
    to sonnet (81-17's "go E sonnet"). The E scorer falls back to the committed `results/static-prompt.json`, which
    is frozen here.
@@ -376,3 +417,34 @@ None replaces the text it amends.
   `A-A1-haiku-r1.prev-<n>`. Batch A was reopened with `--reopen --reason "relaxed init-tools check (user 2026-10-17)"`.
 - **New manifest:** sha256 `be06f165c9928862c0e78e70e0143c66b41e62eabfe392b0b850da314abfa62a`, 84 files, written at
   head `fed025502a25160b90b63397435a6238ea19d744`.
+
+### 9.2 Post-hoc 2 (2026-10-17, TRD 81-14): caps from the pilot and the C decisions
+
+- **The user's words** (2026-10-17): "From the pilot's measured per-run cost (charged = max(reported,
+  transcript-priced)), resize the per-batch caps so A and B can complete all 36 runs each and D its 24, keeping the
+  global $100 limit, the reserve rule and the order A,B,D,E,C (C absorbs any shortfall). Also record the C decisions
+  now so the plan is frozen once: (a) move `R/fleet` and `R/d-capture` [...] out of the eval root to a sibling dir
+  before C and point the batch-C spec at the new location; (b) C's research dimensions use project-researcher; (c)
+  the mapper fabrication check exempts negated claims (e.g. "there is no go.sum") — implement test-first in the
+  scorer."
+- **When.** After the 4-run pilot, before the remaining 32 A runs. The pilot runs were made under the old caps and
+  the old C scorer. Neither affects them: no A run came near its batch cap, and A is not scored by `score/C.cjs`.
+- **What changed:**
+  - `lib/ledger.cjs` `BATCH_CAPS` A 7.5 -> 10, B 6 -> 10, D 3 -> 5, E 55, C null. `BATCH_ESTIMATES.A` 5 -> 3. This
+    was test-first: `ledger.test.cjs` 17b went RED then GREEN, and test 18's batch-cap case is now relative to
+    `BATCH_CAPS.A`.
+  - `<R>/ledger.json` rows A, B and D took the same caps and A's estimate. No entry was touched.
+  - `score/C.cjs`: negated claims are exempt (`negatedMention`, `pathCheck`). This was test-first: `C.test.cjs` 8g
+    and 8h went RED then GREEN. `spotcheck/C-paths.md` now lists flagged and exempt paths.
+  - `81-DECISION-RULE.md` section 3 (C fabrications) has a post-hoc note, and its new section 9 records decisions a,
+    b and c with the user's words.
+  - `README.md` (Ledger) gives the new caps.
+  - Section 5 above (post-hoc 2) holds the pilot table and the re-projection. The manifest embeds it as
+    `projection.post_hoc_2_pilot_resize`.
+  - Section 7 records decision a as done and the C answers.
+  - TRD 81-18 names the new private-backup location.
+- **Frozen files whose hashes changed:** `scripts/eval81/lib/ledger.cjs`, `scripts/eval81/score/C.cjs`,
+  `scripts/eval81/README.md`, `81-DECISION-RULE.md`.
+- **New manifest:** sha256 `e5cb39631065c33c6c3ff2ed2da805d8e095e42129c3a0336981f091f528dd33`, 84 files, written at
+  head `14963158`. It is committed by `docs(81-14): post-hoc 2, resize batch caps from the A pilot and freeze the C
+  decisions`.

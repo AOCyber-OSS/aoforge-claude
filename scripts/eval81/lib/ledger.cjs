@@ -35,9 +35,13 @@ const {
 
 const GLOBAL_CAP_USD = 100;
 const OVERSHOOT_FACTOR = 1.25;
-// 1.5x the estimate for A, B and D; E bounded so C keeps its ~$28; C takes the remainder.
-const BATCH_CAPS = { A: 7.5, B: 6, D: 3, E: 55, C: null };
-const BATCH_ESTIMATES = { A: 5, B: 4, D: 2, E: 44, C: 28 };
+// Pre-registered (81-13): A 7.5, B 6, D 3 (1.5x the estimate), E 55, C the remainder; A's estimate was 5.
+// POST-HOC 2 (TRD 81-14, user 2026-10-17): resized from batch A's 4-run pilot (charged per run: haiku mean $0.0093,
+// sonnet mean $0.148) so A and B complete all 36 runs up to about 3x the pilot cost and D its 24 sessions up to
+// about 1.65x 81-10's upper-end estimate; A + B + D + E caps sum to $80, so C keeps at least $20; A's estimate is
+// the pilot projection. The ledger rows in <R>/ledger.json were updated to match.
+const BATCH_CAPS = { A: 10, B: 10, D: 5, E: 55, C: null };
+const BATCH_ESTIMATES = { A: 3, B: 4, D: 2, E: 44, C: 28 };
 const LEDGER_VERSION = 1;
 // Float slack on the "<=" comparisons, far below a cent.
 const EPS = 1e-9;

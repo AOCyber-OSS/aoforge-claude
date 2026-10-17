@@ -202,9 +202,10 @@ runs those ids.
 ## Ledger: reserve before, charge after
 
 - Before every spawn: `total + reserve <= $100`. The reserve is `max(cap x 1.25, cap + the largest overshoot seen for
-  the same batch and role)`. The batch must also fit: `batch spent + cap <= batch cap` (A 7.5, B 6, D 3, E 55, C the
-  remainder). A refused run is recorded `skipped_budget`, with the reason (`global_cap` or `batch_cap`) and a basis
-  naming the reserve. Then the batch stops with exit 3.
+  the same batch and role)`. The batch must also fit: `batch spent + cap <= batch cap` (pre-registered: A 7.5, B 6,
+  D 3, E 55, C the remainder; **post-hoc 2, TRD 81-14, user 2026-10-17: A 10, B 10, D 5, E 55, C the remainder**,
+  sized from batch A's 4-run pilot). A refused run is recorded `skipped_budget`, with the reason (`global_cap` or
+  `batch_cap`) and a basis naming the reserve. Then the batch stops with exit 3.
 - After every run, the ledger charges `max(reported total_cost_usd, the transcript-priced cost of the main session
   plus every subagent)`. So a cap the CLI overshoots, or a reported cost that leaves out subagents, cannot hide spend.
   The record keeps both figures, `cap_usd`, `reserve_usd`, `overshoot_usd` and `cost_source` (`reported`,

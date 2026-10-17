@@ -27,9 +27,10 @@
  * rather than the agent's work directory. A path exists when it is a file or directory of the codebase or the tail of
  * one (a document may say `check/worker.go` for `internal/check/worker.go`). Ignored: URLs, absolute and home paths,
  * globs and placeholders, Go import paths (a host-looking first segment, or a standard-library root that is not a
- * directory of the codebase), MIME types, `I/O`-style capitals. The check is literal by the pre-registered rule, so
- * a document that says "there is no `go.sum`" is counted too; the flagged paths are listed in spotcheck/C-paths.md for
- * a person to read.
+ * directory of the codebase), MIME types, `I/O`-style capitals. Pre-registered as literal (a document saying "there
+ * is no `go.sum`" counted too); POST-HOC 2 (TRD 81-14, user 2026-10-17) exempts negated claims: a path every mention of
+ * which says it is absent is not counted (see negatedMention). Flagged and exempt paths are listed in
+ * spotcheck/C-paths.md for a person to read.
  *
  * Results written under --out carry ids, counts and rates only. The spot-check sample (checklist text, quotes,
  * document context) and the path review go to <root>/spotcheck/ and are refused under --out.
@@ -114,7 +115,7 @@ function codeSpans(text) {
       continue;
     }
     if (inFence) continue;
-    for (const m of line.matchAll(/`([^`]+)`/g)) out.push({ span: m[1].trim(), line });
+    for (const m of line.matchAll(/`([^`]+)`/g)) out.push({ span: m[1].trim(), line, at: m.index, raw: m[0] });
   }
   return out;
 }
@@ -145,18 +146,70 @@ function pathCandidate(span) {
   return { path: s, segs, hasExt };
 }
 
-/** [{path, line}] for every distinct back-ticked repository path in text that is not in the codebase index. */
-function missingPaths(text, index) {
-  const seen = new Set();
-  const flagged = [];
-  for (const { span, line } of codeSpans(text)) {
-    const c = pathCandidate(span);
-    if (!c || seen.has(c.path)) continue;
-    seen.add(c.path);
-    if (c.segs.length > 1 && !c.hasExt && !index.top.has(c.segs[0]) && (STDLIB_ROOTS.has(c.segs[0]) || MIME_ROOTS.has(c.segs[0]))) continue;
-    if (!index.all.has(c.path)) flagged.push({ path: c.path, line: line.trim().slice(0, 200) });
+// Negated claims, POST-HOC 2 (TRD 81-14, user 2026-10-17: "the mapper fabrication check exempts negated claims (e.g.
+// 'there is no go.sum')"). A mention of a path is negated when, on its line and with every other code span masked,
+//   - the last negator before it (no, not, without, lack(s/ing), missing, absent, never, nor, neither) is followed only
+//     by up to four filler words (a, the, any, file, directory, lock, or, ...), as in "there is no `go.sum`", "no lock
+//     file (`yarn.lock`)", "Missing: `CHANGELOG.md`", "No `a` or `b` is checked in"; or
+//   - it is directly followed by an absence phrase: "does not exist", "doesn't exist", "is absent", "is missing",
+//     "is not present / there / checked in / committed / tracked / included / found", "(missing)", "not found".
+// A path is exempt only when EVERY mention of it is negated; one asserted mention still makes it a fabrication.
+const SPAN_MASK = 'xspanx';
+const NEGATORS = /\b(?:no|not|without|lacks?|lacking|missing|absent|never|nor|neither)\b/gi;
+const NEGATION_FILLERS = new Set(['a', 'an', 'the', 'any', 'such', 'single', 'separate', 'file', 'files', 'directory',
+  'directories', 'dir', 'folder', 'lock', 'lockfile', 'checksum', 'manifest', 'module', 'committed', 'checked-in',
+  'top-level', 'root', 'yet', 'or', 'and', 'nor', SPAN_MASK]);
+const ABSENT_AFTER = new RegExp([
+  '^[\\s)\\]"\'’,:;–—-]*\\(?\\s*(?:(?:file|directory|folder|dir)\\s+)?(?:',
+  '(?:is|are|was|were)\\s+(?:absent|missing|not\\s+(?:present|there|checked\\s+in|committed|tracked|included|found|in\\s+the\\s+repo(?:sitory)?))',
+  '|(?:isn|aren|wasn|weren)[\'’]t\\s+(?:present|there|checked\\s+in|committed|tracked|included|found)',
+  '|(?:does|do|did)\\s+not\\s+exist|(?:doesn|don|didn)[\'’]t\\s+exist',
+  '|absent\\b|missing\\b|not\\s+found)',
+].join(''), 'i');
+
+const maskSpans = (s) => s.replace(/`[^`]+`/g, ` ${SPAN_MASK} `);
+
+/** Is the code span at line[at, at + length) a negated mention (the path named only to say it is absent)? */
+function negatedMention(line, at, length) {
+  const before = maskSpans(line.slice(0, at)).slice(-160);
+  let last = null;
+  for (const m of before.matchAll(NEGATORS)) last = m;
+  if (last) {
+    const words = before.slice(last.index + last[0].length).split(/[\s,:;()[\]"'’]+/).filter(Boolean).map((w) => w.toLowerCase());
+    if (words.length <= 4 && words.every((w) => NEGATION_FILLERS.has(w))) return true;
   }
-  return flagged;
+  return ABSENT_AFTER.test(maskSpans(line.slice(at + length)));
+}
+
+/**
+ * The path check of a document: {flagged: [{path, line}], exempt: [{path, line}]} over the distinct back-ticked
+ * repository paths that are not in the codebase index. `exempt` holds the paths every mention of which is negated
+ * (post-hoc 2); `flagged` the rest, which count as fabrications.
+ */
+function pathCheck(text, index) {
+  const byPath = new Map();
+  for (const { span, line, at, raw } of codeSpans(text)) {
+    const c = pathCandidate(span);
+    if (!c) continue;
+    if (c.segs.length > 1 && !c.hasExt && !index.top.has(c.segs[0]) && (STDLIB_ROOTS.has(c.segs[0]) || MIME_ROOTS.has(c.segs[0]))) continue;
+    if (index.all.has(c.path)) continue;
+    const negated = negatedMention(line, at, raw.length);
+    const shown = line.trim().slice(0, 200);
+    const cur = byPath.get(c.path);
+    if (!cur) byPath.set(c.path, { path: c.path, line: shown, negated });
+    else if (cur.negated && !negated) Object.assign(cur, { line: shown, negated: false });
+  }
+  const all = [...byPath.values()];
+  return {
+    flagged: all.filter((p) => !p.negated).map(({ path: p, line }) => ({ path: p, line })),
+    exempt: all.filter((p) => p.negated).map(({ path: p, line }) => ({ path: p, line })),
+  };
+}
+
+/** [{path, line}] for every distinct back-ticked repository path in text that is not in the codebase index and is
+ * not exempt as a negated claim. */
+function missingPaths(text, index) {
+  return pathCheck(text, index).flagged;
 }
 
 /** The distinct back-ticked repository paths of text that the codebase index does not contain. */
@@ -281,11 +334,12 @@ function evaluate({ root, repo, privateFile, commitmentFile } = {}) {
       }
     }
     let flagged = [];
+    let exempt = [];
     let usedWork = false;
     if (entry.kind === 'mapper') {
       const where = indexFor(entry, found.dir);
       usedWork = where.usedWork;
-      flagged = missingPaths(document, where.index);
+      ({ flagged, exempt } = pathCheck(document, where.index));
     }
     return {
       ...ev,
@@ -294,7 +348,7 @@ function evaluate({ root, repo, privateFile, commitmentFile } = {}) {
       checklist,
       verdicts: resolved.verdicts,
       counts,
-      fab: { grader: graded.fabrications.length, mechanical: flagged.length, paths: flagged },
+      fab: { grader: graded.fabrications.length, mechanical: flagged.length, paths: flagged, exempt },
       unknown: resolved.unknown,
       quotes,
       usedWork,
@@ -380,7 +434,7 @@ function buildResult(ev) {
   const notes = [];
   if (note && note.reduction) notes.push(`Recorded reduction: ${note.reduction}.`);
   notes.push('The mechanical path check applies to codebase-mapper runs only; a project-researcher run has no codebase to check against.');
-  notes.push('The mechanical path check is literal (81-DECISION-RULE.md): a back-ticked path that is not in the codebase counts even where the document says the path does not exist; the flagged paths are listed in the eval root (spotcheck/C-paths.md).');
+  notes.push('The mechanical path check exempts negated claims (81-DECISION-RULE.md, post-hoc 2): a back-ticked path that is not in the codebase counts unless every mention of it says it is absent ("there is no `go.sum`"); flagged and exempt paths are listed in the eval root (spotcheck/C-paths.md).');
   const unknown = scored.reduce((a, e) => a + e.unknown, 0);
   if (unknown > 0) notes.push(`${unknown} grader verdicts named unknown item ids and were ignored (${scored.filter((e) => e.unknown > 0).length} runs).`);
   const quotes = scored.reduce((a, e) => ({ checked: a.checked + e.quotes.checked, missing: a.missing + e.quotes.missing }), { checked: 0, missing: 0 });
@@ -484,13 +538,15 @@ function sampleText({ picks, seed, k, total }) {
 
 function pathReviewText(evals) {
   const lines = ['# Test C: back-ticked paths that are not in the codebase', '',
-    'The mechanical path check counted these as fabrications (mapper runs). Read them: a path named only to say it does not exist is a false positive of the literal rule. Stays in the eval root; do not commit.', ''];
+    'The mechanical path check counted the "flagged" paths as fabrications (mapper runs). The "exempt" paths were named only to say they are absent and did not count (post-hoc 2, negated claims). Read both: a flagged path that is really a negation, or an exempt one that is really asserted, is a misreading of the check. Stays in the eval root; do not commit.', ''];
   let any = false;
   for (const ev of evals) {
-    if (ev.status !== 'scored' || ev.fab.paths.length === 0) continue;
+    const exempt = ev.status === 'scored' && Array.isArray(ev.fab.exempt) ? ev.fab.exempt : [];
+    if (ev.status !== 'scored' || (ev.fab.paths.length === 0 && exempt.length === 0)) continue;
     any = true;
     lines.push(`## ${ev.entry.id} (${ev.entry.role}, ${ev.entry.model}, ${FIXTURE_LABEL[ev.entry.codebase]})`, '');
-    for (const f of ev.fab.paths) lines.push(`- \`${f.path}\`  in: ${f.line}`);
+    for (const f of ev.fab.paths) lines.push(`- flagged \`${f.path}\`  in: ${f.line}`);
+    for (const f of exempt) lines.push(`- exempt \`${f.path}\`  in: ${f.line}`);
     lines.push('');
   }
   if (!any) lines.push('(no flagged paths)', '');
@@ -557,6 +613,8 @@ module.exports = {
   indexFromDir,
   pathFabrications,
   missingPaths,
+  pathCheck,
+  negatedMention,
   SEED,
   SAMPLE_K,
   ROLE_ORDER,

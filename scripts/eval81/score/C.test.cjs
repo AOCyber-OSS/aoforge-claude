@@ -151,6 +151,43 @@ describe('score C: the mechanical path check', () => {
     ]);
   });
 
+  // 81-DECISION-RULE.md post-hoc 2 (2026-10-17): "the mapper fabrication check exempts negated claims (e.g. 'there
+  // is no go.sum')". A back-ticked path the document only names to say it is absent is not a fabrication.
+  test('8g. a path the document says is absent is exempt (negated claim)', () => {
+    const negated = [
+      'There is no `go.sum` because the module has no dependencies.',
+      '`config.yaml` does not exist; settings come from the environment.',
+      'No `docs/missing.md` or `internal/ghost/g.go` is checked in.',
+      'The repo has no lock file (`yarn.lock`).',
+      'Missing: `CHANGELOG.md`',
+      'It ships without a `Jenkinsfile`.',
+      '`internal/nope` is absent.',
+      '`deploy/k8s.yaml` (missing)',
+      '`build/out.txt` is not checked in.',
+      '`tools/gen.go` doesn\'t exist yet.',
+    ].join('\n');
+    assert.deepEqual(S.pathFabrications(negated, index), []);
+    const check = S.pathCheck(negated, index);
+    assert.deepEqual(check.flagged, []);
+    assert.deepEqual(check.exempt.map((e) => e.path).sort(), [
+      'CHANGELOG.md', 'Jenkinsfile', 'build/out.txt', 'config.yaml', 'deploy/k8s.yaml', 'docs/missing.md', 'go.sum',
+      'internal/ghost/g.go', 'internal/nope', 'tools/gen.go', 'yarn.lock',
+    ]);
+  });
+
+  test('8h. a negation about something else, or a path asserted elsewhere, is still a fabrication', () => {
+    const asserted = [
+      'No changes to `internal/ghost/g.go` were needed.',
+      '`internal/nope/x.go` is not tested.',
+      'It never calls `pkg/ghost.go` directly.',
+      'Both `docs/missing.md` and `go.sum` are listed.',
+    ].join('\n');
+    assert.deepEqual(S.pathFabrications(asserted, index).sort(), ['docs/missing.md', 'go.sum', 'internal/ghost/g.go', 'internal/nope/x.go', 'pkg/ghost.go']);
+    const mixed = 'There is no `config.yaml` at the root.\nThe loader reads `config.yaml` on start.';
+    assert.deepEqual(S.pathFabrications(mixed, index), ['config.yaml']);
+    assert.deepEqual(S.pathCheck(mixed, index).exempt, []);
+  });
+
   test('8e. a stdlib-looking first segment is a path when the codebase has that directory', () => {
     const withNet = S.indexFromFiles(['net/server.go', 'main.go']);
     assert.deepEqual(S.pathFabrications('`net/http`', withNet), ['net/http']);
