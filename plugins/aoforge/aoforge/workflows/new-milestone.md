@@ -186,6 +186,8 @@ Use template: ~/.claude/aoforge/templates/research-project/{FILE}
 | FILE | STACK.md | FEATURES.md | ARCHITECTURE.md | PITFALLS.md |
 | MODEL | `researcher_models.stack` | `researcher_models.features` | `researcher_models.architecture` | `researcher_models.pitfalls` |
 
+<!-- model-source: MODEL from researcher_models.<dimension> -->
+
 After all 4 complete, spawn synthesizer. It returns the SUMMARY.md content as text — the harness
 blocks subagent report files, so the orchestrator (you) writes and commits it:
 

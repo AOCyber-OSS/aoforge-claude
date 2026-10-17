@@ -13,8 +13,7 @@ Standalone research command. For most workflows, use `/aoforge:plan-objective` w
 
 @~/.claude/aoforge/references/model-profile-resolution.md
 
-Resolve model for:
-- `objective-researcher`
+Step 1 resolves the researcher's model once the objective is normalized.
 
 ## Step 1: Normalize and Validate Objective
 
@@ -25,6 +24,10 @@ OBJECTIVE_INFO=$(node ~/.claude/aoforge/bin/aof-tools.cjs roadmap get-objective 
 ```
 
 If `found` is false: Error and exit.
+
+```bash
+RESEARCHER_MODEL=$(node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model objective-researcher --objective "${OBJECTIVE}" --raw)
+```
 
 ## Step 2: Check Existing Research
 

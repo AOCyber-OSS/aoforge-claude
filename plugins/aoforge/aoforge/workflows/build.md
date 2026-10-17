@@ -33,10 +33,10 @@ Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `commit_do
 `init plan-objective` emits no `executor_model` or `verifier_model` (TRD 76-01: the step 8 verifier
 used to spawn with an empty model). Resolve both; use them as `{executor_model}` and `{verifier_model}`:
 ```bash
-node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model executor --objective "$OBJECTIVE_NUMBER" --raw
+EXECUTOR_MODEL=$(node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model executor --objective "$OBJECTIVE_NUMBER" --raw)
 ```
 ```bash
-node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model verifier --objective "$OBJECTIVE_NUMBER" --raw
+VERIFIER_MODEL=$(node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model verifier --objective "$OBJECTIVE_NUMBER" --raw)
 ```
 
 **If `planning_exists` is false:** Error — run `/aoforge:new-project` first.

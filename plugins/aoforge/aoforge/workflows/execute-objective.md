@@ -386,6 +386,9 @@ Note the printed `MODE` value as a literal. A shell variable does not survive in
 
    Safety rule: never downgrade executor below sonnet.
 
+   The model this step picks for a plan is `{resolved_executor_model}`, which every spawn of that plan below uses.
+   <!-- model-source: resolved_executor_model from executor_model -->
+
 4. **Spawn executor agents:**
 
    Embed the full TRD content inline in every executor spawn prompt. A parallel-wave
@@ -907,7 +910,7 @@ When executor returns a checkpoint AND `MODE` is `"autonomous"`:
   ```
   Task(
     subagent_type="verifier",
-    model="{resolved_verifier_model}",
+    model="{verifier_model}",
     prompt="
       <objective>
       CHECKPOINT VERIFICATION MODE — scoped functional pass, not full objective verification.
@@ -1309,6 +1312,11 @@ MAX_GAP_CYCLES=2
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ```
 
+   `init execute-objective` prints no planner model (quick 42). Resolve it once per run:
+   ```bash
+   PLANNER_MODEL=$(node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model planner --objective "${OBJECTIVE_NUMBER}" --raw)
+   ```
+
    Spawn planner with `--gaps` flag:
    ```
    Task(
@@ -1320,7 +1328,7 @@ MAX_GAP_CYCLES=2
      **Roadmap:** {roadmap_content}
      </planning_context>",
      subagent_type="planner",
-     model="{planner_model}",
+     model="{PLANNER_MODEL}",
      description="Plan gap closure for Objective {objective_number}"
    )
    ```
