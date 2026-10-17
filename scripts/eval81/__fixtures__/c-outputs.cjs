@@ -27,6 +27,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
+const { LEGACY } = require('../../../plugins/aoforge/aoforge/bin/lib/legacy-names.cjs');
+
 const C_FIXTURES = path.join(__dirname, '..', 'fixtures', 'C');
 const SYNTHETIC = JSON.parse(fs.readFileSync(path.join(C_FIXTURES, 'checklists-synthetic.json'), 'utf8'));
 const RESEARCHER = JSON.parse(fs.readFileSync(path.join(C_FIXTURES, 'checklists-researcher.json'), 'utf8'));
@@ -318,7 +320,7 @@ function fakeFleetItems(focus) {
 
 /**
  * fakeFleet(base, {mutate}): under `base` write
- *   source/                 a git repository with go.mod, main.go, .planning/, .claude/ (never the real fleet source)
+ *   source/                 a git repository with go.mod, main.go, a legacy planning directory, .claude/ (never the real fleet source)
  *   private/fleet-checklists.json   made-up private file: {alias, source_path, source_commit, checklists}
  *   fleet-commitment.json   {alias, sha256, private_file, items_per_focus} matching the private file
  * `mutate(text)` rewrites the private file's text after the commitment is computed (a hash-mismatch case).
@@ -332,7 +334,7 @@ function fakeFleet(base, { mutate } = {}) {
     'go.mod': 'module example.invalid/fleetstub\n\ngo 1.23\n',
     'main.go': 'package main\n\nfunc main() {}\n',
     'internal/store/store.go': 'package store\n',
-    '.planning/NOTES.md': '# planning notes that must not reach a run\n',
+    [`${LEGACY.planningDir}/NOTES.md`]: '# planning notes that must not reach a run\n',
     '.claude/settings.json': '{}\n',
   };
   for (const [rel, text] of Object.entries(files)) {
@@ -348,7 +350,7 @@ function fakeFleet(base, { mutate } = {}) {
     alias: 'fleet-fixture',
     source_path: sourceDir,
     source_commit: sourceCommit,
-    prepared: ['removed .planning/', 'removed .claude/', 'added .aoforge/'],
+    prepared: [`removed ${LEGACY.planningDir}/`, 'removed .claude/', 'added .aoforge/'],
     checklists,
   };
   const text = `${JSON.stringify(privateObject, null, 2)}\n`;
