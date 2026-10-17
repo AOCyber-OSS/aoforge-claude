@@ -67,8 +67,8 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 **Objective complete:** 75 — Prospective estimate retest and todo sweep (completed 2026-10-10, 5/5 TRDs)
 **Objective complete:** 78 — Remove the rename shims (completed 2026-10-17, 12/12 TRDs)
 **Objective complete:** 80 — Adopt migrates legacy projects (completed 2026-10-17, 9/9 TRDs)
-**Status:** Objective 80 verified 2026-10-17 (5/5, 80-VERIFICATION.md passed; its open limits closed in quick 43). Objective 79 in progress: 79-01..79-08 done, 79-09/79-10 await approval after re-validation. Quick 40-43 done
-**Progress:** [██████████] 100%
+**Status:** Executing objective 81 — 1/19 TRDs complete
+**Progress:** [██████████] 97%
 
 ## Branch State (post-merge)
 
@@ -98,6 +98,7 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 - **`feature/v1.1-coordination` is duplicative** — same content as `feature/v1.1`. Should be deleted to avoid confusion. Its worktree at `/Users/markemerson/Source/devflow-claude-v11` can be removed.
 - G5 (73-08): the aoforge-watch home ~/.aoforge/ makes HOME resolve as an AOForge project root (compat.findProjectRoot walks up unbounded); every repo under HOME without its own .aoforge/ is treated as ambient AOForge by gate-edits, gate-commits, route-intent, classify-session and others; 4 classify-session tests fail on this machine. Fix before the release (move the daemon home or bound the walk).
 - 79-09 blocked by the org cutover freeze (rulesets cutover-freeze-branches 25294524 and cutover-freeze-tags 25294526, active since 2026-10-17 02:45): the push of integrate/3.1.0 (local 3627c4a9, origin a589d306) was rejected. Resume 79-09 after the freeze lifts; re-check the remote URL and rulesets first.
+- 81-11: private/fleet-checklists.json (untracked, sha256 86f909f5...) does not travel with the 81-06 merge; copy it into the main checkout after merge from the 81-06 worktree or scratchpad/eval81/fleet/fleet-checklists.json
 
 ### Quick Tasks Completed
 
@@ -158,6 +159,6 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 
 ## Session Continuity
 
-Last session: 2026-10-17T08:52:12.947Z
+Last session: 2026-10-17T16:41:09.771Z
 Resume file: `None`
-Stopped at: Quick 43: adopt finishes on an ignored tree's commit; 0005 converges in one apply; reference names adopt
+Stopped at: Completed 81-06-mapper-researcher-fixtures-c-TRD.md
