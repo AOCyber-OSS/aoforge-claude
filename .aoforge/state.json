@@ -1920,11 +1920,17 @@
       "objective": "81",
       "summary": "81-07: resident prompt = agent body (no frontmatter) + largest spawn template; named @ paths and pack fragments reported apart. 3.1.0 is branch HEAD (plugins tree 32213984); verifier -35.2%, executor -18.4%, planner -10.4%.",
       "rationale": null
+    },
+    {
+      "objective": "81",
+      "summary": "81-06: test C synthetic config inlines the full 3.1.0 template plus stamp so no migration is pending (the upgrade hook would otherwise commit inside a run); the fleet copy uses the same tree via minimalAoforge(FLEET_PROJECT)",
+      "rationale": null
     }
   ],
   "blockers": [
     "G5 (73-08): the aoforge-watch home ~/.aoforge/ makes HOME resolve as an AOForge project root (compat.findProjectRoot walks up unbounded); every repo under HOME without its own .aoforge/ is treated as ambient AOForge by gate-edits, gate-commits, route-intent, classify-session and others; 4 classify-session tests fail on this machine. Fix before the release (move the daemon home or bound the walk).",
-    "79-09 blocked by the org cutover freeze (rulesets cutover-freeze-branches 25294524 and cutover-freeze-tags 25294526, active since 2026-10-17 02:45): the push of integrate/3.1.0 (local 3627c4a9, origin a589d306) was rejected. Resume 79-09 after the freeze lifts; re-check the remote URL and rulesets first."
+    "79-09 blocked by the org cutover freeze (rulesets cutover-freeze-branches 25294524 and cutover-freeze-tags 25294526, active since 2026-10-17 02:45): the push of integrate/3.1.0 (local 3627c4a9, origin a589d306) was rejected. Resume 79-09 after the freeze lifts; re-check the remote URL and rulesets first.",
+    "81-11: private/fleet-checklists.json (untracked, sha256 86f909f5...) does not travel with the 81-06 merge; copy it into the main checkout after merge from the 81-06 worktree or scratchpad/eval81/fleet/fleet-checklists.json"
   ],
   "session_log": []
 }
