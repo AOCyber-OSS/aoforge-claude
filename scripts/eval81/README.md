@@ -188,8 +188,11 @@ runs those ids.
 - **Tools check.** On every agent run with an init event, every tool the agent's frontmatter declares (or `--tools`
   names) must appear in the init tools. Edit, Write, WebFetch, WebSearch and NotebookEdit must be absent unless
   declared. MCP wildcards are ignored. A mismatch means `--agent` did not take: `harness_error`, exit 6 after that
-  one run. How the real CLI reports tools for `--agent` is first observed on batch A's first live run; the live TRD
-  says what to do if the check misfires.
+  one run. **Post-hoc (TRD 81-14, user-accepted 2026-10-17):** batch A's first live run showed Claude Code 2.1.302
+  listing the verifier's tools as `Read, Write, Bash, Task, Edit` against the declared `Read, Write, Bash, Grep, Glob,
+  Agent`. The check now treats `Agent` and `Task` as one tool, counts `Grep` and `Glob` as present when `Bash` is
+  listed, and allows `Edit` when `Write` is declared. Any other missing tool, and an undeclared Edit, Write, WebFetch,
+  WebSearch or NotebookEdit, still fails. The record's `tools_check.satisfied_by` names each tool met another way.
 - **Order.** A, B, D, E, C. A live run of a batch refuses (exit 2) until every earlier batch is `complete` or
   `stopped`. A `complete` batch whose `runs()` lists new runs (C's graders) goes back to `running`, runs only the new
   ids and completes again.

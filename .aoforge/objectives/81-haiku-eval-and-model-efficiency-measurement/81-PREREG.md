@@ -351,4 +351,28 @@ It reads two scratch files, `<R>/trees.json` and `<R>/projection-manifest.json`.
 
 ## 9. Pre-run amendments
 
-None.
+None before the first live run. The amendments below were made after it and are **post-hoc** (section 1, rule 3).
+None replaces the text it amends.
+
+### 9.1 Post-hoc 1 (2026-10-17, TRD 81-14): relaxed init-tools check
+
+- **Why.** Batch A's first live run, `A-A1-haiku-r1`, ran as the verifier and published a correct `passed` on a clean
+  fixture. The runner still stopped batch A with exit 6, because Claude Code 2.1.302 listed the init tools as
+  `Read, Write, Bash, Task, Edit` against the frontmatter's `Read, Write, Bash, Grep, Glob, Agent`.
+- **The user's words** (2026-10-17): "relax, re-run" (1 + 2a): relax the check as proposed, keep it correct for B's
+  job-checker and C's agents, and re-run the stopped run.
+- **What changed.** `runner.checkTools` (test-first: `scripts/eval81/lib/runner-tools.test.cjs`, 11 tests, RED 11/11
+  then GREEN 11/11):
+  - `Agent` and `Task` satisfy each other;
+  - `Grep` and `Glob` count as present when `Bash` is listed;
+  - `Edit` is allowed when `Write` is declared;
+  - any other missing tool, and an undeclared Edit, Write, WebFetch, WebSearch or NotebookEdit, still fails. The
+    job-checker (no Write) still fails on Edit.
+  - The record's `tools_check.satisfied_by` names each tool met another way.
+- **Frozen files whose hashes changed:** `scripts/eval81/lib/runner.cjs`, `scripts/eval81/README.md`. Nothing that
+  decides or scores an outcome changed.
+- **The stopped run.** Its ledger entry was re-keyed to `A-A1-haiku-r1@attempt1`, keeping its $0.011115 charged, and
+  the id was dropped from `R/queue/A.json` `done`, so the run re-runs as attempt 2. Its first dir stays as
+  `A-A1-haiku-r1.prev-<n>`. Batch A was reopened with `--reopen --reason "relaxed init-tools check (user 2026-10-17)"`.
+- **New manifest:** sha256 `be06f165c9928862c0e78e70e0143c66b41e62eabfe392b0b850da314abfa62a`, 84 files, written at
+  head `fed025502a25160b90b63397435a6238ea19d744`.

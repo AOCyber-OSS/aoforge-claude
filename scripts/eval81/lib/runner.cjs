@@ -375,9 +375,29 @@ function hasInitEvent(text) {
   });
 }
 
+// CLI tool naming observed live on batch A's first run (A-A1-haiku-r1, Claude Code 2.1.302): the verifier declared
+// `Read, Write, Bash, Grep, Glob, Agent` and the init event listed `Read, Write, Bash, Task, Edit`. POST-HOC harness
+// deviation (TRD 81-14, accepted by the user on 2026-10-17, "relax, re-run"):
+//   - Agent and Task name the same subagent tool, so either satisfies the other;
+//   - Grep and Glob are served through Bash by this CLI, so they count as present when Bash is listed;
+//   - Edit comes with Write, so Edit is allowed when Write is declared.
+const TOOL_ALIASES = Object.freeze({ Agent: ['Task'], Task: ['Agent'] });
+const SERVED_BY_BASH = Object.freeze(['Grep', 'Glob']);
+const IMPLIED_BY = Object.freeze({ Edit: 'Write' });
+
+/** How a declared tool is present in the init tools: itself, an alias, Bash for Grep/Glob, or null (missing). */
+function presentAs(tool, initTools) {
+  if (initTools.includes(tool)) return tool;
+  const alias = (TOOL_ALIASES[tool] || []).find((a) => initTools.includes(a));
+  if (alias) return alias;
+  if (SERVED_BY_BASH.includes(tool) && initTools.includes('Bash')) return 'Bash';
+  return null;
+}
+
 /**
  * The first-run tools check for agent runs: every tool the agent declares (or `--tools` names) is in the init event,
- * and none of Edit, Write, WebFetch, WebSearch, NotebookEdit appears unless declared.
+ * and none of Edit, Write, WebFetch, WebSearch, NotebookEdit appears unless declared, with the CLI naming rules above
+ * (Agent = Task, Grep/Glob through Bash, Edit with Write). `satisfied_by` names each declared tool met another way.
  */
 function checkTools(desc, initTools, pluginDir) {
   let expected;
@@ -391,9 +411,17 @@ function checkTools(desc, initTools, pluginDir) {
     source = path.join(pluginDir, 'agents', `${agentName(desc.agent)}.md`);
     if (expected === null) return { ok: true, skipped: 'the agent declares no tools list', source };
   }
-  const missing = expected.filter((t) => !initTools.includes(t));
-  const unexpected = CORE_OPTIONAL_TOOLS.filter((t) => !expected.includes(t) && initTools.includes(t));
-  return { ok: missing.length === 0 && unexpected.length === 0, expected, missing, unexpected, source };
+  const missing = [];
+  const satisfiedBy = {};
+  for (const t of expected) {
+    const as = presentAs(t, initTools);
+    if (as === null) missing.push(t);
+    else if (as !== t) satisfiedBy[t] = as;
+  }
+  const allowed = new Set(expected);
+  for (const [implied, by] of Object.entries(IMPLIED_BY)) if (expected.includes(by)) allowed.add(implied);
+  const unexpected = CORE_OPTIONAL_TOOLS.filter((t) => !allowed.has(t) && initTools.includes(t));
+  return { ok: missing.length === 0 && unexpected.length === 0, expected, missing, unexpected, satisfied_by: satisfiedBy, source };
 }
 
 /** Absolute paths named in permission denials, split into inside the sandbox/trees and under a deny root. */

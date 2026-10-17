@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "created_at": "2026-10-17T17:50:59.704Z",
-  "head": "fe56ba4a5a7c4f3b9382f08307760cd215b72d25",
+  "created_at": "2026-10-17T18:22:54.951Z",
+  "head": "fed025502a25160b90b63397435a6238ea19d744",
   "trees": {
     "3.0.0": {
       "ref": "v3.0.0",
@@ -525,7 +525,7 @@
     ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-DECISION-RULE.md": "0e579d42a1b95cd189015d4509c4f5b732ff120bc6acb3d440d5f3fe1671cda4",
     ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/private/fleet-checklists.json": "86f909f54de3ea4f95933be99d6eb23da932435b8bb6da71c5be63cd4be05115",
     ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/static-prompt.json": "cd57eaa512941dfc3b995375c7b67a0a2fd156bcfd06518a512fe03e1cccfeb7",
-    "scripts/eval81/README.md": "16afe664a97cf5bbf0f025d0fc26da3b42f025fe33ffe8159fe7b4b4a15cbe54",
+    "scripts/eval81/README.md": "7dcbc0ef75638b277baebc0a1e967c4e47cfbe76359a19e173139167492e1b04",
     "scripts/eval81/__fixtures__/agent-outputs.cjs": "bcba66e838a1a8e1aed9db6c32d069e3ca420486e75f28d94ad9e48cc11a7506",
     "scripts/eval81/__fixtures__/c-outputs.cjs": "03444b00fb419358af731b7dfe98cc487928db8b1d3e3343bde8aff7ec95b605",
     "scripts/eval81/__fixtures__/calibration.cjs": "9b7383a5e3e0383b6f94b3310803afff20ebe1d0a5d5c1cc32039d2710db7dd9",
@@ -591,7 +591,7 @@
     "scripts/eval81/lib/report.cjs": "a4f571697e211a72a3f9a7b71481650bb521fdf3280a4bcb4e2d149adf618dfb",
     "scripts/eval81/lib/result.cjs": "7f361e3ce34feca5b8f3ff8eb99ac46974864dc4189495bfb86ffe42f025a34d",
     "scripts/eval81/lib/roles.cjs": "bbfcd5700249816fb1a0f8f9d6e5f10974cee4a12da72009dece73e8b73c8040",
-    "scripts/eval81/lib/runner.cjs": "047b5dec507de7ca34942af8e9f4a638b00f1ea3509c7b4f41796f4cabb1dd42",
+    "scripts/eval81/lib/runner.cjs": "2f0ffb41c82c5770433b7f4c1b265b22e45d940eee641fc1ed7dabc04cba82fc",
     "scripts/eval81/lib/sandbox.cjs": "9749a8243646e5898922bc89ab21ad7002ec5aed192c9f1be02a480680804517",
     "scripts/eval81/lib/secret.cjs": "ab40c778c94af104a1346a68f22525de777c7e4470670dba5bc3c43640b048d3",
     "scripts/eval81/lib/stats.cjs": "8b2ee26e1b1cc934fb34635c57edf00718cc6a982d85fb5c2a6336e696e1f1ff",
