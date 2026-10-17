@@ -10,6 +10,6 @@ tags: [eval, 76-08, fixture, transcripts, role-metrics, measurement]
 **In progress.**
 
 ## Progress
-- [x] Task 1: E fixture, hidden acceptance checks, reference solutions and proofs — (this commit)
-- [ ] Task 2: Batch E module and per-role transcript metrics — next step: write scripts/eval81/batches/E.test.cjs and scripts/eval81/lib/roles.test.cjs (test list 4-8) and watch them fail before creating batches/E.cjs and lib/roles.cjs
-- [ ] Task 3: Scorer E and the 76-08 measurement renderer
+- [x] Task 1: E fixture, hidden acceptance checks, reference solutions and proofs — ea82d8eb
+- [x] Task 2: Batch E module and per-role transcript metrics — (this commit)
+- [ ] Task 3: Scorer E and the 76-08 measurement renderer — next step: write scripts/eval81/score/E.test.cjs (test list 9-10) over a hand-built root from __fixtures__/transcripts.cjs SCORE_RUNS and see it fail before creating score/E.cjs
