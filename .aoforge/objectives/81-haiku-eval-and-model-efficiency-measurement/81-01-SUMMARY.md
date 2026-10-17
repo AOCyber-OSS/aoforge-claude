@@ -53,6 +53,12 @@ verification:
 
 duration: 12min
 completed: 2026-10-17
+tokens_input: 11695125
+tokens_output: 120288
+tokens_cache_read: 11432411
+tokens_cache_write: 262588
+token_model: "claude-opus-5-5"
+tokens_source: "live"
 ---
 
 # Objective 81 TRD 01: Harness core (run contract, stream parser, ledger, caps, secret handling) Summary
@@ -62,7 +68,7 @@ completed: 2026-10-17
 ## Progress
 - [x] Task 1: Fixture builders and the run contract — 7e9151b7
 - [x] Task 2: Stream parser and secret handling — 781b6261
-- [x] Task 3: Ledger and cap sizing — (this commit)
+- [x] Task 3: Ledger and cap sizing — 7c69ab5a
 
 ## Performance
 
@@ -94,7 +100,7 @@ All test runs used `HOME` and `TMPDIR` under the session scratchpad.
 
 1. **Task 1: Fixture builders and the run contract** - `7e9151b7` (feat)
 2. **Task 2: Stream parser and secret handling** - `781b6261` (feat)
-3. **Task 3: Ledger and cap sizing** - see the docs commit's parent (feat)
+3. **Task 3: Ledger and cap sizing** - `7c69ab5a` (feat)
 
 ## Validation Gate Results
 
@@ -190,3 +196,10 @@ None - no external service configuration required.
 - 81-08 (runner) has every API it lists: `canStart` (refuse -> `skipped_budget`), `chargeFor`/`recordRun`, `transcriptCost(dir, {rates: loadRates()})` (pass `transcript_unpriced` into the record), `childEnv`, `redact`, `scanForSecret`, `assertOrder`, `rebuildLedger`, `chargeLost`.
 - 81-09..81-12 can call `capFor({role, model, batch, calibration})` and `capForWorkflow('quick' | 'build')` unchanged.
 - With today's calibration both E workflows clamp (build 15, quick 6), since planner p90 x opus alone is 30.5.
+
+## Self-Check: PASSED
+
+- FOUND: scripts/eval81/lib/{contract,result,secret,ledger,caps}.cjs and their five .test.cjs files
+- FOUND: scripts/eval81/__fixtures__/stream-json.cjs, scripts/eval81/__fixtures__/calibration.cjs
+- FOUND: 7e9151b7, 781b6261, 7c69ab5a on df/exec-81-01-harness-core-contract-ledger-results
+- Worktree clean after the Task 3 commit; the temporary node_modules symlink was removed
