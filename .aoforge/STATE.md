@@ -147,6 +147,7 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 | 40 | df- agent alias removed from model resolution, df- wording reworded, rename guard catches df- agent/skill names, root skip in verify-completion test | 2026-10-17 | 9ff86db7 | Done | [40-remove-df-leftovers-tighten-the-rename-g](./quick/40-remove-df-leftovers-tighten-the-rename-g/) |
 | 41 | calibrate --also-root counts a moved checkout's agent overhead; live calibration rebuilt (164 spawns, Sonnet 5.5 cache 0.05x) | 2026-10-17 | 7983bacd | Done | [41-calibrate-matches-pre-move-transcripts](./quick/41-calibrate-matches-pre-move-transcripts/) |
 | 42 | Objective 76 gaps: every workflow model placeholder supplied (guard), ui-evaluator escalation, benchmark counts executors, retroactive 76/77 SUMMARYs | 2026-10-17 | 1cb50783 | Done | [42-close-objective-76-gaps](./quick/42-close-objective-76-gaps/) |
+| 43 | Adopt finishes a migrated ignored tree at its commit; migration 0005 keeps ## sections (data-loss fix); reference names /aoforge:adopt; checker nits | 2026-10-17 | 81e89eb2 | Done | [43-adopt-routes-past-a-migrated-gitignored-](./quick/43-adopt-routes-past-a-migrated-gitignored-/) |
 
 ## Accumulated Context
 
