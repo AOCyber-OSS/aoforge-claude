@@ -6,12 +6,12 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 
 **Building:** AOForge (formerly DevFlow Claude) — meta-prompting plugin for Claude Code, evolving into program-aware coordination layer for AO-Cyber-Systems org
 **Core Value:** AI workflow orchestration + cross-repo program awareness for AI-assisted development
-**Current focus:** Objective 79: Reconcile and release 3.1.0
+**Current focus:** Objective 79: Reconcile and release 3.1.0 (79-01..79-08 done; 79-09 and 79-10, the live release steps, await per-action approval after re-validation)
 **Ecosystem:** AODex (Rails+Go API) + AOSentry (LLM Gateway) + Flutter (macOS Hub) + DevFlow (local platform CLI/daemon) + AOForge (this — Claude Code plugin, formerly DevFlow Claude)
 
 ## Current Position
 
-**Milestone:** v1.6 Hardening & Release — started 2026-10-08; Objectives 65-79, 41 requirements mapped; Objectives 65-73, 75, 77 and 78 complete; 74 in progress (OPS-03 deferred by the user); 76 open on 76-06/76-08 as `main` recorded it; 79 in progress (reconcile and release 3.1.0). AOForge 3.0.0 released: tag `v3.0.0` on `main` b4a9d870, 2026-10-09. v1.5 complete 2026-10-08 (archived to .aoforge/milestones/v1.5-*; EST-08 not met, accepted).
+**Milestone:** v1.6 Hardening & Release — started 2026-10-08; Objectives 65-79, 41 requirements mapped; Objectives 65-73, 75, 77 and 78 complete; 74 in progress (OPS-03 deferred by the user); 76 open on 76-06/76-08 as `main` recorded it; 79 in progress (reconcile and release 3.1.0: 79-01..79-08 done; 79-09 and 79-10 await approval after re-validation); 80 (adopt migrates legacy projects) complete and verified 5/5 2026-10-17. AOForge 3.0.0 released: tag `v3.0.0` on `main` b4a9d870, 2026-10-09. v1.5 complete 2026-10-08 (archived to .aoforge/milestones/v1.5-*; EST-08 not met, accepted).
 **Branch:** `integrate/3.1.0` (objective 79: `feat/remove-rename-shims` plus `fix/post-77-verification` through merge afbe19a4); local and unpushed until 79-09, whose PR supersedes #129 (`feat/stack-profile-loader`)
 **Objective complete:** 0 — Refine (kind, work) defaults table from codebase evidence (verified 2026-05-04, 443/443 tests, all 10 SC met)
 **Objective complete:** 1 — GitHub coordination layer (verified 2026-05-04, 563/563 tests, all 6 TRDs done, SC-9 + SC-10 met)
@@ -67,7 +67,7 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 **Objective complete:** 75 — Prospective estimate retest and todo sweep (completed 2026-10-10, 5/5 TRDs)
 **Objective complete:** 78 — Remove the rename shims (completed 2026-10-17, 12/12 TRDs)
 **Objective complete:** 80 — Adopt migrates legacy projects (completed 2026-10-17, 9/9 TRDs)
-**Status:** Objective 80 executed — 9/9 TRDs complete, ready for verification
+**Status:** Objective 80 verified 2026-10-17 (5/5, 80-VERIFICATION.md passed; its open limits closed in quick 43). Objective 79 in progress: 79-01..79-08 done, 79-09/79-10 await approval after re-validation. Quick 40-43 done
 **Progress:** [██████████] 100%
 
 ## Branch State (post-merge)
@@ -156,6 +156,6 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 
 ## Session Continuity
 
-Last session: 2026-10-17T08:17:36.242Z
+Last session: 2026-10-17T08:52:12.947Z
 Resume file: `None`
-Stopped at: Completed 80-09-docs-and-full-validation-TRD.md
+Stopped at: Quick 43: adopt finishes on an ignored tree's commit; 0005 converges in one apply; reference names adopt
