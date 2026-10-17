@@ -648,6 +648,7 @@ STATE.md stays lean; this file grows over time.
 - [Objective 81]: 81-04: test B sets are TRD data rendered by one function; only B4 is flagged by verify trd-pre (task_completeness 02-02), B3/B5/B6 are judgment-only, recorded as precheck_flags in answer-key.json
 - [Objective 81]: 81-05: 390 px test D states are captured through a 390x844 iframe wrapper because headless=new Chrome clamps its window to 500 px wide
 - [Objective 81]: 81-05: test D shown states.json carries no label word (expected text reworded from 74's overlaps/blank); labels.json holds the key; min_share = max(0.05, floor(0.9 x measured)) per region, never below 0.05
+- [Objective 81]: 81-07: resident prompt = agent body (no frontmatter) + largest spawn template; named @ paths and pack fragments reported apart. 3.1.0 is branch HEAD (plugins tree 32213984); verifier -35.2%, executor -18.4%, planner -10.4%.
 
 ## Performance Metrics
 
@@ -893,3 +894,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 81 P03 | 12min | 2 tasks | 3 files |
 | Objective 81 P04 | 15min | 2 tasks | 3 files |
 | Objective 81 P05 | 12min | 3 tasks | 27 files |
+| Objective 81 P07 | 13min | 2 tasks | 4 files |
