@@ -18,7 +18,8 @@
 //     (a pre-rename .mcp.json owner key), doctor checks 15 and 16
 //   - the converter: gh-rebrand and legacy-rewrite (every key NAMES and LEGACY share)
 //   - history readers: session-audit and agent-overhead (transcripts recorded before
-//     the rename)
+//     the rename), and token-usage (the planning paths of former checkout roots for
+//     `calibrate --also-root`)
 //   - PRESERVE (below), and the rename guard and the rename codemod
 //     (scripts/aoforge-rename.cjs), which build their tokens from LEGACY
 // legacy-names.legacy.test.cjs (6) fails on a LEGACY key that nothing reads.

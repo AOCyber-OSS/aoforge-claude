@@ -18,6 +18,10 @@
  * (REPO_ROOT line, else first-record cwd in the repo or one of its `.df-worktrees`, else a `<repo>/.aoforge/` path)
  * and, for a shared objective number, to the
  * objective directory the prompt names.
+ *
+ * repoMatcher also takes `alsoRoots` (quick 41, used by the agent-overhead scan of `calibrate --also-root`): former
+ * checkout roots of the same repository, matched by the same tests, whose planning paths may also use the legacy
+ * planning directory name. Executor indexing here never passes them.
  */
 
 const fs = require('fs');
@@ -28,6 +32,7 @@ const trdIdentify = require('./trd-identify.cjs');
 const { normalizeObjectiveName, objectiveDirMatches } = require('./helpers.cjs');
 const { setFrontmatterField } = require('./frontmatter.cjs');
 const { planningRoot, PLANNING_DIR_NAMES } = require('./compat.cjs');
+const { LEGACY } = require('./legacy-names.cjs');
 
 const SYNTHETIC_MODEL = '<synthetic>';
 
@@ -231,8 +236,27 @@ function within(p, base) {
   return p === base || p.startsWith(base + path.sep);
 }
 
-/** Path comparisons against one repository (the MAIN checkout), realpath'd on both sides. */
-function repoMatcher(repoRoot) {
+/** A TypeError unless `alsoRoots` is an array of non-empty absolute path strings. */
+function checkAlsoRoots(alsoRoots, who) {
+  const ok = Array.isArray(alsoRoots)
+    && alsoRoots.every((r) => typeof r === 'string' && r !== '' && path.isAbsolute(r));
+  if (!ok) throw new TypeError(`${who}: alsoRoots must be an array of absolute paths`);
+}
+
+/**
+ * Path comparisons against one repository (the MAIN checkout), realpath'd on both sides.
+ *
+ * `alsoRoots` (quick 41) names former checkout roots of the same repository, such as the path it had before a move.
+ * Each matches by the same tests as the repository: equal to a REPO_ROOT line, a cwd inside it or inside its
+ * `.df-worktrees/<basename>` base, and a planning-path prefix. A former root's planning prefixes also accept the legacy
+ * planning directory name, because its transcripts may predate the rename; the repository root keeps
+ * PLANNING_DIR_NAMES only. A former root does not have to exist on disk. With no aliases every field is what it was.
+ *
+ * @param {string} repoRoot
+ * @param {{alsoRoots?: string[]}} [opts]  absolute paths; a TypeError otherwise
+ */
+function repoMatcher(repoRoot, { alsoRoots = [] } = {}) {
+  checkAlsoRoots(alsoRoots, 'repoMatcher');
   const given = path.resolve(repoRoot);
   const real = realOrResolved(given);
   const cache = new Map();
@@ -240,24 +264,38 @@ function repoMatcher(repoRoot) {
     if (!cache.has(p)) cache.set(p, realOrResolved(p));
     return cache.get(p);
   };
+  const own = [...new Set([given, real])];
+  const aliases = alsoRoots.map((r) => path.resolve(r));
+  const aliasForms = [...new Set([...aliases, ...aliases.map(realOrResolved)])].filter((r) => !own.includes(r));
+  const reals = [...new Set([real, ...aliases.map(realOrResolved)])];
   // exec-context provisions every executor worktree at <dirname(repo)>/.df-worktrees/<basename(repo)>/<id>.
-  const worktreeBases = [...new Set([given, real])].map((r) => path.join(path.dirname(r), '.df-worktrees', path.basename(r)));
+  const worktreeBase = (r) => path.join(path.dirname(r), '.df-worktrees', path.basename(r));
+  const worktreeBases = [...new Set([...own, ...aliasForms].map(worktreeBase))];
+  const aliasDirs = [...PLANNING_DIR_NAMES, LEGACY.planningDir];
+  const planningPrefixes = [...new Set([
+    ...own.flatMap((r) => PLANNING_DIR_NAMES.map((dir) => `${r}/${dir}/`)),
+    ...aliasForms.flatMap((r) => aliasDirs.map((dir) => `${r}/${dir}/`)),
+  ])];
   return {
-    isRepo: (p) => canon(p) === real,
-    contains: (p) => within(canon(p), real),
+    isRepo: (p) => reals.includes(canon(p)),
+    contains: (p) => {
+      const c = canon(p);
+      return reals.some((r) => within(c, r));
+    },
     // a deleted worktree no longer realpaths; canon() then falls back to path.resolve, which still compares
     inWorktree: (p) => {
       const c = canon(p);
       return worktreeBases.some((b) => c.startsWith(b + path.sep));
     },
-    planningPrefixes: [...new Set([given, real])].flatMap((r) => PLANNING_DIR_NAMES.map((dir) => `${r}/${dir}/`)),
+    planningPrefixes,
   };
 }
 
 /**
  * How an executor transcript belongs to the repo, or null (foreign). A REPO_ROOT line decides on its own; without
  * one, the first record's cwd (equal to or inside the repo: 'cwd'; inside one of its AOForge worktrees: 'worktree'),
- * else a `<repo>/.aoforge/` path in the prompt ('path').
+ * else a `<repo>/.aoforge/` path in the prompt ('path'). Former roots passed to repoMatcher as `alsoRoots` match the
+ * same way, and their planning paths may also use the legacy planning directory name.
  */
 function repoMatch(prompt, cwd, repo) {
   const declared = trdIdentify.repoRootOf(prompt);
