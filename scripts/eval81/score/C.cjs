@@ -308,6 +308,10 @@ function evaluate({ root, repo, privateFile, commitmentFile } = {}) {
     if (ev.contaminated) return { ...ev, reason: 'contaminated: a tool input mentions an answer key or scripts/eval81' };
     if (found.record.status !== 'ok') return { ...ev, reason: `status ${found.record.status}` };
     if (found.record.model_ran === false) return { ...ev, reason: 'model_ran false: the run did not use the requested model' };
+    // Post-hoc 4 (TRD 81-18): still impaired after its one re-run, so not a model error; reported apart.
+    if (found.record.impaired === true) {
+      return { ...ev, impaired: true, reason: 'impaired: a permission denial blocked the agent\'s own runtime files (~/.claude) on its final attempt; excluded from the model rates (post-hoc 4)' };
+    }
     const document = found.outputs && typeof found.outputs.document === 'string' ? found.outputs.document : '';
     if (document.trim() === '') return { ...ev, reason: 'no document collected: the agent wrote none of its documents' };
 
@@ -391,6 +395,7 @@ function aggregate({ entries, evals, includeFleet }) {
       const walls = scored.map((ev) => wallOf(ev.record)).filter(finite);
       models[model] = {
         n_scored: scored.length,
+        n_impaired: evals.filter((ev) => ev.impaired === true && ev.entry.role === role && ev.entry.model === model).length,
         planned,
         metrics,
         cost_usd: round6(sum(scored, (ev) => costOf(ev.record))),
@@ -443,7 +448,16 @@ function buildResult(ev) {
   if (usedWork > 0) notes.push(`${usedWork} fleet runs were path-checked against their own work copy because the prepared fleet tree was not in the eval root.`);
   const graderCost = round6(scored.reduce((a, e) => a + costOf(e.graderRecord), 0));
   notes.push(`Grader spend on the ${scored.length} scored runs: $${graderCost.toFixed(2)} (also included in the ledger).`);
-  return { batch: 'C', scored_at: new Date().toISOString(), planned, roles, runs, excluded, notes, include_fleet: includeFleet };
+  const impaired = evals.filter((e) => e.impaired === true).map((e) => ({
+    id: e.entry.id,
+    model: e.entry.model,
+    role: e.entry.role,
+    fixture: FIXTURE_LABEL[e.entry.codebase],
+    impaired_by: e.record && e.record.access && Array.isArray(e.record.access.impaired_by) ? e.record.access.impaired_by : [],
+  }));
+  const byModel = MODELS.map((m) => `${m} ${impaired.filter((x) => x.model === m).length}`).join(', ');
+  notes.push(`Post-hoc 4: ${impaired.length} run${impaired.length === 1 ? '' : 's'} impaired on the final attempt (a permission denial blocked the agent's own ~/.claude runtime files, after one re-run); excluded from the model rates and listed in \`impaired\` (${byModel}).`);
+  return { batch: 'C', scored_at: new Date().toISOString(), planned, roles, runs, excluded, impaired, notes, include_fleet: includeFleet };
 }
 
 // --- the spot-check sample ---------------------------------------------------------------------------------------

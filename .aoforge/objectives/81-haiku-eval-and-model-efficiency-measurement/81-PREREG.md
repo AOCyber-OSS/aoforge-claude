@@ -501,3 +501,57 @@ None replaces the text it amends.
   - added: `scripts/eval81/lib/opaque.cjs`.
 - **New manifest:** sha256 `8080f63b0655061d9196467f39588e275bb63ad9af13c9a4a2c08280a857fdcd`, 85 files, written at
   head `4f3619dc`.
+
+### 9.4 Post-hoc 4 (2026-10-17, TRD 81-18): access classes, impaired runs re-run once
+
+- **Why.** After post-hoc 3, batch C stopped after 12 of 48 agent runs.
+  - Two fleet mappers (C-map-arch-b-s-1, C-map-quality-b-s-1, sonnet) ran `cd ~/.claude/aoforge/templates/codebase && cat ...`.
+    The CLI checks a `~` path in Bash against the deny list as the REAL home, so the run's own templates were denied.
+    Bash itself would have read the sandbox HOME.
+  - Three runs tried guessed homes that do not exist (`/Users/unknown/...`, `/Users/.claude/...`, `/Users/../.claude/...`).
+  - Nothing real was read.
+- **The user's words** (2026-10-17): "Reclassify + re-run impaired".
+  - (a) A permission denial whose path is the `~`-expansion of a path the agent addressed via `~`, and any access
+    attempt on a non-existent guessed path, are recorded as non-escapes with the attempted path class. The real path
+    text never appears in committed files, and the username is redacted.
+  - (b) A REAL escape, meaning any attempt (allowed or denied) on an existing real path outside the sandbox other than
+    via `~` expansion, still stops C immediately.
+  - (c) Runs where a denial blocked the agent's own templates or references are flagged `impaired` and re-run once,
+    charged to the ledger. If still impaired, they are scored as `impaired` (excluded from model-error rates, reported
+    separately), not as model error. C-map-arch-b-s-1 and C-map-quality-b-s-1 are reclassified under this rule.
+  - Then finish C within the global $100, with the reserve rule unchanged.
+- **What changed.** Everything below was written test-first. RED was 6 failures; GREEN passed. The full eval81 suite
+  passed 510/510.
+  - `lib/access.cjs` (new).
+    - It classifies every path a run's tool inputs name: the path fields of file tools, and Bash commands read through
+      `shell-words.parseCommand`. Heredoc bodies, echo/printf arguments, grep/rg patterns, sed/awk/jq programs,
+      interpreter `-e`/`-c` code and `git -m` messages count as data.
+    - The classes are `inside`, `tilde`, `guessed_nonexistent` (the text starts with the real home's parent),
+      `nonexistent`, `real` and `system`.
+    - A real path is one of: the real home or anything under it; its parent; a deny root; the eval root; the sandbox
+      root's parent; or any path whose real form names the user or the checkout.
+    - The real home is written `<home>`, the user `<user>`, the home's parent `<users>-` and the checkout `<checkout>`.
+    - Tests: `lib/access.test.cjs`.
+  - `lib/runner.cjs`.
+    - After each run, `record.access = {real, non_escape, impaired, impaired_by}` and `record.impaired`.
+    - A real escape gives exit 5 and stops the batch.
+    - A first impaired attempt is charged as `<id>@impaired<n>`, stays out of `queue.done` and is re-run at once. A
+      second impaired attempt is final with `impaired: true`.
+    - Test: `run-access.test.cjs` (fake claude `tool_paths` scenario).
+    - `run.test.cjs` 20 was updated: a denied read of an existing file under a deny root is now a real escape.
+  - `score/C.cjs`: a final `impaired` record is excluded (reason `impaired: ...`), counted per model as `n_impaired`,
+    listed in the result's `impaired`, and noted. Test: `score/C.test.cjs` 9g.
+  - `README.md`: the access classes. `__fixtures__/fake-claude.cjs` (not frozen): the `tool_paths` scenario.
+- **Reclassification of the 12 runs that came before it.** It ran with `lib/access.cjs` (scratch
+  `81-17-scripts/reclassify-c.cjs`).
+  - No real escape.
+  - Non-escapes in 3 runs.
+  - Impaired: C-map-arch-b-s-1 and C-map-quality-b-s-1. Both had their ledger entry re-keyed to `<id>@impaired1`
+    with the charge kept, `record.json` annotated, and the id dropped from `queue/C.json` `done`, so the next
+    invocation re-runs each once.
+- **Known gap.** A heredoc fed to an interpreter (`python3 - <<EOF`) is not read for paths.
+- **Frozen files whose hashes changed:**
+  - `scripts/eval81/lib/runner.cjs`, `score/C.cjs`, `README.md`;
+  - added: `scripts/eval81/lib/access.cjs`.
+- **New manifest:** sha256 `70f92eca1b291f4296e62c402f37da5e89920f40380bac0666b5625e5b710e81`, 86 files, written at
+  head `611b2c17`.

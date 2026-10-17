@@ -324,6 +324,28 @@ describe('score C: aggregation', () => {
     assert.ok(result.notes.some((n) => /grader evidence quotes not found verbatim in the document: 0 of /.test(n)));
   });
 
+  test('9g. post-hoc 4: an impaired run (a denial blocked its own runtime files) is excluded from the model rates and reported apart', () => {
+    const s = setup();
+    const archH = entryOf('codebase-mapper:arch', 'synthetic', 'haiku', 1);
+    const archS = entryOf('codebase-mapper:arch', 'synthetic', 'sonnet', 1);
+    fx.cRoot(s.root, [
+      agent(archH, { 'ARCHITECTURE.md': '# a\n' }), grader(archH, gradeAll(archH, 'found')),
+      agent(archS, { 'ARCHITECTURE.md': '# a\n' }, { record: { impaired: true, access: { impaired: true, impaired_by: ['~/.claude/aoforge/templates/codebase'] } } }),
+      grader(archS, gradeAll(archS, 'wrong')),
+    ]);
+    const result = s.score();
+    const arch = result.roles['codebase-mapper:arch'];
+    assert.equal(arch.models.haiku.n_scored, 1);
+    assert.equal(arch.models.sonnet.n_scored, 0);
+    assert.equal(arch.models.sonnet.n_impaired, 1);
+    assert.equal(arch.models.haiku.n_impaired, 0);
+    assert.deepEqual(arch.models.sonnet.metrics.error, { k: 0, n: 0 });
+    const ex = result.excluded.find((x) => x.id === archS.id);
+    assert.match(ex.reason, /^impaired: /);
+    assert.deepEqual(result.impaired, [{ id: archS.id, model: 'sonnet', role: 'codebase-mapper:arch', fixture: ex && result.impaired[0].fixture, impaired_by: ['~/.claude/aoforge/templates/codebase'] }]);
+    assert.ok(result.notes.some((n) => /impaired/.test(n) && /1 run/.test(n)));
+  });
+
   test('9c. a plan without the fleet runs plans two mapper runs per model and says so', () => {
     const s = setup();
     const missing = C.makeBatch({ repo: REPO, privateFile: path.join(s.base, 'nowhere.json'), commitmentFile: s.fleet.commitmentFile });

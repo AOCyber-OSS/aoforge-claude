@@ -34,6 +34,9 @@
  *   touch_real_projects   creates <real home>/.claude/projects/<projectKey(cwd)>/x.jsonl
  *   deny_inside           a permission denial naming ./secret.txt (inside the run dir)
  *   deny_outside          a permission denial naming the path in ./.fake-deny-target
+ *   tool_paths:<file>     post-hoc 4: <file> is {calls: [[{id, name, input, denied}], ...]}; call n (the state-dir
+ *                         counter, the last entry once n runs past the list) adds those tool uses to msg-1 and a
+ *                         permission denial for each one marked denied
  *
  * In `happy` (and every scenario but wrong_tools), with `--agent <plugin>:<name>` and a `--plugin-dir` holding
  * `agents/<name>.md`, the init event lists that agent's declared non-MCP tools, so real batch modules pass the
@@ -214,7 +217,7 @@ function main() {
   const scenario = colon === -1 ? raw : raw.slice(0, colon);
   const arg = colon === -1 ? null : raw.slice(colon + 1);
   const known = ['happy', 'usage_limit', 'slow', 'wrong_model', 'wrong_tools', 'leak_token', 'touch_watched', 'env_dump',
-    'overshoot', 'subagent_cost', 'touch_real_projects', 'deny_inside', 'deny_outside'];
+    'overshoot', 'subagent_cost', 'touch_real_projects', 'deny_inside', 'deny_outside', 'tool_paths'];
   if (!known.includes(scenario)) {
     process.stderr.write(`fake-claude: unknown scenario ${scenario}\n`);
     process.exitCode = 2;
@@ -302,13 +305,21 @@ function main() {
     m1Tokens = Math.min(mainTokens, tokensFor(SLOW_PARTIAL_USD));
     m2Tokens = mainTokens - m1Tokens;
   }
-  const m1 = message('msg-1', model, m1Tokens, [{ type: 'text', text: 'Looking.' }, S.toolUse('toolu-1', 'Read', { file_path: path.join(process.cwd(), 'README.md') })]);
+  let extraUses = [];
+  if (scenario === 'tool_paths' && arg) {
+    const spec = JSON.parse(fs.readFileSync(arg, 'utf-8'));
+    const calls = Array.isArray(spec.calls) ? spec.calls : [];
+    const n = nextCall();
+    extraUses = calls.length ? calls[Math.min(n, calls.length - 1)] : [];
+  }
+  const m1 = message('msg-1', model, m1Tokens, [{ type: 'text', text: 'Looking.' }, S.toolUse('toolu-1', 'Read', { file_path: path.join(process.cwd(), 'README.md') }),
+    ...extraUses.map((u) => S.toolUse(u.id, u.name, u.input))]);
   const m2 = message('msg-2', model, m2Tokens, [{ type: 'text', text: 'VERDICT: pass' }]);
   const sub = message('msg-sub-1', model, subTokens, [{ type: 'text', text: 'Subagent findings.' }]);
 
   const finish = () => {
     const denyTarget = readOpt('.fake-deny-target');
-    let denials = [];
+    let denials = extraUses.filter((u) => u.denied).map((u) => ({ tool_name: u.name, tool_use_id: u.id, tool_input: u.input }));
     if (scenario === 'deny_inside') {
       denials = [{ tool_name: 'Read', tool_use_id: 'toolu-deny-1', tool_input: { file_path: path.join(process.cwd(), 'secret.txt') } }];
     } else if (scenario === 'deny_outside') {

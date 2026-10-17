@@ -37,6 +37,7 @@ const { makeSandbox, mirrorRuntime, copyTranscripts, moveAside } = require('./sa
 const { buildArgv, buildSettings, denyRoots, underDenyRoot } = require('./command.cjs');
 const tripwire = require('./tripwire.cjs');
 const { forbiddenTokens, opaqueViolations } = require('./opaque.cjs');
+const { scanAccess } = require('./access.cjs');
 const { loadRates } = require('../../../plugins/aoforge/aoforge/bin/lib/calibration-inputs.cjs');
 
 const EXIT = Object.freeze({ OK: 0, USAGE: 2, BUDGET: 3, PAUSED: 4, BREACH: 5, HARNESS: 6 });
@@ -594,6 +595,26 @@ async function finishRun(ctx, plan, desc, sb, pluginDir, start, proc, attempt, s
     problems.push({ code: EXIT.HARNESS, message: `run ${desc.id}: the deny list blocked a path the agent needs (${den.inside.join(', ')}); fix the deny roots before resuming` });
   }
 
+  // Post-hoc 4 (TRD 81-18, user 2026-10-17): classify every access in the transcripts and the denials. A real escape
+  // (an existing real path outside the sandbox, allowed or denied, not via `~`) stops the batch; a denied `~/.claude`
+  // path impairs the run, which is re-run once (the first attempt is charged as <id>@impaired<n>).
+  const access = scanAccess({
+    transcriptsDir,
+    denials: parsed.permission_denials,
+    ctx: {
+      realHome: ctx.realHome,
+      insideDirs: [sb.sandboxDir || sb.runDir, pluginDir, ...treeDirs],
+      protectedRoots: [...ctx.roots, ctx.root],
+      protectedExact: [ctx.sandboxRoot ? path.dirname(ctx.sandboxRoot) : null],
+      tokens: ctx.opaqueTokens.length ? ctx.opaqueTokens : forbiddenTokens({ realHome: ctx.realHome, repo: ctx.opts.repo }),
+    },
+  });
+  if (access.real.length) {
+    problems.push({ code: EXIT.BREACH, message: `real escape on ${desc.id}: ${access.real.length} access(es) to an existing real path outside the sandbox (${access.real.map((e) => `${e.tool}${e.denied ? ' denied' : ''} ${e.path}`).slice(0, 5).join('; ')})` });
+  }
+  const priorImpaired = l.entries.filter((e) => String(e.id).startsWith(`${desc.id}@impaired`)).length;
+  const impairedRerun = access.impaired && priorImpaired === 0 && access.real.length === 0 && status !== 'rate_limited';
+
   let toolsCheck = null;
   if (desc.kind === 'agent' && hasInitEvent(streamText)) {
     toolsCheck = checkTools(desc, parsed.init_tools, pluginDir);
@@ -637,7 +658,7 @@ async function finishRun(ctx, plan, desc, sb, pluginDir, start, proc, attempt, s
     charged_usd: null,
     cost_source: null,
     overshoot_usd: null,
-    ledger_id: status === 'rate_limited' ? `${desc.id}@attempt${attempt}` : desc.id,
+    ledger_id: status === 'rate_limited' ? `${desc.id}@attempt${attempt}` : impairedRerun ? `${desc.id}@impaired${attempt}` : desc.id,
     usage: parsed.usage,
     usage_source: parsed.usage_source,
     first_turn_input: parsed.first_turn_input,
@@ -655,6 +676,9 @@ async function finishRun(ctx, plan, desc, sb, pluginDir, start, proc, attempt, s
     escape_attempt: den.escape.length > 0,
     escape_paths: den.escape,
     denied_inside: den.inside,
+    access,
+    impaired: access.impaired,
+    impaired_rerun: impairedRerun,
     isolation,
     structured_output: parsed.structured_output,
     result_text: parsed.result_text,
@@ -748,7 +772,7 @@ async function runOne(ctx, plan, desc) {
     }
     spawned = true;
     const { record, problems } = await finishRun(ctx, plan, desc, sb, pluginDir, start, proc, attempt, startedAt, finishedAt);
-    if (record.status !== 'rate_limited') {
+    if (record.status !== 'rate_limited' && !record.impaired_rerun) {
       if (!queue.done.includes(desc.id)) queue.done.push(desc.id);
       saveQueue(ctx, queue);
     }
@@ -757,6 +781,11 @@ async function runOne(ctx, plan, desc) {
       const message = problems.map((p) => p.message).join(' | ');
       stopBatch(ctx, l, batch, message.slice(0, 500));
       return { code, spawned, record, message: `${message}. Batch ${batch} is stopped; it resumes only with --reopen --reason <text> on the user's word` };
+    }
+    if (record.impaired_rerun) {
+      // Post-hoc 4: a denial blocked the run's own runtime files; run it once more (charged as a new attempt).
+      log(ctx, `run ${desc.id} attempt ${attempt}: impaired (${record.access.impaired_by.join(', ')}); charged as ${record.ledger_id}, re-running once`);
+      continue;
     }
     if (record.status !== 'rate_limited') return { code: EXIT.OK, spawned, record };
 

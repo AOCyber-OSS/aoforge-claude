@@ -529,14 +529,27 @@ describe('isolation', () => {
     assert.equal(s.record('A-stub-1').status, 'harness_error');
     assert.equal(markerLines(s), 1);
 
+    // Post-hoc 4 (TRD 81-18, user 2026-10-17): a denied attempt on an EXISTING real path outside the sandbox is a real
+    // escape and stops the batch after that run (before post-hoc 4 the batch went on and only counted it).
     s = setup();
     s.stub({ denyTarget: path.join(s.repo, 'package.json'), overrides: { 'A-stub-1': { scenario: 'deny_outside' } } });
     r = await run(s.args('A', ['--init-ledger']));
-    assert.equal(r.code, 0, r.stderr);
+    assert.equal(r.code, 5, r.stderr);
+    assert.match(r.report.message, /real escape on A-stub-1/);
     const rec = s.record('A-stub-1');
     assert.equal(rec.status, 'ok');
     assert.equal(rec.escape_attempt, true);
-    assert.equal(s.record('A-stub-2').escape_attempt, false);
+    assert.equal(rec.access.real.length, 1);
+    assert.equal(rec.access.real[0].denied, true);
+    assert.equal(markerLines(s), 1);
+
+    // A denied path under a deny root that does not exist is not a real escape: the batch goes on.
+    s = setup();
+    s.stub({ denyTarget: path.join(s.repo, 'no-such-file.txt'), overrides: { 'A-stub-1': { scenario: 'deny_outside' } } });
+    r = await run(s.args('A', ['--init-ledger']));
+    assert.equal(r.code, 0, r.stderr);
+    assert.equal(s.record('A-stub-1').escape_attempt, true);
+    assert.deepEqual(s.record('A-stub-1').access.real, []);
     assert.equal(markerLines(s), 3);
   });
 

@@ -212,6 +212,15 @@ runs those ids.
   `--plugin-dir` and the fixture copy are checked after realpath against the tokens `forbiddenTokens` derives from
   the real home and the checkout (here `justin`, `aoforge-claude`, `Users-`). The deny list is unchanged. Not covered:
   the parent's own argv (visible to `ps`), and PATH, USER and LOGNAME, which the child env still passes through.
+- **Access classes (post-hoc 4, TRD 81-18, user 2026-10-17: "Reclassify + re-run impaired").** After every run
+  `lib/access.cjs` reads each tool input (path fields; Bash through shell-words, heredoc bodies, echo/printf arguments,
+  grep patterns and interpreter code being data) and the denials. (a) A denied `~` path (the CLI checks `~` in Bash
+  against the REAL home) and any access to a non-existent guessed path are non-escapes, recorded in `record.access`
+  with the username redacted. (b) Any attempt, allowed or denied, on an existing real path outside the sandbox (the
+  real home, its parent, a deny root, the eval root, the sandbox root's parent, or a path naming the user or checkout)
+  other than via `~` is a real escape: exit 5 after that run, batch stopped. (c) A denied `~/.claude/...` path impairs
+  the run: it is re-run once, the first attempt charged as `<id>@impaired<n>`; still impaired, it is final with
+  `impaired: true`, and score/C.cjs excludes it from the model rates and lists it under `impaired`.
 - **Order.** A, B, D, E, C. A live run of a batch refuses (exit 2) until every earlier batch is `complete` or
   `stopped`. A `complete` batch whose `runs()` lists new runs (C's graders) goes back to `running`, runs only the new
   ids and completes again.

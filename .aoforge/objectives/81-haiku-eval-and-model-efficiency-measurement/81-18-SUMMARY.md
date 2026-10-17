@@ -10,7 +10,7 @@ status: checkpoint
 
 ## Progress
 - [x] Task 1: Confirm spend for batch C — 759016dd
-- [ ] Task 2: Run batch C live (agents, then graders) — STOPPED for the user after 12 of 48 agent runs (this commit). Batch C is `running`, with 36 agent runs pending and no grader run yet. next step: on the user's word, resume with `node scratchpad/81-17-scripts/c-driver.cjs <R> <T> /private/tmp/claude-501/e81-5752f4931a905580 4 scratchpad/c-driver.log` (background), which calls the frozen runner with `--sandbox-root` and `--stop-after 4` and scans each chunk
+- [ ] Task 2: Run batch C live (agents, then graders) — stopped after 12 of 48 agent runs (611b2c17). The user answered "Reclassify + re-run impaired", so post-hoc 4 is in this commit. next step: run `node scratchpad/81-17-scripts/reclassify-c.cjs <R> <S> --apply C-map-arch-b-s-1 C-map-quality-b-s-1`, then resume with `c-driver.cjs` (the runner now stops on a real escape and re-runs impaired runs once by itself)
 - [ ] Task 3: Score, spot-check and commit batch C
 
 ## User gate decision (2026-10-17)
@@ -70,3 +70,22 @@ of C.
     templates through `cd ~/.claude/...` gets denied by the deny list. The agent asked for its own sandbox file.
 - **The stop.** The user's rule is "any further escape attempt ... stop and report". Two permission denials of a
   `.claude` path under the real-home deny rule meet that literally. Nothing more was spawned.
+
+## User decision after the stop (2026-10-17): "Reclassify + re-run impaired"
+
+- **(a)** A `~`-expansion denial and an access to a guessed path that does not exist are non-escapes, recorded by class
+  with the username redacted.
+- **(b)** A real escape (an existing real path outside the sandbox, allowed or denied, not via `~`) still stops C.
+- **(c)** A run where a denial blocked its own templates or references is `impaired` and re-run once. If it is still
+  impaired, it is excluded from the model rates and reported apart.
+- Then finish C within $100, score and commit, delete `e81-*`, and stop before 81-19.
+
+## Post-hoc 4 (81-PREREG section 9.4)
+
+- **New code:** `lib/access.cjs`, and the runner's `record.access` with the re-run once on impairment, plus
+  `score/C.cjs` impaired handling. All of it was written test-first: RED 6 failures, GREEN, full suite 510/510.
+- **New manifest:** 70f92eca..., 86 files.
+- **Reclassification of the first 12 runs:**
+  - real escapes: 0;
+  - non-escapes: 3 runs;
+  - impaired: C-map-arch-b-s-1 and C-map-quality-b-s-1, which are re-run once.
