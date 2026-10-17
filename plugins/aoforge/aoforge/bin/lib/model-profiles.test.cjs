@@ -11,7 +11,7 @@
  *
  * These tests are the mechanical guard against that class of drift:
  *   - agent files and profile entries stay in one-to-one correspondence
- *   - both key spellings resolve identically
+ *   - a prefixed spelling is an unknown agent (quick 40 removed the pre-plugin df- alias)
  *   - every tier names a real model id
  *   - resolution is auditable (tier + concrete id, not just an alias)
  */
@@ -83,12 +83,18 @@ describe('TRD 28-02 — the model profile table binds', () => {
 });
 
 describe('TRD 28-02 — resolve-model resolution is correct and auditable', () => {
-  test('both key spellings resolve identically', () => {
+  // quick 40: the pre-plugin `df-` alias is gone. A prefixed name is an unknown agent like any other: exit 0, a
+  // stderr warning and the `sonnet` fallback, the same shape as `resolve-model no-such-agent`.
+  test('a df- prefixed agent name is an unknown agent', () => {
     for (const agent of agentNames) {
-      const bare = resolveModel(agent);
-      const prefixed = resolveModel(`df-${agent}`);
-      assert.equal(bare.model, prefixed.model, `${agent}: bare=${bare.model} df-=${prefixed.model}`);
-      assert.equal(bare.tier, prefixed.tier, `${agent}: tier mismatch between spellings`);
+      const name = `df-${agent}`;
+      const r = spawnSync(process.execPath, [DF_TOOLS, 'resolve-model', name], { cwd: REPO, encoding: 'utf8' });
+      assert.equal(r.status, 0, `${name}: exit ${r.status}: ${r.stderr}`);
+      const out = JSON.parse(r.stdout);
+      assert.equal(out.unknown_agent, true, `${name}: expected unknown_agent, got ${r.stdout}`);
+      assert.equal(out.model, 'sonnet', `${name}: expected the sonnet fallback`);
+      assert.equal(out.requested, name);
+      assert.ok(r.stderr.includes(`unknown agent "${name}"`), `${name}: no unknown-agent warning on stderr: ${r.stderr}`);
     }
   });
 
@@ -443,10 +449,22 @@ describe('quick 35 — project model settings bind', () => {
     } finally { done(dir); }
   });
 
-  test('7. a df- prefixed agent_models key (the documented spelling) binds', () => {
+  // quick 40: only the bare key binds. A `df-` spelled key names an agent that does not exist, so the table applies.
+  test('7. a df- prefixed agent_models key does not bind: the table tier applies', () => {
     const dir = project({ model_profile: 'quality', agent_models: { 'df-planner': { quality: 'haiku' } } });
     try {
-      assert.equal(resolveIn(dir, 'planner').tier, 'haiku');
+      const r = resolveIn(dir, 'planner');
+      assert.equal(r.tier_source, 'table');
+      assert.equal(r.tier, profiles.agents.planner.quality);
+    } finally { done(dir); }
+  });
+
+  test('7b. a df- prefixed model_overrides key does not bind', () => {
+    const dir = project({ model_overrides: { 'df-debugger': 'haiku' } });
+    try {
+      const r = resolveIn(dir, 'debugger');
+      assert.equal(r.tier_source, 'table');
+      assert.equal(r.tier, profiles.agents.debugger.balanced);
     } finally { done(dir); }
   });
 
@@ -457,6 +475,44 @@ describe('quick 35 — project model settings bind', () => {
       assert.equal(r.tier, 'sonnet');
       assert.equal(r.tier_source, 'escalation');
       assert.equal(r.escalated_from, 'haiku');
+    } finally { done(dir); }
+  });
+
+  // quick 40: every compound init command resolves the bare agent name. A bare-key model_overrides sentinel for
+  // every agent reaches every `*_model` field and every value of every `*_models` map; a caller that passed any
+  // other spelling would fall back to the table or to `sonnet` and miss the sentinel.
+  test('9. every compound init command resolves bare agent names (sentinel override)', () => {
+    const SENTINEL = 'claude-sentinel-1';
+    const overrides = Object.fromEntries(Object.keys(profiles.agents).map((a) => [a, SENTINEL]));
+    const dir = project({ model_profile: 'quality', model_overrides: overrides }, { objectiveDir: '01-x' });
+    try {
+      const commands = [
+        ['execute-objective', '1'], ['plan-objective', '1'], ['quick', 'x'], ['verify-work', '1'],
+        ['new-project'], ['new-milestone'], ['map-codebase'], ['security-audit'], ['progress'],
+      ];
+      const seen = new Set();
+      const wrong = [];
+      for (const args of commands) {
+        const out = JSON.parse(aof(dir, ['init', ...args]));
+        for (const [k, v] of Object.entries(out)) {
+          if (k.endsWith('_model')) {
+            seen.add(k);
+            if (v !== SENTINEL) wrong.push(`init ${args[0]} ${k}=${JSON.stringify(v)}`);
+          } else if (k.endsWith('_models')) {
+            seen.add(k);
+            for (const [f, m] of Object.entries(v || {})) {
+              if (m !== SENTINEL) wrong.push(`init ${args[0]} ${k}.${f}=${JSON.stringify(m)}`);
+            }
+          }
+        }
+      }
+      assert.deepEqual(wrong, [], `init fields that missed the bare-key override:\n  ${wrong.join('\n  ')}`);
+      const expected = [
+        'executor_model', 'verifier_model', 'researcher_model', 'planner_model', 'checker_model', 'researcher_models',
+        'synthesizer_model', 'roadmapper_model', 'mapper_model', 'mapper_models', 'auditor_model',
+      ];
+      const missing = expected.filter((k) => !seen.has(k));
+      assert.deepEqual(missing, [], `model fields no init command emitted: ${missing.join(', ')}`);
     } finally { done(dir); }
   });
 
