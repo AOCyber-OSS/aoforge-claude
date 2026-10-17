@@ -42,7 +42,7 @@ const OLD = LEGACY.planningDir;
 
 /** The commands the guard lets through in a legacy-only project, decided with grep evidence (see the module). */
 const EXPECTED_EXEMPT = [
-  'calibrate', 'changelog', 'doctor', 'estimate', 'exec-context', 'global-config', 'handoff', 'merge-driver',
+  'adopt', 'calibrate', 'changelog', 'doctor', 'estimate', 'exec-context', 'global-config', 'handoff', 'merge-driver',
   'project-accept', 'project-decline', 'transcript-export', 'validate',
 ];
 
@@ -252,7 +252,7 @@ describe('8. legacyLayoutGuard over every command in help.cjs COMMANDS', () => {
       }
       assert.equal(guard(current.root, [name], current.home), null, `${name} outside a legacy root`);
     }
-    for (const name of ['init', 'state', 'commit', 'upgrade', 'tokens', 'skill-active', 'adopt']) {
+    for (const name of ['init', 'state', 'commit', 'upgrade', 'tokens', 'skill-active']) {
       assert.ok(refused.includes(name), `${name} is refused`);
     }
   });
