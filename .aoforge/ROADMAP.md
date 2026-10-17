@@ -499,7 +499,7 @@ TRDs:
 - [x] 80-05-adopt-workflow-and-skill-TRD.md — (W4, TDD) adopt workflow and skill run the migrate path; contract rows; site data
 - [x] 80-06-adopt-three-fixture-e2e-TRD.md — (W4, TDD) scripted e2e on fresh, brownfield and pre-rename fixtures; hand-migration equivalence; re-run and resume matrix; 3.1 tool probes; checker `--mode migrate`
 - [x] 80-07-fleet-copy-simulated-run-TRD.md — (W5) `/aoforge:adopt` followed verbatim on read-only clones of aodex and smartWellness; compared with a hand migration; sources proven untouched
-- [ ] 80-08-fresh-brownfield-simulated-run-TRD.md — (W5) `/aoforge:adopt` followed verbatim on fresh, bare and brownfield fixtures under 3.1.0
+- [x] 80-08-fresh-brownfield-simulated-run-TRD.md — (W5) `/aoforge:adopt` followed verbatim on fresh, bare and brownfield fixtures under 3.1.0
 - [ ] 80-09-docs-and-full-validation-TRD.md — (W6) migration guide (+ site), USER-GUIDE, CHANGELOG 3.1.0, CLAUDE.md; full suite (watcher-shell excluded) and named guards
 
 ## Progress
@@ -527,4 +527,4 @@ TRDs:
 | 77. Stack packs: contract and extraction | v1.6 | 5/5 | In Progress | - |
 | 78. Remove the rename shims | v1.6 | 12/12 | Complete | 2026-10-17 |
 | 79. Reconcile and release 3.1.0 | v1.6 | 8/10 | In Progress | - |
-| 80. Adopt migrates legacy projects | v1.6 | 7/9 | In Progress | - |
+| 80. Adopt migrates legacy projects | v1.6 | 8/9 | In Progress | - |
