@@ -492,7 +492,7 @@ TRDs:
 **TRDs**: 9 plans (6 waves)
 
 TRDs:
-- [ ] 80-01-legacy-migrator-module-TRD.md — (W1, TDD) `lib/legacy-migrate.cjs` (ALLOW-listed): finds root and nested pre-rename trees, refuses both-dirs / malformed blocks, moves with `git mv`, renames the stamp key, block markers and ignore lines; fleet-shaped fixture builder
+- [x] 80-01-legacy-migrator-module-TRD.md — (W1, TDD) `lib/legacy-migrate.cjs` (ALLOW-listed): finds root and nested pre-rename trees, refuses both-dirs / malformed blocks, moves with `git mv`, renames the stamp key, block markers and ignore lines; fleet-shaped fixture builder
 - [ ] 80-04-legacy-messages-name-adopt-TRD.md — (W1, TDD) the legacy-layout message (W066, CLI guard, SessionStart notice, doctor 27), W067, project W069 and retired ids name `/aoforge:adopt`
 - [ ] 80-02-adopt-preflight-begin-migrate-TRD.md — (W2, TDD) preflight routes a pre-rename project to `migrate` or refuses with the fix; begin moves it on `aoforge/adopt`; resume by mode; guard exempts adopt
 - [ ] 80-03-adopt-scaffold-report-migrate-TRD.md — (W3, TDD) migrate scaffold (residue only) and report (Migration table, health per root, pending upgrades, compact commit files, commit_blocked); one recorded change proved
@@ -527,4 +527,4 @@ TRDs:
 | 77. Stack packs: contract and extraction | v1.6 | 5/5 | In Progress | - |
 | 78. Remove the rename shims | v1.6 | 12/12 | Complete | 2026-10-17 |
 | 79. Reconcile and release 3.1.0 | v1.6 | 8/10 | In Progress | - |
-| 80. Adopt migrates legacy projects | v1.6 | 0/0 | Not started | - |
+| 80. Adopt migrates legacy projects | v1.6 | 1/9 | In Progress | - |
