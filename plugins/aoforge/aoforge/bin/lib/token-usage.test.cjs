@@ -158,6 +158,77 @@ describe('57-01 executor token totals', () => {
     assert.deepStrictEqual(index.counts, { ...ZERO_COUNTS, executor_transcripts: 3, identified: 1, foreign: 2 });
   });
 
+  // quick 41: a checkout that moved (TRD 72-26) left every earlier transcript naming its former path. repoMatcher's
+  // `alsoRoots` names such former roots; they match by the same tests as the project root, and their planning paths
+  // also accept the legacy planning directory. The project root itself gains nothing. OLD is never created, like the
+  // real former checkout, so every comparison against it runs on path.resolve.
+  describe('quick-41 former checkout roots', () => {
+    const { LEGACY } = require('./legacy-names.cjs');
+    let OLD;
+    const ELSEWHERE = '/elsewhere/repo';
+    const tag = () => fx.executorPrompt('objective_tag', { id: '99-20', objectiveDir: '99-demo' });
+    const declaring = (root) => planIdPrompt('99-20', '99-demo', root);
+
+    before(() => {
+      OLD = path.join(path.dirname(repo), 'former-' + path.basename(repo));
+      assert.equal(fs.existsSync(OLD), false, 'the former root must not exist on disk');
+    });
+
+    test('q41-1: a REPO_ROOT line naming a former root matches only when that root is named in alsoRoots', () => {
+      const aliased = tu.repoMatcher(repo, { alsoRoots: [OLD] });
+      assert.equal(tu.repoMatch(declaring(OLD), ELSEWHERE, aliased), 'repo_root');
+      assert.equal(tu.repoMatch(declaring(repo), ELSEWHERE, aliased), 'repo_root');
+      assert.equal(tu.repoMatch(declaring(OLD), ELSEWHERE, tu.repoMatcher(repo)), null);
+      // a REPO_ROOT naming a third path still decides on its own, even with the cwd inside the former root
+      const third = path.join(path.dirname(repo), 'third-' + path.basename(repo));
+      assert.equal(tu.repoMatch(declaring(third), path.join(OLD, 'sub'), aliased), null);
+    });
+
+    test('q41-2: with no REPO_ROOT line, a cwd in a former root or its worktree base matches; a prefix sibling does not', () => {
+      const aliased = tu.repoMatcher(repo, { alsoRoots: [OLD] });
+      assert.equal(tu.repoMatch(tag(), OLD, aliased), 'cwd');
+      assert.equal(tu.repoMatch(tag(), path.join(OLD, 'sub'), aliased), 'cwd');
+      const oldWorktree = path.join(path.dirname(OLD), '.df-worktrees', path.basename(OLD), '42-12');
+      assert.equal(tu.repoMatch(tag(), oldWorktree, aliased), 'worktree');
+      assert.equal(tu.repoMatch(tag(), OLD + '-other', aliased), null);
+      // without the alias the same transcripts are foreign
+      const plain = tu.repoMatcher(repo);
+      assert.equal(tu.repoMatch(tag(), path.join(OLD, 'sub'), plain), null);
+      assert.equal(tu.repoMatch(tag(), oldWorktree, plain), null);
+    });
+
+    test('q41-3: a former root\'s current or legacy planning path matches; the project root gets no legacy directory', () => {
+      const aliased = tu.repoMatcher(repo, { alsoRoots: [OLD] });
+      const current = `Execute TRD ${OLD}/.aoforge/objectives/x/99-20-demo-TRD.md`;
+      const legacy = `Execute TRD ${OLD}/${LEGACY.planningDir}/objectives/x/99-20-demo-TRD.md`;
+      const repoLegacy = `Execute TRD ${repo}/${LEGACY.planningDir}/objectives/x/99-20-demo-TRD.md`;
+      assert.equal(tu.repoMatch(current, ELSEWHERE, aliased), 'path');
+      assert.equal(tu.repoMatch(legacy, ELSEWHERE, aliased), 'path');
+      assert.equal(tu.repoMatch(repoLegacy, ELSEWHERE, aliased), null);
+      assert.equal(tu.repoMatch(current, ELSEWHERE, tu.repoMatcher(repo)), null);
+      assert.equal(tu.repoMatch(legacy, ELSEWHERE, tu.repoMatcher(repo)), null);
+      assert.equal(aliased.planningPrefixes.includes(`${repo}/${LEGACY.planningDir}/`), false);
+    });
+
+    test('q41-4: an empty alsoRoots leaves the matcher exactly as it was', () => {
+      const plain = tu.repoMatcher(repo);
+      const empty = tu.repoMatcher(repo, { alsoRoots: [] });
+      assert.deepStrictEqual(empty.planningPrefixes, plain.planningPrefixes);
+      assert.deepStrictEqual(plain.planningPrefixes, [`${repo}/.aoforge/`]);
+      // the project root's prefixes come first, in the same order, when aliases are added
+      const aliased = tu.repoMatcher(repo, { alsoRoots: [OLD] });
+      assert.deepStrictEqual(aliased.planningPrefixes.slice(0, plain.planningPrefixes.length), plain.planningPrefixes);
+    });
+
+    test('q41-5: alsoRoots must be an array of non-empty absolute paths', () => {
+      const typeErr = (e) => e instanceof TypeError && /alsoRoots/.test(e.message);
+      assert.throws(() => tu.repoMatcher(repo, { alsoRoots: OLD }), typeErr);
+      assert.throws(() => tu.repoMatcher(repo, { alsoRoots: ['former-checkout'] }), typeErr);
+      assert.throws(() => tu.repoMatcher(repo, { alsoRoots: [42] }), typeErr);
+      assert.throws(() => tu.repoMatcher(repo, { alsoRoots: [''] }), typeErr);
+    });
+  });
+
   test('6: a shared objective number counts a transcript only for the directory its prompt names', () => {
     const r = freshRoot();
     const beta = writeExecutor(r, { session: 's', agentId: 'a-beta', prompt: planIdPrompt('10-01', '10-beta') });
