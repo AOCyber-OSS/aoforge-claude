@@ -6,6 +6,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- `model-placeholders.repo.test.cjs` fails CI on a spawn `model` placeholder that is not a key its file's own
+  `init <cmd>` prints (run in a fixture project), a `NAME=$(… resolve-model …)` assignment in the file, or a
+  `<!-- model-source: NAME from SRC -->` annotation whose source is itself supplied. It scans core workflows, core
+  skills and every stack pack's skills, workflows and fragments. (quick 42)
+
 ### Removed
 
 - `resolve-model` and the compound `init` commands no longer read the pre-plugin `df-` agent prefix. A prefixed name
@@ -30,6 +37,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   former root the scan matches 164 (planner 49, job-checker 44, verifier 53, objective-researcher 11,
   integration-checker 5, roadmapper 2). Matching for the project root itself is unchanged, and `tokens` does not take
   the flag. (quick 41)
+- execute-objective spawned the gap-closure planner and the autonomous checkpoint verifier with model placeholders
+  nothing supplied (`{planner_model}`, `{resolved_verifier_model}`). The planner is now resolved with
+  `resolve-model planner --objective`, the verifier uses init's `verifier_model`, and the per-plan executor model is
+  declared where step 3 picks it. build, new-milestone and research-objective name their model sources too
+  (objective 76 SC1, quick 42).
+- `aof-tools benchmark per-objective` counted no executor spawns: `executor_calls` was always 0 because the check
+  compared a pre-rename agent name. It now counts `aoforge:executor` and, in older transcripts, the pre-rename and
+  install-prefixed executors. (quick 42)
 
 ## [3.1.0] - 2026-10-16
 
