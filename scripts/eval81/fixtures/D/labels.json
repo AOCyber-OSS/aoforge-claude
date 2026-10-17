@@ -1,0 +1,377 @@
+{
+  "batch": "D",
+  "note": "Answer key for test D. Never shown to the judge. Every broken state is the ok state of the same surface and viewport (named in `baseline`) plus one recorded CSS injection (see recipe.json); d15 is objective 74's committed broken capture and its baseline is 74's committed ok capture (d09). `severity` is the expected severity (low | medium | high). `region` is the footprint of the injected defect on the image; `min_share` is the least share of pixels in that region that must differ from the baseline (max RGB channel delta over 24, see png.cjs regionDiffShare).",
+  "counts": {
+    "total": 20,
+    "ok": 7,
+    "broken": 13,
+    "by_surface": {
+      "ui-eval-guide": 5,
+      "commands": 5,
+      "troubleshooting": 5,
+      "home": 5
+    },
+    "by_defect_type": {
+      "blank_empty": 2,
+      "overflow": 4,
+      "misalignment": 2,
+      "overlap_zindex": 2,
+      "contrast_legibility": 2,
+      "broken_layout": 1
+    },
+    "by_severity": {
+      "high": 9,
+      "medium": 4
+    }
+  },
+  "states": [
+    {
+      "id": "d01",
+      "surface": "ui-eval-guide",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "label": "broken",
+      "defect_type": "blank_empty",
+      "severity": "high",
+      "region": {
+        "x": 340,
+        "y": 100,
+        "w": 648,
+        "h": 340
+      },
+      "baseline": "d19",
+      "min_share": 0.06
+    },
+    {
+      "id": "d02",
+      "surface": "commands",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "label": "ok",
+      "defect_type": null,
+      "severity": null,
+      "region": null,
+      "baseline": null,
+      "min_share": null
+    },
+    {
+      "id": "d03",
+      "surface": "troubleshooting",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "label": "broken",
+      "defect_type": "overflow",
+      "severity": "medium",
+      "region": {
+        "x": 340,
+        "y": 310,
+        "w": 648,
+        "h": 120
+      },
+      "baseline": "d10",
+      "min_share": 0.09
+    },
+    {
+      "id": "d04",
+      "surface": "troubleshooting",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "label": "broken",
+      "defect_type": "misalignment",
+      "severity": "high",
+      "region": {
+        "x": 340,
+        "y": 60,
+        "w": 648,
+        "h": 740
+      },
+      "baseline": "d10",
+      "min_share": 0.09
+    },
+    {
+      "id": "d05",
+      "surface": "home",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "label": "broken",
+      "defect_type": "overlap_zindex",
+      "severity": "high",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "w": 800,
+        "h": 200
+      },
+      "baseline": "d16",
+      "min_share": 0.12
+    },
+    {
+      "id": "d06",
+      "surface": "ui-eval-guide",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "label": "broken",
+      "defect_type": "overflow",
+      "severity": "high",
+      "region": {
+        "x": 0,
+        "y": 220,
+        "w": 390,
+        "h": 500
+      },
+      "baseline": "d18",
+      "min_share": 0.1
+    },
+    {
+      "id": "d07",
+      "surface": "troubleshooting",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "label": "broken",
+      "defect_type": "blank_empty",
+      "severity": "high",
+      "region": {
+        "x": 640,
+        "y": 60,
+        "w": 640,
+        "h": 740
+      },
+      "baseline": "d10",
+      "min_share": 0.89
+    },
+    {
+      "id": "d08",
+      "surface": "home",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "label": "broken",
+      "defect_type": "contrast_legibility",
+      "severity": "medium",
+      "region": {
+        "x": 24,
+        "y": 340,
+        "w": 760,
+        "h": 140
+      },
+      "baseline": "d16",
+      "min_share": 0.1
+    },
+    {
+      "id": "d09",
+      "surface": "home",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "label": "ok",
+      "defect_type": null,
+      "severity": null,
+      "region": null,
+      "baseline": null,
+      "min_share": null
+    },
+    {
+      "id": "d10",
+      "surface": "troubleshooting",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "label": "ok",
+      "defect_type": null,
+      "severity": null,
+      "region": null,
+      "baseline": null,
+      "min_share": null
+    },
+    {
+      "id": "d11",
+      "surface": "commands",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "label": "broken",
+      "defect_type": "overlap_zindex",
+      "severity": "high",
+      "region": {
+        "x": 0,
+        "y": 90,
+        "w": 1280,
+        "h": 140
+      },
+      "baseline": "d02",
+      "min_share": 0.07
+    },
+    {
+      "id": "d12",
+      "surface": "commands",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "label": "broken",
+      "defect_type": "contrast_legibility",
+      "severity": "medium",
+      "region": {
+        "x": 650,
+        "y": 460,
+        "w": 600,
+        "h": 340
+      },
+      "baseline": "d02",
+      "min_share": 0.05
+    },
+    {
+      "id": "d13",
+      "surface": "commands",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "label": "broken",
+      "defect_type": "broken_layout",
+      "severity": "high",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "w": 1280,
+        "h": 800
+      },
+      "baseline": "d02",
+      "min_share": 0.89
+    },
+    {
+      "id": "d14",
+      "surface": "commands",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "label": "broken",
+      "defect_type": "overflow",
+      "severity": "high",
+      "region": {
+        "x": 340,
+        "y": 390,
+        "w": 940,
+        "h": 410
+      },
+      "baseline": "d02",
+      "min_share": 0.07
+    },
+    {
+      "id": "d15",
+      "surface": "home",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "label": "broken",
+      "defect_type": "overflow",
+      "also_defect_types": [
+        "blank_empty"
+      ],
+      "severity": "high",
+      "region": {
+        "x": 0,
+        "y": 100,
+        "w": 1280,
+        "h": 700
+      },
+      "baseline": "d09",
+      "min_share": 0.09
+    },
+    {
+      "id": "d16",
+      "surface": "home",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "label": "ok",
+      "defect_type": null,
+      "severity": null,
+      "region": null,
+      "baseline": null,
+      "min_share": null
+    },
+    {
+      "id": "d17",
+      "surface": "ui-eval-guide",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "label": "broken",
+      "defect_type": "misalignment",
+      "severity": "medium",
+      "region": {
+        "x": 20,
+        "y": 110,
+        "w": 200,
+        "h": 690
+      },
+      "baseline": "d19",
+      "min_share": 0.07
+    },
+    {
+      "id": "d18",
+      "surface": "ui-eval-guide",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "label": "ok",
+      "defect_type": null,
+      "severity": null,
+      "region": null,
+      "baseline": null,
+      "min_share": null
+    },
+    {
+      "id": "d19",
+      "surface": "ui-eval-guide",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "label": "ok",
+      "defect_type": null,
+      "severity": null,
+      "region": null,
+      "baseline": null,
+      "min_share": null
+    },
+    {
+      "id": "d20",
+      "surface": "troubleshooting",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "label": "ok",
+      "defect_type": null,
+      "severity": null,
+      "region": null,
+      "baseline": null,
+      "min_share": null
+    }
+  ]
+}

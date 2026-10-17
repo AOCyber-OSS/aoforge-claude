@@ -1,0 +1,213 @@
+{
+  "batch": "D",
+  "surfaces": {
+    "home": {
+      "route": "/",
+      "expected": {
+        "1280x800": "The AOForge documentation home page: the site header with the AOForge brand and navigation links, a large headline and introductory text that fit inside the viewport, and readable install commands and buttons below. Nothing is cut off at the viewport edge, no element sits on top of another, and the page has no large empty areas."
+      }
+    },
+    "ui-eval-guide": {
+      "route": "/docs/guides/ui-eval/",
+      "expected": {
+        "1280x800": "The AOForge \"UI evaluation\" documentation page: the site header with the AOForge brand and navigation links, a sidebar of section links on the left, the page title, an introduction and readable body text with code blocks in the centre column, and an on-this-page list on the right. Nothing is cut off at the viewport edge, no element sits on top of another, and the page has no large empty areas.",
+        "390x844": "The AOForge \"UI evaluation\" documentation page on a phone-width screen: the site header with the AOForge brand and a menu button, the page title, an introduction and body text that wrap within the screen width, and code blocks held inside their own frame. Nothing is cut off at the screen edge apart from long code lines that scroll inside their own frame, no element sits on top of another, and the page has no large empty areas."
+      }
+    },
+    "commands": {
+      "route": "/docs/commands/",
+      "expected": {
+        "1280x800": "The AOForge commands reference page: the site header with the AOForge brand and navigation links, a sidebar of section links on the left, the page title and introduction, and a table of commands with columns for the command, its arguments and what it does, in readable text. Nothing is cut off at the viewport edge, no element sits on top of another, and the page has no large empty areas."
+      }
+    },
+    "troubleshooting": {
+      "route": "/docs/troubleshooting/",
+      "expected": {
+        "1280x800": "The AOForge troubleshooting page: the site header with the AOForge brand and navigation links, a sidebar of section links on the left, the page title, an introduction and readable body text with code blocks in the centre column, and an on-this-page list on the right. Nothing is cut off at the viewport edge, no element sits on top of another, and the page has no large empty areas.",
+        "390x844": "The AOForge troubleshooting page on a phone-width screen: the site header with the AOForge brand and a menu button, the page title, an introduction and body text that wrap within the screen width, and code blocks held inside their own frame. Nothing is cut off at the screen edge apart from long code lines that scroll inside their own frame, no element sits on top of another, and the page has no large empty areas."
+      }
+    }
+  },
+  "states": [
+    {
+      "id": "d01",
+      "surface": "ui-eval-guide",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "png": "png/d01.png"
+    },
+    {
+      "id": "d02",
+      "surface": "commands",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "png": "png/d02.png"
+    },
+    {
+      "id": "d03",
+      "surface": "troubleshooting",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "png": "png/d03.png"
+    },
+    {
+      "id": "d04",
+      "surface": "troubleshooting",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "png": "png/d04.png"
+    },
+    {
+      "id": "d05",
+      "surface": "home",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "png": "png/d05.png"
+    },
+    {
+      "id": "d06",
+      "surface": "ui-eval-guide",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "png": "png/d06.png"
+    },
+    {
+      "id": "d07",
+      "surface": "troubleshooting",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "png": "png/d07.png"
+    },
+    {
+      "id": "d08",
+      "surface": "home",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "png": "png/d08.png"
+    },
+    {
+      "id": "d09",
+      "surface": "home",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "png": "png/d09.png"
+    },
+    {
+      "id": "d10",
+      "surface": "troubleshooting",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "png": "png/d10.png"
+    },
+    {
+      "id": "d11",
+      "surface": "commands",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "png": "png/d11.png"
+    },
+    {
+      "id": "d12",
+      "surface": "commands",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "png": "png/d12.png"
+    },
+    {
+      "id": "d13",
+      "surface": "commands",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "png": "png/d13.png"
+    },
+    {
+      "id": "d14",
+      "surface": "commands",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "png": "png/d14.png"
+    },
+    {
+      "id": "d15",
+      "surface": "home",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "png": "png/d15.png"
+    },
+    {
+      "id": "d16",
+      "surface": "home",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "png": "png/d16.png"
+    },
+    {
+      "id": "d17",
+      "surface": "ui-eval-guide",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "png": "png/d17.png"
+    },
+    {
+      "id": "d18",
+      "surface": "ui-eval-guide",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "png": "png/d18.png"
+    },
+    {
+      "id": "d19",
+      "surface": "ui-eval-guide",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "png": "png/d19.png"
+    },
+    {
+      "id": "d20",
+      "surface": "troubleshooting",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "png": "png/d20.png"
+    }
+  ]
+}
