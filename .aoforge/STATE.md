@@ -158,6 +158,6 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 
 ## Session Continuity
 
-Last session: 2026-10-17T19:22:28.296Z
+Last session: 2026-10-17T20:13:15.221Z
 Resume file: `None`
-Stopped at: Completed 81-16-TRD.md
+Stopped at: 81-17 Task 3 checkpoint: E pilots done, 6 E runs pending user decision
