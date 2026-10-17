@@ -64,7 +64,7 @@ jobs:
       # Accepts either a scoped API token (preferred) or the account's Global
       # API Key; wrangler picks whichever pair of variables is populated.
       - name: Deploy to Cloudflare Pages
-        if: github.event_name != 'pull_request' && github.repository == 'AO-Cyber-Systems/aoforge-claude'
+        if: github.event_name != 'pull_request' && github.repository == 'AOCyberAI/aoforge-claude'
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
