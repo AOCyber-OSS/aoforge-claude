@@ -33,7 +33,8 @@
 //   11. go-service fixture -> exit 0, route 'adopt', created_branch true;
 //       `git branch --show-current` is aoforge/adopt; HEAD sha unchanged;
 //       file snapshot unchanged; marker has status in_progress, base_branch,
-//       base_sha, started_at, plugin_version.
+//       base_sha, started_at, plugin_version. `next` names `adopt scaffold`,
+//       never `adopt begin` (quick 43).
 //   12. begin again -> route 'resume', created_branch false, marker bytes
 //       identical to the first call's.
 //   13. after begin + writeMappedDocs + writeProjectMd({kind:'api'}) ->
@@ -262,6 +263,9 @@ describe('aof-tools adopt begin (spawned)', () => {
     assert.ok(report.adopt.marker.base_sha);
     assert.ok(report.adopt.marker.started_at);
     assert.ok(report.adopt.marker.plugin_version);
+
+    assert.match(report.next, /adopt scaffold/);
+    assert.doesNotMatch(report.next, /adopt begin/);
   });
 
   test('12. calling begin again resumes instead of re-branching', () => {

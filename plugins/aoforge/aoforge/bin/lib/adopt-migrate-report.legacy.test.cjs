@@ -52,6 +52,19 @@
 //     the commit is not blocked by it.
 // 18. A nested-only repo: the report goes in the first root and no root `.aoforge/` appears.
 //
+// Quick 43 (a planning tree git ignores keeps the report out of HEAD, so the adopt ends at its commit instead; each
+// row is an `untrackedTree` fixture):
+// 19. After adopt's own commit, `adopt preflight` routes to `upgrade` with `adopt.mode` `adopt`, `adopt begin` routes
+//     to `upgrade`, and neither writes anything or moves HEAD.
+// 20. After that commit is merged into main (`--ff-only`, and `--no-ff` with a merge commit) and aoforge/adopt is
+//     deleted, preflight routes to `upgrade`: the adopt commit is in HEAD's history.
+// 21. A change the user recorded by hand on aoforge/adopt with another message, after the report step: `upgrade`,
+//     because the branch's commit is reachable from HEAD.
+// 22. Report written and nothing committed: still `resume`, every step true, `next` "ready to commit".
+// 23. A commit on main while the adopt is in progress is not the adopt's: preflight still refuses
+//     `adopt-in-progress-elsewhere` and writes nothing.
+// 24. A commit on aoforge/adopt before the report step does not end the adopt: `resume` with `reported` false.
+//
 // Row 15 of the TRD (the fresh-mode adopt tests unchanged) is a run of adopt-scaffold, adopt-report and adopt-e2e.
 
 const { test } = require('node:test');
@@ -558,4 +571,115 @@ test('18. a nested-only repo reports in the first root and never creates a root 
   ]));
   committed(repo, report);
   assert.deepEqual(statusLines(repo), []);
+});
+
+// ─── 19-24: an ignored planning tree ends at the adopt commit (quick 43) ─────
+
+/** `aof-tools adopt <sub>` spawned, with the report parsed from stdout. */
+function adoptRun(repo, sub) {
+  const r = repo.run(['adopt', sub]);
+  let json = null;
+  try { json = JSON.parse(r.stdout); } catch { /* left null: the assertion on r.out shows why */ }
+  return { ...r, json };
+}
+
+/** Preflight must route to `upgrade` and write nothing. */
+function assertUpgradeNoWrite(repo) {
+  const before = repo.snapshot();
+  const head = headSha(repo);
+  const pf = adoptRun(repo, 'preflight');
+  assert.equal(pf.status, 0, pf.out);
+  assert.equal(pf.json.route, 'upgrade', pf.out);
+  assert.equal(pf.json.adopt.mode, 'adopt');
+  assert.deepEqual(repo.snapshot(), before, 'preflight writes nothing');
+  assert.equal(headSha(repo), head);
+  return pf;
+}
+
+/** An unrelated commit of OTHER.md on the current branch. */
+function unrelatedCommit(repo) {
+  fs.writeFileSync(abs(repo, 'OTHER.md'), 'unrelated work\n');
+  repo.git(['add', 'OTHER.md']);
+  repo.git(['commit', '-q', '-m', 'unrelated']);
+}
+
+test('19. an ignored planning tree: after the adopt commit preflight and begin route to upgrade and write nothing', (t) => {
+  const repo = fleet(t, { untrackedTree: true });
+  const { report } = pipeline(repo);
+  committed(repo, report);
+  assert.equal(repo.gitTry(['check-ignore', '-q', report.report_path]).status, 0, 'the report is ignored');
+  assert.notEqual(repo.gitTry(['rev-parse', '-q', '--verify', `HEAD:${report.report_path}`]).status, 0, 'the report is not in HEAD');
+
+  assertUpgradeNoWrite(repo);
+  const before = repo.snapshot();
+  const head = headSha(repo);
+  const bg = adoptRun(repo, 'begin');
+  assert.equal(bg.status, 0, bg.out);
+  assert.equal(bg.json.route, 'upgrade', bg.out);
+  assert.equal(bg.json.created_branch, false);
+  assert.deepEqual(repo.snapshot(), before, 'begin writes nothing');
+  assert.equal(headSha(repo), head);
+  assert.equal(currentBranch(repo), ADOPT_BRANCH);
+});
+
+for (const [label, flags] of [['a fast-forward', ['--ff-only']], ['a merge-commit', ['--no-ff', '-m', 'merge adopt']]]) {
+  test(`20. an ignored planning tree: after ${label} merge into main and the branch deleted, preflight routes to upgrade`, (t) => {
+    const repo = fleet(t, { untrackedTree: true });
+    const { report } = pipeline(repo);
+    committed(repo, report);
+    repo.git(['switch', '-q', 'main']);
+    repo.git(['merge', '-q', ...flags, ADOPT_BRANCH]);
+    repo.git(['branch', '-D', ADOPT_BRANCH]);
+    assert.notEqual(repo.gitTry(['rev-parse', '-q', '--verify', `refs/heads/${ADOPT_BRANCH}`]).status, 0, 'the branch is gone');
+    assert.equal(currentBranch(repo), 'main');
+    assert.deepEqual(statusLines(repo), []);
+
+    assertUpgradeNoWrite(repo);
+  });
+}
+
+test('21. an ignored planning tree: a change recorded by hand on aoforge/adopt after the report step ends the adopt', (t) => {
+  const repo = fleet(t, { untrackedTree: true });
+  const { report } = pipeline(repo);
+  repo.git(['add', '--', ...report.commit_files]);
+  repo.git(['commit', '-q', '-m', 'record the move myself']);
+  assert.deepEqual(statusLines(repo), []);
+
+  assertUpgradeNoWrite(repo);
+});
+
+test('22. an ignored planning tree: report written and nothing committed still resumes, ready to commit', (t) => {
+  const repo = fleet(t, { untrackedTree: true });
+  pipeline(repo);
+  const pf = adoptRun(repo, 'preflight');
+  assert.equal(pf.status, 0, pf.out);
+  assert.equal(pf.json.route, 'resume', pf.out);
+  assert.deepEqual(pf.json.adopt.steps, { moved: true, scaffolded: true, reported: true });
+  assert.match(pf.json.next, /ready to commit/);
+});
+
+test('23. an ignored planning tree: a commit on another branch is not the adopt\'s, preflight still refuses', (t) => {
+  const repo = fleet(t, { untrackedTree: true });
+  pipeline(repo);
+  repo.git(['switch', '-q', 'main']);
+  unrelatedCommit(repo);
+
+  const before = repo.snapshot();
+  const pf = adoptRun(repo, 'preflight');
+  assert.equal(pf.status, 3, pf.out);
+  assert.equal(pf.json.route, 'refuse', pf.out);
+  assert.equal(pf.json.reason, 'adopt-in-progress-elsewhere', pf.out);
+  assert.deepEqual(repo.snapshot(), before, 'preflight writes nothing');
+});
+
+test('24. an ignored planning tree: a commit on aoforge/adopt before the report step does not end the adopt', (t) => {
+  const repo = fleet(t, { untrackedTree: true });
+  pipeline(repo, 'scaffold');
+  unrelatedCommit(repo);
+  assert.equal(currentBranch(repo), ADOPT_BRANCH);
+
+  const pf = adoptRun(repo, 'preflight');
+  assert.equal(pf.status, 0, pf.out);
+  assert.equal(pf.json.route, 'resume', pf.out);
+  assert.deepEqual(pf.json.adopt.steps, { moved: true, scaffolded: true, reported: false });
 });

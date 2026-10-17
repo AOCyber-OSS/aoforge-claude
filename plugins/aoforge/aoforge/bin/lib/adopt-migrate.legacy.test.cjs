@@ -34,7 +34,8 @@
 //     refusalFor puts both-planning-dirs before legacy-block-malformed.
 // 13. `facts.finished` decides whether the marker counts and wins over the `roadmapTracked` alias; callers that pass
 //     only `roadmapTracked` get the same result. In a repo, an adopt is finished only when its ROADMAP (fresh) or
-//     report (migrate) is in HEAD, not merely staged.
+//     report (migrate) is in HEAD, not merely staged, or, for a report git ignores, when the adopt commit is in
+//     HEAD's history (quick 43).
 //
 // Guard and help:
 // 14. `legacyLayoutGuard` returns null for `adopt` (every subcommand) in a legacy-only root, with a reason on its
@@ -44,6 +45,10 @@
 // Failure:
 // 16. A failing move during begin (resume with a move that cannot happen): refuse `move-failed`, exit 3, the marker
 //     stays so the re-run resumes.
+//
+// Begin's next step (quick 43):
+// 17. `begin` on the migrate route returns `next` `aof-tools --cwd <target> adopt scaffold`, never `adopt begin`;
+//     `adopt begin --raw` prints `migrate: aof-tools --cwd <target> adopt scaffold`.
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -518,4 +523,19 @@ test('16. a move that fails during begin refuses move-failed and leaves the mark
   assert.equal(fs.existsSync(markerFile(repo)), true, 'the marker stays');
   assert.equal(currentBranch(repo), ADOPT_BRANCH, 'the branch stays');
   assert.deepEqual(repo.snapshot(), before, 'nothing was undone or deleted');
+});
+
+// ─── 17: begin names the next step ────────────────────────────────────────────
+
+test('17. begin on the migrate route names adopt scaffold as the next step, never itself', (t) => {
+  const repo = fleet(t, { nested: true });
+  const { report } = begun(repo);
+  assert.equal(report.route, 'migrate');
+  assert.equal(report.next, 'aof-tools --cwd <target> adopt scaffold');
+  assert.doesNotMatch(report.next, /adopt begin/);
+
+  const other = fleet(t, { nested: true });
+  const raw = other.run(['adopt', 'begin', '--raw']);
+  assert.equal(raw.status, 0, raw.out);
+  assert.equal(raw.stdout, 'migrate: aof-tools --cwd <target> adopt scaffold');
 });

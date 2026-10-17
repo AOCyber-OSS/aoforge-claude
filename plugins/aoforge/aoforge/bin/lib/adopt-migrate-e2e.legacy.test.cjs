@@ -47,10 +47,10 @@
 //     --apply` exit 0 and committing its `changed_files` through `aof-tools commit` leaves a clean tree; `init
 //     plan-objective 1` exit 0 (last).
 //
-// Defects the matrix found, pinned as `todo` rows (they run and show in the output, and do not fail the suite):
-// 13. After success on an untracked planning tree (`untrackedTree`): preflight should route to `upgrade`. It routes to
-//     `resume`, because the report is written into an ignored tree and is never in HEAD (adopt.cjs, 80-03's known
-//     limitation).
+// Fixed in quick 43 (were `todo` rows):
+// 13. After success on an untracked planning tree (`untrackedTree`): preflight and begin route to `upgrade` (exit 0),
+//     begin creates no branch, and the snapshot, HEAD and marker are unchanged. The report sits in an ignored tree and
+//     never reaches HEAD; the adopt commit in HEAD's history is what ends the adopt.
 // 14. One `upgrade --apply` (committed) should leave `upgrade --check` up to date. Migration 0005 needs a second pass
 //     for a pre-v1-form block under the AOFORGE markers (not adopt's; it reproduces without a migration).
 //
@@ -643,17 +643,26 @@ test('12. every 3.1 tool works on the migrated repository', (t) => {
   assert.equal(plan.json.objective_found, true);
 });
 
-// ─── 13: a defect the matrix found (adopt.cjs, reported not fixed) ────────────
+// ─── 13: an untracked planning tree ends at the adopt commit (quick 43) ───────
 
-test('13. after success on an untracked planning tree the workflow does not ask to resume', {
-  todo: 'DEFECT (80-03 known limitation, reproduced by 80-06): with an untracked planning tree the report is never in '
-    + 'HEAD, so adopt preflight still reads the marker as unfinished and routes to resume after the commit',
-}, (t) => {
+test('13. after success on an untracked planning tree the workflow routes to upgrade and a re-run writes nothing', (t) => {
   const repo = fleet(t, { untrackedTree: true });
   runSeq(repo);
+  const before = repo.snapshot();
+  const head = headSha(repo);
+  const marker = JSON.stringify(markerOf(repo));
+
   const pf = cli(repo, ['adopt', 'preflight']);
   assert.equal(pf.status, 0, pf.out);
   assert.equal(pf.json.route, 'upgrade', `preflight after a finished adopt: ${pf.json.route} (${pf.json.next})`);
+  const bg = cli(repo, ['adopt', 'begin']);
+  assert.equal(bg.status, 0, bg.out);
+  assert.equal(bg.json.route, 'upgrade', bg.out);
+  assert.equal(bg.json.created_branch, false);
+
+  assert.deepEqual(repo.snapshot(), before, 'preflight and begin write nothing');
+  assert.equal(headSha(repo), head);
+  assert.equal(JSON.stringify(markerOf(repo)), marker, 'the marker is untouched');
 });
 
 test('14. one upgrade --apply brings the migrated repository up to date', {
