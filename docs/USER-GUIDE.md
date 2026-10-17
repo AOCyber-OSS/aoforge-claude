@@ -30,7 +30,7 @@ reports, the 2.x upgrade path, the 3.0.0 checklist and how to check the result a
 
 **The name map.** `lib/legacy-names.cjs` is the one module that spells the old names. It exports `NAMES` (the AOForge
 forms), `LEGACY` (the pre-rename forms), `PRESERVE`, `SHIM_RELEASE` (`3.0.x`, the last release line with the shims,
-which every 3.1 legacy message names as the conversion path) and `SHIM_REMOVAL` (`3.1.0`, the release that removed
+which every 3.1 legacy message names as a conversion path, after `/aoforge:adopt`) and `SHIM_REMOVAL` (`3.1.0`, the release that removed
 them). Every other module and test builds the old names from it, so the rename guard (`rename-guard.repo.test.cjs`)
 can fail CI on an old name anywhere else. In 3.1 an old name is read only to detect and report it (`planning-layout`,
 `coexistence`, `managed-block`, `global-upgrade`, `gh-setup`, `gh-legacy-labels`, `checks-pin`, `stack-mcp`, doctor
@@ -60,17 +60,20 @@ notice and doctor check 16 name each one with its `AOFORGE_*` form.
 **A project still on the old layout.** `planning-layout.cjs` detects it without compat: `isLegacyPlanning` (the old
 directory holds a config, STATE, ROADMAP or PROJECT file and `.aoforge/` is absent), `bothPlanningDirs` and
 `findLegacyLayoutRoot` (walks up, stops at `$HOME`). Every surface gives the one message from `legacyLayoutMessage`,
-which names AOForge 3.0.x, the manual `git mv` and the guide's "Upgrading from 2.x":
+which names `/aoforge:adopt` first, then AOForge 3.0.x, the manual `git mv` and the guide's "Upgrading from 2.x":
 
 - `validate health` returns one broken W066 and writes nothing, `--repair` included; `doctor` resolves no project and
   prints the message as a note.
 - `aof-tools` refuses every command that writes the planning tree, and `init`, which every skill calls first
-  (`lib/legacy-layout-guard.cjs`). Doctor, validate and the commands that touch only the runtime home, git config or
-  transcripts are exempt, each with its reason in the module; `upgrade --global|--prune|--register` and help flags run.
+  (`lib/legacy-layout-guard.cjs`). Doctor, validate, `adopt` (the command that moves the layout) and the commands that
+  touch only the runtime home, git config or transcripts are exempt, each with its reason in the module;
+  `upgrade --global|--prune|--register` and help flags run.
 - The `upgrade-project` SessionStart hook queues the message once as a global notice (key
   `legacy-layout:<realpath>`), runs no migration and commits nothing.
-- `upgrade --apply --only 0012|0013|0014` names the retired migration and the 3.0.x path instead of "unknown migration
-  id" (`upgrade.RETIRED_MIGRATIONS`).
+- `upgrade --apply --only 0012|0013|0014` names the retired migration, `/aoforge:adopt` and the 3.0.x path instead of
+  "unknown migration id" (`upgrade.RETIRED_MIGRATIONS`).
+- `/aoforge:adopt` is the 3.1 way to move the project itself: see [Adopting an Existing
+  Repo](#adopting-an-existing-repo-aoforgeadopt), "A pre-rename project".
 
 **What 3.0.0 left in `~/.aoforge/`.** AOForge 3.0.0 kept the watch daemon's pid file and log, the service logs and the
 user files in `~/.aoforge/`. 3.1 no longer reads them there. `aoforge-watch start` refuses while a daemon 3.0.0 started
@@ -123,7 +126,7 @@ the next prompt. It reports only: it never edits settings, moves a file or makes
 | 15 `legacy-df-install` | global | legacy-prefixed skills or agents under `~/.claude/skills/` and `~/.claude/agents/` (INST-01: they must not come back) | report-only since 3.1.0: the global upgrade moves them into `~/.claude/aoforge/backups/legacy-<timestamp>/` at session start after a plugin update, or now with `aof-tools upgrade --global --apply` (the check's `fix_command`); or move them by hand |
 | 16 `legacy-plugin-runtime` | global | the old plugin still enabled; the old runtime home never migrated; the old home left over after a 3.0.x migration; pre-rename environment variables | report-only since 3.1.0: the disable command; for a home never migrated, AOForge 3.0.x once or a copy by hand; for a leftover, the printed `mkdir -p ... && mv` into `backups/legacy-<old runtime dir>-runtime-<date>/` (prefixed by the disable command while the old plugin is enabled); rename the variables |
 | 17 `user-dot-dir` | global | a leftover `~/.aoforge/` (3.0.0's watch daemon pid file and log, service logs, saved defaults, Brave key or allowlist), which 3.1 no longer reads | `doctor --global --fix` moves AOForge's files to `~/.claude/aoforge/` (the daemon's to `state/watch/`), or into `backups/aoforge-dot-dir-<timestamp>/` when a newer copy exists or the pid is stale. It never deletes or overwrites a file and removes the directory only once it is empty; a symlinked `~/.aoforge` keeps its link and target. Report-only while a daemon there is live (names `aoforge-watch stop`), an installed service still logs there (names the reinstall) or the directory holds planning files. Files it does not know, such as a `.DS_Store` macOS dropped there, are listed and left in place, so the directory stays |
-| 27 `legacy-planning-layout` | project | W066 (both directories), W067 and W069 (below); check 22 defers all three to it, so each shows once. A legacy-only root is no project: doctor prints the layout message as a note | report-only: each finding names its manual fix or the 3.0.x path |
+| 27 `legacy-planning-layout` | project | W066 (both directories), W067 and W069 (below); check 22 defers all three to it, so each shows once. A legacy-only root is no project: doctor prints the layout message as a note | report-only: each finding names `/aoforge:adopt`, its manual fix or the 3.0.x path |
 | 26 `checks-workflow-pin` | project | a managed caller under the pre-rename file name is reported with W062 and the `aof-tools gh rebrand --dry-run` command | `gh rebrand`, never a re-pin with `gh setup --apply` |
 
 Checks 15 and 16 lost their fixes in 3.1.0 because the conversions belong to 3.0.x; check 17 keeps its fix because
@@ -319,7 +322,7 @@ An `aof-tools` command that writes (the ones `aof-tools --help` marks with `*`) 
 | Command | Purpose | When to Use |
 |---------|---------|-------------|
 | `/aoforge:map-codebase` | Analyze existing codebase | Before `/aoforge:new-project` on existing code |
-| `/aoforge:adopt [path]` | Unattended AOForge bootstrap for an existing repo (or `[path]`) | Turn a brownfield repo into an AOForge project without answering questions |
+| `/aoforge:adopt [path]` | Unattended AOForge bootstrap for an existing repo (or `[path]`) | Turn a brownfield repo into an AOForge project, or move a pre-rename project onto `.aoforge/`, without answering questions |
 | `/aoforge:security-audit` | OWASP Top 10 scan with confidence tagging | Before a release or after auth/crypto changes |
 | `/aoforge:quick` | Ad-hoc task with AOForge guarantees | Bug fixes, small features, config changes |
 | `/aoforge:debug [desc]` | Systematic debugging with persistent state | When something breaks |
@@ -344,9 +347,25 @@ milestone ROADMAP), adds the versioned CLAUDE.md managed block, stamps the versi
 lands as **one signed commit on a new `aoforge/adopt` branch, which is never pushed**. Re-running
 `/aoforge:adopt` on a half-finished adopt resumes rather than duplicating.
 
+**A pre-rename project** (its planning directory, config stamp key or CLAUDE.md block markers date from before the
+3.0.0 rename) takes the migrate path, because there is nothing to map or infer: the planning content already exists.
+On the `aoforge/adopt` branch it moves every planning tree in the repository, the root one and component ones such as
+`api/`, onto `.aoforge/` with `git mv` (history follows; an untracked tree is renamed instead), renames the config stamp
+key and the CLAUDE.md block markers and the old names inside the block, rewrites the `.gitignore` lines that name the
+old directory (and adds the matching lines to `.git/info/exclude`), and writes `.aoforge/ADOPT-REPORT.md` with a
+Migration table listing each change. A backup of each planning root goes under `~/.claude/aoforge/backups/` first. It is
+the same one commit, never pushed. Nothing is mapped, inferred or scaffolded and no upgrade migration runs: planning
+content is otherwise untouched, `aof-tools upgrade --check` is the next step, and the next session start applies the
+automatic migrations. Merge `aoforge/adopt` yourself. The install-level leftovers of the rename (the old runtime home,
+the global `~/.claude/CLAUDE.md` block, the old environment variables, the old plugin) and a GitHub repository's
+pre-rename labels are not a project's; adopt leaves them alone, and [MIGRATING-TO-AOFORGE.md](MIGRATING-TO-AOFORGE.md)
+("Upgrading from 2.x") covers them.
+
 **Routing by repo state**, decided before anything is written:
-- Already an AOForge project (`.aoforge/` present) -> routed to `upgrade` (see below); never
-  re-scaffolded.
+- Already an AOForge project (`.aoforge/` present, nothing pre-rename left in it) -> routed to `upgrade` (see below);
+  never re-scaffolded.
+- A pre-rename project (including one that has `.aoforge/` but still carries the old stamp key, CLAUDE.md markers or
+  ignore lines) -> the migrate path above.
 - Empty or greenfield repo -> reports that and points you at `/aoforge:new-project`.
 - Existing codebase -> the adopt pipeline described above.
 
@@ -355,8 +374,23 @@ repo mid-rebase/merge, a detached HEAD, or a path that isn't a git repository at
 reason and stops -- it never stashes or resets your work. An adopt begun before the 3.0.0 rename
 does not resume in 3.1: a new adopt starts on `aoforge/adopt` and leaves the pre-rename branch and marker as they
 are (delete them yourself once you no longer need them). A stale `aoforge/adopt` with no marker refuses with
-`adopt-branch-exists`. A project that holds only the pre-rename planning directory is refused with the legacy-layout
-message (see [Renamed to AOForge](#renamed-to-aoforge-300)).
+`adopt-branch-exists`. A pre-rename project is not refused for its layout: it takes the migrate path. The migrate path
+refuses, and writes nothing, when a directory holds both planning directories (`both-planning-dirs`: move what you still
+need into `.aoforge/` and delete the old directory yourself) or a CLAUDE.md holds a pre-rename block adopt cannot
+convert (`legacy-block-malformed`: a start marker with no end marker, more than one block, or one beside a current
+block; the message names the fix). A move that fails part-way (`move-failed`) leaves the branch and the marker, and
+re-running `/aoforge:adopt` resumes it, as it resumes an interrupted scaffold or report. See [Renamed to
+AOForge](#renamed-to-aoforge-300).
+
+**Known limits of the migrate path.**
+- A project whose planning tree is untracked and ignored gets its report written into an ignored directory, so `HEAD`
+  never holds it: after the commit, `adopt preflight` keeps routing the project to `resume` ("ready to commit"). There is
+  nothing left to commit; the workflow treats a successful or empty commit as the end of the run.
+- Migration 0005 may need a second `aof-tools upgrade --apply` for a CLAUDE.md block in the pre-v1 template shape: the
+  first apply reports it and `upgrade --check` still lists it, and the second converges. The convergence is pinned as a
+  `todo` row in `adopt-migrate-e2e.legacy.test.cjs`.
+- A stop between the conversion of the stamp keys, block markers and ignore lines and the write of the adopt marker's
+  record leaves those files converted (the git diff shows them), but the Migration table lists fewer changes.
 
 Under the hood: `aof-tools adopt preflight|begin|scaffold|report` (the deterministic half) plus the
 global `aof-tools --cwd <dir>` flag so the CLI can target `[path]` from anywhere. Implemented in
@@ -397,7 +431,7 @@ node ~/.claude/aoforge/bin/aof-tools.cjs upgrade --global --confirm   # adopt th
 
   `confirm` migrations run only when you name them with `--only <id>` or pass `--apply --confirm`. `--confirm` selects every applicable confirm migration, including ones `--only` does not name; `--only <id>` alone runs just that one.
 
-  0012, 0013 and 0014 were the 3.0.0 rename; 3.1.0 retired them with the other one-release shims (objective 78). `upgrade --apply --only 0012` (or 0013, 0014) exits 1 with one line naming the retired migration, AOForge 3.0.x and [MIGRATING-TO-AOFORGE.md](MIGRATING-TO-AOFORGE.md) ("Upgrading from 2.x"), never "unknown migration id" (`upgrade.RETIRED_MIGRATIONS`). The upgrade reads the `aoforge{}` stamp only: a pre-rename key alone reads as no stamp (safe, because every migration is detection-based), and the stamp writer never edits or deletes it (W067 names the fix). In a project that holds only the pre-rename planning directory, `upgrade --apply` and `--check` write nothing and report the legacy-layout message as their one failure.
+  0012, 0013 and 0014 were the 3.0.0 rename; 3.1.0 retired them with the other one-release shims (objective 78). `upgrade --apply --only 0012` (or 0013, 0014) exits 1 with one line naming the retired migration, `/aoforge:adopt`, AOForge 3.0.x and [MIGRATING-TO-AOFORGE.md](MIGRATING-TO-AOFORGE.md) ("Upgrading from 2.x"), never "unknown migration id" (`upgrade.RETIRED_MIGRATIONS`). The upgrade reads the `aoforge{}` stamp only: a pre-rename key alone reads as no stamp (safe, because every migration is detection-based), and the stamp writer never edits or deletes it (W067 names the fix). In a project that holds only the pre-rename planning directory, `upgrade --apply` and `--check` write nothing and report the legacy-layout message as their one failure.
 - **Deferred migrations.** A migration can decline to run yet instead of failing (3.0.x's 0012 did; no shipped migration defers since 3.1.0, but the runner keeps the mechanism). It writes nothing and stays pending, every later migration in the run waits, and the stamp is not advanced. The SessionStart hook queues one action notice, replaced rather than repeated while the reason lasts, naming the migration, the reason and the `upgrade --apply --only <id>` command to run once it clears; the next session start retries it.
 - **Stamp.** `.aoforge/config.json` records `aoforge{version, migrations_applied, upgraded_at}`. `validate health` reports **W040** when the project is behind.
 - **Backups** go outside the repo, to `~/.claude/aoforge/backups/<repo>-<hash>/<timestamp>/`, before anything is written.
@@ -444,14 +478,14 @@ prints the same findings without running the other health checks and without any
 
 ### Health checks for the legacy layout (W066, W067, W069)
 
-These report a project the 3.0.0 rename never finished moving. `validate health` raises them and `/aoforge:doctor` check 27 (`legacy-planning-layout`) shows the same text (`lib/planning-layout.cjs`); check 22 defers all three to it, so each appears once. None is repaired automatically: since 3.1.0 the conversions belong to AOForge 3.0.x or to the manual steps in [MIGRATING-TO-AOFORGE.md](MIGRATING-TO-AOFORGE.md) ("Upgrading from 2.x").
+These report a project the 3.0.0 rename never finished moving. `validate health` raises them and `/aoforge:doctor` check 27 (`legacy-planning-layout`) shows the same text (`lib/planning-layout.cjs`); check 22 defers all three to it, so each appears once. `validate health` and doctor repair none of them. `/aoforge:adopt` converts a project's layout, stamp key and block markers as one recorded change; the conversions in your home belong to AOForge 3.0.x or to the manual steps in [MIGRATING-TO-AOFORGE.md](MIGRATING-TO-AOFORGE.md) ("Upgrading from 2.x").
 
 | Code | When | Fix |
 |---|---|---|
-| W066 `legacy-planning-dir` (broken) | The project has only the legacy planning directory, which AOForge 3.1 does not read. `validate health` returns this one error and runs no other check; nothing is written, `--repair` included. Doctor resolves no project and prints the same text as a note | AOForge 3.0.x once (`aof-tools upgrade --apply` there), or by hand: `git mv` the directory to `.aoforge/`, then rename the pre-rename key in `.aoforge/config.json` to `aoforge` |
-| W066 `legacy-planning-dir` (both, warning) | `.aoforge/` and the legacy directory both exist; AOForge reads `.aoforge/` only and ignores the other | Move what you still need from the legacy directory into `.aoforge/`, then remove the legacy directory yourself |
-| W067 `legacy-config-key` (warning) | `.aoforge/config.json` carries the pre-rename stamp key, alone or beside `aoforge{}`. The upgrade runner reads `aoforge{}` only | Alone: rename the key to `aoforge`. Beside `aoforge{}`: delete it |
-| W069 `legacy-claude-md-block` (warning) | The project CLAUDE.md holds a managed block under the pre-rename markers, which AOForge no longer updates (migrations 0005 and 0007 skip the file with this reason) | Rename the two markers to `AOFORGE`; the next upgrade refreshes the block (or run AOForge 3.0.x's upgrade once) |
+| W066 `legacy-planning-dir` (broken) | The project has only the legacy planning directory, which AOForge 3.1 does not read. `validate health` returns this one error and runs no other check; nothing is written, `--repair` included. Doctor resolves no project and prints the same text as a note | `/aoforge:adopt`, or AOForge 3.0.x once (`aof-tools upgrade --apply` there), or by hand: `git mv` the directory to `.aoforge/`, then rename the pre-rename key in `.aoforge/config.json` to `aoforge` |
+| W066 `legacy-planning-dir` (both, warning) | `.aoforge/` and the legacy directory both exist; AOForge reads `.aoforge/` only and ignores the other | Move what you still need from the legacy directory into `.aoforge/`, then remove the legacy directory yourself (`/aoforge:adopt` refuses this layout until you do) |
+| W067 `legacy-config-key` (warning) | `.aoforge/config.json` carries the pre-rename stamp key, alone or beside `aoforge{}`. The upgrade runner reads `aoforge{}` only | Alone: rename the key to `aoforge`. Beside `aoforge{}`: delete it. Or run `/aoforge:adopt`, which does either |
+| W069 `legacy-claude-md-block` (warning) | The project CLAUDE.md holds a managed block under the pre-rename markers, which AOForge no longer updates (migrations 0005 and 0007 skip the file with this reason) | Rename the two markers to `AOFORGE`; the next upgrade refreshes the block (or run `/aoforge:adopt`, which renames both markers and the old names inside the block, or AOForge 3.0.x's upgrade once) |
 
 ### Estimation data (`aof-tools tokens`, `aof-tools calibrate`)
 
@@ -868,7 +902,7 @@ claude --dangerously-skip-permissions
 ### Existing Codebase
 
 ```bash
-/aoforge:adopt                  # Unattended: maps, infers PROJECT.md/STACK.md, scaffolds, commits
+/aoforge:adopt                  # Unattended: maps, infers PROJECT.md/STACK.md, scaffolds, commits (a pre-rename project is moved instead)
 # (normal objective workflow from here -- or, for a manual walkthrough instead:)
 /aoforge:map-codebase           # Analyze what exists (parallel agents)
 /aoforge:new-project            # Questions focus on what you're ADDING
@@ -954,8 +988,10 @@ Set `commit_docs: false` during `/aoforge:new-project` or via `/aoforge:settings
 AOForge updates through the Claude Code plugin marketplace (`/plugin`), and `/aoforge:status check --migrate` brings a project forward.
 
 <!-- rename-guard:ignore-start -->
-**Coming from DevFlow 2.x.** AOForge 3.1 does not convert a 2.x install or project: run AOForge 3.0.x once (the
-`v3.0.0` tag of the repository), or do the conversion by hand, as described in "Upgrading from 2.x" in
+**Coming from DevFlow 2.x.** Run `/aoforge:adopt` in each project: AOForge 3.1 moves its planning directory, config
+stamp key and CLAUDE.md markers as one commit on `aoforge/adopt`. It does not convert a 2.x install (the old runtime home,
+the global `~/.claude/CLAUDE.md` block, the old environment variables, the old plugin): run AOForge 3.0.x once (the
+`v3.0.0` tag of the repository), or do that part by hand, as described in "Upgrading from 2.x" in
 [MIGRATING-TO-AOFORGE.md](MIGRATING-TO-AOFORGE.md). The pointer release of `devflow@aocyber` left the marketplace in
 3.1.0, so `/devflow:<name>` no longer forwards; disable the old plugin (`claude plugin disable devflow@aocyber`).
 <!-- rename-guard:ignore-end -->

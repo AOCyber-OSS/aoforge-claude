@@ -49,8 +49,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [3.1.0] - 2026-10-16
 
 3.1.0 ends the rename's one-release compatibility. AOForge now reads `.aoforge/` and the AOForge names only, so a 2.x
-project upgrades through 3.0.x first ([migration guide](docs/MIGRATING-TO-AOFORGE.md)), and a GitHub repository that
-still carries the pre-rename labels, markers or PR template needs `aof-tools gh rebrand --apply` before 3.1 writes to it.
+project moves with `/aoforge:adopt` (or through 3.0.x, or by hand; [migration guide](docs/MIGRATING-TO-AOFORGE.md)), and
+a GitHub repository that still carries the pre-rename labels, markers or PR template needs `aof-tools gh rebrand --apply` before 3.1 writes to it.
 Flutter, Dart and web procedure moved out of core into the `aoforge-stack-flutter` and `aoforge-stack-web` stack packs,
 with no forwarding shim: install the pack your project needs (`/plugin install aoforge-stack-flutter@aocyber`,
 `/plugin install aoforge-stack-web@aocyber`). The release also ships objective 72's post-release work, objectives 73 to
@@ -87,6 +87,48 @@ with no forwarding shim: install the pack your project needs (`/plugin install a
   the history readers, `PRESERVE`, and the first-generation `<!-- df:state -->` sticky-comment reader, which predates
   the rename and rewrites its own input on the next sync (TRD 78-12). They go in a later release once no repository
   needs them.
+
+### Added: adopt migrates pre-rename projects (objective 80)
+
+- **`/aoforge:adopt` moves a project that still has the pre-rename layout** (TRDs 80-01 to 80-03, 80-05), where 3.1
+  first refused it. A project whose planning directory, config stamp key or CLAUDE.md block markers date from before the
+  rename takes a migrate route, on the same `aoforge/adopt` branch and as the same one recorded change. Every planning
+  tree in the repository, the root one and nested ones such as `api/`, moves with `git mv`, so history follows (an
+  untracked tree is renamed). The stamp key becomes `aoforge` in each `config.json`; the CLAUDE.md block markers and the
+  old names inside the block are renamed, and nothing outside the block is touched; `.gitignore` lines are rewritten
+  and `.git/info/exclude` gains the matching lines. Planning content is otherwise left as it was: nothing is mapped,
+  inferred or scaffolded and no upgrade migration runs. `aof-tools upgrade --check` is the next step, and the next
+  session start applies the automatic migrations. A repository that has `.aoforge/` but still carries the old stamp
+  key, block markers or ignore lines takes the same route.
+- **One commit, a followable history, and a report that lists every change** (TRD 80-03). `adopt report` writes
+  `.aoforge/ADOPT-REPORT.md` with a Migration table (moved trees, converted stamps, blocks and ignore lines, what was not
+  moved), the needs-review rows, per-root health and the pending upgrades, and returns a compact `commit_files` (a
+  directory entry per moved tree, so a 1,169-file move is a short list) and a `commit_message`. A spawned `aof-tools
+  commit` over them records the move as 100% renames, `git log --follow` reaches the earlier history, and a backup of
+  each planning root goes under `~/.claude/aoforge/backups/` first. The report refuses to hand over a commit
+  (`commit_blocked`) while a legacy code remains or `commit_docs` is false.
+- **Refusals and resume** (TRDs 80-02, 80-05). It refuses, and writes nothing, when one directory holds both planning
+  directories (`both-planning-dirs`) or a CLAUDE.md holds a pre-rename block adopt cannot convert
+  (`legacy-block-malformed`), besides the earlier refusals (dirty tree, an operation in progress, a detached HEAD). A
+  move, a scaffold or a report that stopped part-way resumes on the next run; the marker records the plan before
+  anything moves.
+- **The CLI guard lets `adopt` run in a pre-rename project** (TRD 80-02, `lib/legacy-layout-guard.cjs`), and
+  `workflows/adopt.md` and the adopt skill describe the migrate path.
+- **Every legacy-layout message names `/aoforge:adopt`** (TRD 80-04): W066 (the CLI refusal, `validate health`, the
+  SessionStart notice and doctor check 27), W067, the project W069 (the global one does not) and `upgrade --apply --only
+  0012|0013|0014`, ahead of AOForge 3.0.x and the manual steps. The migration guide (and its site page) lead with adopt
+  as Option A and quote the current message.
+- **Proof** (TRDs 80-06 to 80-08). An end-to-end test drives the workflow's commands over a fresh, a brownfield and a
+  fleet-shaped pre-rename repository with a `check --mode migrate` checker, plus the re-run and resume matrix. The skill
+  text was then followed on read-only copies of two real fleet repositories (aodex: three planning roots and a stamp
+  key, 1,169 moved files; smartWellness: a pre-v1 CLAUDE.md block, 106 moved files): one commit each, a clean tree,
+  `validate health` codes equal to a hand migration at every root, and the sources untouched. A fresh repository still
+  routes to `new-project` and a brownfield one still ends in one commit with the 13-check checker green.
+- **Known limits** (not fixed; pinned or described in the user guide). A project with an untracked, ignored planning
+  tree keeps routing to `resume` after the commit, because the report never reaches `HEAD`. Migration 0005 may need a
+  second `upgrade --apply` for a CLAUDE.md block in the pre-v1 template shape. A stop between the conversion of the
+  stamp keys, block markers and ignore lines and the write of the adopt marker leaves those files converted but
+  unlisted in the Migration table.
 
 ### Added
 
