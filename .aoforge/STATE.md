@@ -143,6 +143,7 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 | 37 | Sonnet 5.5 cache rate 0.05x, 3.1.0 and pack 1.0.0 dated 2026-10-16, release dry run + explicit permissions + tag-rules inspector | 2026-10-16 | 51c29758 | Done | [37-sonnet-cache-rate-release-dates-release-](./quick/37-sonnet-cache-rate-release-dates-release-/) |
 | 38 | Flutter projects with a web platform select the web pack (soft_depends); web pack executor browser self-check | 2026-10-16 | 6e29a60a | Done | [38-flutter-web-selects-web-pack-web-pack-ex](./quick/38-flutter-web-selects-web-pack-web-pack-ex/) |
 | 39 | Core neutrality sweep: web/Flutter procedure leaves verify-work, checkpoints, templates; guard scans all of core and browser_ tools | 2026-10-16 | 68dab58c | Done | [39-move-remaining-web-and-flutter-procedure](./quick/39-move-remaining-web-and-flutter-procedure/) |
+| 40 | df- agent alias removed from model resolution, df- wording reworded, rename guard catches df- agent/skill names, root skip in verify-completion test | 2026-10-17 | 9ff86db7 | Done | [40-remove-df-leftovers-tighten-the-rename-g](./quick/40-remove-df-leftovers-tighten-the-rename-g/) |
 
 ## Accumulated Context
 
