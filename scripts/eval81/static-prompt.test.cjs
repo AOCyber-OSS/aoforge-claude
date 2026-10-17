@@ -471,6 +471,12 @@ test('7. compare gives from/to/delta per agent for agent, spawn and resident byt
   assert.equal(c.totals.pack.to.count, 2);
   assert.equal(c.totals.pack.to.resident_bytes, 290);
 
+  // Like-for-like: only agents that are defined and core in both trees (ui-evaluator left core, planner is gone).
+  assert.deepEqual(c.totals.core_both.from, { count: 1, resident_bytes: 480, resident_tokens: 120 });
+  assert.deepEqual(c.totals.core_both.to, { count: 1, resident_bytes: 380, resident_tokens: 95 });
+  assert.equal(c.totals.core_both.delta_bytes, -100);
+  assert.equal(c.totals.core_both.delta_pct, -20.83);
+
   // Sorted by resident delta: the largest reduction first, agents without a delta last (by name).
   assert.deepEqual(c.agents.map((r) => r.name), ['verifier', 'ui-evaluator', 'planner', 'web-ui-verifier']);
 });

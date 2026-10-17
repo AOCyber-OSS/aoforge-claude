@@ -463,12 +463,13 @@ function metric(from, to, deltaKey = 'delta_bytes') {
   return { from: f, to: t, [deltaKey]: d, delta_pct: f === 0 ? null : Math.round((d / f) * 10000) / 100 + 0 };
 }
 
-function groupTotals(rows, side, pack) {
+function groupTotals(rows, side, pack, bothCore = false) {
   let count = 0;
   let bytes = 0;
   for (const r of rows) {
     const a = r[side];
     if (!a || !a.defined || a.pack !== pack) continue;
+    if (bothCore && !(r.from && r.from.defined && !r.from.pack && r.to && r.to.defined && !r.to.pack)) continue;
     count += 1;
     bytes += a.resident_bytes;
   }
@@ -509,9 +510,9 @@ function compare(a, b) {
     if (dy == null) return -1;
     return dx - dy || x.name.localeCompare(y.name);
   });
-  const group = (pack) => {
-    const f = groupTotals(pairs, 'from', pack);
-    const t = groupTotals(pairs, 'to', pack);
+  const group = (pack, bothCore = false) => {
+    const f = groupTotals(pairs, 'from', pack, bothCore);
+    const t = groupTotals(pairs, 'to', pack, bothCore);
     const m = metric(f.resident_bytes, t.resident_bytes);
     return { from: f, to: t, delta_bytes: m.delta_bytes, delta_pct: m.delta_pct };
   };
@@ -519,7 +520,7 @@ function compare(a, b) {
     from: { ref: a.ref, sha: a.sha, plugins_tree: a.plugins_tree || null },
     to: { ref: b.ref, sha: b.sha, plugins_tree: b.plugins_tree || null },
     agents,
-    totals: { core: group(false), pack: group(true) },
+    totals: { core: group(false), core_both: group(false, true), pack: group(true) },
   };
 }
 
@@ -548,9 +549,10 @@ function renderMarkdown(cmp) {
   out.push('', '## Totals (defined agents; core and pack counted apart, each side by its own classification)', '');
   out.push(`| Group | Agents ${f} | Resident bytes ${f} | Agents ${t} | Resident bytes ${t} | Delta bytes | Delta % |`);
   out.push('|---|---:|---:|---:|---:|---:|---:|');
-  for (const g of ['core', 'pack']) {
+  const label = { core: 'core', core_both: 'core in both trees (like for like)', pack: 'pack' };
+  for (const g of ['core', 'core_both', 'pack']) {
     const x = cmp.totals[g];
-    out.push(`| ${g} | ${x.from.count} | ${x.from.resident_bytes} | ${x.to.count} | ${x.to.resident_bytes} | ${signed(x.delta_bytes)} | ${pct(x.delta_pct)} |`);
+    out.push(`| ${label[g]} | ${x.from.count} | ${x.from.resident_bytes} | ${x.to.count} | ${x.to.resident_bytes} | ${signed(x.delta_bytes)} | ${pct(x.delta_pct)} |`);
   }
   out.push('', '## Named `@` paths (reported apart; they do not cross the Task boundary)', '');
   out.push(`| Agent | Paths ${f} | Bytes ${f} | Missing ${f} | Paths ${t} | Bytes ${t} | Missing ${t} |`);
