@@ -654,3 +654,81 @@ test.describe('parseVisionResponse (pure response → Shape-C)', () => {
     assert.throws(() => parseVisionResponse(apiBody, { state_id: 's5' }), /no text/);
   });
 });
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Judge tier override and the split-vote escalation signal (quick 42, objective 76 SC6 / MEF-06).
+// The judge's verdict is the vision model the engine calls, so a one-rung escalation has to move
+// the engine's rung: `--judge-tier` overrides it, and `tier_escalation` records the signal (split
+// live votes) that the agent returns and /aoforge:ui-eval acts on. The engine never escalates itself.
+// ──────────────────────────────────────────────────────────────────────────────
+
+test.describe('judge tier and split-vote escalation (quick 42)', () => {
+  const engine = require('./flutter-ui-eval.cjs');
+  const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'aoforge-stack.json'), 'utf-8'));
+  const packTiers = manifest.models['ui-evaluator'];
+  const profiles = JSON.parse(fs.readFileSync(require('./core.cjs').corePath('..', '..', 'references', 'model-profiles.json'), 'utf-8'));
+
+  test('Case E1 — judgeTier: the manifest tier per profile, a valid override wins, an invalid one throws', () => {
+    assert.strictEqual(engine.judgeTier('balanced'), packTiers.balanced);
+    assert.strictEqual(engine.judgeTier('quality'), packTiers.quality);
+    assert.strictEqual(engine.judgeTier('balanced', 'opus'), 'opus');
+    assert.throws(() => engine.judgeTier('balanced', 'gpt-9'), /judge-tier/);
+  });
+
+  test('Case E2 — judgeModel: the override picks that rung\'s pinned id; no override is unchanged', () => {
+    assert.strictEqual(engine.judgeModel('balanced', 'opus'), profiles.models.opus);
+    assert.strictEqual(engine.judgeModel('balanced'), profiles.models[packTiers.balanced]);
+  });
+
+  test('Case E3 — buildVisionRequest: request.judge_tier sets body.model; without it, judgeModel() as before', () => {
+    const req = {
+      state_id: 'crm-contacts-populated',
+      screenshot_path: REAL_PNG,
+      expected: 'A populated contacts table; no empty-state.',
+      defect_types: DEFECT_TYPES,
+      severities: SEVERITIES,
+    };
+    assert.strictEqual(buildVisionRequest({ ...req, judge_tier: 'opus' }).body.model, profiles.models.opus);
+    assert.strictEqual(buildVisionRequest(req).body.model, engine.judgeModel());
+  });
+
+  test('Case E4a — a live run with a split-vote review requests escalation', () => {
+    const r = engine.judgeEscalation({
+      live: true, judgeTier: 'sonnet', reviews: ['s1'],
+      states: [{ state_id: 's1', verdict: 'review', flake: true }],
+    });
+    assert.deepStrictEqual(r, { requested: true, trigger: 'split-votes', from_tier: 'sonnet', states: ['s1'] });
+  });
+
+  test('Case E4b — a live review with no flake (credential, network or refusal error) does not', () => {
+    const r = engine.judgeEscalation({
+      live: true, judgeTier: 'sonnet', reviews: ['s1'],
+      states: [{ state_id: 's1', verdict: 'review', is_broken: null, defects: [], errors: ['ANTHROPIC_API_KEY not set'] }],
+    });
+    assert.strictEqual(r.requested, false);
+    assert.strictEqual(r.trigger, null);
+    assert.deepStrictEqual(r.states, []);
+  });
+
+  test('Case E4c — an advisory (labels) run never requests escalation', () => {
+    const r = engine.judgeEscalation({
+      live: false, judgeTier: 'sonnet', reviews: ['s1'],
+      states: [{ state_id: 's1', verdict: 'review', flake: true }],
+    });
+    assert.deepStrictEqual(r, { requested: false, trigger: null, from_tier: null, states: [] });
+  });
+
+  test('Case E4d — a split expect:fail state (not in reviews[]) does not', () => {
+    const r = engine.judgeEscalation({
+      live: true, judgeTier: 'sonnet', reviews: [],
+      states: [{ state_id: 'known-bad', verdict: 'fail', flake: true }],
+    });
+    assert.strictEqual(r.requested, false);
+  });
+
+  test('Case E4e — a live run with no reviews records its tier and requests nothing', () => {
+    const r = engine.judgeEscalation({ live: true, judgeTier: 'sonnet', reviews: [], states: [] });
+    assert.strictEqual(r.requested, false);
+    assert.strictEqual(r.from_tier, 'sonnet');
+  });
+});
