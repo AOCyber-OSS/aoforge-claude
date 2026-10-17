@@ -522,20 +522,57 @@ function judgeProfile(cwd = process.cwd()) {
   }
 }
 
+/** The rungs `--judge-tier` accepts (quick 42). */
+const JUDGE_TIERS = ['haiku', 'sonnet', 'opus'];
+
 /**
- * The concrete model id the vision calls use: the `ui-evaluator` tier for the profile from this
- * pack's manifest `models` (objective 77: the agent moved out of core's table), and the id for
- * that tier from core's references/model-profiles.json, which keeps the pinned ids current.
+ * The tier the vision calls run on: `override` when given (the rung /aoforge:ui-eval passes on a
+ * one-rung escalation, quick 42), which must be one of JUDGE_TIERS; otherwise the `ui-evaluator`
+ * tier for the profile from this pack's manifest `models` (objective 77: the agent moved out of
+ * core's table).
  */
-function judgeModel(profile = judgeProfile()) {
+function judgeTier(profile = judgeProfile(), override) {
+  if (override != null) {
+    if (JUDGE_TIERS.includes(override)) return override;
+    throw new Error(`--judge-tier must be one of haiku|sonnet|opus; got "${override}"`);
+  }
   const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'aoforge-stack.json'), 'utf-8'));
-  const tier = ((manifest.models || {})['ui-evaluator'] || {})[profile] || 'sonnet';
+  return ((manifest.models || {})['ui-evaluator'] || {})[profile] || 'sonnet';
+}
+
+/**
+ * The concrete model id the vision calls use: the judgeTier() for the profile (or the override),
+ * and the id for that tier from core's references/model-profiles.json, which keeps the pinned ids
+ * current. A bare judgeModel() is unchanged from before the override existed.
+ */
+function judgeModel(profile = judgeProfile(), tierOverride) {
+  const tier = judgeTier(profile, tierOverride);
   const profiles = JSON.parse(fs.readFileSync(require('./core.cjs').corePath('..', '..', 'references', 'model-profiles.json'), 'utf-8'));
   return profiles.models[tier] || tier;
 }
 
+/**
+ * The split-vote escalation signal (quick 42, objective 76 SC6 / MEF-06). Only a LIVE run requests
+ * it, and only for a state in `reviews` (expect:pass) whose live samples disagreed (`flake: true`).
+ * A credential, network or refusal review carries no `flake` (environment friction, not a tier
+ * problem), an advisory labels run judged nothing, and an expect:fail state is never in reviews[].
+ * The engine only records the signal; ui-evaluator returns it and /aoforge:ui-eval decides, once.
+ */
+function judgeEscalation({ live, judgeTier: tier, reviews = [], states = [] } = {}) {
+  const split = live
+    ? reviews.filter((id) => states.some((s) => s && s.state_id === id && s.flake === true))
+    : [];
+  const requested = !!live && split.length > 0;
+  return {
+    requested,
+    trigger: requested ? 'split-votes' : null,
+    from_tier: live ? tier : null,
+    states: requested ? split : [],
+  };
+}
+
 function buildVisionRequest(request) {
-  const model = judgeModel();
+  const model = judgeModel(judgeProfile(), request.judge_tier);
 
   const b64 = fs.readFileSync(request.screenshot_path).toString('base64');
   const taxonomy = `defect types: ${DEFECT_TYPES.join(', ')}; severities: ${SEVERITIES.join(', ')}`;
@@ -697,8 +734,8 @@ function cmdVerifyFlutterUIEval(cwd, args, raw) {
   // `flutter-ui eval -h` answered `"objective '-h' not found"`.
   if (!manifestArg || hasHelpFlag(list)) {
     output({
-      usage: 'verify flutter-ui-eval <manifest|captureResults> [--raw] [--judge live|labels] [--samples N]',
-      description: 'Score a UI visual-eval manifest. Default (no --judge, or --judge labels): offline label-echo judge (deterministic, NO network) — this is an ADVISORY labels lookup, not a visual gate; its rollup carries gate:"advisory" and CANNOT clear a surface from human verification. --judge live runs the REAL Anthropic vision judge (needs ANTHROPIC_API_KEY, or ANTHROPIC_AUTH_TOKEN+ANTHROPIC_BASE_URL) N times/state -> real N-sample voting (flake) + per-page token cost; its rollup carries gate:"binding" — the ONLY standing that may retire a surface from human verification. An unrecognised --judge value is rejected with a usage error.',
+      usage: 'verify flutter-ui-eval <manifest|captureResults> [--raw] [--judge live|labels] [--judge-tier haiku|sonnet|opus] [--samples N]',
+      description: 'Score a UI visual-eval manifest. Default (no --judge, or --judge labels): offline label-echo judge (deterministic, NO network) — this is an ADVISORY labels lookup, not a visual gate; its rollup carries gate:"advisory" and CANNOT clear a surface from human verification. --judge live runs the REAL Anthropic vision judge (needs ANTHROPIC_API_KEY, or ANTHROPIC_AUTH_TOKEN+ANTHROPIC_BASE_URL) N times/state -> real N-sample voting (flake) + per-page token cost; its rollup carries gate:"binding" — the ONLY standing that may retire a surface from human verification. An unrecognised --judge value is rejected with a usage error. --judge-tier (live only) sets the rung the vision calls use; /aoforge:ui-eval sets it on a one-rung escalation after split votes.',
       ok: true,
     }, raw);
     return;
@@ -718,6 +755,21 @@ function cmdVerifyFlutterUIEval(cwd, args, raw) {
   } else {
     error(`unrecognised --judge value '${judgeArg}' — expected 'live' or 'labels' (bare invocation defaults to 'labels'); refusing to silently fall through to the offline path`);
     return; // unreachable — error() calls process.exit(1); kept for readability/testability
+  }
+
+  // quick 42: --judge-tier picks the rung the live vision calls use (a one-rung escalation from
+  // /aoforge:ui-eval). Strict, like --judge: live only, and only a known tier, never silently.
+  const judgeTierIdx = list.indexOf('--judge-tier');
+  const judgeTierArg = judgeTierIdx >= 0 ? list[judgeTierIdx + 1] : undefined;
+  if (judgeTierIdx >= 0) {
+    if (judgeMode !== 'live') {
+      error('--judge-tier applies only to --judge live (the labels path calls no model)');
+      return;
+    }
+    if (!JUDGE_TIERS.includes(judgeTierArg)) {
+      error(`unrecognised --judge-tier value '${judgeTierArg}' — expected haiku, sonnet or opus`);
+      return;
+    }
   }
 
   // aodex#485 defect 5 / objective 33: the argument may be an objective id (the shape
@@ -795,6 +847,8 @@ function cmdVerifyFlutterUIEval(cwd, args, raw) {
   // on a clean pass. See verifier.md Step 8c and OBJECTIVE.md "Decision: what the default
   // judge does" for the full reasoning (aodex#485 defect 3).
   const gate = liveJudge ? 'binding' : 'advisory';
+  // The rung the live calls use, reported as judge_tier (quick 42); null on the labels path.
+  const tier = liveJudge ? judgeTier(judgeProfile(cwd), judgeTierArg) : null;
   const sIdx = list.indexOf('--samples');
   const nSamples = sIdx >= 0 ? Math.max(1, parseInt(list[sIdx + 1], 10) || samples) : samples;
 
@@ -844,7 +898,7 @@ function cmdVerifyFlutterUIEval(cwd, args, raw) {
       // per-page token cost. A refusal / credential / network error downgrades the state to review.
       const sp = (capture && capture.screenshot_path) || st.screenshot_path;
       const screenshot_path = sp && !path.isAbsolute(sp) ? path.join(manifestDir, sp) : sp;
-      const request = { state_id: stateId, surface: st.surface, screenshot_path, expected: st.expected, defect_types: DEFECT_TYPES, severities: SEVERITIES };
+      const request = { state_id: stateId, surface: st.surface, screenshot_path, expected: st.expected, defect_types: DEFECT_TYPES, severities: SEVERITIES, judge_tier: tier };
       const liveSamples = [];
       let liveErr = null;
       for (let i = 0; i < nSamples; i++) {
@@ -936,6 +990,7 @@ function cmdVerifyFlutterUIEval(cwd, args, raw) {
     // regardless of this run's verdict. See verifier.md Step 8c for the consuming rule.
     gate,
     model: liveJudge ? liveModel : undefined,
+    judge_tier: liveJudge ? tier : undefined,            // quick 42: the rung the vision calls used
     samples: liveJudge ? nSamples : samples,
     flakeBudget,
     unjudgedPolicy,
@@ -947,6 +1002,8 @@ function cmdVerifyFlutterUIEval(cwd, args, raw) {
     resolved: rollup.resolved,           // expect:fail states now passing — likely fixed; drop the known_broken flag
     unjudged: rollup.unjudged,           // aodex#485: states nothing examined — own bucket, never reviews[]
     known_broken: rollup.known_broken,   // #72: judged broken below the HIGH bar — passes, but named
+    // quick 42: split live votes on an expect:pass state request a one-rung judge escalation
+    tier_escalation: judgeEscalation({ live: liveJudge, judgeTier: tier, reviews: rollup.reviews, states: stateDetail }),
     usage: liveJudge ? usageTotal : undefined,           // per-run token totals for cost estimation
     states: stateDetail,
   }, rollup.verdict);
@@ -954,7 +1011,10 @@ function cmdVerifyFlutterUIEval(cwd, args, raw) {
 
 module.exports = {
   judgeProfile,
+  judgeTier,
   judgeModel,
+  judgeEscalation,
+  JUDGE_TIERS,
   loadManifest,
   validateJudgeResult,
   aggregateVotes,
