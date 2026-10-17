@@ -2,187 +2,281 @@
 objective: 81-haiku-eval-and-model-efficiency-measurement
 trd: "17"
 subsystem: testing
-tags: [eval, live, batch-e, measurement, 76-08]
-status: checkpoint
+tags: [eval, live, batch-e, measurement, 76-08, post-hoc]
+
+requires:
+  - objective: 81-haiku-eval-and-model-efficiency-measurement (TRD 81-16)
+    provides: "batches A, B, D complete, ledger $4.559846"
+provides:
+  - ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-MEASUREMENT.md: the 76-08 report, 3.0.0 vs 3.1.0 per role and per run, with the pilot cost check and a hand-written Reading"
+  - ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/E.json and E.md (10/10 runs, spend block = ledger)"
+  - "Post-hoc 3: opaque run paths (--sandbox-root, lib/opaque.cjs, sandbox.exportTrees), re-frozen manifest 8080f63b"
+affects: [81-18, 81-19]
+
+tech-stack:
+  added: []
+  patterns:
+    - "Opaque sandbox root: what a run sees lives under /private/tmp/claude-501/e81-<hex>, records stay under R; every handed path is checked after realpath"
+
+key-files:
+  created:
+    - scripts/eval81/lib/opaque.cjs
+    - scripts/eval81/lib/opaque.test.cjs
+    - scripts/eval81/lib/sandbox-opaque.test.cjs
+    - scripts/eval81/run-opaque.test.cjs
+    - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-MEASUREMENT.md
+    - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/E.json
+    - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/E.md
+  modified:
+    - scripts/eval81/lib/runner.cjs
+    - scripts/eval81/lib/sandbox.cjs
+    - scripts/eval81/lib/tripwire.cjs
+    - scripts/eval81/run.cjs
+    - scripts/eval81/batches/C.cjs
+    - scripts/eval81/batches/C.test.cjs
+    - scripts/eval81/README.md
+    - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-PREREG.md
+    - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/prereg-manifest.json
+
+key-decisions:
+  - "The CLI's reported cost includes subagent spend (all four pilots); the ledger charged max(reported, transcript) on all ten runs"
+  - "Post-hoc 3 (user: 'Opaque paths + continue'): E's last six runs and all of C run under an opaque --sandbox-root; the runner refuses any handed path naming the user or the checkout after realpath"
+  - "b31-r2's Read of a guessed, non-existent /Users/aocyber path was not treated as a stop: it was not denied, named no real path and is what the opaque paths are meant to produce; reported to the user"
+
+patterns-established:
+  - "A frozen-file change after the first live run: test-first, prereg --write, 81-PREREG section 9 entry quoting the user, token scan, commit, prereg --check (third use)"
+
+requirements-completed: []
+
+verification:
+  gates_defined: 4
+  gates_passed: 4
+  auto_fix_cycles: 0
+  tdd_evidence: true
+  test_pairing: true
+
+duration: 120min
+completed: 2026-10-17
 ---
 
 # Objective 81 TRD 17: Live batch E (3.0.0 vs 3.1.0) Summary
 
+**Batch E ran 10 of 10 runs, all passing their hidden acceptance, for $28.07 (ledger $32.63). 3.1.0 cuts the
+first-turn prompt of the executor and verifier by about 19% and of the planner by about 9%. Whole-run cost moved
+less: quick -10%, build +11% at the median, n 3 and 2. The CLI's reported cost includes subagent spend. The build
+pilot found an executor reading the real home off the cwd, which led to post-hoc 3 (opaque run paths).**
+
 ## Progress
 - [x] Task 1: Confirm spend for batch E — 6db987e4
-- [x] Task 2: Quick pilot pair, then build pilot pair — quick pair 77da5312, build pair 3998f900
-- [x] Task 3: Review the pilots before the remaining 6 E runs — user: "Opaque paths + continue" and "Go E rest and C"; post-hoc 3 (this commit)
-- [ ] Task 4: The remaining E runs, then score and publish the 76-08 measurement — next step: run `node scripts/eval81/run.cjs --batch E --root <R> --token-file <T> --sandbox-root /private/tmp/claude-501/e81-5752f4931a905580 --raw` in the background (6 pending: q30-r2, q31-r2, q31-r3, q30-r3, b30-r2, b31-r2), then `score.cjs --batch E`
+- [x] Task 2: Quick pilot pair, then build pilot pair — 77da5312, 3998f900
+- [x] Task 3: Review the pilots before the remaining 6 E runs — user decisions; post-hoc 3 in 0a680d94
+- [x] Task 4: The remaining E runs, then score and publish the 76-08 measurement — 4073e6c7
 
-## User gate decision (2026-10-17)
+## Performance
 
-"go E": run E's pilot pairs (quick pair, then build pair, both versions) and STOP at Task 3's checkpoint, before
-the other 6 runs. Report the pilot comparison and the projection for the remaining 6. Do not run the remaining E
-runs and do not start C. Session model: opus (the default; no "go E sonnet").
+- **Duration:** about 2 h (19:22Z to 21:20Z), including the stop at the checkpoint.
+- **Batch E wall time:**
+  - quick pilots 19:23Z to 19:35Z;
+  - build pilots 19:36Z to 20:10Z;
+  - the other six 20:29Z to 21:14Z.
+- **Spend:** batch E $28.068392 of its $55 cap; ledger $32.628238 of $100.
 
-## Task 1 checks
+## User gate decisions (2026-10-17)
 
-| Check | Result |
-|---|---|
-| `prereg.cjs --check` | exit 0, 84 files, e5cb3963... |
-| token file | present (`test -s` only) |
-| dry run E | exit 0: 10 runs, caps $96, reserves $120, estimate $44, batch cap $55, order ok (A, B, D complete), ledger $4.559846 |
-| remaining budget | $95.440154 under the global $100 |
-| per-run caps | quick $6 (reserve $7.50, timeout 30 min), build $15 (reserve $18.75, timeout 90 min), session model opus, profile balanced |
+1. **"go E":** run the pilot pairs (quick, then build) and stop at Task 3's checkpoint. Session model opus.
+2. **After the checkpoint, "Opaque paths + continue":** the post-hoc harness change below. Then **"Go E rest and C"**:
+   the remaining six E runs, score, 81-MEASUREMENT.md and commit, then 81-18.
 
-## Task 2a: quick pilot pair (`--stop-after 2`)
+## Pilots and the cost check (R/pilot/E-cost.md)
 
-The runner exited 0. q31-r1 and q30-r1 both ran, 8 runs are pending, `tripwire.diffs` is [] and batch E is
-`running`. Batch E has spent $3.84325, and the ledger stands at $8.403096.
-
-| Run | Version | Status | Acceptance | Tests | TRDs / SUMMARYs | Roles (model) | Wall |
-|---|---|---|---|---|---|---|---|
-| q31-r1 | 3.1.0 | ok | pass (3/3 checks) | 9/9 | 1 / 1 | orchestrator (opus), planner (opus), executor (sonnet) | 345 s |
-| q30-r1 | 3.0.0 | ok | pass (3/3 checks) | 9/9 | 1 / 1 | orchestrator (opus), planner (opus), executor (**opus**) | 370 s |
-
-- **Transcripts.** Both runs have the main session plus two `subagents/agent-*.jsonl` files.
-- **Isolation.** Clean on both runs, with 0 escape attempts.
-- **One permission denial per run.** In each, the orchestrator's raw `git commit --amend` (adding an attribution
-  trailer) was denied by the plugin's own commit gate inside the sandbox. It is part of the measured flow, not an
-  escape attempt (`escape_attempt` false, nothing under a deny root).
-- **The executor's model differs by version.** With `model_profile: balanced`, 3.1.0's executor ran on sonnet and
-  3.0.0's ran on opus. 81-12 assumed sonnet for both versions.
-
-## Task 2b: build pilot pair (`--stop-after 2`)
-
-The runner exited 0. b31-r1 and b30-r1 both ran, 6 runs are pending, `tripwire.diffs` is [] and batch E is
-`running`. Batch E has spent $13.827458, and the ledger stands at $18.387304.
-
-| Run | Version | Status | Acceptance | Tests | TRDs / SUMMARYs | Verification | Spawns | Wall |
+| Run | Reported | Transcript | Main | Subagents | Charged | Cap | Overshoot | Verdict |
 |---|---|---|---|---|---|---|---|---|
-| b31-r1 | 3.1.0 | ok | pass | 27/27 | 2 / 2 | passed | planner, job-checker, general-purpose ("Execute Objective 1"), executor x2, verifier x1 | 1110 s |
-| b30-r1 | 3.0.0 | ok | pass | 33/33 | 2 / 2 | passed | planner, job-checker, general-purpose, executor x2, **verifier x2** (one sonnet from the executing agent, one opus from the orchestrator) | 957 s |
+| q31-r1 | $1.7786 | $1.7786 | $0.4701 | $1.3085 | $1.7786 | $6 | $0 | includes subagents |
+| q30-r1 | $2.0647 | $2.0647 | $0.4538 | $1.6108 | $2.0647 | $6 | $0 | includes subagents |
+| b31-r1 | $5.0873 | $5.0828 | $0.6314 | $4.4514 | $5.0873 | $15 | $0 | includes subagents |
+| b30-r1 | $4.8969 | $4.8489 | $0.6091 | $4.2398 | $4.8969 | $15 | $0 | includes subagents |
 
-- **Transcripts.** Both runs hold the main session plus every subagent file (7 and 8), and all of them are readable.
-- **Denials.**
-  - Each build had one in-sandbox commit-gate denial of a raw `git commit`.
-  - **b31-r1 also had an escape attempt.** Its TRD 01-01 executor (sonnet, spawn depth 2) first tried to `Read`
-    `/Users/justin/.claude/aoforge/references/tdd.md`, the REAL home's runtime mirror. The `--settings` deny list
-    refused it, so `escape_attempt` is true. It then read the sandbox copy at `<run>/home/.claude/aoforge/references/tdd.md`.
-  - The agent resolved `~` from the run's cwd path, which contains `-Users-justin-`.
-  - No other real-home path appears in any tool input of the four pilot transcripts: no Bash, no Grep, no Glob.
-    Isolation proof and tripwire are clean.
-
-## Cost check (R/pilot/E-cost.md)
-
-| Run | Version | Reported | Transcript | main | subagents | Charged | Source | Cap | Overshoot | Verdict |
-|---|---|---|---|---|---|---|---|---|---|---|
-| q31-r1 | 3.1.0 | $1.7786 | $1.7786 | $0.4701 | $1.3085 | $1.7786 | transcript_sum | $6 | $0 | reported includes subagents |
-| q30-r1 | 3.0.0 | $2.0647 | $2.0647 | $0.4538 | $1.6108 | $2.0647 | transcript_sum | $6 | $0 | reported includes subagents |
-| b31-r1 | 3.1.0 | $5.0873 | $5.0828 | $0.6314 | $4.4514 | $5.0873 | reported | $15 | $0 | reported includes subagents |
-| b30-r1 | 3.0.0 | $4.8969 | $4.8489 | $0.6091 | $4.2398 | $4.8969 | reported | $15 | $0 | reported includes subagents |
-
-- **Verdict: the CLI's reported cost includes subagent spend.** Subagents are 74-88% of each run's cost.
-- **The ledger charged `max(reported, transcript)` on all four.**
-- **Build pricing gap.** On the builds, reported exceeds transcript by 0.09% and 1.0%. That is under the 10% flag.
-- **Untested: whether `--max-budget-usd` bounds subagent spend.** No run came near its cap: quick runs reached 30-34%
-  of theirs, builds 33-34%, and the overshoot was $0.
-
-## Pilot comparison, 3.1.0 vs 3.0.0 (n = 1 per cell)
-
-| Pair | Role | 3.1.0 model | 3.1.0 first turn | 3.0.0 model | 3.0.0 first turn | Delta | 3.1.0 tokens | 3.0.0 tokens | 3.1.0 cost | 3.0.0 cost |
-|---|---|---|---|---|---|---|---|---|---|---|
-| quick | orchestrator (1/1) | opus | 33,637 | opus | 34,564 | -927 (-2.7%) | 478,398 | 444,269 | $0.4701 | $0.4538 |
-| quick | planner (1/1) | opus | 26,905 | opus | 29,524 | -2,619 (-8.9%) | 910,219 | 935,678 | $0.9570 | $0.8626 |
-| quick | executor (1/1) | sonnet | 24,075 | opus | 29,736 | -5,661 (-19.0%) | 999,967 | 1,044,936 | $0.3515 | $0.7482 |
-| build | orchestrator (1/1) | opus | 37,967 | opus | 39,418 | -1,451 (-3.7%) | 603,174 | 680,984 | $0.6314 | $0.6091 |
-| build | planner (1/1) | opus | 27,400 | opus | 29,791 | -2,391 (-8.0%) | 2,366,860 | 1,558,034 | $1.8288 | $1.4971 |
-| build | job-checker (1/1) | sonnet | 14,577 | sonnet | 14,597 | -20 (-0.1%) | 97,912 | 69,187 | $0.1110 | $0.0685 |
-| build | general-purpose (1/1) | opus | 15,122 | opus | 15,480 | -358 (-2.3%) | 1,119,711 | 1,342,661 | $0.8551 | $0.8751 |
-| build | executor (2/2) | sonnet / sonnet | 25,100 / 25,227 | sonnet / sonnet | 30,845 / 31,107 | -5,812 (-18.8%) | 6,480,557 | 5,278,665 | $1.5257 | $1.2688 |
-| build | verifier (1/2) | sonnet | 23,376 | sonnet / opus | 29,058 / 28,788 | -5,547 (-19.2%) | 188,506 | 553,826 | $0.1308 | $0.5303 |
-
-| Run | Version | Total tokens | Cache writes | Cost (charged) | Wall | Acceptance | Tests | TRDs / SUMMARYs | Verification |
-|---|---|---|---|---|---|---|---|---|---|
-| q31-r1 | 3.1.0 | 2,388,584 | 160,803 | $1.7786 | 345 s | pass | 9/9 | 1 / 1 | - |
-| q30-r1 | 3.0.0 | 2,424,883 | 158,004 | $2.0647 | 370 s | pass | 9/9 | 1 / 1 | - |
-| b31-r1 | 3.1.0 | 10,856,720 | 476,952 | $5.0873 | 1110 s | pass | 27/27 | 2 / 2 | passed |
-| b30-r1 | 3.0.0 | 9,483,357 | 464,565 | $4.8969 | 957 s | pass | 33/33 | 2 / 2 | passed |
-
-- **First-turn input is lower in 3.1.0 for every role.**
-  - executor and verifier: about 5.6K to 5.8K tokens less (-19%);
-  - planner: 2.4K to 2.6K less (-8% to -9%);
-  - orchestrator: 0.9K to 1.5K less;
-  - job-checker: flat.
-
-  The live cuts exceed what the static resident-bytes estimate in 81-STATIC-PROMPT predicts for all three roles:
-  - executor: static -2,974 tokens, live about -5,700;
-  - verifier: static -4,230, live -5,547;
-  - planner: static -1,598, live about -2,500.
-- **Quick: 3.1.0 is 14% cheaper** ($1.78 vs $2.06). Nearly all of the saving is the executor: 3.1.0 spawns it on
-  sonnet ($0.35), while 3.0.0 spawns it with no model, so it inherits opus ($0.75).
-- **Build: 3.1.0 is 4% dearer** ($5.09 vs $4.90), with n = 1.
-  - Against it: its planner used 52% more tokens (2.37M vs 1.56M, $1.83 vs $1.50), and its executors used 23% more.
-  - For it: 3.0.0 ran a second, opus verifier from the orchestrator ($0.38), which 3.1.0 did not.
-  - Wall time: 3.1.0 was 16% slower (1110 s vs 957 s).
-- **Outcomes are equal.** All four pass the hidden acceptance, both builds produced 2 TRDs and a passed
-  verification, and the tests are green.
-
-## Projection for the remaining 6 (dry run: quick reserve $7.50, build $18.75; all fit now)
-
-| Scenario | Remaining 6 | E total | Ledger after E | Left for C |
-|---|---|---|---|---|
-| at pilot cost (same version) | $17.6707 | $31.4982 | $36.0580 | $63.9420 |
-| pilot x 1.5 | $26.5061 | $40.3335 | $44.8934 | $55.1066 |
-| pilot x 2 | $35.3414 | $49.1689 | $53.7287 | $46.2713 |
-| worst case (every run to its cap, held by E's $55 batch cap) | $41.1725 | $55.0000 | $59.5598 | $40.4402 |
-
-- C's estimate is about $28, so it stays covered in every row.
-- A+B+D+E at pilot cost is $36.06, against the <= $80 rule.
-- At pilot pace the remaining runs take about 58 minutes.
-
-## Stop condition reached: escape attempt (user rule)
-
-The user's rule: "Any other harness stop, isolation breach, permission-denial escape attempt, or projection breach:
-stop and report."
-
-- **What fired.** b31-r1 recorded `escape_attempt: true`: a denied Read of the real `~/.claude/aoforge/references/tdd.md`.
-- **What I did.** I started nothing after it. b30-r1, the last approved pilot run, was already running when I
-  inspected b31-r1's record. I let it finish rather than kill it mid-build: killing the runner could have orphaned a
-  `claude` child spending outside the ledger. The runner then stopped by itself at `--stop-after 2`.
-- **What b30-r1 showed.** No escape attempt, and no real-home path in any tool input.
-- **What it means.** The deny layer did its job. But the remaining six E runs (and C) can produce the same
-  attempt, because the cwd path names the real user. Whether to continue is the user's call.
+- **Verdict: the reported cost includes subagent spend.** The ledger charged `max(reported, transcript)` on all ten
+  runs.
+- **Pricing gap.** On the builds, reported exceeds transcript by at most 1.3%, which is under the 10% flag.
+- **Untested:** whether `--max-budget-usd` bounds subagent spend. No run reached 35% of its cap.
 
 ## Finding: the b31-r1 escape attempt
 
-- **What happened.** In b31-r1 (the 3.1.0 build pilot), the TRD 01-01 executor (sonnet, spawn depth 2, under the
-  general-purpose "Execute Objective 1" agent) was told to read `~/.claude/aoforge/references/tdd.md`.
-  - It first issued `Read /Users/justin/.claude/aoforge/references/tdd.md`. The run's `--settings` deny list refused
-    it, and the runner recorded `escape_attempt: true` with `escape_paths` naming that file.
-  - It then read the sandbox copy at `<run>/home/.claude/aoforge/references/tdd.md` and went on. The run passed.
-- **Cause.** The session cwd was `/private/tmp/claude-501/-Users-justin-dev-aoforge-claude/.../runs/E/b31-r1/work`.
-  The scratchpad name encodes the real home, and the agent resolved `~` from it instead of from `$HOME`.
-- **Reach.**
-  - Only the one denied Read. No Bash, Grep or Glob in any of the four pilot transcripts names a real-home path.
-  - The isolation proof was clean (a sandbox project dir and no real projects entry), and so was the tripwire.
-- **Reading.**
-  - The deny layer works under `bypassPermissions` for Read.
-  - The real exposure was the path, not the permission: Bash is not path-scoped, so a `cat` of the same path would
-    have succeeded.
-  - Post-hoc 3 removes the cause.
+- **What happened.** In b31-r1, the 3.1.0 TRD 01-01 executor (sonnet, spawn depth 2) tried to Read
+  `/Users/justin/.claude/aoforge/references/tdd.md`.
+  - The deny list refused it, and the runner recorded `escape_attempt: true`.
+  - It then read the sandbox copy.
+  - No other tool input in the four pilots named a real path, and the isolation proof and tripwire were clean.
+- **Cause.** The cwd sat under the session scratchpad, whose name encodes the real home, and the agent resolved `~`
+  from it.
+- **Handling.** I started nothing after it. b30-r1 was already running and finished. I stopped at the checkpoint and
+  reported.
 
-## User decisions after the pilot checkpoint (2026-10-17)
+## Post-hoc 3: opaque run paths (81-PREREG section 9.3, commit 0a680d94)
 
-1. **"Opaque paths + continue."** Make a test-first post-hoc harness change so that no run's cwd, sandbox HOME, config
-   dir or work dir contains the username or the checkout name, even after realpath.
-   - Per-run roots go under a fresh opaque sibling, `/private/tmp/claude-501/e81-<hex>/`, which holds the plugin
-     trees, fixture copies and sandbox HOMEs.
-   - The ledger, results and token file stay where they are, and the deny list is kept.
-   - Add a test that every handed path has no `justin`, `aoforge-claude` or `Users-` component after realpath.
-   - Re-freeze, record b31-r1 as a finding, and delete `e81-*` at the very end of C.
-2. **"Go E rest and C."** Run the remaining six E runs, score E, write 81-MEASUREMENT.md and commit. Then run 81-18
-   batch C (its human-action gate is satisfied by this decision), score it and commit. Stop before 81-19.
+- **The user's words:** "Opaque paths + continue".
+- **Test-first.** The new tests failed 9 of 31 (RED), then passed 40/40 (GREEN). The eval81 suite passed 495/495 and
+  the repo guards 372/372.
+- **`lib/opaque.cjs`:**
+  - `forbiddenTokens` returns `['justin', 'aoforge-claude', 'Users-']` on this machine;
+  - `opaqueViolations` checks every component of each path's realpath.
+- **`--sandbox-root S`:**
+  - home, config, tmp, work and settings.json live under `S/runs/<X>/<id>/`;
+  - the trees are plain `git archive` copies in `S/trees/`;
+  - records stay under R;
+  - the runner refuses with exit 2, before any spawn, when a handed path names a token.
+  - The isolation and tripwire roots cover S, and C's collect reads drafts from `ctx.tmp`.
+- **The deny list is unchanged.**
+- **S** = `/private/tmp/claude-501/e81-5752f4931a905580`. Its trees are identical to the pinned ones (`diff -rq` was
+  empty).
+- **Manifest:** 8080f63b..., 85 files.
+- **Known gaps** (README):
+  - the runner's own argv, visible to `ps`;
+  - PATH, USER and LOGNAME in the child env;
+  - the deny list in settings.json, which names the real home.
+- **Content check of the materialised E sandboxes.** The only username mentions are settings.json's deny list and a
+  comment in the plugin's `decline-tracker.cjs`.
 
-## Post-hoc 3: opaque run paths (81-PREREG section 9.3)
+## The remaining six runs (under S)
 
-- **RED/GREEN.** The new tests failed 9 of 31, then passed 40/40. The full eval81 suite passed 495/495 (477 before),
-  and the repo guards 372/372.
-- **Sandbox root.** S = `/private/tmp/claude-501/e81-5752f4931a905580`. Its trees were exported at the pinned SHAs
-  (`sandbox.exportTrees`), and `diff -rq` against `<R>/trees/v*/plugins` printed nothing.
-- **New manifest.** sha256 8080f63b..., 85 files.
+`run.cjs --batch E ... --sandbox-root S --raw` exited 0. All six were ok, with `tripwire.diffs` [] and batch E
+`complete`.
+- Every handed path was opaque, as recorded in each argv.json's `opaque.violations` [].
+- The runner flagged no escape attempt.
+- **One judgment call: b31-r2.** The same 3.1.0 TRD 01-01 executor tried `Read /Users/aocyber/.claude/aoforge/references/tdd.md`.
+  - That is a guessed home that does not exist. The result was "File does not exist", it was not denied, and it named
+    no real path. It then read the sandbox copy.
+  - I did not treat it as an escape attempt. It is the behaviour opaque paths are meant to produce: the agent could
+    not find the real home.
+  - It is reported to the user.
+
+## Batch E result (81-MEASUREMENT.md, results/E.json)
+
+| Version / workflow | Runs ok | Acceptance | Reported cost median (mean) | Wall median |
+|---|---|---|---|---|
+| 3.0.0 quick | 3/3 | 3/3 | $1.7666 ($1.7465) | 370 s |
+| 3.1.0 quick | 3/3 | 3/3 | $1.5924 ($1.6288) | 341 s |
+| 3.0.0 build | 2/2 | 2/2, verification passed 2/2 | $4.2505 | 785 s |
+| 3.1.0 build | 2/2 | 2/2, verification passed 2/2 | $4.7207 | 943 s |
+
+- **First-turn input, 3.1.0 minus 3.0.0 (medians):**
+  - executor -5,612 (quick) and -5,745 (build), -19%;
+  - verifier -5,578 (-19%);
+  - planner -2,631 and -2,488 (-9% and -8%);
+  - orchestrator -885 and -1,409;
+  - job-checker -1;
+  - general-purpose -314.
+
+  All three cuts exceed the 81-07 static estimates (executor -2,974, verifier -4,230, planner -1,598).
+- **Build whole-run.**
+  - 3.1.0's planner used 67% more tokens (+54% cost), and its executors 20% more.
+  - Its verifier cost halved: 3.0.0 spawns an extra opus verifier from the orchestrator.
+- **Quick whole-run.** 3.1.0's orchestrator used 52% more tokens, and its executor was cheaper.
+- **Executor model.** 3.0.0's quick executor ran on opus once in three (q30-r1 had no model passed). 3.1.0 always
+  passed sonnet.
+- **Hand checks.**
+  - q31-r2 (3.1.0): reported 1.5924 = record 1.5923637. The planner's first assistant message usage is 2 + 23,704 +
+    3,013 = 26,719, equal to the 3.1.0 quick planner median.
+  - b30-r2 (3.0.0): 3.6042 = 3.6041623. The planner's first turn is 29,661, and (29,791 + 29,661) / 2 = 29,726, the
+    3.0.0 build planner cell.
+  - Both match.
+
+## Task Evidence
+
+| Task | Verify Command | Exit Code | Status |
+|---|---|---|---|
+| 1: Gate | `prereg.cjs --check`, `test -s <T>`, `run.cjs --batch E ... --dry-run --materialize none --raw` | 0 | PASS |
+| 2: Pilots | two `run.cjs --batch E ... --stop-after 2 --raw` runs; ledger has q31-r1, q30-r1, b31-r1, b30-r1 first, each charged max(reported, transcript); `R/pilot/E-cost.md` written | 0 | PASS |
+| 3: Checkpoint | the user's decisions recorded; post-hoc 3 committed (0a680d94); `prereg --check` OK at 8080f63b | 0 | PASS |
+| 4: Rest + measurement | `run.cjs --batch E ... --sandbox-root S --raw` (6 run, complete, tripwire []); `score.cjs --batch E`; E.json spend 28.068392 = ledger; commit scan empty; `git show --stat` = the three files (4073e6c7) | 0 | PASS |
+
+## Validation Gate Results
+
+| Gate | Command | Exit Code | Status |
+|---|---|---|---|
+| test (eval81) | `TMPDIR=<scratch> node --test 'scripts/eval81/**/*.test.cjs'`: 495/495 | 0 | PASS |
+| repo guards | `node --test 'plugins/aoforge/**/*.repo.test.cjs' 'scripts/**/*.repo.test.cjs' plugins/aoforge/hooks/planning-writes.audit.test.js`: 372/372 | 0 | PASS |
+| prereg | `prereg.cjs --check`: OK, 8080f63b... (85 files) | 0 | PASS |
+| commit scan | the token scan over every committed file: no output | 0 | PASS |
+
+## TDD Evidence
+
+| Phase | Command | Exit Code | Expected |
+|---|---|---|---|
+| RED (post-hoc 3) | `node --test lib/opaque.test.cjs lib/sandbox-opaque.test.cjs run-opaque.test.cjs batches/C.test.cjs`: 9 fail of 31 | 1 | FAIL (correct) |
+| GREEN (post-hoc 3) | same: 40/40 | 0 | PASS (correct) |
+
+## Task Commits
+
+1. **Task 1:** `6db987e4` (chore), the gate record.
+2. **Task 2:** `77da5312` (quick pilots) and `3998f900` (build pilots, stopped at the checkpoint), plus `ee393766`
+   and `4f3619dc` (the STATE blocker).
+3. **Post-hoc 3:** `0a680d94` (fix), the harness, tests, README, PREREG 9.3, the re-frozen manifest and the TRD notes.
+4. **Task 4:** `4073e6c7` (docs), `docs(81-17): 76-08 measurement, 3.0.0 vs 3.1.0`, exactly the three files.
+
+## Deviations from Plan
+
+### User-approved post-hoc deviation
+**Post-hoc 3: opaque run paths** (0a680d94; 81-PREREG section 9.3). It was triggered by the b31-r1 escape attempt.
+Six frozen files changed and one was added; nothing that scores an outcome changed. C's collect change only relocates
+where the drafts are read from.
+
+### Auto-fixed Issues
+**1. [Rule 1 - Bug] A test-first test used os.tmpdir() as an opaque base**
+- **Found during:** GREEN.
+- **Issue:** os.tmpdir() is the scratchpad, which itself names the user.
+- **Fix:** The test now uses an opaque base, EVAL81_OPAQUE_TMP or the real /tmp.
+
+**2. [Rule 1 - Correction] The pilot claim that "3.0.0 spawns the quick executor with no model"**
+- **Issue:** It held for q30-r1 only. q30-r2 and q30-r3 passed sonnet.
+- **Fix:** Corrected in E.json's notes and in 81-MEASUREMENT.
+
+**Total deviations:** 1 user-approved post-hoc, 2 auto-fixed.
+
+## Findings for the user
+
+1. **The opaque paths worked.** None of the six later runs could name the real home. One agent guessed
+   `/Users/aocyber` (it does not exist) and moved on.
+2. **A 3.1.0 behaviour to fix in the plugin.** In both 3.1.0 builds the TRD 01-01 executor reads
+   `~/.claude/aoforge/...` at a guessed absolute home first, because the Read tool does not expand `~`. In production
+   that guess can land on the wrong user. It never happened in 3.0.0.
+3. **Cost.**
+   - The reported cost includes subagents.
+   - 3.1.0 is cheaper on quick and dearer on build in this small sample. The per-role prompts are clearly smaller,
+     but the planner and executors do more work per build.
+   - Outcomes are identical.
+4. **Gaps left in post-hoc 3:**
+   - PATH, USER and LOGNAME in the child env name the user;
+   - the parent runner's argv is visible to `ps`;
+   - the deny list text names the real home.
+
+## Post-TRD Verification
+
+- **Auto-fix cycles used:** 0.
+- **Must-haves verified:** 6 of 6.
+  1. Each go was recorded.
+  2. The pilots ran first.
+  3. The cost question is answered.
+  4. The user was asked after the build pilot.
+  5. 10 runs ran in order, with the tripwire clean.
+  6. 81-MEASUREMENT has per-role and per-run tables with n and the static column.
+- **Gate failures:** none.
+- **Real home, fleet and checkout:**
+  - none was written;
+  - the checkout was not edited while a runner ran;
+  - `amp` was untouched;
+  - nothing was pushed.
+
+## Next Objective Readiness (81-18)
+
+Ledger $32.628238, with $67.37 left for C (estimate about $28). Batch E is complete. C runs with
+`--sandbox-root /private/tmp/claude-501/e81-5752f4931a905580`, and `e81-*` is deleted after C.
+
+## Self-Check: PASSED
+
+- **Files.** 81-MEASUREMENT.md, results/E.json and results/E.md are committed in 4073e6c7. lib/opaque.cjs and the
+  three new test files are committed in 0a680d94.
+- **Commits found:** 6db987e4, 77da5312, 3998f900, ee393766, 4f3619dc, 0a680d94, 4073e6c7.
+- **Ledger.** `R/ledger.json` batch E is `complete` at $28.068392, with the four pilots first among its 10 entries.
+- **Manifest.** `prereg.cjs --check` exits 0 at HEAD (8080f63b...).

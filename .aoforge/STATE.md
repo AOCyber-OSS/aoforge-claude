@@ -67,8 +67,8 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 **Objective complete:** 75 — Prospective estimate retest and todo sweep (completed 2026-10-10, 5/5 TRDs)
 **Objective complete:** 78 — Remove the rename shims (completed 2026-10-17, 12/12 TRDs)
 **Objective complete:** 80 — Adopt migrates legacy projects (completed 2026-10-17, 9/9 TRDs)
-**Status:** Executing objective 81 — 16/19 TRDs complete
-**Progress:** [██████████] 99%
+**Status:** Executing objective 81 — 17/19 TRDs complete
+**Progress:** [██████████] 100%
 
 ## Branch State (post-merge)
 
@@ -98,7 +98,6 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 - **`feature/v1.1-coordination` is duplicative** — same content as `feature/v1.1`. Should be deleted to avoid confusion. Its worktree at `/Users/markemerson/Source/devflow-claude-v11` can be removed.
 - G5 (73-08): the aoforge-watch home ~/.aoforge/ makes HOME resolve as an AOForge project root (compat.findProjectRoot walks up unbounded); every repo under HOME without its own .aoforge/ is treated as ambient AOForge by gate-edits, gate-commits, route-intent, classify-session and others; 4 classify-session tests fail on this machine. Fix before the release (move the daemon home or bound the walk).
 - 79-09 blocked by the org cutover freeze (rulesets cutover-freeze-branches 25294524 and cutover-freeze-tags 25294526, active since 2026-10-17 02:45): the push of integrate/3.1.0 (local 3627c4a9, origin a589d306) was rejected. Resume 79-09 after the freeze lifts; re-check the remote URL and rulesets first.
-- 81-17: batch E paused at the post-pilot checkpoint; b31-r1 recorded a denied escape attempt (Read of the real ~/.claude/aoforge/references/tdd.md); the remaining 6 E runs and batch C await the user
 
 ### Quick Tasks Completed
 
@@ -159,6 +158,6 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 
 ## Session Continuity
 
-Last session: 2026-10-17T20:13:15.221Z
+Last session: 2026-10-17T21:18:09.971Z
 Resume file: `None`
-Stopped at: 81-17 Task 3 checkpoint: E pilots done, 6 E runs pending user decision
+Stopped at: Completed 81-17-TRD.md

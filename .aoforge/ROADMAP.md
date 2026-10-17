@@ -533,7 +533,7 @@ TRDs:
 - [x] 81-14-live-batch-a-verifier-TRD.md — (W4, checkpoint) confirm spend, then batch A live (36 runs, ~$5), score, spot-check
 - [x] 81-15-live-batch-b-job-checker-TRD.md — (W5, checkpoint) confirm spend, then batch B live (36 runs, ~$4)
 - [x] 81-16-live-batch-d-ui-judge-TRD.md — (W6, checkpoint) confirm spend, then batch D live (24 runs, ~$2)
-- [ ] 81-17-live-batch-e-3-0-vs-3-1-TRD.md — (W7, checkpoint) confirm spend, pilot pair, then batch E live (10 runs, ~$44); 81-MEASUREMENT.md
+- [x] 81-17-live-batch-e-3-0-vs-3-1-TRD.md — (W7, checkpoint) confirm spend, pilot pair, then batch E live (10 runs, ~$44); 81-MEASUREMENT.md
 - [ ] 81-18-live-batch-c-mapper-researcher-TRD.md — (W8, checkpoint) confirm spend, then batch C live last (48 runs + 48 grader runs, ~$28)
 - [ ] 81-19-report-76-records-and-proposals-TRD.md — (W9, checkpoint:decision) 76-06 report, 76 records and MEF-05/MEF-06 from evidence, tier proposals put to the user (never applied here)
 
@@ -563,4 +563,4 @@ TRDs:
 | 78. Remove the rename shims | v1.6 | 12/12 | Complete | 2026-10-17 |
 | 79. Reconcile and release 3.1.0 | v1.6 | 8/10 | In Progress | - |
 | 80. Adopt migrates legacy projects | v1.6 | 9/9 | Complete | 2026-10-17 |
-| 81. Haiku eval and model-efficiency measurement | v1.6 | 16/19 | In Progress | - |
+| 81. Haiku eval and model-efficiency measurement | v1.6 | 17/19 | In Progress | - |

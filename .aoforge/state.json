@@ -1,8 +1,8 @@
 {
   "current_objective": "81",
-  "current_job": 16,
+  "current_job": 17,
   "total_jobs": 19,
-  "progress_pct": 99,
+  "progress_pct": 100,
   "status": "executing",
   "last_activity": "2026-10-17",
   "metrics": {
@@ -1970,13 +1970,17 @@
       "objective": "81",
       "summary": "81-16: D cap not resized (2-run pilot projected $0.86 for 24); D disagreements tied to one-session-per-surface design, recorded as sensitivity, labels unchanged",
       "rationale": null
+    },
+    {
+      "objective": "81",
+      "summary": "81-17: post-hoc 3 opaque run paths (--sandbox-root, user 'Opaque paths + continue'); CLI reported cost includes subagent spend; E 10/10 ok, $28.07",
+      "rationale": null
     }
   ],
   "blockers": [
     "G5 (73-08): the aoforge-watch home ~/.aoforge/ makes HOME resolve as an AOForge project root (compat.findProjectRoot walks up unbounded); every repo under HOME without its own .aoforge/ is treated as ambient AOForge by gate-edits, gate-commits, route-intent, classify-session and others; 4 classify-session tests fail on this machine. Fix before the release (move the daemon home or bound the walk).",
     "79-09 blocked by the org cutover freeze (rulesets cutover-freeze-branches 25294524 and cutover-freeze-tags 25294526, active since 2026-10-17 02:45): the push of integrate/3.1.0 (local 3627c4a9, origin a589d306) was rejected. Resume 79-09 after the freeze lifts; re-check the remote URL and rulesets first.",
-    "81-11: private/fleet-checklists.json (untracked, sha256 86f909f5...) does not travel with the 81-06 merge; copy it into the main checkout after merge from the 81-06 worktree or scratchpad/eval81/fleet/fleet-checklists.json",
-    "81-17: batch E paused at the post-pilot checkpoint; b31-r1 recorded a denied escape attempt (Read of the real ~/.claude/aoforge/references/tdd.md); the remaining 6 E runs and batch C await the user"
+    "81-11: private/fleet-checklists.json (untracked, sha256 86f909f5...) does not travel with the 81-06 merge; copy it into the main checkout after merge from the 81-06 worktree or scratchpad/eval81/fleet/fleet-checklists.json"
   ],
   "session_log": []
 }
