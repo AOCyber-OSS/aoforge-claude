@@ -67,8 +67,8 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 **Objective complete:** 75 — Prospective estimate retest and todo sweep (completed 2026-10-10, 5/5 TRDs)
 **Objective complete:** 78 — Remove the rename shims (completed 2026-10-17, 12/12 TRDs)
 **Objective complete:** 80 — Adopt migrates legacy projects (completed 2026-10-17, 9/9 TRDs)
-**Status:** Objective 80 verified 2026-10-17 (5/5, 80-VERIFICATION.md passed; its open limits closed in quick 43). Objective 79 in progress: 79-01..79-08 done, 79-09/79-10 await approval after re-validation. Quick 40-43 done
-**Progress:** [██████████] 100%
+**Status:** Executing objective 81 — 1/19 TRDs complete
+**Progress:** [██████████] 97%
 
 ## Branch State (post-merge)
 
@@ -158,6 +158,6 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 
 ## Session Continuity
 
-Last session: 2026-10-17T08:52:12.947Z
+Last session: 2026-10-17T16:24:14.664Z
 Resume file: `None`
-Stopped at: Quick 43: adopt finishes on an ignored tree's commit; 0005 converges in one apply; reference names adopt
+Stopped at: Completed 81-05-TRD.md

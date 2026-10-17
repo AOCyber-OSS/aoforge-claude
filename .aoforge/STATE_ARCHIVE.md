@@ -644,6 +644,8 @@ STATE.md stays lean; this file grows over time.
 - [Objective 80]: Adopt finished-detection reads HEAD, not the index; a migrate marker records its plan before git mv so an interrupted move resumes from the marker
 - [Objective 80]: 80-07: the two real fleet layouts (aodex, smartWellness) migrate through the adopt workflow text in one commit each; D1 and D2 did not reproduce on them, so no product code changed and todo rows 13 and 14 stay
 - [Objective 80]: 80-09: the legacy-adopt fixture constant is LEGACY_EXCLUDE_LINE, because repo-state-delegation forbids any declaration starting with the EXCLUDE token outside repo-state.cjs
+- [Objective 81]: 81-05: 390 px test D states are captured through a 390x844 iframe wrapper because headless=new Chrome clamps its window to 500 px wide
+- [Objective 81]: 81-05: test D shown states.json carries no label word (expected text reworded from 74's overlaps/blank); labels.json holds the key; min_share = max(0.05, floor(0.9 x measured)) per region, never below 0.05
 
 ## Performance Metrics
 
@@ -886,3 +888,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 80 P07 | 9min | 2 tasks | 0 files |
 | Objective 80 P08 | 8min | 2 tasks | 1 files |
 | Objective 80 P09 | 24min | 3 tasks | 8 files |
+| Objective 81 P05 | 12min | 3 tasks | 27 files |

@@ -1,9 +1,9 @@
 {
-  "current_objective": "80",
-  "current_job": 9,
-  "total_jobs": 9,
-  "progress_pct": 100,
-  "status": "ready_for_verification",
+  "current_objective": "81",
+  "current_job": 1,
+  "total_jobs": 19,
+  "progress_pct": 97,
+  "status": "executing",
   "last_activity": "2026-10-17",
   "metrics": {
     "jobs_completed": 0,
@@ -1894,6 +1894,16 @@
     {
       "objective": "80",
       "summary": "80-09: the legacy-adopt fixture constant is LEGACY_EXCLUDE_LINE, because repo-state-delegation forbids any declaration starting with the EXCLUDE token outside repo-state.cjs",
+      "rationale": null
+    },
+    {
+      "objective": "81",
+      "summary": "81-05: 390 px test D states are captured through a 390x844 iframe wrapper because headless=new Chrome clamps its window to 500 px wide",
+      "rationale": null
+    },
+    {
+      "objective": "81",
+      "summary": "81-05: test D shown states.json carries no label word (expected text reworded from 74's overlaps/blank); labels.json holds the key; min_share = max(0.05, floor(0.9 x measured)) per region, never below 0.05",
       "rationale": null
     }
   ],
