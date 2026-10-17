@@ -39,11 +39,29 @@
 //     contains `upgrade --register`.
 // 13. (TRD 42-09) adopt.md step order: `scaffold` -> `confirm_stack_profile` -> `health`, and
 //     `scaffold` hands off to `confirm_stack_profile`, which hands off to `health`.
+//
+// The migrate path (TRD 80-05; a pre-rename project moves onto `.aoforge/` as one recorded change):
+//
+// 14. Route coverage: adopt.md mentions `migrate` as a route value, the `migrate` `resume` steps
+//     (`moved`, `scaffolded`, `reported`) and the refusal reasons `both-planning-dirs`,
+//     `legacy-block-malformed` and `move-failed`.
+// 15. Migrate path skips: the `begin` step says the migrate path does not run
+//     `skill-active --start`; `map`, `infer_project` and `confirm_stack_profile` each say
+//     "Skip on the migrate path"; the `health` step says the same and names `--repair` as never run.
+// 16. Migrate stop: the `report` step names `commit_blocked`, says to skip `commit` and stop.
+//     The `commit` step covers a re-run after the commit (`nothing_to_commit` goes on to `summary`).
+// 17. Migrate summary: the `summary` step names `report_path`, `git merge aoforge/adopt`,
+//     "Nothing was pushed" and `upgrade --check`.
+// 18. SKILL.md: description and `<objective>` mention "pre-rename"; neither contains a legacy
+//     spelling (built from LEGACY: planningDir, configKey, blockTag, slug).
+// 19. Fresh-path invariance: every `aof-tools.cjs` command the workflow had before this TRD
+//     (a fixed list) still appears, in the same relative order.
 
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
+const { LEGACY } = require('./legacy-names.cjs');
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 // __dirname = plugins/aoforge/aoforge/bin/lib
@@ -230,4 +248,119 @@ test('13 - adopt.md: scaffold -> confirm_stack_profile -> health, each handing o
   const body = (name) => wf.slice(idx(name), wf.indexOf('</step>', idx(name)));
   assert.match(body('scaffold'), /Continue to `confirm_stack_profile`/);
   assert.match(body('confirm_stack_profile'), /Continue to `health`/);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 14-19: the migrate path (TRD 80-05)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** The text of one `<step name="...">` block of a workflow. */
+function stepBody(wf, name) {
+  const start = wf.indexOf(`<step name="${name}">`);
+  assert.ok(start !== -1, `adopt.md must have a <step name="${name}"> step`);
+  const end = wf.indexOf('</step>', start);
+  assert.ok(end !== -1, `step ${name} must be closed`);
+  return wf.slice(start, end);
+}
+
+test('14 - route coverage: migrate route, its resume steps and the three migrate refusals', () => {
+  const wf = readFile(ADOPT_WORKFLOW);
+  const pre = stepBody(wf, 'preflight');
+  assert.match(pre, /\*\*`migrate`\*\*/, 'preflight must list the `migrate` route as a route bullet');
+  assert.match(pre, /`migration`/, 'the migrate route must name the `migration` list preflight returns');
+  assert.match(pre, /`adopt\.mode`/, 'resume must name `adopt.mode`');
+  for (const s of ['moved', 'scaffolded', 'reported']) {
+    assert.ok(pre.includes(`\`${s}\``), `the migrate resume steps must name \`${s}\``);
+  }
+  for (const reason of ['both-planning-dirs', 'legacy-block-malformed', 'move-failed']) {
+    assert.ok(pre.includes(reason), `preflight must name the refusal reason ${reason}`);
+  }
+});
+
+test('15 - migrate path skips: begin skill marker, map, infer_project, confirm_stack_profile, health (never --repair)', () => {
+  const wf = readFile(ADOPT_WORKFLOW);
+  const begin = stepBody(wf, 'begin');
+  assert.match(begin, /migrate path/, 'begin must say what the migrate path does');
+  assert.match(begin, /do not run `skill-active --start/, 'begin must say the migrate path does not run `skill-active --start`');
+  for (const name of ['map', 'infer_project', 'confirm_stack_profile']) {
+    assert.match(stepBody(wf, name), /Skip on the migrate path/, `step ${name} must say "Skip on the migrate path"`);
+  }
+  const health = stepBody(wf, 'health');
+  const intro = health.slice(0, health.indexOf('```'));
+  assert.match(intro, /Skip on the migrate path/, 'health must be skipped on the migrate path');
+  assert.match(intro, /--repair/, 'health must name --repair in its migrate note');
+  assert.match(intro, /never run/, 'health must say --repair is never run on the migrate path');
+  const scaffold = stepBody(wf, 'scaffold');
+  assert.match(scaffold, /migrate path/, 'scaffold must describe the migrate path');
+  assert.match(scaffold, /migrated: <n> converted/, 'scaffold must name the migrate output line');
+  assert.match(scaffold, /Continue to `report`/, 'the migrate path goes from scaffold to report');
+});
+
+test('16 - migrate stop: report names commit_blocked, skips `commit` and stops; commit covers a re-run', () => {
+  const wf = readFile(ADOPT_WORKFLOW);
+  const report = stepBody(wf, 'report');
+  assert.match(report, /commit_blocked/, 'report must name commit_blocked');
+  assert.match(report, /skip `commit`/, 'report must say to skip `commit` when the commit is blocked');
+  assert.match(report, /stop/, 'report must say to stop when the commit is blocked');
+  assert.match(report, /\bfix\b/, 'report must print the blocked commit\'s fix');
+  const commit = stepBody(wf, 'commit');
+  assert.match(commit, /migrate path/, 'commit must say how the migrate path differs');
+  assert.match(commit, /nothing_to_commit/, 'commit must go on to `summary` when a re-run finds the change already recorded');
+});
+
+test('17 - migrate summary: report_path, git merge aoforge/adopt, Nothing was pushed, upgrade --check', () => {
+  const summary = stepBody(readFile(ADOPT_WORKFLOW), 'summary');
+  assert.match(summary, /migrate path/, 'summary must describe the migrate path');
+  for (const needle of ['report_path', 'git merge aoforge/adopt', 'Nothing was pushed', 'upgrade --check']) {
+    assert.ok(summary.includes(needle), `summary step must contain ${JSON.stringify(needle)}`);
+  }
+});
+
+test('18 - SKILL.md: description and <objective> say pre-rename and spell no legacy name', () => {
+  const md = readFile(SKILL_MD);
+  const fm = frontmatter(md);
+  const descMatch = fm.match(/^description:\s*\|\n((?:[ \t]+.*\n?)+)/m);
+  assert.ok(descMatch, 'SKILL.md must have a block description');
+  const description = descMatch[1];
+  const objective = (md.match(/<objective>([\s\S]*?)<\/objective>/) || [])[1];
+  assert.ok(objective, 'SKILL.md must have an <objective> block');
+  const legacy = [LEGACY.planningDir, LEGACY.configKey, LEGACY.blockTag, LEGACY.slug];
+  for (const [label, text] of [['description', description], ['<objective>', objective]]) {
+    assert.match(text, /pre-rename/, `${label} must mention a pre-rename project`);
+    for (const l of legacy) {
+      assert.ok(!text.toLowerCase().includes(l.toLowerCase()), `${label} must not spell the legacy name ${JSON.stringify(l)}`);
+    }
+  }
+  assert.match(objective, /\.aoforge\//, '<objective> must say the project moves onto .aoforge/');
+});
+
+// The aof-tools.cjs commands adopt.md had before the migrate path, in document order. A match is the
+// text after `aof-tools.cjs --cwd "$TARGET" `; each must be found after the previous one.
+const FRESH_PATH_COMMANDS = [
+  'adopt preflight',
+  'upgrade --check',
+  'upgrade --apply',
+  'commit`',
+  'adopt begin',
+  'skill-active --start adopt',
+  'planning draft PROJECT.md',
+  'doc put PROJECT.md',
+  'adopt scaffold',
+  'stack verify --run --raw',
+  'validate health --raw',
+  'validate health --repair',
+  'adopt report',
+  'skill-active --end',
+  'commit "<commit_message>" --files <commit_files...>',
+];
+
+test('19 - fresh-path invariance: the pre-existing aof-tools.cjs commands all remain, in order', () => {
+  const wf = readFile(ADOPT_WORKFLOW);
+  let from = 0;
+  for (const cmd of FRESH_PATH_COMMANDS) {
+    const needle = `aof-tools.cjs --cwd "$TARGET" ${cmd}`;
+    const at = wf.indexOf(needle, from);
+    assert.ok(at !== -1, `fresh-path command missing or out of order: ${JSON.stringify(needle)}`);
+    from = at + needle.length;
+  }
 });
