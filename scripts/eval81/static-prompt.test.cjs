@@ -209,6 +209,26 @@ test('2d. a namespaced subagent_type is attributed to the bare agent name', () =
   assert.equal(sites[0].prompt_bytes, bytes('Manifest: {p}.'));
 });
 
+test('2e. an Agent( call (the web pack fragment shape) is a site too, with the prompt as the last argument', () => {
+  const prompt = 'Objective dir: <dir>. Drive these UI artifacts: <artifact, route, landmark per line>.';
+  const text = doc(
+    'spawn the pack agent with the Agent tool:',
+    '',
+    FENCE,
+    'Agent(',
+    '  subagent_type="aoforge-stack-web:web-ui-verifier",',
+    '  model="<node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model web-ui-verifier --raw>",',
+    `  prompt="${prompt}"`,
+    ')',
+    FENCE,
+  );
+  const sites = sp.extractSpawnPrompts(text, 'fragments/verifier.md');
+  assert.equal(sites.length, 1);
+  assert.equal(sites[0].agent, 'web-ui-verifier');
+  assert.equal(sites[0].line, 4);
+  assert.equal(sites[0].prompt_bytes, bytes(prompt));
+});
+
 // ---------------------------------------------------------------------------------------------------------
 // 3. map-codebase style
 // ---------------------------------------------------------------------------------------------------------
@@ -299,6 +319,23 @@ test('4b. a variable with no block of its own name falls back to the nearest pre
   assert.equal(sites.length, 1);
   assert.equal(sites[0].prompt_bytes, bytes(planner));
   assert.equal(sites[0].form, 'variable:nearest-labelled');
+});
+
+test('4c. an unlabelled markdown block directly above the call is the prompt of a variable with no label of its own', () => {
+  const body = '<objective>\nInvestigate issue: {slug}\n</objective>';
+  const text = doc('Fill prompt and spawn:', '', FENCE + 'markdown', body, FENCE, '', FENCE, 'Task(', '  prompt=filled_prompt,', '  subagent_type="debugger"', ')', FENCE);
+  const sites = sp.extractSpawnPrompts(text, 'debug/SKILL.md');
+  assert.equal(sites.length, 1);
+  assert.equal(sites[0].prompt_bytes, bytes(body));
+  assert.equal(sites[0].form, 'variable:adjacent-block');
+  assert.equal(sites[0].prompt_line, 3);
+});
+
+test('4d. a non-markdown block above the call, or a block with text between, is not taken as the prompt', () => {
+  const bash = doc('Fill prompt and spawn:', '', FENCE + 'bash', 'echo hi', FENCE, '', FENCE, 'Task(', '  prompt=filled_prompt,', '  subagent_type="debugger"', ')', FENCE);
+  assert.equal(sp.extractSpawnPrompts(bash, 'a.md')[0].prompt_bytes, null);
+  const gap = doc(FENCE + 'markdown', '<objective>x</objective>', FENCE, '', 'Some prose in between.', '', FENCE, 'Task(', '  prompt=filled_prompt,', '  subagent_type="debugger"', ')', FENCE);
+  assert.equal(sp.extractSpawnPrompts(gap, 'b.md')[0].prompt_bytes, null);
 });
 
 // ---------------------------------------------------------------------------------------------------------
@@ -416,7 +453,7 @@ test('7. compare gives from/to/delta per agent for agent, spawn and resident byt
   assert.deepEqual(by.verifier.agent_bytes, { from: 400, to: 300, delta_bytes: -100, delta_pct: -25 });
   assert.deepEqual(by.verifier.max_spawn_bytes, { from: 100, to: 100, delta_bytes: 0, delta_pct: 0 });
   assert.deepEqual(by.verifier.resident_bytes, { from: 480, to: 380, delta_bytes: -100, delta_pct: -20.83 });
-  assert.equal(by.verifier.resident_tokens.delta_bytes, -25);
+  assert.equal(by.verifier.resident_tokens.delta_tokens, -25);
   assert.deepEqual(by.verifier.pack, { from: false, to: false });
 
   assert.deepEqual(by['ui-evaluator'].pack, { from: false, to: true }, 'a core agent that became a pack agent');
