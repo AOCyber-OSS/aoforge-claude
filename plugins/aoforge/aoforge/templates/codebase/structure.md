@@ -126,7 +126,7 @@ Template for `.aoforge/codebase/STRUCTURE.md` - captures physical file organizat
 aoforge/
 ├── bin/                # Executable entry points
 ├── skills/             # Skill definitions (auto-invokable)
-│   └── df-*/          # AOForge skills (df-plan-objective/, df-debug/, etc.)
+│   └── <skill>/       # AOForge skills (plan-objective/, debug/, etc.)
 ├── aoforge/            # Skill resources
 │   ├── references/    # Principle documents
 │   ├── templates/     # File templates
@@ -148,8 +148,8 @@ aoforge/
 **skills/*/**
 - Purpose: Skill definitions for Claude Code (auto-invokable from natural language)
 - Contains: SKILL.md per skill directory
-- Key files: df-new-project/SKILL.md, df-plan-objective/SKILL.md, df-execute-objective/SKILL.md
-- Subdirectories: One directory per skill (df-plan-objective/, df-debug/, etc.)
+- Key files: new-project/SKILL.md, plan-objective/SKILL.md, execute-objective/SKILL.md
+- Subdirectories: One directory per skill (plan-objective/, debug/, etc.)
 
 **aoforge/references/**
 - Purpose: Core philosophy and guidance documents

@@ -21,9 +21,10 @@ Model profiles control which Claude model each AOForge agent uses. This allows b
 | `integration-checker` | sonnet | sonnet | haiku | — |
 | `security-auditor` | opus | sonnet | sonnet | xhigh |
 
-Agent keys are canonical **without** a `df-` prefix. `aof-tools resolve-model`
-normalises either spelling (TRD 28-02) — before that fix, un-prefixed callers
-missed the table entirely and silently fell back to `sonnet`.
+Agent keys are the bare agent names (`planner`, `executor`). `aof-tools resolve-model`
+and every compound `init` command read only that spelling; any other name is an
+unknown agent, which warns on stderr and falls back to `sonnet`. TRD 28-02 made the
+table bind, and quick 40 removed the prefixed alias that fix had kept.
 
 ## Per-focus tiers and the verdict floor (TRD 76-06)
 
@@ -133,9 +134,8 @@ Override specific agents without changing the entire profile using `agent_models
 }
 ```
 
-Keys are the bare agent names; the `df-` prefixed spelling (`"df-planner"`) is still accepted, and the bare key wins
-when both are present. An `agent_models` tier beats the focus tier and the package default, and stays under the
-verdict floor. Valid tier values: `opus`, `sonnet`, `haiku`.
+Keys are the bare agent names, the only spelling read. An `agent_models` tier beats the focus tier and the package
+default, and stays under the verdict floor. Valid tier values: `opus`, `sonnet`, `haiku`.
 
 `model_overrides` is a flat per-agent pin (a tier, `inherit` or a model id) that wins over the profile and is not
 floored:
@@ -191,23 +191,23 @@ Orchestrators assess complexity before spawning agents:
 
 ### Safety Rules
 
-- **Never downgrade df-executor below sonnet** — code-writing agents need sufficient reasoning
-- **Never downgrade df-planner below sonnet** — architecture decisions require reasoning
+- **Never downgrade executor below sonnet** — code-writing agents need sufficient reasoning
+- **Never downgrade planner below sonnet** — architecture decisions require reasoning
 - **Overrides are per-spawn, not persistent** — each spawn re-evaluates complexity
 - **User model_overrides in config.json take precedence** over complexity-based overrides
 
 ## Design Rationale
 
-**Why Opus for df-planner?**
+**Why Opus for planner?**
 Planning involves architecture decisions, goal decomposition, and task design. This is where model quality has the highest impact.
 
-**Why Sonnet for df-executor?**
+**Why Sonnet for executor?**
 Executors follow explicit JOB.md instructions. The plan already contains the reasoning; execution is implementation.
 
 **Why Sonnet (not Haiku) for verifiers in balanced?**
 Verification requires goal-backward reasoning - checking if code *delivers* what the objective promised, not just pattern matching. Sonnet handles this well; Haiku may miss subtle gaps.
 
-**Why Haiku for df-codebase-mapper?**
+**Why Haiku for codebase-mapper?**
 Read-only exploration and pattern extraction. No reasoning required, just structured output from file contents.
 
 **Why `inherit` instead of passing `opus` directly?**

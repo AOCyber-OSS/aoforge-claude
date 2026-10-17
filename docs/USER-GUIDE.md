@@ -815,18 +815,18 @@ Opt-in. With `github.store: true` GitHub is the system of record; with it off, A
 
 | Agent | `quality` | `balanced` | `budget` |
 |-------|-----------|------------|----------|
-| df-planner | Opus | Opus | Sonnet |
-| df-roadmapper | Opus | Sonnet | Sonnet |
-| df-executor | Opus | Sonnet | Sonnet |
-| df-objective-researcher | Opus | Sonnet | Haiku |
-| df-project-researcher | Opus | Sonnet | Haiku |
-| df-research-synthesizer | Sonnet | Sonnet | Haiku |
-| df-debugger | Opus | Sonnet | Sonnet |
-| df-codebase-mapper | Sonnet | Haiku | Haiku |
-| df-verifier | Sonnet | Sonnet | Haiku |
-| df-job-checker | Sonnet | Sonnet | Haiku |
-| df-integration-checker | Sonnet | Sonnet | Haiku |
-| df-security-auditor | Opus | Sonnet | Sonnet |
+| planner | Opus | Opus | Sonnet |
+| roadmapper | Opus | Sonnet | Sonnet |
+| executor | Opus | Sonnet | Sonnet |
+| objective-researcher | Opus | Sonnet | Haiku |
+| project-researcher | Opus | Sonnet | Haiku |
+| research-synthesizer | Sonnet | Sonnet | Haiku |
+| debugger | Opus | Sonnet | Sonnet |
+| codebase-mapper | Sonnet | Haiku | Haiku |
+| verifier | Sonnet | Sonnet | Haiku |
+| job-checker | Sonnet | Sonnet | Haiku |
+| integration-checker | Sonnet | Sonnet | Haiku |
+| security-auditor | Opus | Sonnet | Sonnet |
 
 **Profile philosophy:**
 - **quality** -- Opus for all decision-making agents, Sonnet for read-only verification. Use when quota is available and the work is critical.
