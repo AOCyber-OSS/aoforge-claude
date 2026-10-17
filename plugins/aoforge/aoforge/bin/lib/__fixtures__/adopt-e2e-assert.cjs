@@ -207,6 +207,8 @@ function migrateChecks({ root, home, dfPath, env, marker, add }) {
   const converted = new Set(record.filter((s) => s.action).map((s) => s.file));
   const stampProblems = [];
   let stampsSeen = 0;
+  let withNew = 0;
+  let unstamped = 0;
   for (const dir of plan.roots) {
     const rel = [dir, NAMES.planningDir, 'config.json'].filter(Boolean).join('/');
     const text = safeRead(path.join(root, rel));
@@ -217,9 +219,13 @@ function migrateChecks({ root, home, dfPath, env, marker, add }) {
     const holds = (key) => !!cfg && typeof cfg === 'object' && Object.prototype.hasOwnProperty.call(cfg, key);
     if (holds(LEGACY.configKey)) stampProblems.push(`${rel}: still has the "${LEGACY.configKey}" key`);
     if (converted.has(rel) && !holds(NAMES.configKey)) stampProblems.push(`${rel}: converted but has no "${NAMES.configKey}" key`);
+    if (holds(NAMES.configKey) && !holds(LEGACY.configKey)) withNew += 1;
+    if (!holds(NAMES.configKey) && !holds(LEGACY.configKey)) unstamped += 1;
   }
   add('stamp_current', stampProblems.length === 0,
-    stampProblems.length === 0 ? `${stampsSeen} config.json file(s): "${NAMES.configKey}" key, no "${LEGACY.configKey}" key`
+    stampProblems.length === 0
+      ? `${stampsSeen} config.json file(s): ${withNew} with the "${NAMES.configKey}" key, `
+        + `${unstamped} with neither key (unstamped), none with the "${LEGACY.configKey}" key`
       : stampProblems.join('; '));
 }
 
