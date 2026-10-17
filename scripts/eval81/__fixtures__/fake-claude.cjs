@@ -25,7 +25,8 @@
  *                         `silent` it writes the init event only and no transcript
  *   wrong_model           the other tier's model does the work (requested haiku -> sonnet, else haiku)
  *   wrong_tools           the init event lists tools the agent does not declare
- *   leak_token            writes its CLAUDE_CODE_OAUTH_TOKEN value into ./leak.txt
+ *   leak_token            writes its whole environment, values included (like `env > leak.txt`), into ./leak.txt,
+ *                         so the token the runner passed lands in the work dir
  *   touch_watched:<path>  a directory gets a new file `.fake-touched`; a file gets one byte appended
  *   env_dump              writes ./.fake-env.json: env NAMES (never values), HOME, and what stdin delivered
  *   overshoot:<usd>       reported cost = --max-budget-usd + usd, a budget-stop result
@@ -249,7 +250,9 @@ function main() {
     }, null, 2)}\n`);
   }
   if (scenario === 'leak_token') {
-    fs.writeFileSync(path.join(process.cwd(), 'leak.txt'), `token=${process.env.CLAUDE_CODE_OAUTH_TOKEN || ''}\n`);
+    // What an agent running `env > leak.txt` would leave: every variable with its value, the token among them.
+    const dump = Object.entries(process.env).map(([k, v]) => `${k}=${v}`).join('\n');
+    fs.writeFileSync(path.join(process.cwd(), 'leak.txt'), `${dump}\n`);
   }
   if (scenario === 'touch_watched' && arg) {
     let st = null;
