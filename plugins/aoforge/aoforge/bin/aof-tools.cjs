@@ -167,12 +167,14 @@
  *   tokens coverage [--milestone v | --objective N]  Forward-stamp coverage (live/counted) of TRD SUMMARYs; read-only
  *     [--repo p] [--root dir]            (default scope: the current milestone; exit 0 for every report)
  *   calibrate [--paths a,b] [--out f]  Build per-task-class medians/P90s (minutes, tokens, dollars) into calibration.json
- *     [--rates f] [--root dir | --no-overhead] [--window <N|all>]
+ *     [--rates f] [--root dir | --no-overhead] [--also-root dir]... [--window <N|all>]
  *     [--minutes <task_sum|trd_level>] [--through <N>] [--dry-run]
  *                                      (default out: AOFORGE_CALIBRATION_PATH or ~/.claude/aoforge/calibration.json;
  *                                       default paths: the checkout holding cwd or AOFORGE_CALIBRATE_PATHS;
  *                                       --root: transcripts for agent overhead, default ~/.claude/projects;
  *                                       --no-overhead skips that scan;
+ *                                       --also-root dir (repeatable): a former checkout path whose overhead spawns
+ *                                       still count, recorded in method.also_roots;
  *                                       --window <N|all>: keep only the N most recent objectives with samples per project;
  *                                       default: the most recent 10 objectives, --window all keeps all history;
  *                                       --minutes <task_sum|trd_level>: how an estimate builds a TRD's minutes (default trd_level);
@@ -941,7 +943,7 @@ async function main() {
     }
 
     case 'calibrate': {
-      // aof-tools calibrate [--paths a,b] [--out file] [--rates file] [--root dir | --no-overhead] [--window <N|all>] [--minutes <task_sum|trd_level>] [--through <N>] [--dry-run] — TRD 57-06, 58-03, 64-08, 67-02
+      // aof-tools calibrate [--paths a,b] [--out file] [--rates file] [--root dir | --no-overhead] [--also-root dir]... [--window <N|all>] [--minutes <task_sum|trd_level>] [--through <N>] [--dry-run] — TRD 57-06, 58-03, 64-08, 67-02, quick-41
       const { output: outputCalibrate } = require('./lib/helpers.cjs');
       const { runCalibrate } = require('./lib/calibrate-cli.cjs');
       const r = runCalibrate({ argv: args.slice(1), cwd, env: process.env });
