@@ -25,6 +25,7 @@ const PRIVATE_DIR = path.join(OBJECTIVE_DIR, 'private');
 const PRIVATE_FILE = path.join(PRIVATE_DIR, 'fleet-checklists.json');
 
 const synthetic = require('./synthetic.cjs');
+const { NAMES, LEGACY } = require(path.join(REPO, 'plugins', 'aoforge', 'aoforge', 'bin', 'lib', 'legacy-names.cjs'));
 
 const readJson = (name) => JSON.parse(fs.readFileSync(path.join(HERE, name), 'utf8'));
 const readText = (name) => fs.readFileSync(path.join(HERE, name), 'utf8');
@@ -251,7 +252,8 @@ describe('test C fleet commitment', () => {
     const doc = JSON.parse(bytes.toString('utf8'));
     assert.equal(doc.alias, c.alias);
     assert.equal(doc.source_commit, c.source_commit);
-    assert.deepEqual(doc.prepared, ['removed .planning/', 'removed .claude/', 'added .aoforge/']);
+    // The legacy planning directory name comes from LEGACY, the one module allowed to spell it.
+    assert.deepEqual(doc.prepared, [`removed ${LEGACY.planningDir}/`, 'removed .claude/', `added ${NAMES.planningDir}/`]);
     const ids = new Set();
     for (const [focus, items] of Object.entries(doc.checklists)) {
       assert.equal(items.length, c.items_per_focus[focus], `${focus} count differs from the commitment`);
