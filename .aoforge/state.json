@@ -1,6 +1,6 @@
 {
   "current_objective": "81",
-  "current_job": 12,
+  "current_job": 13,
   "total_jobs": 19,
   "progress_pct": 99,
   "status": "executing",
@@ -1934,6 +1934,16 @@
     {
       "objective": "81",
       "summary": "81-12: E role cells count only runs that ended ok, per spawn; static bytes fall back to the committed 81-07 static-prompt.json when the out dir has none",
+      "rationale": null
+    },
+    {
+      "objective": "81",
+      "summary": "81-13: frozen set adds results/static-prompt.json; private checklist and calibration.json enter the prereg manifest as sha256 only",
+      "rationale": null
+    },
+    {
+      "objective": "81",
+      "summary": "81-13: caps and batch caps not amended; A and B risk INSUFFICIENT above 1.17x and 1.10x of their estimates; options in 81-PREREG.md section 5 for the batch-A checkpoint",
       "rationale": null
     }
   ],

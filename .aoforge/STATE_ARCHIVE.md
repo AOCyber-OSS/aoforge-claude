@@ -652,6 +652,8 @@ STATE.md stays lean; this file grows over time.
 - [Objective 81]: 81-06: test C synthetic config inlines the full 3.1.0 template plus stamp so no migration is pending (the upgrade hook would otherwise commit inside a run); the fleet copy uses the same tree via minimalAoforge(FLEET_PROJECT)
 - [Objective 81]: 81-12: batch E session model opus (SESSION_MODEL); EVAL81_E_SESSION_MODEL=sonnet|opus switches it without editing the frozen module
 - [Objective 81]: 81-12: E role cells count only runs that ended ok, per spawn; static bytes fall back to the committed 81-07 static-prompt.json when the out dir has none
+- [Objective 81]: 81-13: frozen set adds results/static-prompt.json; private checklist and calibration.json enter the prereg manifest as sha256 only
+- [Objective 81]: 81-13: caps and batch caps not amended; A and B risk INSUFFICIENT above 1.17x and 1.10x of their estimates; options in 81-PREREG.md section 5 for the batch-A checkpoint
 
 ## Performance Metrics
 
@@ -902,3 +904,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 81 P12 | 19min | 3 tasks | 11 files |
 | Objective 81 P08 | 30min | 3 tasks | 12 files |
 | Objective 81 P10 | 10min | 2 tasks | 5 files |
+| Objective 81 P13 | 22min | 3 tasks | 4 files |
