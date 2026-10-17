@@ -131,6 +131,7 @@ Sequencing: 65 releases v1.5 first, so the installed runtime carries the v1.5 co
 - [x] **Objective 77: Stack packs: contract and extraction** - Core names no stack; Flutter, Dart and web procedure ships in the `aoforge-stack-flutter` and `aoforge-stack-web` packs (landed on `main` 2026-10-16, ships in 3.1.0)
 - [x] **Objective 78: Remove the rename shims** - The one-release rename shims, migrations 0012/0013, the dual-namespace GitHub readers and the devflow pointer plugin go in 3.1.0, as promised for the release after 3.0.0 (completed 2026-10-17)
 - [ ] **Objective 79: Reconcile and release 3.1.0** - The fix branch (main + quick 34-39), PR #129 and objective 78 meet in one integration branch, the merged tree passes every guard, and 3.1.0 ships through one PR after per-step approval
+- [ ] **Objective 80: Adopt migrates legacy projects** - 3.1.0's `/aoforge:adopt` moves a pre-rename `.planning/` project to `.aoforge/` as one recorded change, and adopt runs end to end on fresh, brownfield and legacy repos
 
 ### Objective 65: Release v1.5
 
@@ -477,6 +478,30 @@ TRDs:
 - [ ] 79-09-push-open-pr-close-129-TRD.md — (W5, checkpoints) push integrate/3.1.0, open the 3.1.0 PR and wait for green CI, close #129 with a link (three approvals)
 - [ ] 79-10-merge-dry-run-tag-and-release-TRD.md — (W6, checkpoints) merge through the ruleset, release dry-run dispatch on main, tag v3.1.0 on the merge commit (three approvals), verify the release, the aoforge--v3.1.0 alias and main's marketplace
 
+### Objective 80: Adopt migrates legacy projects
+
+**Goal**: A repository still on the pre-rename layout can be brought onto 3.1.0 from 3.1.0 itself: `/aoforge:adopt` detects a legacy `.planning/` project and moves it to `.aoforge/` (with its `devflow{}` config stamp and pre-rename CLAUDE.md block markers) as one recorded change on its `aoforge/adopt` branch, unattended and idempotent. Fresh and brownfield adoption keep working. This is the in-product path for the fleet repos left on `.planning/` (user decision 2026-10-17: leave the fleet to each repo; adopt migrates).
+**Requirements**: none mapped (user decision 2026-10-17)
+**Depends on**: Objective 78 (3.1 refuses `.planning/`), Objective 79 (the reconciled tree)
+**Success Criteria** (what must be TRUE):
+  1. On a repo with only `.planning/` (a 2.x/3.0-era project: `devflow{}` or `aoforge{}` stamp, objectives, quick tasks, decisions, pre-rename CLAUDE.md block), 3.1.0's adopt moves the tree with `git mv` (history kept), renames the config stamp key and the CLAUDE.md block markers, writes nothing else into the planning content, and records it as one change on `aoforge/adopt`; `validate health` is clean afterwards and every 3.1 tool works on the result.
+  2. A dirty tree, an operation in progress, or both `.planning/` and `.aoforge/` present stops adopt with one message naming the fix; nothing is moved. Re-running adopt after success or after a half-finished run is safe (idempotent, resumes).
+  3. The 3.1 legacy-layout message (W066, the CLI guard, the SessionStart notice, doctor 27) names `/aoforge:adopt` as the 3.1 path alongside 3.0.x / the manual `git mv`.
+  4. Adopt runs end to end under 3.1.0 on three fixtures — a fresh repo, a brownfield repo with code and no planning, and a legacy `.planning/` repo built from a real fleet repo's layout (read-only copy; never write a real fleet repo) — through the skill's workflow (`adopt preflight|begin|scaffold|report`), with an `ADOPT-REPORT.md` that lists the migration.
+  5. The rename guard and stack-neutrality guard still pass; the only legacy names introduced live in one detector/migrator module on the guard's ALLOW list with a reason; docs (adopt skill, migration guide, USER-GUIDE, CHANGELOG 3.1.0) describe it; the full suite passes.
+**TRDs**: 9 plans (6 waves)
+
+TRDs:
+- [ ] 80-01-legacy-migrator-module-TRD.md — (W1, TDD) `lib/legacy-migrate.cjs` (ALLOW-listed): finds root and nested pre-rename trees, refuses both-dirs / malformed blocks, moves with `git mv`, renames the stamp key, block markers and ignore lines; fleet-shaped fixture builder
+- [ ] 80-04-legacy-messages-name-adopt-TRD.md — (W1, TDD) the legacy-layout message (W066, CLI guard, SessionStart notice, doctor 27), W067, project W069 and retired ids name `/aoforge:adopt`
+- [ ] 80-02-adopt-preflight-begin-migrate-TRD.md — (W2, TDD) preflight routes a pre-rename project to `migrate` or refuses with the fix; begin moves it on `aoforge/adopt`; resume by mode; guard exempts adopt
+- [ ] 80-03-adopt-scaffold-report-migrate-TRD.md — (W3, TDD) migrate scaffold (residue only) and report (Migration table, health per root, pending upgrades, compact commit files, commit_blocked); one recorded change proved
+- [ ] 80-05-adopt-workflow-and-skill-TRD.md — (W4, TDD) adopt workflow and skill run the migrate path; contract rows; site data
+- [ ] 80-06-adopt-three-fixture-e2e-TRD.md — (W4, TDD) scripted e2e on fresh, brownfield and pre-rename fixtures; hand-migration equivalence; re-run and resume matrix; 3.1 tool probes; checker `--mode migrate`
+- [ ] 80-07-fleet-copy-simulated-run-TRD.md — (W5) `/aoforge:adopt` followed verbatim on read-only clones of aodex and smartWellness; compared with a hand migration; sources proven untouched
+- [ ] 80-08-fresh-brownfield-simulated-run-TRD.md — (W5) `/aoforge:adopt` followed verbatim on fresh, bare and brownfield fixtures under 3.1.0
+- [ ] 80-09-docs-and-full-validation-TRD.md — (W6) migration guide (+ site), USER-GUIDE, CHANGELOG 3.1.0, CLAUDE.md; full suite (watcher-shell excluded) and named guards
+
 ## Progress
 
 | Objective | Milestone | Plans | Status | Completed |
@@ -502,3 +527,4 @@ TRDs:
 | 77. Stack packs: contract and extraction | v1.6 | 5/5 | In Progress | - |
 | 78. Remove the rename shims | v1.6 | 12/12 | Complete | 2026-10-17 |
 | 79. Reconcile and release 3.1.0 | v1.6 | 8/10 | In Progress | - |
+| 80. Adopt migrates legacy projects | v1.6 | 0/0 | Not started | - |
