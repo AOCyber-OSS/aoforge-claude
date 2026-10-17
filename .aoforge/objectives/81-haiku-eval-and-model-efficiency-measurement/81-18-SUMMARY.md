@@ -10,8 +10,8 @@ status: checkpoint
 
 ## Progress
 - [x] Task 1: Confirm spend for batch C — 759016dd
-- [ ] Task 2: Run batch C live (agents, then graders) — stopped after 12 of 48 agent runs (611b2c17). The user answered "Reclassify + re-run impaired", so post-hoc 4 is in this commit. next step: run `node scratchpad/81-17-scripts/reclassify-c.cjs <R> <S> --apply C-map-arch-b-s-1 C-map-quality-b-s-1`, then resume with `c-driver.cjs` (the runner now stops on a real escape and re-runs impaired runs once by itself)
-- [ ] Task 3: Score, spot-check and commit batch C
+- [x] Task 2: Run batch C live (agents, then graders) — 12 runs before the stop (611b2c17), post-hoc 4 (2258d733), the rest (this commit)
+- [ ] Task 3: Score, spot-check and commit batch C — next step: commit results/C.json, C.md and C-spotcheck.md (already scored, leak-checked, scanned and prereg-checked) with `aof-tools commit "docs(81-18): batch C mapper and researcher results"`, then delete /private/tmp/claude-501/e81-*
 
 ## User gate decision (2026-10-17)
 
@@ -89,3 +89,21 @@ of C.
   - real escapes: 0;
   - non-escapes: 3 runs;
   - impaired: C-map-arch-b-s-1 and C-map-quality-b-s-1, which are re-run once.
+
+## Task 2, finished after post-hoc 4
+
+- **Reclassification applied.** C-map-arch-b-s-1 and C-map-quality-b-s-1 were re-keyed to `<id>@impaired1` with their
+  charges kept, then re-run once:
+  - C-map-arch-b-s-1 attempt 2 was clean;
+  - C-map-quality-b-s-1 attempt 2 was denied `cd ~/.claude/...` again, so it is final and impaired.
+- **The driver** (`c-driver.cjs`, `--sandbox-root S`, `--stop-after 4`) ran 23 chunks: the remaining 36 agent runs, the 2 re-runs
+  and 46 graders. Every runner exit was 0. Batch C is `complete`, having spent .424253 over 96 ledger entries
+  (48 agent runs, 46 graders, 2 `@impaired1`). The ledger stands at .052491.
+- **Access classes over every final C record:**
+  - real escapes: 0;
+  - tilde denials: 1 (quality-b-s-1);
+  - accesses to guessed homes that do not exist: 13, all made-up names (`/Users/.claude`, `/Users/x`, `/Users/aoforge`,
+    `/Users/placeholder`, `/Users/lukas`, `/Users/..`), never the real one.
+  - Tools check ok on every agent run, isolation clean, tripwire clean.
+- **No grader** for the two sonnet stack researcher runs: they are `model_ran false`, because about 18% of their
+  output went to haiku as a side model.
