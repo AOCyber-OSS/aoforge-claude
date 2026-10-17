@@ -1,6 +1,6 @@
 {
   "current_objective": "81",
-  "current_job": 14,
+  "current_job": 15,
   "total_jobs": 19,
   "progress_pct": 99,
   "status": "executing",
@@ -1959,6 +1959,11 @@
     {
       "objective": "81",
       "summary": "81-14 batch A: haiku and sonnet both at ceiling (detection 9/9, false pass 0/9, false fail 0/9); A gate established with 0 Haiku false passes; $2.69 spent",
+      "rationale": null
+    },
+    {
+      "objective": "81",
+      "summary": "81-15: batch B scorer lexical misses on B6 recorded as sensitivity lines in B-spotcheck.md; frozen scorer unchanged",
       "rationale": null
     }
   ],

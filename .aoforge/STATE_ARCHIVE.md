@@ -2608,6 +2608,7 @@ STATE.md stays lean; this file grows over time.
 - [Objective 81]: 81-14 post-hoc 1: init-tools check accepts CLI 2.1.302 naming (Agent=Task, Grep/Glob via Bash, Edit with Write); first run re-keyed to @attempt1 and re-run (user: relax, re-run)
 0) from the A pilot; C decisions frozen (fleet backup out of R, project-researcher, negated claims exempt from the path check)
 .69 spent
+- [Objective 81]: 81-15: batch B scorer lexical misses on B6 recorded as sensitivity lines in B-spotcheck.md; frozen scorer unchanged
 
 ## Performance Metrics
 
@@ -2860,3 +2861,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 81 P10 | 10min | 2 tasks | 5 files |
 | Objective 81 P13 | 22min | 3 tasks | 4 files |
 | Objective 81 P14 | 29min | 3 tasks | 14 files |
+| Objective 81 P15 | 15min | 3 tasks | 3 files |
