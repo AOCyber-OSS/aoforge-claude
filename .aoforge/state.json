@@ -1925,6 +1925,16 @@
       "objective": "81",
       "summary": "81-06: test C synthetic config inlines the full 3.1.0 template plus stamp so no migration is pending (the upgrade hook would otherwise commit inside a run); the fleet copy uses the same tree via minimalAoforge(FLEET_PROJECT)",
       "rationale": null
+    },
+    {
+      "objective": "81",
+      "summary": "81-12: batch E session model opus (SESSION_MODEL); EVAL81_E_SESSION_MODEL=sonnet|opus switches it without editing the frozen module",
+      "rationale": null
+    },
+    {
+      "objective": "81",
+      "summary": "81-12: E role cells count only runs that ended ok, per spawn; static bytes fall back to the committed 81-07 static-prompt.json when the out dir has none",
+      "rationale": null
     }
   ],
   "blockers": [
