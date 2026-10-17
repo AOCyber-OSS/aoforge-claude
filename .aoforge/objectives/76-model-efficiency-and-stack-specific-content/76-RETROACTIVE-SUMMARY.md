@@ -22,7 +22,7 @@ key-files:
   modified:
     - plugins/aoforge/aoforge/bin/lib/init.cjs
     - plugins/aoforge/aoforge/references/model-profiles.json
-requirements-completed: [MEF-02, MEF-03, MEF-04, MEF-05]
+requirements-completed: [MEF-01, MEF-02, MEF-03, MEF-04, MEF-05, MEF-06]
 completed: 2026-10-16
 ---
 
@@ -84,3 +84,7 @@ None as a TRD record: there was no AOForge plan. The work was planned and review
 - FOUND: merge commits f7636bdc (#132) and ee93e66f (#134) in `git log`
 - FOUND: quick 34-37 directories under `.aoforge/quick/`
 - `requirements-completed` equals the SATISFIED rows of 76-VERIFICATION's Requirements Coverage table
+
+## Gap closure (2026-10-17)
+
+The first retroactive verification found MEF-01 (two workflow spawns named model placeholders nothing supplied) and MEF-06 (no ui-evaluator escalation) open. Quick 42 (commits cd389f39..1cb50783) closed both; the re-verification passed 7/7. 76-06 (Haiku eval) and 76-08 (measurement, including lowering starting tiers) stay open as deferred items.
