@@ -267,7 +267,9 @@ describe('7. upgrade --only <retired id> names the adopt path', () => {
       for (const part of ['retired', ADOPT, SHIM_RELEASE, MIGRATION_GUIDE]) {
         assert.ok(lines[0].includes(part), `${part}: ${out}`);
       }
-      assertAdoptFirst(lines[0], 'retired line');
+      // "retired after AOForge 3.0.x" opens the line, so the order that matters is adopt, then running it with 3.0.x.
+      const runWith = lines[0].indexOf(`run it with ${NAMES.product} ${SHIM_RELEASE}`);
+      assert.ok(runWith > lines[0].indexOf(ADOPT) && lines[0].indexOf(ADOPT) >= 0, lines[0]);
       assert.deepEqual(diffSnapshots(before, snapshot(root)), []);
     });
   }

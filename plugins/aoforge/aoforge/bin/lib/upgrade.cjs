@@ -34,7 +34,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { planningRoot, planningRel } = require('./compat.cjs');
-const { NAMES, SHIM_RELEASE } = require('./legacy-names.cjs');
+const { NAMES, SHIM_REMOVAL, SHIM_RELEASE } = require('./legacy-names.cjs');
 
 // planning-layout.cjs is loaded on first use by apply/check/--only, never at require time: repoKey reaches the status
 // line through estimate-run-store.cjs, and that path must keep needing only compat.cjs and legacy-names.cjs.
@@ -346,7 +346,9 @@ function normalizeOnly(only) {
 /** The one line `--only <id>` gives for a retired id the registry no longer carries. */
 function retiredMessage(id) {
   return `migration ${id} (${RETIRED_MIGRATIONS[id]}) was retired after ${NAMES.product} ${SHIM_RELEASE}: `
-    + `run it with ${NAMES.product} ${SHIM_RELEASE}, or do it by hand (${layout().MIGRATION_GUIDE}, "Upgrading from 2.x")`;
+    + `run ${NAMES.commandNs}adopt (${NAMES.product} ${SHIM_REMOVAL} moves the planning directory, the stamp key and the `
+    + `CLAUDE.md markers), run it with ${NAMES.product} ${SHIM_RELEASE}, or do it by hand `
+    + `(${layout().MIGRATION_GUIDE}, "Upgrading from 2.x")`;
 }
 
 function assertKnownIds(registry, only) {

@@ -6,8 +6,9 @@
 // AOForge 3.1 reads only `.aoforge/` (NAMES.planningDir) and the "aoforge" config stamp key. The one-release shims
 // that read the pre-rename names, and migrations 0012-0014 that converted them, end with AOForge 3.0.x
 // (SHIM_RELEASE). What stays is reporting: each detector reads the filesystem itself (never compat's
-// planning-directory fallback, which TRD 78-11 strips), and every message names the same two fixes, AOForge 3.0.x
-// or the manual step.
+// planning-directory fallback, which TRD 78-11 strips), and every message names the same three fixes:
+// /aoforge:adopt (3.1, objective 80), AOForge 3.0.x, or the manual step. The global CLAUDE.md text is the one
+// exception: adopt never touches that file, so it names only 3.0.x and the manual step.
 //
 //   isLegacyPlanning      only the pre-rename planning directory, and it holds a planning file
 //   bothPlanningDirs      both planning directories exist
@@ -27,11 +28,14 @@
 const fs = require('fs');
 const path = require('path');
 const { userHomeDir, isUserHome } = require('./compat.cjs');
-const { NAMES, LEGACY, SHIM_RELEASE } = require('./legacy-names.cjs');
+const { NAMES, LEGACY, SHIM_REMOVAL, SHIM_RELEASE } = require('./legacy-names.cjs');
 const { escapeRegExp } = require('./text-escape.cjs');
 
 const { planningDir: NEW_DIR, configKey: NEW_KEY, blockTag: NEW_TAG, product: PRODUCT, cli: CLI } = NAMES;
 const { planningDir: OLD_DIR, configKey: OLD_KEY, blockTag: OLD_TAG } = LEGACY;
+
+/** The 3.1 path for a pre-rename project: the adopt command (a slash command, spelled from the name map). */
+const ADOPT = `${NAMES.commandNs}adopt`;
 
 const CODE = 'W066';
 const CONFIG_CODE = 'W067';
@@ -124,12 +128,15 @@ function layoutProblem(root) {
 }
 
 function layoutFix() {
-  return `Move it with ${PRODUCT} ${SHIM_RELEASE} (\`${CLI} upgrade --apply\`) or by hand: \`git mv ${OLD_DIR} ${NEW_DIR}\`, `
-    + `then rename a "${OLD_KEY}" key in ${NEW_DIR}/config.json to "${NEW_KEY}" (see ${MIGRATION_GUIDE}, "Upgrading from 2.x")`;
+  return `Run \`${ADOPT}\` there (${PRODUCT} ${SHIM_REMOVAL} moves it to ${NEW_DIR}/ as one recorded change on `
+    + `${NAMES.adoptBranch}), or move it with ${PRODUCT} ${SHIM_RELEASE} (\`${CLI} upgrade --apply\`) or by hand: `
+    + `\`git mv ${OLD_DIR} ${NEW_DIR}\`, then rename a "${OLD_KEY}" key in ${NEW_DIR}/config.json to "${NEW_KEY}" `
+    + `(see ${MIGRATION_GUIDE}, "Upgrading from 2.x")`;
 }
 
 /**
- * The one line a legacy-only project gets: what is wrong and both fixes (AOForge 3.0.x, or the manual move).
+ * The one line a legacy-only project gets: what is wrong and all three fixes (/aoforge:adopt, AOForge 3.0.x, or the
+ * manual move).
  * @param {string} root
  * @returns {string}
  */
@@ -185,14 +192,16 @@ function legacyConfigKeyIssue(root) {
       code: CONFIG_CODE,
       message: `legacy-config-key: ${file} still holds the pre-rename "${OLD_KEY}" key beside "${NEW_KEY}"; `
         + `${PRODUCT} reads only "${NEW_KEY}" and never removes the old one`,
-      fix: `In ${file}, delete the pre-rename key "${OLD_KEY}" (${PRODUCT} records its upgrades under "${NEW_KEY}")`,
+      fix: `In ${file}, delete the pre-rename key "${OLD_KEY}" (${PRODUCT} records its upgrades under "${NEW_KEY}"), `
+        + `or run \`${ADOPT}\``,
     };
   }
   return {
     code: CONFIG_CODE,
     message: `legacy-config-key: ${file} records its upgrades under the pre-rename "${OLD_KEY}" key; `
       + `${PRODUCT} reads only "${NEW_KEY}"`,
-    fix: `In ${file}, rename the key to "${NEW_KEY}" (or run ${PRODUCT} ${SHIM_RELEASE}'s \`${CLI} upgrade --apply\` once)`,
+    fix: `In ${file}, rename the key to "${NEW_KEY}" (or run \`${ADOPT}\`, which renames it as one recorded change, `
+      + `or ${PRODUCT} ${SHIM_RELEASE}'s \`${CLI} upgrade --apply\` once)`,
   };
 }
 
@@ -207,16 +216,18 @@ function hasLegacyBlockMarker(text) {
 
 /**
  * The W069 text for a CLAUDE.md file (`fileLabel`: 'CLAUDE.md' for a project, '~/.claude/CLAUDE.md' for the
- * global one). The managed-block refusal (TRD 78-08) uses the same text.
+ * global one). The managed-block refusal (TRD 78-08) uses the same text. Only the project fix names the adopt
+ * command: adopt rewrites project files and never touches the global one (TRD 80-04).
  * @param {string} fileLabel
  * @returns {{message: string, fix: string}}
  */
 function legacyBlockMessage(fileLabel) {
+  const adopt = fileLabel === 'CLAUDE.md' ? `, or run \`${ADOPT}\` (it renames both markers)` : '';
   return {
     message: `legacy-claude-md-block: ${fileLabel} holds a managed block under the pre-rename ${OLD_TAG} markers, `
       + `which ${PRODUCT} no longer updates`,
     fix: `Rename <!-- ${OLD_TAG}:START and <!-- ${OLD_TAG}:END to ${NEW_TAG}; the next upgrade refreshes the block `
-      + `(or run ${PRODUCT} ${SHIM_RELEASE}'s upgrade once)`,
+      + `(or run ${PRODUCT} ${SHIM_RELEASE}'s upgrade once)${adopt}`,
   };
 }
 
