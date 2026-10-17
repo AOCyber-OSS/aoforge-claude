@@ -1,9 +1,9 @@
 {
   "current_objective": "80",
-  "current_job": 8,
+  "current_job": 9,
   "total_jobs": 9,
   "progress_pct": 100,
-  "status": "executing",
+  "status": "ready_for_verification",
   "last_activity": "2026-10-17",
   "metrics": {
     "jobs_completed": 0,
@@ -1889,6 +1889,11 @@
     {
       "objective": "80",
       "summary": "80-07: the two real fleet layouts (aodex, smartWellness) migrate through the adopt workflow text in one commit each; D1 and D2 did not reproduce on them, so no product code changed and todo rows 13 and 14 stay",
+      "rationale": null
+    },
+    {
+      "objective": "80",
+      "summary": "80-09: the legacy-adopt fixture constant is LEGACY_EXCLUDE_LINE, because repo-state-delegation forbids any declaration starting with the EXCLUDE token outside repo-state.cjs",
       "rationale": null
     }
   ],

@@ -131,7 +131,7 @@ Sequencing: 65 releases v1.5 first, so the installed runtime carries the v1.5 co
 - [x] **Objective 77: Stack packs: contract and extraction** - Core names no stack; Flutter, Dart and web procedure ships in the `aoforge-stack-flutter` and `aoforge-stack-web` packs (landed on `main` 2026-10-16, ships in 3.1.0)
 - [x] **Objective 78: Remove the rename shims** - The one-release rename shims, migrations 0012/0013, the dual-namespace GitHub readers and the devflow pointer plugin go in 3.1.0, as promised for the release after 3.0.0 (completed 2026-10-17)
 - [ ] **Objective 79: Reconcile and release 3.1.0** - The fix branch (main + quick 34-39), PR #129 and objective 78 meet in one integration branch, the merged tree passes every guard, and 3.1.0 ships through one PR after per-step approval
-- [ ] **Objective 80: Adopt migrates legacy projects** - 3.1.0's `/aoforge:adopt` moves a pre-rename `.planning/` project to `.aoforge/` as one recorded change, and adopt runs end to end on fresh, brownfield and legacy repos
+- [x] **Objective 80: Adopt migrates legacy projects** - 3.1.0's `/aoforge:adopt` moves a pre-rename `.planning/` project to `.aoforge/` as one recorded change, and adopt runs end to end on fresh, brownfield and legacy repos (completed 2026-10-17)
 
 ### Objective 65: Release v1.5
 
@@ -500,7 +500,7 @@ TRDs:
 - [x] 80-06-adopt-three-fixture-e2e-TRD.md — (W4, TDD) scripted e2e on fresh, brownfield and pre-rename fixtures; hand-migration equivalence; re-run and resume matrix; 3.1 tool probes; checker `--mode migrate`
 - [x] 80-07-fleet-copy-simulated-run-TRD.md — (W5) `/aoforge:adopt` followed verbatim on read-only clones of aodex and smartWellness; compared with a hand migration; sources proven untouched
 - [x] 80-08-fresh-brownfield-simulated-run-TRD.md — (W5) `/aoforge:adopt` followed verbatim on fresh, bare and brownfield fixtures under 3.1.0
-- [ ] 80-09-docs-and-full-validation-TRD.md — (W6) migration guide (+ site), USER-GUIDE, CHANGELOG 3.1.0, CLAUDE.md; full suite (watcher-shell excluded) and named guards
+- [x] 80-09-docs-and-full-validation-TRD.md — (W6) migration guide (+ site), USER-GUIDE, CHANGELOG 3.1.0, CLAUDE.md; full suite (watcher-shell excluded) and named guards
 
 ## Progress
 
@@ -527,4 +527,4 @@ TRDs:
 | 77. Stack packs: contract and extraction | v1.6 | 5/5 | In Progress | - |
 | 78. Remove the rename shims | v1.6 | 12/12 | Complete | 2026-10-17 |
 | 79. Reconcile and release 3.1.0 | v1.6 | 8/10 | In Progress | - |
-| 80. Adopt migrates legacy projects | v1.6 | 8/9 | In Progress | - |
+| 80. Adopt migrates legacy projects | v1.6 | 9/9 | Complete | 2026-10-17 |
