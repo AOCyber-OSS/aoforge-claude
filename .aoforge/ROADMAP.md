@@ -132,6 +132,7 @@ Sequencing: 65 releases v1.5 first, so the installed runtime carries the v1.5 co
 - [x] **Objective 78: Remove the rename shims** - The one-release rename shims, migrations 0012/0013, the dual-namespace GitHub readers and the devflow pointer plugin go in 3.1.0, as promised for the release after 3.0.0 (completed 2026-10-17)
 - [ ] **Objective 79: Reconcile and release 3.1.0** - The fix branch (main + quick 34-39), PR #129 and objective 78 meet in one integration branch, the merged tree passes every guard, and 3.1.0 ships through one PR after per-step approval
 - [x] **Objective 80: Adopt migrates legacy projects** - 3.1.0's `/aoforge:adopt` moves a pre-rename `.planning/` project to `.aoforge/` as one recorded change, and adopt runs end to end on fresh, brownfield and legacy repos (completed 2026-10-17)
+- [ ] **Objective 81: Haiku eval and model-efficiency measurement** - 76-06's Haiku 5.5 eval (verifier, job-checker, mapper, researcher, UI judge vs Sonnet on seeded fixtures) and 76-08's 3.0.0 vs 3.1.0 token measurement, run headless in a sandbox under a $100 cap; tier changes only by proposal
 
 ### Objective 65: Release v1.5
 
@@ -502,6 +503,19 @@ TRDs:
 - [x] 80-08-fresh-brownfield-simulated-run-TRD.md — (W5) `/aoforge:adopt` followed verbatim on fresh, bare and brownfield fixtures under 3.1.0
 - [x] 80-09-docs-and-full-validation-TRD.md — (W6) migration guide (+ site), USER-GUIDE, CHANGELOG 3.1.0, CLAUDE.md; full suite (watcher-shell excluded) and named guards
 
+### Objective 81: Haiku eval and model-efficiency measurement
+
+**Goal**: Close 76-06 and 76-08 with measured evidence. 76-06: Haiku 5.5 vs Sonnet 5.5 on seeded fixtures with answer keys committed before any run, for the verifier's verdict (test A), the job-checker (B), the codebase-mapper and objective-researcher (C) and the UI judge (D). 76-08: the same fixed workload (a `/aoforge:quick` change x3, a small 2-TRD `/aoforge:build` x2) under the 3.0.0 and 3.1.0 plugins, with per-role prompt size, tokens, cost, wall time and outcome (test E), plus a free static resident-prompt comparison. All live runs are headless `claude -p` sessions in a throwaway HOME with `--plugin-dir`, `--model` and a per-run `--max-budget-usd`, authenticated by the user's subscription token (`CLAUDE_CODE_OAUTH_TOKEN`, read from a scratch file), never touching the real ~/.claude, this checkout's working tree or any fleet repo (user decisions 2026-10-17).
+**Requirements**: none mapped (closes 76-06 and 76-08; MEF-05's Haiku half and MEF-06's start-tier half)
+**Depends on**: Objective 76, Objective 79 (the 3.1.0 tree), Objective 80
+**Success Criteria** (what must be TRUE):
+  1. A harness runs one agent headless in a sandbox HOME with a chosen plugin dir and model, enforces a per-run cap and a $100 running total (stopping cleanly when reached), and records each run's verdict/output, tokens (cached/uncached in/out), reported cost and wall time; a dry-run mode exercises it with no API call.
+  2. Fixtures and answer keys for A-D (6 verifier repos: 3 clean, 3 with one planted gap; 6 job-checker TRD sets: 2 clean, 4 planted; mapper on 2 codebases x 4 foci with reference checklists; researcher 4 dimensions on one topic with a checklist; 4 UI surfaces with labelled states) are committed before the first live run, and a test proves each planted defect is real.
+  3. Runs execute in the order A, B, D, E, C within $100; results are scored against the keys (false-pass, false-fail, detection, false alarms, checklist recall/errors/fabrications, per-state accuracy and escalations) and reported per role with n and intervals.
+  4. 76-08's report compares 3.0.0 and 3.1.0 per role and per run (first-turn input tokens, total tokens, cache writes, cost, wall time, tests and verification outcome) and the static resident-prompt bytes per spawn.
+  5. A recommendation per role follows the pre-registered rule (Haiku only with zero false passes in A and within ~10 points of Sonnet in A/B/D); any tier change is presented to the user as a proposal and not applied without approval; 76-06 and 76-08 are recorded closed (or explicitly not met) in the 76 records, and MEF-05/MEF-06 updated from evidence.
+**TRDs**: to be planned
+
 ## Progress
 
 | Objective | Milestone | Plans | Status | Completed |
@@ -528,3 +542,4 @@ TRDs:
 | 78. Remove the rename shims | v1.6 | 12/12 | Complete | 2026-10-17 |
 | 79. Reconcile and release 3.1.0 | v1.6 | 8/10 | In Progress | - |
 | 80. Adopt migrates legacy projects | v1.6 | 9/9 | Complete | 2026-10-17 |
+| 81. Haiku eval and model-efficiency measurement | v1.6 | 0/0 | Not started | - |
