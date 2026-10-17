@@ -1,6 +1,6 @@
 {
   "current_objective": "80",
-  "current_job": 2,
+  "current_job": 3,
   "total_jobs": 9,
   "progress_pct": 99,
   "status": "executing",
@@ -1879,6 +1879,11 @@
     {
       "objective": "80",
       "summary": "Only the project W069 fix names /aoforge:adopt; the global CLAUDE.md text and managed-block refusal stay without it because adopt never touches that file",
+      "rationale": null
+    },
+    {
+      "objective": "80",
+      "summary": "Adopt finished-detection reads HEAD, not the index; a migrate marker records its plan before git mv so an interrupted move resumes from the marker",
       "rationale": null
     }
   ],
