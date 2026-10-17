@@ -15,8 +15,8 @@ must_haves:
   truths:
     - "The two plugin trees exist as detached worktrees under the eval root (3.0.0 = v3.0.0 b4a9d870, 3.1.0 = this branch's HEAD, whose plugins/ is unchanged since the objective started) and trees.json pins both SHAs"
     - "A dry run of every batch (A, B, D, E, C) completes with zero API calls, materialises the first run of each batch (runtime mirrored into a sandbox HOME for both trees, fixtures built, D's work-dir path and C's prepared fleet copy checked), and prints the projected spend against the $100 ledger"
-    - "A fake-claude rehearsal in a separate rehearsal root drives every batch through runner, collect, score CLI and both report renderers end to end"
-    - "81-PREREG.md and results/prereg-manifest.json record the sha256 of every frozen file (fixtures, answer keys, checklists including the private one's commitment, grader prompt and schema, decision rule, batch modules, scorers, harness), the tree SHAs, `claude --version`, the calibration file's sha256 and the projection; `prereg.cjs --check` verifies the manifest and every live TRD runs it first"
+    - "A fake-claude rehearsal in a separate rehearsal root drives every batch through runner, collect, score CLI and both report renderers end to end, and a ledger rebuilt from the rehearsal's results in a third root has the same total as the rehearsal ledger"
+    - "81-PREREG.md and results/prereg-manifest.json record the sha256 of every frozen file (fixtures, answer keys, the five fixture proofs.test.cjs files, checklists including the private one's commitment, grader prompt and schema, decision rule, batch modules, scorers, harness), the tree SHAs, `claude --version`, the calibration file's sha256 and the projection; 81-PREREG.md also gives the exact `prereg.cjs --write` command so a pre-run amendment can regenerate the manifest; `prereg.cjs --check` verifies the manifest and every live TRD runs it first"
     - "The full test suite passes"
   artifacts:
     - path: scripts/eval81/prereg.cjs
@@ -95,8 +95,12 @@ Paths:
 - The dry run is allowed out of order (81-08 test 3); it never changes batch statuses in the ledger.
 - `--materialize first` writes one materialised run dir per batch under `R/runs/<X>/`; those ids stay pending for the
   live run (dry_run is never done), and the runner moves an existing dir aside before a live attempt.
-- Worst-case spend (sum of all caps) exceeds $100 by design; the ledger, not the caps sum, keeps the total under
-  $100. The projection reports both and the per-batch estimates (A 5, B 4, D 2, E 44, C 28 = 83).
+- Worst-case spend (sum of all reserves, each max(cap x 1.25, ...)) exceeds $100 by design; the ledger, not the
+  reserves sum, keeps the total under $100. The projection reports caps, reserves and the per-batch estimates (A 5,
+  B 4, D 2, E 44, C 28 = 83), and the base-prompt share of each cap (81-01 basePromptUsd); if a batch's caps with
+  that allowance exceed its batch cap, say so in 81-PREREG.md for the user's batch checkpoint.
+- Every rehearsal runner call passes `--results-dir <R2>/out/results`, so the rehearsal never reads (or is refused
+  by) the repository's results directory.
 - The manifest includes the private fleet checklist only as its sha256 (equal to fleet-commitment.json); it never
   copies its contents.
 </gotchas>
@@ -104,8 +108,10 @@ Paths:
 ## Test list (prereg.cjs)
 
 1. `--write --out <dir>` hashes every file under the given include globs (sorted, relative paths) plus extra named
-   files, and writes `prereg-manifest.json` `{created_at, head, trees, claude_version, calibration_sha256, files:
-   {path: sha256}}`.
+   files, and writes `prereg-manifest.json` `{created_at, head, trees, claude_version, calibration_sha256, command,
+   files: {path: sha256}}` (`command` = the exact argv used, so an amendment re-runs it). The default includes take
+   `scripts/eval81/fixtures/*/proofs.test.cjs` even though other `*.test.cjs` files are excluded: those proofs are
+   what show each answer key is right, so they are frozen evidence.
 2. `--check` exits 0 on an unchanged tree and 1 naming each changed, added or missing file.
 3. Binary files (PNGs) hash by bytes; a one-byte change is reported.
 4. A path outside the repo is refused unless listed as an extra named file (the private checklist and the
@@ -128,8 +134,8 @@ Steps, one plain command each:
 5. For the materialised first runs check: A/B/C/E sandbox homes have `.claude/aoforge/.plugin-version` equal to their
    tree; D's work dir equals the path baked into its prompt; C's `R/cache/C/fleet-prepared` has no `.planning/` or
    `.claude/`; E's fixture builds. Record `claude --version`.
-Write the projection (per batch: runs, sum of caps, estimate; overall estimate 83 vs the $100 cap) into the scratch
-file `R/projection.json` for Task 3.
+Write the projection (per batch: runs, sum of caps, sum of reserves, base-prompt share, estimate; overall estimate 83
+vs the $100 cap) into the scratch file `R/projection.json` for Task 3.
   </action>
   <verify>All five dry runs exit 0; `R/ledger.json` total is 0 and every batch is `pending`; `git worktree list` shows the two trees under R.</verify>
   <done>Trees pinned, ledger initialised at $0, every batch dry-run with its first run materialised and checked.</done>
@@ -142,14 +148,18 @@ file `R/projection.json` for Task 3.
   <action>
 In `R2` (fresh): copy `R/trees.json` (it holds absolute worktree paths, so R2 reuses the same trees). For each batch in order A, B, D, E, C: `node scripts/eval81/run.cjs --batch <X> --root <R2> --token-file
 <a scratch dummy token file with a random value> --claude-bin scripts/eval81/__fixtures__/fake-claude.cjs
---raw` (add `--init-ledger` on A only). Fake runs take seconds, so each batch runs to completion and the order rule
-holds naturally; run them in the background if the whole set exceeds a few minutes. Run C twice (agents, then
-graders). Then `node
+--results-dir <R2>/out/results --raw` (add `--init-ledger` on A only). Fake runs take seconds, so each batch runs to
+completion and the order rule holds naturally; run them in the background if the whole set exceeds a few minutes.
+Run C twice (agents, then graders). Then `node
 scripts/eval81/score.cjs --batch <X> --root <R2> --out <R2>/out` for each batch and `--report --out <R2>/out`; confirm
-`<R2>/out/81-HAIKU-EVAL.md`, `<R2>/out/81-MEASUREMENT.md` and `results/*.json` exist. Scan R2 for the dummy token with
-scanForSecret: only the dummy token file itself may contain it.
+`<R2>/out/81-HAIKU-EVAL.md`, `<R2>/out/81-MEASUREMENT.md` and `results/*.json` exist and every batch result carries a
+`spend` block. Rebuild rehearsal (W1): `node scripts/eval81/run.cjs --rebuild-ledger --root <R3> --results-dir
+<R2>/out/results --raw` into a fresh `R3` = `.../scratchpad/eval81-rebuild`; its ledger total and per-batch spent must
+equal R2's ledger (compare with a node one-liner). Then confirm `--init-ledger` against `--results-dir
+<R2>/out/results` is refused (exit 2). Scan R2 for the dummy token with scanForSecret: only the dummy token file
+itself may contain it.
   </action>
-  <verify>Each batch's rehearsal exits 0 (or 3 only if a cap was deliberately tiny); both reports render; the secret scan finds no run dir hit.</verify>
+  <verify>Each batch's rehearsal exits 0 (or 3 only if a cap was deliberately tiny); both reports render; the rebuilt ledger in R3 equals R2's; the secret scan finds no run dir hit.</verify>
   <done>The full pipeline ran end to end on fakes for all five batches; any defect found was fixed test-first in its owning file and listed as a deviation.</done>
   <recovery>If a batch's collect cannot handle a fake run with no real outputs, make it return an empty output with a reason (never throw), with a test, in the owning file.</recovery>
 </task>
@@ -159,12 +169,16 @@ scanForSecret: only the dummy token file itself may contain it.
   <files>scripts/eval81/prereg.cjs, scripts/eval81/prereg.test.cjs, .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-PREREG.md, .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/prereg-manifest.json</files>
   <action>
 RED first per test list 1-4 for `prereg.cjs` (`--write --out <O>/results [--extra <file>...]` and `--check
---manifest <file>`; include globs `scripts/eval81/**` minus tests and `__fixtures__/fake-claude.cjs`,
-`<O>/81-DECISION-RULE.md`; extras: the private fleet checklist and `~/.claude/aoforge/calibration.json`, hashed
-read-only). Then run `--write` with `trees` from `R/trees.json` and `claude_version` from Task 1. Write `81-PREREG.md`:
-what is frozen and why, the head SHA, tree SHAs, claude version, calibration sha256, the projection table, the
-rehearsal outcome, the dry-run run counts (A 36, B 36, D 24, E 10, C 48 + 48 graders), and the rule that each live
-TRD starts with `prereg.cjs --check` and that any later change to a frozen file is a recorded post-hoc deviation.
+--manifest <file>`; include globs `scripts/eval81/**` minus `*.test.cjs` and `__fixtures__/fake-claude.cjs`, plus
+`scripts/eval81/fixtures/*/proofs.test.cjs` (A, B, C, D, E) explicitly, plus `<O>/81-DECISION-RULE.md`; extras: the
+private fleet checklist and `~/.claude/aoforge/calibration.json`, hashed read-only). Then run `--write` with `trees`
+from `R/trees.json` and `claude_version` from Task 1. Write `81-PREREG.md`: what is frozen and why, the head SHA, tree
+SHAs, claude version, calibration sha256, the projection table (caps, reserves, base-prompt share, estimates), the
+rehearsal outcome (including the R3 rebuild check), the dry-run run counts (A 36, B 36, D 24, E 10, C 48 + 48
+graders), a "Regenerate" line with the exact `prereg.cjs --write ...` command from the manifest's `command`, an empty
+"Pre-run amendments" section, and the rule that each live TRD starts with `prereg.cjs --check`, that an amendment
+before batch A's first run follows 81-14 Task 1 (edit, regenerate, commit, check, then a fresh "go A"), and that any
+change to a frozen file after the first live run is a recorded post-hoc deviation.
 Run the full suite (`npm test` globs from `git ls-files` minus `watcher-shell.test.cjs`). Commit with
 `node ~/.claude/aoforge/bin/aof-tools.cjs commit "test(81-13): freeze objective 81 pre-registration manifest" --files scripts/eval81/prereg.cjs scripts/eval81/prereg.test.cjs <O>/81-PREREG.md <O>/results/prereg-manifest.json`.
   </action>

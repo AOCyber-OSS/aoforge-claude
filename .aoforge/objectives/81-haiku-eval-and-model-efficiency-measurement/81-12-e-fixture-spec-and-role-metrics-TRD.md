@@ -114,8 +114,10 @@ build.md skips plan mode on `--auto` or `workflow.auto_advance`; quick takes the
   the report that 3.1.0 runs include that hook's commit.
 - Workload text is fixed in build.cjs: QUICK_TEXT = "Add a --json flag to `notekit list` that prints the notes as a
   JSON array of {id, text} objects, with a test." Build prompt: `/aoforge:build 1 --skip-research --auto`.
-- Order: q31-r1, q30-r1, q30-r2, q31-r2, q31-r3, q30-r3, b31-r1, b30-r1, b30-r2, b31-r2 (ABBA) so cache warmth and
-  time of day do not favour one version.
+- Order: q31-r1, q30-r1, b31-r1, b30-r1, q30-r2, q31-r2, q31-r3, q30-r3, b30-r2, b31-r2. The first two pairs are the
+  pilots (one quick pair, one build pair; TRD 81-17 runs them with `--stop-after 2` twice and stops for the user
+  before the other six, job-checker revision W4). Within each workflow the version order stays ABBA-balanced (quick
+  31, 30, 30, 31, 31, 30; build 31, 30, 30, 31), so cache warmth and time of day do not favour one version.
 - Env: `AOFORGE_SKIP_AWARENESS_POPULATE=1`, `AOFORGE_SKIP_TRANSCRIPT_EXPORT=1`, `AOFORGE_SKIP_PRUNE=1` for both
   versions; never AOFORGE_SKIP_EDIT_GATE (skills set their own marker; the gates are part of the measured flow).
 - Timeouts: quick 30 minutes, build 90 minutes. Caps: `capForWorkflow('quick' | 'build')`.
@@ -143,9 +145,12 @@ fixture (proofs.test.cjs)
 3. checkQuick and checkBuild fail on the base fixture; applying `reference.cjs` quick (or build) solution makes the
    matching check pass with `node --test` green.
 batch E
-4. `runs()` returns 10 valid descriptors in the ABBA order: kind `workflow`, agent null, plugin `3.0.0` / `3.1.0`,
+4. `runs()` returns 10 valid descriptors in the pilot-first order of the gotchas (quick pair, build pair, then the
+   rest; ABBA within each workflow): kind `workflow`, agent null, plugin `3.0.0` / `3.1.0`,
    model `opus`, prompts exactly `/aoforge:quick <QUICK_TEXT>` and `/aoforge:build 1 --skip-research --auto`, env
-   flags as listed, caps from capForWorkflow, timeouts.
+   flags as listed, caps from capForWorkflow, timeouts, and descriptor `role` `workflow:quick` / `workflow:build` (the
+   81-01 ledger keys its overshoot reserve by batch and role, so a build's subagent overshoot never inflates a quick
+   run's reserve).
 5. collect runs the hidden checks in the work dir (HOME = the run's sandbox home) and returns `{acceptance, tests,
    verification_status, trd_count, summaries, git_log_subjects}`.
 roles
@@ -219,7 +224,7 @@ Commit the eleven files with `node ~/.claude/aoforge/bin/aof-tools.cjs commit "f
 </validation_gates>
 
 <verification>
-- `node -e "console.log(require('./scripts/eval81/batches/E.cjs').runs({root:'<tmp>',trees:null,calibration:null}).map(r=>r.id).join(' '))"` prints the 10 ids in ABBA order.
+- `node -e "console.log(require('./scripts/eval81/batches/E.cjs').runs({root:'<tmp>',trees:null,calibration:null}).map(r=>r.id).join(' '))"` prints the 10 ids in the pilot-first order (q31-r1 q30-r1 b31-r1 b30-r1 q30-r2 q31-r2 q31-r3 q30-r3 b30-r2 b31-r2).
 - `rg -n "acceptance|reference" scripts/eval81/fixtures/E/build.cjs` shows no file of either kind written into the fixture.
 </verification>
 

@@ -15,7 +15,8 @@ must_haves:
     - "Before any spend on B, the user saw the token file is present, the ledger total after A, batch A's headline and batch B's plan (36 runs, ~$4, $6 cap), and replied to go"
     - "Batch B ran live (36 job-checker runs) under the ledger with the tripwire clean, after batch A was complete"
     - "results/B.json and results/B.md report per model detection, false alarm, missed-as-pass and unrelated blockers with n, split into defects the pre-check flags and judgment-only defects; a hand spot-check of 6 returns is recorded"
-    - "No committed file contains the token and prereg --check passes"
+    - "results/B.json carries batch B's spend block equal to the ledger's batch B row, so the ledger can be rebuilt from committed results"
+    - "No committed file contains the token (the commit scan over every --files path) and prereg --check passes"
   artifacts:
     - path: .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/B.json
       provides: "batch B scored results"
@@ -44,7 +45,8 @@ Output: `results/B.json`, `results/B.md`, `results/B-spotcheck.md`.
 <embedded_context>
 
 <codebase_examples>
-Paths `R`, `T`, `O` and runner exit codes exactly as in TRD 81-14 (`scripts/eval81/README.md`).
+Paths `R`, `T`, `O`, runner exit codes, the commit scan command and the spend rules exactly as in TRD 81-14
+(`scripts/eval81/README.md`).
 - `R` = `/private/tmp/claude-501/-Users-justin-dev-aoforge-claude/29d3d902-73eb-439c-9c64-ba469a668a6e/scratchpad/eval81`
 - `T` = `/private/tmp/claude-501/-Users-justin-dev-aoforge-claude/29d3d902-73eb-439c-9c64-ba469a668a6e/scratchpad/eval-auth/oauth-token`
 - `O` = `.aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement`
@@ -60,6 +62,8 @@ Paths `R`, `T`, `O` and runner exit codes exactly as in TRD 81-14 (`scripts/eval
 - Exit 5: stop, report the tripwire diff to the user, do not score or commit.
 - Exit 6 on the first run: as in 81-14 (the job-checker declares Read, Bash, Glob, Grep).
 - A checker return with neither heading: the scorer marks it `none` (abstain); include those run ids in the SUMMARY.
+- Eval root or token file gone: follow 81-14's lost-root recovery (`--rebuild-ledger` from the committed results,
+  `--charge-lost B=<batch cap>` if B had started uncommitted, user told first); never `--init-ledger`.
 </error_recovery>
 
 </embedded_context>
@@ -96,7 +100,7 @@ Paths `R`, `T`, `O` and runner exit codes exactly as in TRD 81-14 (`scripts/eval
   <action>
 `node scripts/eval81/run.cjs --batch B --root <R> --token-file <T> --raw` with `run_in_background`; handle exit
 codes as in 81-14 (0 continue; 4 wait for resume_after then run once more; 3/5/6 stop and report). Record ledger
-total, batch spent, ok/excluded counts and wall time.
+total, batch spent, ok/excluded counts, largest overshoot, transcript-over-reported runs, escape attempts and wall time.
   </action>
   <verify>`R/ledger.json` batch B `complete`; runner exit 0.</verify>
   <done>Batch B complete within its cap, tripwire clean.</done>
@@ -109,12 +113,13 @@ total, batch spent, ok/excluded counts and wall time.
   <action>
 `node scripts/eval81/score.cjs --batch B --root <R> --out <O>`. Spot-check 6 runs (seeded; at least one per planted
 kind plus a clean one) by reading the checker returns in each run's record/outputs; write `results/B-spotcheck.md`.
-Secret scan of `<O>/results/` (node in-process, paths only). `prereg.cjs --check`. Commit with
+Check `results/B.json` `spend.spent_usd` equals batch B's `spent_usd` in `R/ledger.json`. Commit scan over the three
+files (must print nothing). `prereg.cjs --check`. Commit with
 `node ~/.claude/aoforge/bin/aof-tools.cjs commit "docs(81-15): batch B job-checker results" --files <O>/results/B.json <O>/results/B.md <O>/results/B-spotcheck.md`.
 SUMMARY: ledger total after B, per-model detection (judgment-only vs pre-check-flagged), false alarms, spot-check
 agreement.
   </action>
-  <verify>results/B.json has role job-checker with both models and the precheck split; secret scan empty; prereg check 0.</verify>
+  <verify>results/B.json has role job-checker with both models, the precheck split and a spend block equal to the ledger's batch B; commit scan empty; prereg check 0.</verify>
   <done>Batch B scored, spot-checked and committed.</done>
   <recovery>Record scorer/spot-check disagreements in B-spotcheck.md; do not change the scorer now.</recovery>
 </task>

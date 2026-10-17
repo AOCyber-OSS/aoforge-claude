@@ -10,6 +10,7 @@ files_modified:
   - .aoforge/objectives/76-model-efficiency-and-stack-specific-content/76-RETROACTIVE-SUMMARY.md
   - .aoforge/ROADMAP.md
   - .aoforge/REQUIREMENTS.md
+  - ".aoforge/todos/pending/*-apply-objective-81-tier-proposal-*.md"
 autonomous: false
 requirements: [SC-3, SC-4, SC-5]
 must_haves:
@@ -17,7 +18,8 @@ must_haves:
     - "81-HAIKU-EVAL.md (76-06 report) gives, per role, each model's metrics with n and 95% Wilson intervals, the pre-registered outcome (REFUSE / WEAK_ENDORSE / INSUFFICIENT) with reasons, the proposals, spot-check agreement, every deviation from the pre-registration, total spend from the ledger, and a link to 81-MEASUREMENT.md"
     - "76-VERIFICATION.md's deferred items 76-06 and 76-08 are recorded closed or explicitly not met with the evidence files; MEF-05 and MEF-06 are updated from the evidence in 76-VERIFICATION.md, 76-RETROACTIVE-SUMMARY.md, ROADMAP.md (76-06/76-08 rows) and REQUIREMENTS.md, and `validate requirements --objective 76` reports no finding"
     - "The tier-change proposals were presented to the user as a decision; whatever the user chose is recorded in the report, and no model-profiles.json or stack-pack tier was changed in this objective"
-    - "Approved proposals, if any, exist as todos for a follow-up, each naming the file, key, current and proposed tier and the evidence"
+    - "Approved proposals, if any, exist as todos for a follow-up (`.aoforge/todos/pending/<date>-apply-objective-81-tier-proposal-<role>.md`), each naming the file, key, current and proposed tier and the evidence"
+    - "Every commit in this TRD ran the commit scan over every path in its --files list (81-HAIKU-EVAL.md, the four 76 records, the todo files) and found no token"
   artifacts:
     - path: .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-HAIKU-EVAL.md
       provides: "the 76-06 eval report with per-role recommendations"
@@ -52,7 +54,11 @@ Output: `81-HAIKU-EVAL.md`, updated 76 records, and todos for any approved propo
 <embedded_context>
 
 <codebase_examples>
-- `O` = `.aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement`; `R` = the eval root as in 81-14.
+- `O` = `.aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement`; `R` and `T` (token file) as in 81-14.
+- The commit scan (81-14 codebase_examples): run it over every path of a commit's `--files` list immediately before
+  that commit; it reads `<T>` in-process and prints only matching paths. If `<T>` no longer exists (the eval root was
+  cleaned up), say so in the SUMMARY and scan with the user's go only after they re-create it; never commit unscanned
+  files that came from run outputs.
 - `node scripts/eval81/score.cjs --report --out <O>` renders `81-HAIKU-EVAL.md` from `results/{A,B,C,D}.json` with
   decide() (81-02) against `plugins/aoforge/aoforge/references/model-profiles.json` and
   `plugins/aoforge-stack-flutter/aoforge-stack.json`.
@@ -117,8 +123,10 @@ Append by hand, below the generated part: "Spend" (ledger total and per batch fr
 (agreement per batch from `results/*-spotcheck.md`); "Deviations from the pre-registration" (every post-hoc change,
 reduction or amendment recorded in 81-14..81-18 SUMMARYs, or "none"); "Limitations" (n per role; D judged one surface
 per session; C graded by one Sonnet grader; the verifier and job-checker are held at Sonnet by verdict_floor
-regardless; results are for Haiku 5.5 and Sonnet 5.5 on these fixtures only); "76-08" (one paragraph pointing to
-81-MEASUREMENT.md with its headline numbers). Commit with
+regardless; results are for Haiku 5.5 and Sonnet 5.5 on these fixtures only; the per-run cap did not bound spend,
+the reserve and the charge-the-larger rule did, with the largest overshoot and the subagent-cost finding from
+81-17); "76-08" (one paragraph pointing to 81-MEASUREMENT.md with its headline numbers). Commit scan over
+`<O>/81-HAIKU-EVAL.md`, then commit with
 `node ~/.claude/aoforge/bin/aof-tools.cjs commit "docs(81-19): 76-06 Haiku eval report" --files <O>/81-HAIKU-EVAL.md`.
   </action>
   <verify>81-HAIKU-EVAL.md has a row per role (verifier, job-checker, ui-evaluator, 4 mapper foci, 4 researcher dimensions) with both models, n, CIs and an outcome; it contains "No tier assignment was changed".</verify>
@@ -141,7 +149,8 @@ ROADMAP.md (objective 76 section only): the 76-06 and 76-08 rows say "closed by 
 REQUIREMENTS.md: MEF-05 and MEF-06 traceability rows updated from the evidence (no other row).
 Run `node plugins/aoforge/aoforge/bin/aof-tools.cjs validate requirements --objective 76 --raw` and `validate
 health --raw` (repo copy of aof-tools, per CLAUDE.md, because the installed runtime lags) and confirm no new finding.
-Check `git diff .aoforge/ROADMAP.md` touches only the 76 rows and the Progress row. Commit with
+Check `git diff .aoforge/ROADMAP.md` touches only the 76 rows and the Progress row. Commit scan over the four paths,
+then commit with
 `node ~/.claude/aoforge/bin/aof-tools.cjs commit "docs(81-19): record 76-06 and 76-08 from objective 81" --files <the four paths>`.
   </action>
   <verify>`validate requirements --objective 76` reports no finding; the ROADMAP diff is limited to the 76 rows and its Progress row.</verify>
@@ -190,15 +199,17 @@ Check `git diff .aoforge/ROADMAP.md` touches only the 76 rows and the Progress r
 
 <task type="auto">
   <name>Task 4: Record the decision, create approved todos, tidy the eval trees</name>
-  <files>.aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-HAIKU-EVAL.md</files>
+  <files>.aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-HAIKU-EVAL.md, .aoforge/objectives/76-model-efficiency-and-stack-specific-content/76-VERIFICATION.md, .aoforge/todos/pending/*-apply-objective-81-tier-proposal-*.md</files>
   <action>
 Append "## Decision (YYYY-MM-DD)" to 81-HAIKU-EVAL.md with the option and, per proposal, approved or not. For each
-approved proposal add a todo through `planning draft` + `todo add --from <draft>` (title "Apply objective 81 tier
-proposal: <role>", body: file, key, current tier per profile, proposed tier, evidence lines, the rule outcome). If
+approved proposal add a todo through `planning draft todos/pending/<YYYY-MM-DD>-apply-objective-81-tier-proposal-<role,
+':' written as '-'>.md` + `todo add --from <draft>` (title "Apply objective 81 tier proposal: <role>", body: file, key, current tier per profile, proposed tier, evidence lines, the rule outcome). If
 MEF-06's start-tier half changed status because of the decision, update that row in 76-VERIFICATION.md (only that
 row). Remove the two eval worktrees with `git worktree remove <R>/trees/v3.0.0` and `git worktree remove
 <R>/trees/v3.1.0` (they are clean, detached checkouts under the eval root); leave the rest of the eval root in place
-as evidence. Commit with `node ~/.claude/aoforge/bin/aof-tools.cjs commit "docs(81-19): record the tier-proposal decision" --files <O>/81-HAIKU-EVAL.md <any todo files and the 76-VERIFICATION.md row if changed>`.
+as evidence. Commit scan over every file going into the commit, then commit with `node ~/.claude/aoforge/bin/aof-tools.cjs commit "docs(81-19): record the tier-proposal decision" --files <O>/81-HAIKU-EVAL.md <each new .aoforge/todos/pending/<date>-apply-objective-81-tier-proposal-<role>.md> <76-VERIFICATION.md if its row changed>`
+(list the todo files by name from `todo add`'s output; `git status --porcelain .aoforge/todos` must show no other
+new todo).
 No push, tag or release.
   </action>
   <verify>81-HAIKU-EVAL.md ends with the Decision section; `git worktree list` no longer lists the eval trees; `git diff HEAD~1 --stat` shows no change to model-profiles.json or aoforge-stack.json.</verify>

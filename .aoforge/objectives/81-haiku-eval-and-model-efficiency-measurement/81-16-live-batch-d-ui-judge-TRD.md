@@ -46,7 +46,8 @@ Output: `results/D.json`, `results/D.md`, `results/D-spotcheck.md`.
 - `R` = `/private/tmp/claude-501/-Users-justin-dev-aoforge-claude/29d3d902-73eb-439c-9c64-ba469a668a6e/scratchpad/eval81`
 - `T` = `/private/tmp/claude-501/-Users-justin-dev-aoforge-claude/29d3d902-73eb-439c-9c64-ba469a668a6e/scratchpad/eval-auth/oauth-token`
 - `O` = `.aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement`
-- Runner exit codes and handling as in TRD 81-14. D runs are kind `prompt` (no `--agent`), so the first-run tools
+- Runner exit codes and handling, the commit scan command, the spend rules and the lost-root recovery as in TRD
+  81-14 (`--charge-lost D=<batch cap>` if D had started uncommitted). D runs are kind `prompt` (no `--agent`), so the first-run tools
   check does not apply; the init event should list only Read.
 </codebase_examples>
 
@@ -93,8 +94,8 @@ Output: `results/D.json`, `results/D.md`, `results/D-spotcheck.md`.
   <files>(eval root only)</files>
   <action>
 `node scripts/eval81/run.cjs --batch D --root <R> --token-file <T> --raw` with `run_in_background`; exit handling as
-in 81-14. Record ledger total, batch spent, the count of runs whose results came from structured output vs a fenced
-block vs none.
+in 81-14. Record ledger total, batch spent, largest overshoot, the count of runs whose results came from structured output
+vs a fenced block vs none.
   </action>
   <verify>`R/ledger.json` batch D `complete`; runner exit 0.</verify>
   <done>Batch D complete within its cap.</done>
@@ -108,11 +109,12 @@ block vs none.
 `node scripts/eval81/score.cjs --batch D --root <R> --out <O>`. Spot-check 4 states (seeded: two the models got
 right, two they disagreed on or got wrong): open each PNG with the Read tool, read the labels.json entry and both
 models' majority verdicts, and write `results/D-spotcheck.md` (state id, label, haiku majority, sonnet majority,
-your reading, and whether the label still looks right). Secret scan, `prereg.cjs --check`, then commit with
+your reading, and whether the label still looks right). Check `results/D.json` `spend.spent_usd` equals batch D's `spent_usd` in
+`R/ledger.json`. Commit scan over the three files (must print nothing), `prereg.cjs --check`, then commit with
 `node ~/.claude/aoforge/bin/aof-tools.cjs commit "docs(81-16): batch D UI judge results" --files <O>/results/D.json <O>/results/D.md <O>/results/D-spotcheck.md`.
 SUMMARY: ledger total after D, per-model accuracy (k/n states), broken-missed, split rate.
   </action>
-  <verify>results/D.json has role ui-evaluator with both models; secret scan empty; prereg check 0.</verify>
+  <verify>results/D.json has role ui-evaluator with both models and a spend block equal to the ledger's batch D; commit scan empty; prereg check 0.</verify>
   <done>Batch D scored, spot-checked and committed.</done>
   <recovery>If the spot-check suggests a label is wrong, do not edit labels.json: record it; the final report shows the metric with and without that state as a sensitivity line.</recovery>
 </task>

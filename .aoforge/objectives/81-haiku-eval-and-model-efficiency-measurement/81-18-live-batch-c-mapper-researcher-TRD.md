@@ -50,6 +50,9 @@ Output: `results/C.json`, `results/C.md`, `results/C-spotcheck.md`.
 - `O` = `.aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement`
 - Batch C (81-11): first invocation runs the 48 agent runs; the second lists and runs the 48 grader runs for the
   collected outputs. Spot-check sample: `R/spotcheck/C.md` (quotes stay there).
+- Runner exit codes, the commit scan command, the spend rules and the lost-root recovery as in TRD 81-14. C has no
+  batch cap: it runs on the remainder under the reserve rule (total + reserve <= $100), so the last runs may be
+  refused while the plain caps would still fit; the dry run shows where C is expected to stop.
 </codebase_examples>
 
 <anti_patterns>
@@ -66,6 +69,9 @@ Output: `results/C.json`, `results/C.md`, `results/C-spotcheck.md`.
 - Exit 3 (the $100 total reached) during the agent runs or the graders: stop; score what exists; roles below 2/3
   scored come out INSUFFICIENT by the pre-registered rule. Report the remaining unspent ids.
 - Exit 5 with a change in the fleet source: stop everything and report immediately.
+- Eval root or token file gone between the agent and grader invocations: the agent outputs are lost with it.
+  Rebuild with `--charge-lost C=<the remainder>` (C has no batch cap) unless the user gives a usage figure, tell the
+  user, and stop; re-running C is their decision.
 </error_recovery>
 
 </embedded_context>
@@ -87,7 +93,8 @@ Output: `results/C.json`, `results/C.md`, `results/C-spotcheck.md`.
     token present/missing; ledger $<total> of $100; remaining $<100 - total>; C plan: 32 mapper runs (synthetic and
     fleet copy x 4 foci x 2 models x 2), 16 researcher runs (4 dimensions x 2 x 2; project-researcher, since only it
     has dimensions), then 48 Sonnet grader runs; estimate ~$28 (mapper ~$11, researcher ~$12, grader ~$5); if the
-    remainder is below that, the ledger stops C cleanly and short roles come out INSUFFICIENT.
+    remainder is below that, the ledger stops C cleanly and short roles come out INSUFFICIENT; the dry run's reserves
+    (max(cap x 1.25, cap + overshoot seen for that C role)) show how far the remainder reaches.
   </instructions>
   <verify>The user's reply is recorded in the SUMMARY.</verify>
   <done>The user replied "go C", "go C synthetic-only" (a recorded reduction), or "stop".</done>
@@ -116,11 +123,13 @@ ok/excluded counts, and which outputs had no grader.
 `node scripts/eval81/score.cjs --batch C --root <R> --out <O>`; the scorer writes `R/spotcheck/C.md`. Read its 6
 sampled (run, item) pairs against the documents and checklists, and write `results/C-spotcheck.md` with run id,
 item id, grader verdict, your verdict, agree yes/no, and nothing else for fleet items (no quotes, no statements).
-Check `rg -n -i -e aoedge -e aocybersystems <O>/results` finds nothing. Secret scan; `prereg.cjs --check`; commit
+Check `rg -n -i -e aoedge -e aocybersystems <O>/results` finds nothing. Check `results/C.json` `spend.spent_usd`
+equals batch C's `spent_usd` in `R/ledger.json`. Commit scan over the three files (must print nothing);
+`prereg.cjs --check`; commit
 with `node ~/.claude/aoforge/bin/aof-tools.cjs commit "docs(81-18): batch C mapper and researcher results" --files <O>/results/C.json <O>/results/C.md <O>/results/C-spotcheck.md`.
 SUMMARY: final ledger total (all batches), per-role recall headline per model, grader spot-check agreement.
   </action>
-  <verify>results/C.json has the eight C roles with both models; the leak checks find nothing; prereg check 0.</verify>
+  <verify>results/C.json has the eight C roles with both models and a spend block equal to the ledger's batch C; the leak checks and the commit scan find nothing; prereg check 0.</verify>
   <done>Batch C scored, spot-checked and committed; final spend reported.</done>
   <recovery>If grader/spot-check agreement is below 5 of 6, flag C's results as low-confidence in C.md's notes (the final report carries it) rather than re-grading.</recovery>
 </task>

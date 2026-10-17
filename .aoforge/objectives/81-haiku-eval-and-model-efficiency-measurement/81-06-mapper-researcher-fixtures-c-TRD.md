@@ -65,7 +65,7 @@ scripts/eval81/fixtures/C/
 ├── grader-schema.json           ← CREATE
 └── proofs.test.cjs              ← CREATE
 .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/private/
-├── .gitignore                   ← CREATE (content: "*")
+├── .gitignore                   ← CREATE (two lines: "*" then "!.gitignore")
 └── fleet-checklists.json        ← CREATE (untracked; never committed)
 </file_tree>
 
@@ -172,7 +172,9 @@ rate limit` in handler.go with no limiter. Plus `.aoforge/config.json` (3.1.0 st
 7. checklists-researcher.json has the four dimensions, 8-12 items each, each with `statement` and `accept_any`.
 8. grader-schema.json is valid JSON with required `items[{id, verdict in found|wrong|missing, evidence}]` and
    `fabrications[{claim, why}]`; grader-prompt.md contains `{{CHECKLIST}}` and `{{DOCUMENT}}` and no model name.
-9. `private/.gitignore` contains `*`, and `git check-ignore` reports `private/fleet-checklists.json` ignored.
+9. `private/.gitignore` is exactly the two lines `*` and `!.gitignore`; `git check-ignore` reports
+   `private/fleet-checklists.json` ignored and does NOT report `private/.gitignore` (so the ignore file itself is
+   tracked and the rule survives a fresh clone).
 
 <tasks>
 
@@ -202,7 +204,8 @@ clone's origin; delete `.planning/` and `.claude/` from the clone; add the minim
 checklists (8-12 items each, same item shape, evidence paths relative to the clone) into
 `.aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/private/fleet-checklists.json` together with
 `{source_path, source_commit, prepared: ["removed .planning/", "removed .claude/", "added .aoforge/"]}`. Write
-`private/.gitignore` containing `*` first. Commit only the hash: `fleet-commitment.json` = `{alias:
+`private/.gitignore` first, as the two lines `*` and `!.gitignore` (everything in the directory is ignored except
+the ignore file itself, which is committed). Commit only the hash: `fleet-commitment.json` = `{alias:
 "fleet-go-service", language: "go", source_commit, sha256 (of the private file's bytes), items_per_focus}`. Re-check
 the source HEAD and porcelain; they must equal the recorded values.
 
@@ -235,11 +238,11 @@ evidence cannot support); return JSON only. `grader-schema.json` per test list 8
 <!-- TDD-EXCEPTION: fixture builders and reference checklists are test infrastructure; these proofs are the tests. -->
 Write proofs per test list 1-9. Commit the tracked C files and the private `.gitignore` (the ignored checklist is
 not added) with `node ~/.claude/aoforge/bin/aof-tools.cjs commit "test(81-06): add test C codebases, checklists, research topic and grader" --files scripts/eval81/fixtures/C .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/private/.gitignore`.
-If the `*` rule keeps the `.gitignore` itself out of `git add`, commit without it and state in the SUMMARY that the
-private directory is ignored by its own untracked `.gitignore` (the private file stays ignored either way: verify
-with `git status --porcelain --ignored`).
+The `!.gitignore` line keeps the ignore file itself addable; confirm with `git status --porcelain --ignored` that
+`private/.gitignore` shows as untracked (`??`, so it can be added) and `private/fleet-checklists.json` as ignored (`!!`) before
+committing.
   </action>
-  <verify>node --test scripts/eval81/fixtures/C/proofs.test.cjs; `git show --stat HEAD` lists no file under private/ other than possibly .gitignore.</verify>
+  <verify>node --test scripts/eval81/fixtures/C/proofs.test.cjs; `git show --stat HEAD` lists `private/.gitignore` and no other file under private/.</verify>
   <done>Test list 1-9 pass (5 and 4 may skip with their messages); the private checklist is untracked.</done>
   <recovery>If case 6 finds a leaked fleet name in a committed file, remove it, amend nothing already pushed (nothing is pushed in this objective), and re-commit.</recovery>
 </task>

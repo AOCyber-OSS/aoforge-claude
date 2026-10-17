@@ -23,7 +23,7 @@ must_haves:
     - "wilson(k, n) returns the 95% Wilson score interval (z = 1.96) and handles n = 0 and k = 0 / k = n"
     - "decide() applies the rule per role: a Haiku false pass in A refuses Haiku for every role; otherwise a role's Haiku primary metric must be >= Sonnet's minus 10 points; fewer than 2/3 of planned runs scored for either model, or Sonnet's own primary metric below 0.5, gives INSUFFICIENT"
     - "decide() turns outcomes into proposals against the current tiers (model-profiles.json and the flutter pack's ui-evaluator models) and never writes either file"
-    - "`node scripts/eval81/score.cjs --batch X` loads `scripts/eval81/score/X.cjs` dynamically and writes `results/X.json` and `results/X.md`; `--report` renders the 76-06 report from the A-D results"
+    - "`node scripts/eval81/score.cjs --batch X` loads `scripts/eval81/score/X.cjs` dynamically and writes `results/X.json` (with the batch's spend block copied from `<root>/ledger.json`, so committed results can rebuild the ledger) and `results/X.md`; `--report` renders the 76-06 report from the A-D results"
   artifacts:
     - path: .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-DECISION-RULE.md
       provides: "pre-registered decision rule and metric definitions"
@@ -102,6 +102,14 @@ Role keys: A `verifier`; B `job-checker`; D `ui-evaluator`; C `codebase-mapper:<
 quality, concerns, and `project-researcher:<dimension>` for stack, features, architecture, pitfalls.
 Primary metric per role: verifier `detection`; job-checker `detection`; ui-evaluator `accuracy`; C roles `recall`.
 Gate metric: A's `false_pass` for Haiku (global).
+
+Spend block (job-checker revision W1, 2026-10-17: the ledger lives in the session scratchpad and can vanish, so each
+batch's spend is committed with its results). The ledger JSON at `<root>/ledger.json` is defined by TRD 81-01
+(`{version, cap_usd, order, batches: {X: {cap_usd, estimate_usd, status, spent_usd}}, entries: LedgerEntry[]}`,
+LedgerEntry `{id, batch, role, status, cap_usd, reserve_usd, reported_usd, transcript_usd, charged_usd, cost_source,
+overshoot_usd, at}`). Both TRDs are wave 1, so score.cjs reads it as plain JSON rather than importing ledger.cjs, and
+writes `spend: {ledger_version, batch, status, spent_usd, ledger_total_usd, entries}` = the batch's row and its
+entries verbatim plus the ledger total at scoring time. 81-01's `rebuildLedger` reads exactly this block back.
 </codebase_examples>
 
 <anti_patterns>
@@ -149,8 +157,11 @@ Outermost first.
 score CLI
 1. `node scripts/eval81/score.cjs --batch Z` exits 1 naming the valid batches; `--batch A` with no scorer
    installed exits 1 with the 81-09 hint.
-2. With a stub scorer installed in a temp copy (the test passes `--scorer-dir <tmp>`), `--batch A --root <R>
-   --out <tmp>` writes `results/A.json` (deep-equal to the stub's output plus `scored_at`) and `results/A.md`.
+2. With a stub scorer installed in a temp copy (the test passes `--scorer-dir <tmp>`) and a hand-built
+   `<R>/ledger.json` holding A and B entries, `--batch A --root <R> --out <tmp>` writes `results/A.json` (deep-equal
+   to the stub's output plus `scored_at` and `spend`, where `spend.entries` are exactly the ledger's A entries and
+   `spend.spent_usd` the A row's) and `results/A.md` (with a one-line spend summary).
+2b. No `<R>/ledger.json` -> exit 1 naming the path and writing nothing (results without spend are never committed).
 3. `--report --out <tmp>` with A, B, D results and no C renders `81-HAIKU-EVAL.md` whose C roles read
    INSUFFICIENT "batch C not run".
 3b. A scorer may return `extra_files: {"<relative path>": "<text>"}` (batch E returns `81-MEASUREMENT.md`); the CLI
@@ -260,12 +271,14 @@ else WEAK_ENDORSE. `proposalsFor(outcome, role, profiles, packModels)` implement
   <name>Task 3: Scoring CLI and the 76-06 report renderer</name>
   <files>scripts/eval81/score.cjs, scripts/eval81/score.test.cjs, scripts/eval81/lib/report.cjs, scripts/eval81/lib/report.test.cjs</files>
   <action>
-RED first per test list 1-3, 3b and 12. When the scorer's result carries `extra_files`, write each under `--out`
-(relative paths only) and drop the key from the saved JSON.
+RED first per test list 1-3, 2b, 3b and 12. When the scorer's result carries `extra_files`, write each under
+`--out` (relative paths only) and drop the key from the saved JSON.
 
-`score.cjs` CLI: `--batch A|B|C|D|E --root <eval root> --out <objective dir> [--scorer-dir <dir>]` requires
-`<scorer-dir or __dirname/score>/<batch>.cjs`, calls its exported `score({root, outDir})`, adds `scored_at`, writes
-`<out>/results/<batch>.json` (2-space JSON) and `<out>/results/<batch>.md` (renderBatchTable).
+`score.cjs` CLI: `--batch A|B|C|D|E --root <eval root> --out <objective dir> [--scorer-dir <dir>]` reads
+`<root>/ledger.json` first (missing or unparseable → exit 1, nothing written), requires
+`<scorer-dir or __dirname/score>/<batch>.cjs`, calls its exported `score({root, outDir})`, adds `scored_at` and the
+`spend` block (see codebase_examples), writes `<out>/results/<batch>.json` (2-space JSON) and
+`<out>/results/<batch>.md` (renderBatchTable plus the spend line `spent $X of the batch; ledger total $Y`).
 `--report --out <dir>` reads `results/{A,B,C,D}.json`, runs decide() with model-profiles.json and the flutter pack's
 aoforge-stack.json read from this checkout, and writes `<out>/81-HAIKU-EVAL.md` via renderEvalReport. E is rendered
 by its own scorer (TRD 81-12), not here. Export `main(argv)` returning an exit code; `require.main` sets
@@ -276,7 +289,7 @@ summary table per role, per-metric rows with Wilson CI, reasons, proposals, a cl
 changed by objective 81; proposals await the user's decision.").
   </action>
   <verify>node --test scripts/eval81/score.test.cjs scripts/eval81/lib/report.test.cjs</verify>
-  <done>Test list 1-3 and 12 pass; the CLI writes only under `--out`.</done>
+  <done>Test list 1-3, 2b, 3b and 12 pass; the CLI writes only under `--out`; every results/<X>.json it writes carries a `spend` block.</done>
   <recovery>If dynamic require paths break under `node --test` cwd, resolve with path.join(__dirname, 'score', batch + '.cjs').</recovery>
 </task>
 

@@ -8,14 +8,20 @@ files_modified:
   - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/A.json
   - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/A.md
   - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/A-spotcheck.md
+  - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-DECISION-RULE.md
+  - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-PREREG.md
+  - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/prereg-manifest.json
+  - scripts/eval81/lib/decide.cjs
+  - scripts/eval81/lib/decide.test.cjs
 autonomous: false
 requirements: [SC-3]
 must_haves:
   truths:
-    - "Before any spend, the user saw that the token file exists, the ledger total, batch A's plan (36 runs, ~$5 estimate, $7.50 batch cap) and the pre-registered rule's interpretive choices, and replied to go"
-    - "Batch A ran live (36 verifier runs, haiku and sonnet, 3 repeats of 6 fixtures) under the ledger, with any rate-limit pause resumed rather than retried, and the tripwire clean"
-    - "results/A.json and results/A.md report per model detection, false pass, false fail, abstain and detected-but-unnamed with n, plus exclusions; a hand spot-check of 6 verdicts agrees with the scorer or the disagreement is recorded"
-    - "No committed file contains the token (scanned before commit) and prereg --check passes before and after"
+    - "Before any spend, the user saw that the token file exists, the ledger total, batch A's plan (36 runs, ~$5 estimate, $7.50 batch cap, per-run caps and reserves), the overshoot reserve rule, the isolation layers and the pre-registered rule's interpretive choices, and replied to go"
+    - "A rule amendment, if the user asked for one, was made before any run in this order: 81-DECISION-RULE.md edited (and decide.cjs test-first if its behaviour changes), `prereg.cjs --write` re-run with the recorded command, 81-PREREG.md's Pre-run amendments section filled, all committed, `prereg.cjs --check` exit 0, and only then a fresh \"go A\""
+    - "Batch A ran live (36 verifier runs, haiku and sonnet, 3 repeats of 6 fixtures) under the ledger, with any rate-limit pause resumed rather than retried, every run's isolation check clean, and the tripwire clean"
+    - "results/A.json (carrying batch A's spend block) and results/A.md report per model detection, false pass, false fail, abstain and detected-but-unnamed with n, plus exclusions; a hand spot-check of 6 verdicts agrees with the scorer or the disagreement is recorded"
+    - "No committed file contains the token (every path in each commit's --files list scanned before the commit) and prereg --check passes before and after"
   artifacts:
     - path: .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/A.json
       provides: "batch A scored results"
@@ -34,7 +40,8 @@ against the committed answer key, spot-check the scorer by hand, and commit the 
 
 Purpose: SC-3 (runs in order A, B, D, E, C within $100; scored per role with n) for the verifier, and the A
 false-pass gate the decision rule applies to every role.
-Output: `results/A.json`, `results/A.md`, `results/A-spotcheck.md`; run evidence stays in the eval root.
+Output: `results/A.json`, `results/A.md`, `results/A-spotcheck.md`; run evidence stays in the eval root. The five
+frozen-file paths after them in `files_modified` change only if the user amends the rule before "go A".
 </objective>
 
 <execution_context>
@@ -48,8 +55,17 @@ Output: `results/A.json`, `results/A.md`, `results/A-spotcheck.md`; run evidence
 - `R` = `/private/tmp/claude-501/-Users-justin-dev-aoforge-claude/29d3d902-73eb-439c-9c64-ba469a668a6e/scratchpad/eval81`
 - `T` = `/private/tmp/claude-501/-Users-justin-dev-aoforge-claude/29d3d902-73eb-439c-9c64-ba469a668a6e/scratchpad/eval-auth/oauth-token`
 - `O` = `.aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement`
-- Runner exit codes: 0 complete, 2 usage/order, 3 budget stop, 4 paused on a rate/usage limit (queue file has
-  `resume_after`), 5 tripwire, 6 harness error (scripts/eval81/README.md).
+- Runner exit codes: 0 complete, 2 usage/order/ledger, 3 budget stop, 4 paused on a rate/usage limit (queue file has
+  `resume_after`), 5 tripwire or isolation breach, 6 harness error (scripts/eval81/README.md).
+- Token scan of a commit's files (prints only matching paths; exit 1 on any hit), one plain command, every path of
+  the commit's `--files` list as arguments:
+  `node -e "const s=require('./scripts/eval81/lib/secret.cjs');const t=s.readToken(process.argv[1]);const h=process.argv.slice(2).flatMap(p=>s.scanForSecret(p,t).map(x=>p+' '+x));if(h.length){console.log(h.join('\n'));process.exitCode=1}" <T> <path> <path> ...`
+  The token is read inside the node process; only the token FILE path is in argv. Later live TRDs (81-15..81-19) use
+  this exact command, called "the commit scan".
+- Spend rules the user sees at the checkpoint (TRD 81-01/81-08): before each run the ledger reserves max(cap x 1.25,
+  cap + the largest overshoot already seen for that batch and role) against the $100 total, because
+  `--max-budget-usd` is checked between turns; after each run it charges max(reported cost, transcript-priced cost).
+  Each cap includes an allowance for the ~36K cached base-prompt tokens a headless session reads.
 </codebase_examples>
 
 <anti_patterns>
@@ -69,8 +85,17 @@ Output: `results/A.json`, `results/A.md`, `results/A-spotcheck.md`; run evidence
   after the user accepts relaxing the check (a post-hoc harness deviation, test-first in tripwire/runner). If the
   session did NOT run as the agent, the `--agent` name is wrong: try `aoforge:verifier` vs `verifier` in a single
   further run only with the user's go-ahead.
-- Exit 5 (tripwire): stop everything and report the diff to the user immediately; do not score or commit.
+- Exit 5 (tripwire, or a run's isolation check found a real `~/.claude/projects` entry for the eval root): stop
+  everything and report the diff or the entry name to the user immediately; do not score or commit. A real-home
+  runtime file change the user confirms was their own session resumes only on their word.
 - Exit 3 on batch A (should not happen at ~$5): report the ledger and stop; the user decides.
+- Eval root or token file gone (reboot, tmp cleanup, a new session; W1): never `--init-ledger`. Ask the user to
+  re-create the token file; run `node scripts/eval81/run.cjs --rebuild-ledger --root <R> --results-dir <O>/results
+  --raw` (it refuses if a ledger exists); re-create the trees with `ensureTrees` at the SHAs in
+  `<O>/results/prereg-manifest.json`. If the batch in progress had not been committed, its spend is unknown: add
+  `--charge-lost <X>=<usd>` with the batch cap (C: the whole remainder) unless the user gives a figure from their
+  usage page, and tell the user before re-running anything. That batch then counts as stopped; whether to re-run it
+  is the user's call.
 </error_recovery>
 
 </embedded_context>
@@ -101,32 +126,60 @@ Output: `results/A.json`, `results/A.md`, `results/A-spotcheck.md`; run evidence
     3. `node scripts/eval81/run.cjs --batch A --root <R> --token-file <T> --dry-run --materialize none --raw` and read:
        ledger total, batch A runs (36), sum of caps, estimate (~$5), batch cap ($7.50), order status.
     Present to the user:
-    - Token file: present / missing.
+    - Token file: present / missing (auth through CLAUDE_CODE_OAUTH_TOKEN in a scratch HOME was confirmed by the
+      2026-10-17 smoke test).
     - Ledger: $<total> spent of $100.
     - Batch A: 36 runs (verifier; Haiku 5.5 and Sonnet 5.5; 6 fixtures x 3 repeats), estimate ~$5, batch cap
-      $7.50; nothing else will spend.
+      $7.50, per-run caps and reserves from the dry run (caps include the ~36K base-prompt allowance); nothing else
+      will spend.
+    - Spend rule: reserve max(cap x 1.25, cap + largest overshoot seen for the batch and role) before each run;
+      charge max(reported, transcript cost) after it.
+    - Isolation: sandbox HOME / CLAUDE_CONFIG_DIR per run, a `--settings` deny list for this checkout's parent dir,
+      the real ~/.claude and watched repos (Bash not path-scoped), a per-run check for real projects entries, and the
+      batch tripwire.
     - Pre-registered interpretive choices (81-DECISION-RULE.md section 6), which can still be amended now, before
       any run, and not afterwards: (1) one Haiku false pass in A refuses Haiku for every role; (2) C (mapper,
       researcher) uses the same 10-point margin on checklist recall plus a fabrication bound; (3) "~10 points" is on
       point estimates; (4) human_needed counts as an abstention; (5) INSUFFICIENT below 2/3 of runs scored or when
       Sonnet itself scores under 0.5. Also: D is judged through a headless Claude Code session using the engine's
       own rubric (no API key); C's four research dimensions use project-researcher.
+
+    If the user asks for an amendment (W2: the rule and its code are frozen by the manifest, so the amendment must
+    re-freeze before any run). An amendment reply is not a go. In this order, one plain command each:
+    1. Edit `<O>/81-DECISION-RULE.md` (direct write, local planning mode): change the affected interpretive choice
+       and add a dated "Pre-run amendment" entry quoting the user's words.
+    2. If decide()'s behaviour changes, add a `decide.test.cjs` case quoting the amended line (RED), then change
+       `scripts/eval81/lib/decide.cjs` (GREEN); `node --test scripts/eval81/` passes.
+    3. Re-run the exact "Regenerate" command from 81-PREREG.md (`prereg.cjs --write ...`, the same includes and
+       extras), which rewrites `<O>/results/prereg-manifest.json`.
+    4. Fill 81-PREREG.md's "Pre-run amendments" section: date, what changed, the files whose hashes changed, the new
+       manifest sha256.
+    5. Commit scan over those files, then `node ~/.claude/aoforge/bin/aof-tools.cjs commit "docs(81-14): pre-run
+       amendment to the decision rule" --files <O>/81-DECISION-RULE.md <O>/81-PREREG.md
+       <O>/results/prereg-manifest.json` (plus decide.cjs and decide.test.cjs when step 2 ran).
+    6. `prereg.cjs --check` must exit 0 against the committed manifest.
+    7. Present the amended choice and the new manifest sha256 to the user and wait for a fresh "go A".
   </instructions>
-  <verify>The user's reply is recorded in the SUMMARY.</verify>
-  <done>The user replied "go A" (or amended the rule first, recorded as a pre-run amendment, then "go A"), or "stop".</done>
+  <verify>The user's reply is recorded in the SUMMARY; after an amendment, `git log -1 --format=%s -- <O>/results/prereg-manifest.json` is the amendment commit and `prereg.cjs --check` exits 0 before "go A" is acted on.</verify>
+  <done>The user replied "go A" (after an amendment: a fresh "go A" following the committed re-freeze), or "stop".</done>
   <verification>Token present, prereg check passed, ledger total shown.</verification>
-  <resume-signal>Type "go A" to run batch A (up to $7.50), describe a rule amendment first if you want one, or "stop" to end the eval here.</resume-signal>
+  <resume-signal>Type "go A" to run batch A (up to $7.50), describe a rule amendment first if you want one (it is committed and re-frozen, then you are asked again), or "stop" to end the eval here.</resume-signal>
 </task>
 
 <task type="auto">
   <name>Task 2: Run batch A live</name>
   <files>(eval root only)</files>
   <action>
-On "go A": `node scripts/eval81/run.cjs --batch A --root <R> --token-file <T> --raw` with `run_in_background`.
+On "go A": `node scripts/eval81/run.cjs --batch A --root <R> --token-file <T> --stop-after 1 --raw` (the first live
+run of the eval, alone). Read its record: status, `isolation` (sandbox project present, no real entry),
+`permission_denials` (none inside the sandbox; any `escape_attempt` reported), `first_turn_input` against the 36K
+base-prompt assumption, and `cost_usd` / `transcript_cost_usd` / `overshoot_usd` against its cap. If isolation or
+the deny list misbehaved, stop and report; otherwise record the figures in the SUMMARY and run the same command
+without `--stop-after` with `run_in_background`.
 On completion read the exit code and the JSON. 0: continue. 4: read `resume_after` from `R/queue/A.json`, wait
 until then with a Monitor until-loop on the clock, run the same command once more; repeat only on a new exit 4.
 3, 5, 6: follow error_recovery and stop. Afterwards record: ledger total, batch A spent, runs ok / excluded and why,
-wall time.
+largest overshoot, any run where the transcript cost exceeded the reported cost, escape attempts, wall time.
   </action>
   <verify>`R/ledger.json` shows batch A `complete`; `R/tripwire/A-after.json` diff is empty (the runner exited 0).</verify>
   <done>Batch A complete within its cap, tripwire clean.</done>
@@ -139,12 +192,14 @@ wall time.
   <action>
 `node scripts/eval81/score.cjs --batch A --root <R> --out <O>`. Spot-check 6 runs (seeded pick) by reading their
 VERIFICATION.md and write `results/A-spotcheck.md` (run id, model, fixture id, scorer outcome, your reading,
-agree yes/no, one line why). Secret scan of `<O>/results/` with a node one-liner that reads `<T>` in-process and
-calls `scanForSecret` (prints paths only; must print none). `prereg.cjs --check` again. Commit with
+agree yes/no, one line why). Check that `results/A.json` `spend.spent_usd` equals batch A's `spent_usd` in
+`R/ledger.json` (this committed block is what rebuilds the ledger if R is lost). Commit scan over the three files
+(codebase_examples; must print nothing). `prereg.cjs --check` again. Commit with
 `node ~/.claude/aoforge/bin/aof-tools.cjs commit "docs(81-14): batch A verifier results" --files <O>/results/A.json <O>/results/A.md <O>/results/A-spotcheck.md`.
-In the SUMMARY: ledger total after A, per-model headline (false passes k/n, detection k/n), spot-check agreement.
+In the SUMMARY: ledger total after A, per-model headline (false passes k/n, detection k/n), spot-check agreement,
+the first-run isolation and first-turn figures from Task 2.
   </action>
-  <verify>results/A.json has role verifier with both models; the secret scan prints nothing; prereg check exits 0; the commit lists the three files.</verify>
+  <verify>results/A.json has role verifier with both models and a spend block equal to the ledger's batch A; the commit scan prints nothing; prereg check exits 0; the commit lists the three files.</verify>
   <done>Batch A scored, spot-checked and committed; the ledger total is reported.</done>
   <recovery>If the spot-check disagrees with the scorer on a run, do not change the scorer now: record the disagreement in A-spotcheck.md; the final report (81-19) lists it beside the metric.</recovery>
 </task>
@@ -153,7 +208,7 @@ In the SUMMARY: ledger total after A, per-model headline (false passes k/n, dete
 
 <verification>
 - Ledger: batch A complete, total under $100.
-- `git show --stat HEAD` lists only the three result files.
+- `git show --stat HEAD` lists only the three result files (an amendment, if any, is its own earlier commit).
 </verification>
 
 <success_criteria>
