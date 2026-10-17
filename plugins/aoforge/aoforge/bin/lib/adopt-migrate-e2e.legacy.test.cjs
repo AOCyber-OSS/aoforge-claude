@@ -51,10 +51,14 @@
 // 13. After success on an untracked planning tree (`untrackedTree`): preflight and begin route to `upgrade` (exit 0),
 //     begin creates no branch, and the snapshot, HEAD and marker are unchanged. The report sits in an ignored tree and
 //     never reaches HEAD; the adopt commit in HEAD's history is what ends the adopt.
-// 14. One `upgrade --apply` (committed) should leave `upgrade --check` up to date. Migration 0005 needs a second pass
-//     for a pre-v1-form block under the AOFORGE markers (not adopt's; it reproduces without a migration).
+// 14. One `upgrade --apply` (committed) leaves `upgrade --check` `up_to_date: true`, and CLAUDE.md still holds the
+//     block's `## Codebase map` section and its bullets. Migration 0005 ends the rules section at the next heading of
+//     any level, so the rules it inserts no longer swallow the `##` sections after them.
 //
-// Checker negatives (on a migrated fixture):
+// Checker rows (on a migrated fixture):
+//  P1. `stamp_current` ok detail counts the configs apart: a root config with neither key reads "0 with the
+//      "aoforge" key, 1 with neither key (unstamped)"; the nested default reads "2 with the "aoforge" key, 0 with
+//      neither key".
 //  N1. an empty legacy planning tree with a STATE.md recreated -> `no_legacy_layout` false, exit 1.
 //  N2. a second commit on aoforge/adopt -> `one_commit` false.
 //  N3. the old stamp key put back -> `stamp_current` false.
@@ -665,11 +669,7 @@ test('13. after success on an untracked planning tree the workflow routes to upg
   assert.equal(JSON.stringify(markerOf(repo)), marker, 'the marker is untouched');
 });
 
-test('14. one upgrade --apply brings the migrated repository up to date', {
-  todo: 'DEFECT (migration 0005, not adopt; reproduced on any project whose CLAUDE.md holds a pre-v1-form block under the '
-    + 'AOFORGE markers): the first upgrade --apply reports 0005 applied (legacy -> v=2) but upgrade --check still lists 0005 '
-    + '("# Development Rules section differs from the template (drift)"); a second --apply converges',
-}, (t) => {
+test('14. one upgrade --apply brings the migrated repository up to date and keeps its ## sections', (t) => {
   const repo = fleet(t, { nested: true, decoys: true });
   runSeq(repo);
   const apply = cli(repo, ['upgrade', '--apply']);
@@ -678,9 +678,13 @@ test('14. one upgrade --apply brings the migrated repository up to date', {
   assert.equal(commit.status, 0, commit.out);
   const check = cli(repo, ['upgrade', '--check']);
   assert.equal(check.json.up_to_date, true, `still pending: ${JSON.stringify(check.json.pending.map((p) => `${p.id}: ${p.reason}`))}`);
+
+  const claudeMd = fs.readFileSync(abs(repo, 'CLAUDE.md'), 'utf-8');
+  assert.match(claudeMd, /^## Codebase map$/m, 'the block\'s ## Codebase map section is kept');
+  assert.match(claudeMd, /^- Small fixes go through /m, 'and its bullets');
 });
 
-// ─── checker negatives ────────────────────────────────────────────────────────
+// ─── checker rows ─────────────────────────────────────────────────────────────
 
 function migrated(t, options = { nested: true, decoys: true }) {
   const repo = fleet(t, options);
@@ -690,6 +694,18 @@ function migrated(t, options = { nested: true, decoys: true }) {
 }
 
 const failingIds = (res) => res.json.checks.filter((c) => !c.ok).map((c) => c.id);
+
+const checkDetail = (res, id) => res.json.checks.find((c) => c.id === id).detail;
+
+test('positive P1: stamp_current counts configs with the new key and unstamped configs apart', (t) => {
+  const unstamped = migrated(t, { stamp: null });
+  assert.match(checkDetail(checkMigrate(unstamped), 'stamp_current'),
+    new RegExp(`0 with the "${NEW_KEY}" key, 1 with neither key \\(unstamped\\)`));
+
+  const stamped = migrated(t);
+  assert.match(checkDetail(checkMigrate(stamped), 'stamp_current'),
+    new RegExp(`2 with the "${NEW_KEY}" key, 0 with neither key`));
+});
 
 test('negative N1: an empty legacy planning tree with a STATE.md recreated fails no_legacy_layout', (t) => {
   const repo = migrated(t);
