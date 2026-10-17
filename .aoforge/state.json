@@ -1,6 +1,6 @@
 {
   "current_objective": "81",
-  "current_job": 15,
+  "current_job": 16,
   "total_jobs": 19,
   "progress_pct": 99,
   "status": "executing",
@@ -1964,6 +1964,11 @@
     {
       "objective": "81",
       "summary": "81-15: batch B scorer lexical misses on B6 recorded as sensitivity lines in B-spotcheck.md; frozen scorer unchanged",
+      "rationale": null
+    },
+    {
+      "objective": "81",
+      "summary": "81-16: D cap not resized (2-run pilot projected $0.86 for 24); D disagreements tied to one-session-per-surface design, recorded as sensitivity, labels unchanged",
       "rationale": null
     }
   ],

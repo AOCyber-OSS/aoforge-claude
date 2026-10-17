@@ -2609,6 +2609,7 @@ STATE.md stays lean; this file grows over time.
 0) from the A pilot; C decisions frozen (fleet backup out of R, project-researcher, negated claims exempt from the path check)
 .69 spent
 - [Objective 81]: 81-15: batch B scorer lexical misses on B6 recorded as sensitivity lines in B-spotcheck.md; frozen scorer unchanged
+- [Objective 81]: 81-16: D cap not resized (2-run pilot projected $0.86 for 24); D disagreements tied to one-session-per-surface design, recorded as sensitivity, labels unchanged
 
 ## Performance Metrics
 
@@ -2862,3 +2863,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 81 P13 | 22min | 3 tasks | 4 files |
 | Objective 81 P14 | 29min | 3 tasks | 14 files |
 | Objective 81 P15 | 15min | 3 tasks | 3 files |
+| Objective 81 P16 | 10min | 3 tasks | 3 files |
