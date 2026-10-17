@@ -1,9 +1,9 @@
 {
-  "current_objective": "80",
-  "current_job": 9,
-  "total_jobs": 9,
-  "progress_pct": 100,
-  "status": "ready_for_verification",
+  "current_objective": "81",
+  "current_job": 1,
+  "total_jobs": 19,
+  "progress_pct": 97,
+  "status": "executing",
   "last_activity": "2026-10-17",
   "metrics": {
     "jobs_completed": 0,
@@ -1894,6 +1894,11 @@
     {
       "objective": "80",
       "summary": "80-09: the legacy-adopt fixture constant is LEGACY_EXCLUDE_LINE, because repo-state-delegation forbids any declaration starting with the EXCLUDE token outside repo-state.cjs",
+      "rationale": null
+    },
+    {
+      "objective": "81",
+      "summary": "81-04: test B sets are TRD data rendered by one function; only B4 is flagged by verify trd-pre (task_completeness 02-02), B3/B5/B6 are judgment-only, recorded as precheck_flags in answer-key.json",
       "rationale": null
     }
   ],
