@@ -16,12 +16,27 @@ re_verification:
 deferred:
   - item: "76-06 Haiku 5.5 eval"
     criterion: "SC5 (haiku tier re-pinned after a recorded eval)"
-    state: open
-    note: "Pin is already claude-haiku-5-5; no tier is lowered until the eval is recorded. Not a code gap."
+    state: closed
+    criterion_state: met
+    closed: 2026-10-17
+    evidence:
+      - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-HAIKU-EVAL.md
+      - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/A.json
+      - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/B.json
+      - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/C.json
+      - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/D.json
+    note: "Eval recorded by objective 81 under the pre-registered rule: Haiku 0/9 false passes in A; WEAK_ENDORSE verifier, ui-evaluator, mapper tech, researcher features/architecture/pitfalls; REFUSE job-checker, mapper arch/quality/concerns; INSUFFICIENT researcher stack. The pin stays claude-haiku-5-5; tier changes are proposals only, none applied."
   - item: "76-08 before/after measurement"
     criterion: "SC6 starting-tier half (debugger / UI judge start on a cheaper tier)"
-    state: open
-    note: "ROADMAP: starting tiers unchanged pending 76-08; needs real runs after release, not doable in CI. Not a code gap."
+    state: closed
+    criterion_state: not_met
+    closed: 2026-10-17
+    evidence:
+      - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-MEASUREMENT.md
+      - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/E.json
+      - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-STATIC-PROMPT.md
+      - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-HAIKU-EVAL.md
+    note: "Measurement recorded by objective 81 (10/10 runs, all passed; first-turn input -19% executor and verifier, -8% to -9% planner; reported cost -10% quick, +11% build at the median). The SC6 starting-tier half is not met: tiers unchanged. D gives the UI judge a weak endorsement at the bound (proposal P1, the user's decision); the debugger's start tier was not measured."
 notes:
   - kind: requirements_traceability
     note: "This report now marks MEF-01 and MEF-06 SATISFIED. 76-RETROACTIVE-SUMMARY.md lists only MEF-02..05 in requirements-completed, so `validate requirements --objective 76` (health W065) will flag MEF-01 and MEF-06 until they are added there. REQUIREMENTS.md still shows MEF-01..06 Pending."
@@ -87,8 +102,8 @@ notes:
 | MEF-02 | no unusable instructions/templates per spawn | SATISFIED | SC2 |
 | MEF-03 | trd-pre before checker | SATISFIED | SC3 |
 | MEF-04 | mechanical verbs | SATISFIED | SC4 |
-| MEF-05 | per-focus tiers, verdict floor, haiku re-pin after eval | SATISFIED except deferred eval (76-06) | SC5 |
-| MEF-06 | debugger and UI judge start cheap and escalate; orchestrators act on ESCALATION REQUESTED | SATISFIED for escalation; start-tier lowering deferred (76-08) | SC6 |
+| MEF-05 | per-focus tiers, verdict floor, haiku re-pin after eval | SATISFIED (the 76-06 eval is recorded by objective 81, 2026-10-17; the pin stays claude-haiku-5-5) | SC5; 81-HAIKU-EVAL.md |
+| MEF-06 | debugger and UI judge start cheap and escalate; orchestrators act on ESCALATION REQUESTED | PARTIALLY SATISFIED: escalation done (quick 42); start-tier half not met, tiers unchanged (UI judge: D weakly endorses a Haiku start, proposal pending the user's decision; debugger start tier not measured) | SC6; 81-MEASUREMENT.md; 81-HAIKU-EVAL.md (batch D) |
 
 76-RETROACTIVE-SUMMARY.md `requirements-completed` lists MEF-02..05 only. MEF-01 and MEF-06 must be added there, or the requirements-agreement check (W065) will flag them against this report. REQUIREMENTS.md traceability (all six still Pending) is the orchestrator's call.
 
@@ -112,6 +127,24 @@ None beyond the deferred measurement items (76-06 Haiku eval; 76-08 before/after
 ### Gaps Summary
 
 Both gaps from the retroactive verification are closed in code and tests. Execute-objective's gap-closure planner and autonomous checkpoint verifier now spawn with a model the workflow actually supplies. A repo test runs every `init` command named in the scanned files and fails CI on any placeholder with no source; it catches these two defects when they are put back. The UI judge now escalates one rung: the engine records a split-vote `tier_escalation`, ui-evaluator returns `## ESCALATION REQUESTED`, and `/aoforge:ui-eval` re-spawns it once with `--escalate-from` and `--judge-tier`. No regressions in the five truths that already passed. The Haiku eval (76-06) and the starting-tier measurement (76-08) stay open by design.
+
+**Closed by objective 81 (2026-10-17).** Objective 81 ran both deferred items live in a sandbox, under a pre-registered
+decision rule and a $100 cap ($40.05 spent).
+
+- **76-06 is closed.** The Haiku 5.5 vs Sonnet 5.5 eval is recorded per role in
+  `../81-haiku-eval-and-model-efficiency-measurement/81-HAIKU-EVAL.md`, with n and Wilson intervals.
+  - Haiku made 0/9 false passes in A.
+  - Weak endorsements: verifier, ui-evaluator, mapper tech, researcher features, architecture and pitfalls.
+  - Refusals: job-checker, mapper arch, quality and concerns.
+  - Insufficient: researcher stack.
+  - The pin stays claude-haiku-5-5, so SC5 / MEF-05 is satisfied.
+- **76-08's measurement is closed.** `../81-haiku-eval-and-model-efficiency-measurement/81-MEASUREMENT.md` compares
+  3.0.0 and 3.1.0 on one fixed workload. All 10 runs passed. The resident prompt is cut by about 19% for the executor
+  and verifier. Reported cost is -10% on quick and +11% on build at the median.
+- **SC6's starting-tier half is not met: tiers unchanged.** D weakly endorses a Haiku start for the UI judge, exactly
+  at the 10-point bound with a 40% split rate. That is a proposal for the user's decision in TRD 81-19. The
+  debugger's start tier was not measured by that design. MEF-06 is therefore PARTIALLY SATISFIED.
+- No tier was changed by objective 81.
 
 ---
 

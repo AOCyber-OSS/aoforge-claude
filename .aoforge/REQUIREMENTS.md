@@ -128,8 +128,8 @@ Scope: everything v1.5 left open (Known Gaps and tech debt in `milestones/v1.5-M
 | MEF-02 | Objective 76 | Pending |
 | MEF-03 | Objective 76 | Pending |
 | MEF-04 | Objective 76 | Pending |
-| MEF-05 | Objective 76 | Pending |
-| MEF-06 | Objective 76 | Pending |
+| MEF-05 | Objective 76 | Complete: the Haiku eval is recorded (objectives/81-haiku-eval-and-model-efficiency-measurement/81-HAIKU-EVAL.md); the pin stays claude-haiku-5-5 |
+| MEF-06 | Objective 76 | Partial: escalation complete (quick 42); start-tier half not met, tiers unchanged (objectives/81-haiku-eval-and-model-efficiency-measurement/81-MEASUREMENT.md, 81-HAIKU-EVAL.md) |
 | STK-01 | Objective 77 | Pending |
 | PCK-01 | Objective 77 | Pending |
 | PCK-02 | Objective 77 | Pending |

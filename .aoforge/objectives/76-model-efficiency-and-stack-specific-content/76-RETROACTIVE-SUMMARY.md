@@ -22,7 +22,7 @@ key-files:
   modified:
     - plugins/aoforge/aoforge/bin/lib/init.cjs
     - plugins/aoforge/aoforge/references/model-profiles.json
-requirements-completed: [MEF-01, MEF-02, MEF-03, MEF-04, MEF-05, MEF-06]
+requirements-completed: [MEF-01, MEF-02, MEF-03, MEF-04, MEF-05]
 completed: 2026-10-16
 ---
 
@@ -69,10 +69,22 @@ Quick 42 closes the SC1 and SC6 code gaps (MEF-01; the escalation half of MEF-06
 
 ## Still open
 
-- 76-06: the Haiku 5.5 eval. The pin is already claude-haiku-5-5; no tier is lowered until the eval is recorded.
-- 76-08: the before/after `aof-tools context` and `tokens trd` measurement; it needs real runs after the release.
+Objective 81 recorded both deferred items on 2026-10-17. They are closed by its records, not by this file.
 
-Neither is closed by this file.
+- **76-06: closed.** The Haiku 5.5 eval is recorded per role in
+  `../81-haiku-eval-and-model-efficiency-measurement/81-HAIKU-EVAL.md`, under the pre-registered rule.
+  - Weak endorsements: verifier, ui-evaluator, mapper tech, researcher features, architecture and pitfalls.
+  - Refusals: job-checker, mapper arch, quality and concerns.
+  - Insufficient: researcher stack.
+  - The pin stays claude-haiku-5-5. MEF-05 is satisfied.
+- **76-08: measurement closed; starting tiers not met.** `../81-haiku-eval-and-model-efficiency-measurement/81-MEASUREMENT.md`
+  compares 3.0.0 and 3.1.0 on one fixed workload: all 10 runs passed, and the resident prompt is about 19% smaller for
+  the executor and verifier. The debugger and UI judge starting tiers are unchanged.
+  - The UI judge's Haiku start is a proposal awaiting the user's decision (TRD 81-19).
+  - The debugger's start tier was not measured.
+
+What stays open is MEF-06's start-tier half. MEF-06 is PARTIALLY SATISFIED in 76-VERIFICATION.md and so leaves
+`requirements-completed`, which lists the SATISFIED rows only. No tier was changed by objective 81.
 
 ## Deviations from Plan
 

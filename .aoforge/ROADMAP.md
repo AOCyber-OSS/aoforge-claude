@@ -402,9 +402,9 @@ The TRD files listed below were not carried into this repository: `main` kept on
 - [x] 76-03-job-checker-prepass-TRD.md — (W1) `verify trd-pre` before the checker; checker narrowed to judgment dimensions
 - [x] 76-04-mechanical-verbs-TRD.md — (W2) `trd finalize`, `verify objective-evidence`, `codebase facts`, `validate roadmap-coverage`, `security sweep`; executor, verifier, roadmapper, codebase-mapper and security-auditor call them
 - [x] 76-05-stack-procedures-in-profiles-TRD.md — (W2) superseded by Objective 77 (stack packs): executor, planner and verifier Flutter/web procedure moved into pack fragments; the mapper's TS recipes became `codebase facts`; the integration-checker's Next.js probes remain as labelled fallbacks behind the profile's Layout section
-- [ ] 76-06-per-focus-tiers-and-haiku-eval-TRD.md — (W3) done: `focus{}` tiers (mapper concerns, researcher architecture/pitfalls raised), `verdict_floor` (verifier, job-checker at Sonnet+ on every profile), `resolve-model --focus`. Open: the Haiku 5.5 eval (the pin is already claude-haiku-5-5); no tier is lowered until it is recorded
+- [x] 76-06-per-focus-tiers-and-haiku-eval-TRD.md — (W3) done: `focus{}` tiers (mapper concerns, researcher architecture/pitfalls raised), `verdict_floor` (verifier, job-checker at Sonnet+ on every profile), `resolve-model --focus`. The Haiku 5.5 eval is closed by objective 81 (81-HAIKU-EVAL.md): recorded per role under the pre-registered rule; the pin stays claude-haiku-5-5 and no tier changed (proposals only)
 - [x] 76-07-escalation-loop-TRD.md — (W3) `resolve-model --escalate-from`; execute-objective (5e), /aoforge:debug and diagnose-issues re-spawn one rung up once; the debugger gains the return. Starting tiers unchanged pending 76-08
-- [ ] 76-08-measure-TRD.md — (W4) before/after `aof-tools context` and `tokens trd` comparison; needs real runs after the release, not doable in CI
+- [x] 76-08-measure-TRD.md — (W4) before/after comparison closed by objective 81 (81-MEASUREMENT.md): 3.0.0 vs 3.1.0 per role and per run on one fixed workload. Lowering the starting tiers is not met: tiers unchanged (the UI judge's Haiku start is a proposal at 81-19's decision; the debugger's start tier was not measured)
 
 ### Objective 77: Stack packs: contract and extraction
 
@@ -558,7 +558,7 @@ TRDs:
 | 73. Handoff gaps and result injection | v1.6 | 14/14 | Complete | 2026-10-10 |
 | 74. Operations decisions | v1.6 | 8/9 | In Progress | - |
 | 75. Prospective estimate retest and todo sweep | v1.6 | 5/5 | Complete | 2026-10-10 |
-| 76. Model efficiency and stack-specific content | v1.6 | 4/8 | In Progress | - |
+| 76. Model efficiency and stack-specific content | v1.6 | 8/8 | In Progress | - |
 | 77. Stack packs: contract and extraction | v1.6 | 5/5 | In Progress | - |
 | 78. Remove the rename shims | v1.6 | 12/12 | Complete | 2026-10-17 |
 | 79. Reconcile and release 3.1.0 | v1.6 | 8/10 | In Progress | - |
