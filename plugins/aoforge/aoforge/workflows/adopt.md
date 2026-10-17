@@ -238,9 +238,8 @@ Continue to `commit`.
 <step name="commit">
 On the migrate path no skill marker was started, so skip `skill-active --end` and run only the
 `commit` command below. On the migrate path, an empty `commit_files`, or a result whose `reason` is
-`nothing_to_commit`, means nothing is left to record: do not commit, go on to `summary`. That is the normal outcome of
-a re-run after the change was recorded: a planning tree that git ignores keeps the report out of
-the change, so `adopt preflight` still routes such a project to `resume`.
+`nothing_to_commit`, means nothing is left to record: do not commit, go on to `summary`. That happens when the
+change was already recorded another way; after adopt's own commit, `adopt preflight` routes the project to `upgrade`.
 
 End the skill marker first:
 

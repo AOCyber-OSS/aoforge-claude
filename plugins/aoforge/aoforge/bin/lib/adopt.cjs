@@ -39,6 +39,14 @@ const { loadConfig } = require('./config.cjs');
 // starts again on ADOPT_BRANCH, and the old branch and marker are never touched, so nothing is lost.
 const ADOPT_BRANCH = NAMES.adoptBranch;
 const MARKER_NAME = `${NAMES.slug}-adopt.json`;
+// The subject of a migrate adopt's one commit. reportMigrate's commit_message starts with it, and migrateFinished
+// greps HEAD's history for it, so the message and the signal cannot drift apart.
+const MIGRATE_COMMIT_SUBJECT = `chore(${NAMES.slug}): adopt — move the pre-rename planning layout`;
+// The step after a begin that created the branch: a migrate adopt goes straight to scaffold, a fresh one maps first.
+const NEXT_AFTER_BEGIN = Object.freeze({
+  migrate: 'aof-tools --cwd <target> adopt scaffold',
+  adopt: 'map the codebase and write PROJECT.md, then aof-tools --cwd <target> adopt scaffold',
+});
 // the planning directory (PLANNING_DIR_NAMES is `.aoforge` alone since TRD 78-11) and CLAUDE.md
 const OWNED_PATHS = [...PLANNING_DIR_NAMES, 'CLAUDE.md'];
 // Stack-draft notes carried in the marker and turned into report rows (TRD 42-07); bounded so a
@@ -244,8 +252,9 @@ function nextForResume(steps, mode = 'adopt') {
 //   head_sha, detached, unborn, busy, dirty}, state, marker, branchExists,
 //   finished, roadmapTracked, legacy }
 //
-//   finished   the adopt's own commit is in HEAD (a fresh adopt: its ROADMAP; a migrate adopt: its report), so the
-//              marker no longer counts. `roadmapTracked` is the older name for the fresh case and is read only
+//   finished   the adopt's own commit is in HEAD (a fresh adopt: its ROADMAP; a migrate adopt: its report, or, for a
+//              report git ignores, the adopt commit in HEAD's history or the adopt branch's commit reachable from
+//              HEAD), so the marker no longer counts. `roadmapTracked` is the older name for the fresh case and is read only
 //              when `finished` is absent.
 //   legacy     { applies, refusal } from legacy-migrate (a pre-rename planning tree, stamp key, CLAUDE.md block or
 //              ignore line to convert / the refusal naming what it cannot move); absent for no legacy facts.
@@ -416,6 +425,33 @@ function decideRoute(facts) {
 
 // ─── preflight(root, opts) — IO, read-only ─────────────────────────────────
 
+/**
+ * A migrate adopt is finished once its change is recorded. A tracked report says so by being in HEAD. A report git
+ * ignores never reaches HEAD, so after the report step one of two commits stands in for it: the adopt commit
+ * (MIGRATE_COMMIT_SUBJECT) in HEAD's history since the base, which survives a merge and a deleted branch, or the
+ * adopt branch's own commit above the base, reachable from HEAD, which covers a change recorded by hand. Any missing
+ * fact or failed git call reads as not finished.
+ */
+function migrateFinished(target, env, marker, gf) {
+  if (gf.unborn || typeof marker.report_path !== 'string') return false;
+  if (inHead(target, env, marker.report_path)) return true;
+  if (!isGitIgnored(target, env, marker.report_path)) return false;
+  if (!(marker.steps && marker.steps.reported === true)) return false;
+  const base = marker.base_sha;
+  if (typeof base !== 'string' || !base) return false;
+
+  const log = git(target, env, ['log', '-1', '--format=%H', '-F', `--grep=${MIGRATE_COMMIT_SUBJECT}`, `${base}..HEAD`]);
+  if (log.ok && log.out.trim()) return true;
+
+  if (typeof marker.branch !== 'string' || !marker.branch) return false;
+  const tip = git(target, env, ['rev-parse', '-q', '--verify', `refs/heads/${marker.branch}`]);
+  if (!tip.ok) return false;
+  const tipSha = tip.out.trim();
+  return tipSha !== base
+    && git(target, env, ['merge-base', '--is-ancestor', base, tipSha]).ok
+    && git(target, env, ['merge-base', '--is-ancestor', tipSha, 'HEAD']).ok;
+}
+
 function preflight(root, opts = {}) {
   const { userHome = null, env = process.env } = opts;
   const target = path.resolve(root);
@@ -441,11 +477,12 @@ function preflight(root, opts = {}) {
   // A pre-rename project (planning trees, stamp key, CLAUDE.md block, ignore lines), found by a read-only walk.
   const plan = isDirectory && gf.is_repo && isTopLevel ? legacyMigrate.planMigration(target, { env }) : null;
 
-  // The marker counts until the adopt's own commit is in HEAD: a fresh adopt's ROADMAP, a migrate adopt's report.
+  // The marker counts until the adopt's own commit is in HEAD: a fresh adopt's ROADMAP, a migrate adopt's report (or,
+  // when git ignores the report, the adopt's commit; see migrateFinished).
   let finished = false;
   if (marker) {
     finished = markerMode(marker) === 'migrate'
-      ? typeof marker.report_path === 'string' && !gf.unborn && inHead(target, env, marker.report_path)
+      ? migrateFinished(target, env, marker, gf)
       : gf.roadmap_tracked;
   }
 
@@ -574,7 +611,7 @@ function beginMigrate(pf, env, pluginVersion) {
   } catch (e) {
     return moveFailure(out, e, true);
   }
-  return { ...out, moved, created_branch: true };
+  return { ...out, next: NEXT_AFTER_BEGIN.migrate, moved, created_branch: true };
 }
 
 /** Resume of a migrate adopt whose move did not finish: carry out the moves the marker recorded. */
@@ -634,6 +671,7 @@ function begin(root, opts = {}) {
     ...pf,
     git: { ...pf.git, branch: ADOPT_BRANCH },
     adopt: { ...pf.adopt, branch_exists: true, marker, steps: null },
+    next: NEXT_AFTER_BEGIN.adopt,
     created_branch: true,
   };
 }
@@ -1771,7 +1809,7 @@ function reportMigrate(pf, opts) {
     legacy_codes: health.codes,
     pending_upgrades: pendingUpgrades.pending,
     commit_files: computeMigrateCommitFiles(target, env, marker),
-    commit_message: `chore(${NAMES.slug}): adopt — move the pre-rename planning layout (${NAMES.product} v${pluginVersion})`,
+    commit_message: `${MIGRATE_COMMIT_SUBJECT} (${NAMES.product} v${pluginVersion})`,
     commit_blocked: commitBlocked,
     marker,
   };
