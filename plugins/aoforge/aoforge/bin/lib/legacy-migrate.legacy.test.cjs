@@ -403,7 +403,7 @@ test('16. ignore files: lines rewritten or dropped, comments kept, nested file r
   assert.deepEqual(result.ignores.map((e) => e.file), ['.gitignore', 'api/.gitignore']);
 
   const exclude = read(repo, '.git/info/exclude').split('\n');
-  assert.ok(exclude.includes(fx.EXCLUDE_LINE), 'a legacy exclude line was removed');
+  assert.ok(exclude.includes(fx.LEGACY_EXCLUDE_LINE), 'a legacy exclude line was removed');
   assert.ok(exclude.includes(`${NEW_DIR}/${LEGACY.notices}`), 'the twin was not added');
   assert.deepEqual(result.exclude.added, [`${NEW_DIR}/${LEGACY.notices}`]);
 

@@ -549,7 +549,7 @@ const API_GITIGNORE = doc([
 ]);
 
 /** The line `.git/info/exclude` carries for the upgrade hook's notices file. */
-const EXCLUDE_LINE = `${OLD_DIR}/${LEGACY.notices}`;
+const LEGACY_EXCLUDE_LINE = `${OLD_DIR}/${LEGACY.notices}`;
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -699,7 +699,7 @@ function legacyFleetRepo(options = {}) {
     fs.mkdirSync(path.dirname(excludePath), { recursive: true });
     const priorExclude = fs.existsSync(excludePath) ? fs.readFileSync(excludePath, 'utf-8') : '';
     if (!blank) {
-      fs.writeFileSync(excludePath, `${priorExclude}${priorExclude && !priorExclude.endsWith('\n') ? '\n' : ''}${EXCLUDE_LINE}\n`);
+      fs.writeFileSync(excludePath, `${priorExclude}${priorExclude && !priorExclude.endsWith('\n') ? '\n' : ''}${LEGACY_EXCLUDE_LINE}\n`);
     }
 
     if (rootTree && !adopted && !blank) {
@@ -773,7 +773,7 @@ module.exports = {
   LEGACY_STAMP,
   LEGACY_STAMP_EXTRA,
   AOFORGE_STAMP,
-  EXCLUDE_LINE,
+  LEGACY_EXCLUDE_LINE,
   ROOT_GITIGNORE,
   API_GITIGNORE,
   CLAUDE_INTRO,
