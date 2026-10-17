@@ -103,7 +103,7 @@ notes:
 | MEF-03 | trd-pre before checker | SATISFIED | SC3 |
 | MEF-04 | mechanical verbs | SATISFIED | SC4 |
 | MEF-05 | per-focus tiers, verdict floor, haiku re-pin after eval | SATISFIED (the 76-06 eval is recorded by objective 81, 2026-10-17; the pin stays claude-haiku-5-5) | SC5; 81-HAIKU-EVAL.md |
-| MEF-06 | debugger and UI judge start cheap and escalate; orchestrators act on ESCALATION REQUESTED | PARTIALLY SATISFIED: escalation done (quick 42); start-tier half not met, tiers unchanged (UI judge: D weakly endorses a Haiku start, proposal pending the user's decision; debugger start tier not measured) | SC6; 81-MEASUREMENT.md; 81-HAIKU-EVAL.md (batch D) |
+| MEF-06 | debugger and UI judge start cheap and escalate; orchestrators act on ESCALATION REQUESTED | PARTIALLY SATISFIED: escalation done (quick 42); start-tier half not met, tiers unchanged (UI judge: D weakly endorses a Haiku start, approved 2026-10-17 as a follow-up todo with the escalation rate to be measured on real projects, not applied; debugger start tier not measured) | SC6; 81-MEASUREMENT.md; 81-HAIKU-EVAL.md (batch D) |
 
 76-RETROACTIVE-SUMMARY.md `requirements-completed` lists MEF-02..05 only. MEF-01 and MEF-06 must be added there, or the requirements-agreement check (W065) will flag them against this report. REQUIREMENTS.md traceability (all six still Pending) is the orchestrator's call.
 

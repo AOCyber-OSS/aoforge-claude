@@ -11,9 +11,9 @@ tags: [eval, report, 76-06, 76-08, haiku, sonnet, proposals, post-hoc]
 
 ## Progress
 - [x] Task 1: Render and complete the 76-06 report — 2df8194c
-- [x] Task 2: Record 76-06 and 76-08 in objective 76's records — (this commit)
-- [ ] Task 3: Decide on the tier-change proposals (checkpoint:decision) — next step: the user replies record-only, approve-all, approve-selected (naming P1-P5, or the P2 variant) or reject; the continuation then runs Task 4
-- [ ] Task 4: Record the decision, create approved todos, tidy the eval trees
+- [x] Task 2: Record 76-06 and 76-08 in objective 76's records — 51952035
+- [x] Task 3: Decide on the tier-change proposals (checkpoint:decision) — user: approve-selected "P3, P2-arch-only, P1, P4, P5" (no commit of its own)
+- [x] Task 4: Record the decision, create approved todos, tidy the eval trees — (this commit)
 
 ## Checkpoint state (for the continuation)
 

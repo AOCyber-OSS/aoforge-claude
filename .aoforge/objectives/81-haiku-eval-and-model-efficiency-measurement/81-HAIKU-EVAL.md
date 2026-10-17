@@ -536,3 +536,27 @@ A narrower variant of P2 fits the hand reading better: add focus overrides that 
 
 No tier assignment was changed by objective 81. `model-profiles.json` and `aoforge-stack.json` are untouched. The
 proposals await the user's decision; an approval creates a follow-up todo, never a change in this objective.
+
+## Decision (2026-10-17)
+
+**Option: approve-selected.** The user's words: "P3, P2-arch-only, P1, P4, P5".
+
+Every approval below creates a follow-up todo in `.aoforge/todos/pending/`. Nothing was applied in objective 81.
+
+| Id | Proposal | Decision | Todo | Advisory reading at the checkpoint |
+|---|---|---|---|---|
+| P1 | ui-evaluator: start at Haiku on balanced and budget, escalate on split votes | **Approved**, knowing it sits exactly on the 10-point bound. The todo requires the escalation rate to be measured on real projects before or while it is applied. | `2026-10-17-apply-objective-81-tier-proposal-ui-evaluator.md` | Hold, or approve only with that measurement |
+| P2 | codebase-mapper: raise the shared agent row (balanced, budget) to Sonnet | **Approved in its narrower variant only:** a new `focus.codebase-mapper.arch` override at Sonnet on every profile. The shared row (tech, quality) is not raised. | `2026-10-17-apply-objective-81-tier-proposal-codebase-mapper-arch.md` | Take the arch-only variant, or hold |
+| P2 (quality half) | codebase-mapper:quality at Sonnet | **Not approved.** Quality stays on the shared row (Haiku on balanced and budget). | none | Its refusal rests on flags that are not fabrications |
+| P3 | codebase-mapper:concerns: raise the concerns focus budget to Sonnet | **Approved** | `2026-10-17-apply-objective-81-tier-proposal-codebase-mapper-concerns.md` | Approve |
+| P4 | project-researcher:architecture: lower the architecture focus budget to Haiku | **Approved**, with a follow-up measurement: n is 2 runs per model, and it reverses a raise objective 76 made on purpose | `2026-10-17-apply-objective-81-tier-proposal-project-researcher-architecture.md` | Hold |
+| P5 | project-researcher:pitfalls: lower the pitfalls focus budget to Haiku | **Approved**, with the same follow-up measurement as P4 | `2026-10-17-apply-objective-81-tier-proposal-project-researcher-pitfalls.md` | Hold |
+
+The user's choice and the advisory reading differ on P1, P4 and P5. The reading stays in the record beside the
+evidence. The conditions the user attached are written into each todo.
+
+**MEF-06.** The UI judge's Haiku start (P1) is approved as a follow-up todo, not applied. The tiers are unchanged and
+the debugger's start tier was not measured, so MEF-06's start-tier half is still not met. The MEF-06 row of
+76-VERIFICATION.md now records the approval.
+
+No tier assignment was changed by objective 81.
