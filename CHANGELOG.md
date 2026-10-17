@@ -45,6 +45,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `aof-tools benchmark per-objective` counted no executor spawns: `executor_calls` was always 0 because the check
   compared a pre-rename agent name. It now counts `aoforge:executor` and, in older transcripts, the pre-rename and
   install-prefixed executors. (quick 42)
+- `adopt preflight` and `adopt begin` routed a migrated project whose planning tree git ignores to `resume` after the
+  adopt commit, because the report never reaches `HEAD`. A migrate adopt with an ignored report now counts as finished
+  once the report step ran and `HEAD`'s history holds the adopt commit, or the `aoforge/adopt` branch's commit is
+  reachable from `HEAD`. Such a project routes to `upgrade`, also after the merge. (quick 43)
+- Migration 0005 ended the `# Development Rules` section only at the next `# ` heading. In a block whose other sections
+  are `##` headings, the inserted rules ran to the end of the block: `upgrade --check` reported drift after the first
+  apply, and a second `upgrade --apply` deleted those sections. The section now ends at the next heading of any level,
+  so one apply converges and nothing after the rules is removed. (quick 43)
+- `adopt begin` returned a `next` naming `adopt begin` itself. It now names `adopt scaffold`. (quick 43)
 
 ## [3.1.0] - 2026-10-16
 
@@ -124,11 +133,8 @@ with no forwarding shim: install the pack your project needs (`/plugin install a
   key, 1,169 moved files; smartWellness: a pre-v1 CLAUDE.md block, 106 moved files): one commit each, a clean tree,
   `validate health` codes equal to a hand migration at every root, and the sources untouched. A fresh repository still
   routes to `new-project` and a brownfield one still ends in one commit with the 13-check checker green.
-- **Known limits** (not fixed; pinned or described in the user guide). A project with an untracked, ignored planning
-  tree keeps routing to `resume` after the commit, because the report never reaches `HEAD`. Migration 0005 may need a
-  second `upgrade --apply` for a CLAUDE.md block in the pre-v1 template shape. A stop between the conversion of the
-  stamp keys, block markers and ignore lines and the write of the adopt marker leaves those files converted but
-  unlisted in the Migration table.
+- **Known limit** (described in the user guide). A stop between the conversion of the stamp keys, block markers and
+  ignore lines and the write of the adopt marker leaves those files converted but unlisted in the Migration table.
 
 ### Added
 

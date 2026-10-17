@@ -363,7 +363,7 @@ pre-rename labels are not a project's; adopt leaves them alone, and [MIGRATING-T
 
 **Routing by repo state**, decided before anything is written:
 - Already an AOForge project (`.aoforge/` present, nothing pre-rename left in it) -> routed to `upgrade` (see below);
-  never re-scaffolded.
+  never re-scaffolded. A finished adopt routes here too, including one whose planning tree git ignores.
 - A pre-rename project (including one that has `.aoforge/` but still carries the old stamp key, CLAUDE.md markers or
   ignore lines) -> the migrate path above.
 - Empty or greenfield repo -> reports that and points you at `/aoforge:new-project`.
@@ -382,13 +382,7 @@ block; the message names the fix). A move that fails part-way (`move-failed`) le
 re-running `/aoforge:adopt` resumes it, as it resumes an interrupted scaffold or report. See [Renamed to
 AOForge](#renamed-to-aoforge-300).
 
-**Known limits of the migrate path.**
-- A project whose planning tree is untracked and ignored gets its report written into an ignored directory, so `HEAD`
-  never holds it: after the commit, `adopt preflight` keeps routing the project to `resume` ("ready to commit"). There is
-  nothing left to commit; the workflow treats a successful or empty commit as the end of the run.
-- Migration 0005 may need a second `aof-tools upgrade --apply` for a CLAUDE.md block in the pre-v1 template shape: the
-  first apply reports it and `upgrade --check` still lists it, and the second converges. The convergence is pinned as a
-  `todo` row in `adopt-migrate-e2e.legacy.test.cjs`.
+**Known limit of the migrate path.**
 - A stop between the conversion of the stamp keys, block markers and ignore lines and the write of the adopt marker's
   record leaves those files converted (the git diff shows them), but the Migration table lists fewer changes.
 
