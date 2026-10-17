@@ -1,6 +1,6 @@
 {
   "current_objective": "80",
-  "current_job": 6,
+  "current_job": 7,
   "total_jobs": 9,
   "progress_pct": 99,
   "status": "executing",
@@ -1884,6 +1884,11 @@
     {
       "objective": "80",
       "summary": "Adopt finished-detection reads HEAD, not the index; a migrate marker records its plan before git mv so an interrupted move resumes from the marker",
+      "rationale": null
+    },
+    {
+      "objective": "80",
+      "summary": "80-07: the two real fleet layouts (aodex, smartWellness) migrate through the adopt workflow text in one commit each; D1 and D2 did not reproduce on them, so no product code changed and todo rows 13 and 14 stay",
       "rationale": null
     }
   ],
