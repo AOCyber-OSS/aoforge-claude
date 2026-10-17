@@ -640,6 +640,7 @@ STATE.md stays lean; this file grows over time.
 - [Objective 79]: 79-08: the node:26 CI-equivalent verdict is the non-root run (PASS, 0 failures); the root container fails one permission test CI's non-root runner cannot fail
 - [Objective 79]: 79-08: migration 0015 was not pending (advance-job had already rotated Recent Decisions to 10); upgrade --apply only stamped 3.1.0
 - [Objective 79]: 79-08: objective 76 stays unticked in the v1.6 checklist (main left 76-06 and 76-08 open); 77 is ticked
+- [Objective 80]: Only the project W069 fix names /aoforge:adopt; the global CLAUDE.md text and managed-block refusal stay without it because adopt never touches that file
 
 ## Performance Metrics
 
@@ -874,3 +875,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 79 P06 | 6min | 2 tasks | 6 files |
 | Objective 79 P07 | 10min | 2 tasks | 5 files |
 | Objective 79 P08 | 12min | 2 tasks | 4 files |
+| Objective 80 P04 | 4min | 2 tasks | 4 files |

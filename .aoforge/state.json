@@ -2,7 +2,7 @@
   "current_objective": "80",
   "current_job": 1,
   "total_jobs": 9,
-  "progress_pct": 99,
+  "progress_pct": 98,
   "status": "executing",
   "last_activity": "2026-10-17",
   "metrics": {
@@ -1874,6 +1874,11 @@
     {
       "objective": "79",
       "summary": "79-08: objective 76 stays unticked in the v1.6 checklist (main left 76-06 and 76-08 open); 77 is ticked",
+      "rationale": null
+    },
+    {
+      "objective": "80",
+      "summary": "Only the project W069 fix names /aoforge:adopt; the global CLAUDE.md text and managed-block refusal stay without it because adopt never touches that file",
       "rationale": null
     }
   ],

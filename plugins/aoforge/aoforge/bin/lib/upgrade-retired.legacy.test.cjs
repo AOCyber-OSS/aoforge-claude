@@ -8,7 +8,7 @@
 //
 // Test list (outermost first; numbers are the TRD 78-07 test list):
 //   3.  `aof-tools upgrade --apply --only 0012` (and 0013) in an `.aoforge/` project: exit 1, one line naming
-//       "retired", AOForge 3.0.x and the migration guide; nothing written, no backup. 0014 gives the same line once
+//       "retired", /aoforge:adopt (TRD 80-04), AOForge 3.0.x and the migration guide; nothing written, no backup. 0014 gives the same line once
 //       the registry no longer carries it, and resolves normally while it does.
 //   3b. Library: `only` naming a retired id the registry lacks -> RegistryError whose one problem is that line
 //       (apply and check); a retired id the registry carries resolves normally; a never-assigned id is still
@@ -33,7 +33,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const { NAMES, LEGACY, SHIM_RELEASE } = require('./legacy-names.cjs');
+const { NAMES, LEGACY, SHIM_REMOVAL, SHIM_RELEASE } = require('./legacy-names.cjs');
 const { legacyLayoutMessage, MIGRATION_GUIDE } = require('./planning-layout.cjs');
 const { planningProject, STAMP } = require('./__fixtures__/legacy-layout-fixtures.cjs');
 const {
@@ -59,7 +59,8 @@ const TITLES = { '0012': 'planning-dir move', '0013': 'config-key rename', '0014
 /** The one problem line a retired id gives. */
 function retiredLine(id) {
   return `migration ${id} (${TITLES[id]}) was retired after ${NAMES.product} ${SHIM_RELEASE}: `
-    + `run it with ${NAMES.product} ${SHIM_RELEASE}, or do it by hand (${MIGRATION_GUIDE}, "Upgrading from 2.x")`;
+    + `run ${NAMES.commandNs}adopt (${NAMES.product} ${SHIM_REMOVAL} moves the planning directory, the stamp key and the `
+    + `CLAUDE.md markers), run it with ${NAMES.product} ${SHIM_RELEASE}, or do it by hand (${MIGRATION_GUIDE}, "Upgrading from 2.x")`;
 }
 
 const created = [];
@@ -104,7 +105,9 @@ describe('3. upgrade --only <retired id>', () => {
       const lines = r.stdout.trim().split('\n');
       assert.equal(lines.length, 1, r.out);
       assert.ok(lines[0].includes(retiredLine(id)), r.out);
-      for (const part of ['retired', SHIM_RELEASE, MIGRATION_GUIDE]) assert.ok(lines[0].includes(part), `${part}: ${r.out}`);
+      for (const part of ['retired', `${NAMES.commandNs}adopt`, SHIM_RELEASE, MIGRATION_GUIDE]) {
+        assert.ok(lines[0].includes(part), `${part}: ${r.out}`);
+      }
       assert.equal(/unknown migration id/.test(r.out), false, r.out);
       assert.deepEqual(diffSnapshots(before, snapshot(root)), []);
       assert.equal(fs.existsSync(backupsDir(home)), false, 'no backup');
