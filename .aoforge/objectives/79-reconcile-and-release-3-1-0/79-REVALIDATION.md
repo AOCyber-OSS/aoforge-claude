@@ -90,3 +90,45 @@ Folding them into the release sections changes `CHANGELOG.md` outside `.aoforge/
 that only planning files differ from VALIDATED_SHA, so that fold needs a fresh re-validation (or an explicit
 user-accepted exception for a changelog-only diff). If the entries are meant for a later release instead, this
 VALIDATED_SHA stands as is.
+
+## Changelog fold (2026-10-17)
+
+**The user decided on 2026-10-17 to fold `## [Unreleased]` into the release sections and to date the release that
+day.** Commit `14e87f47` does it. The release hold above is resolved by that decision. The frontmatter `release_hold`
+field still carries the original text: this section is the record of how the hold was resolved.
+
+### What changed since VALIDATED_SHA `9a4b0997`
+
+`git diff --name-only 9a4b0997..HEAD` outside `.aoforge/` is four files, all changelog text or a test date:
+
+| File | Change |
+|---|---|
+| `CHANGELOG.md` | The 9 `## [Unreleased]` entries moved into `## [3.1.0]`, with a bold lead to match the section. Quick 42's model-placeholders guard went to Added; quick 40's `df-` prefix removal to Removed, whose heading now names it; quick 40's rename-guard change to Changed; quick 41's `calibrate --also-root` fix, quick 42's two fixes and quick 43's three fixes to Fixed. `## [Unreleased]` is now an empty heading, and the heading reads `## [3.1.0] - 2026-10-17`. The lead paragraph names the `df-` agent-name break and `calibrate --also-root`, and now says objectives 73 to 80 and quick 34 to 43 (it said 73 to 78 and 34 to 39). Quick 37's "Release dates" line says 2026-10-17. |
+| `plugins/aoforge-stack-flutter/CHANGELOG.md` | Its three `## [Unreleased]` entries (quick 42: `--judge-tier`, `tier_escalation`, the ui-evaluator escalation) moved, verbatim, to the end of `## [1.0.0]` Added. `## [Unreleased]` is now empty, and the heading reads `## [1.0.0] - 2026-10-17`. |
+| `plugins/aoforge-stack-web/CHANGELOG.md` | Date only: `## [1.0.0] - 2026-10-17`. It had no Unreleased entries. |
+| `plugins/aoforge/hooks/changelog-on-tag.test.js` | Quick 37's test 20 pins the new date, 2026-10-17, for all three headings (the name and the assertion). It is still an exact-line `assert.equal`, so the test is not weaker. The synthetic `## [3.1.0] - 2026-10-16` fixture of the quick 34 hint tests is not a pin on this repository's date and is unchanged. |
+
+No code, workflow, manifest or version changed. Under `.aoforge/` the only change is this file (`7b7b27e5` and this
+section). `git diff --stat 9a4b0997..14e87f47`: 5 files, 153 insertions, 70 deletions (this file +92, CHANGELOG.md
+100 lines, the Flutter pack changelog 25, the web changelog 2, the test 4).
+
+A check confirmed that the fold lost nothing. Every word of the 9 original core bullets is still in `## [3.1.0]`; the
+only differences are two sentence-final punctuation marks, where a first sentence became the bold lead.
+
+**For 79-09:** its precondition `git diff --name-only <VALIDATED_SHA> integrate/3.1.0`, every path under `.aoforge/`,
+now lists the four files above. This section records them as the changelog and test-date exception the hold asked
+for. Every check below ran on the folded tree. VALIDATED_SHA is not re-stamped.
+
+### Checks on the folded tree
+
+Every check ran with HOME and TMPDIR under the session scratchpad.
+
+| Check | Result |
+|---|---|
+| `changelog check 3.1.0` (repo CLI) | `ok: true, present: true` |
+| Repo hook `plugins/aoforge/hooks/changelog-on-tag.js` against the working tree | `v3.1.0`, `aoforge--v3.1.0`, `aoforge-stack-flutter--v1.0.0` and `aoforge-stack-web--v1.0.0` are allowed (exit 0, no decision). The controls `v9.9.9` (core CHANGELOG has no entry) and `aoforge-stack-web--v9.9.9` (pack CHANGELOG has no entry) are denied. |
+| `scripts/release-tag.cjs` offline (`planTag` + `runRelease` with a fake exec, no git push or gh call) | `v3.1.0`: kind core, alias `aoforge--v3.1.0` tagged and pushed (fake), latest. Notes come from `## [3.1.0]` via `--notes-file` (510 lines, 49,148 chars; 44,849 before) and hold the moved entries (each one checked by its text), the new lead clause, the 2026-10-17 release-dates line and the Reconcile section, with no `## [Unreleased]` or `## [3.0.0]` text. `aoforge--v3.1.0`: core-alias, no exec call. `aoforge-stack-flutter--v1.0.0`: kind pack, `--latest=false`, notes 2,277 chars including `--judge-tier` and `tier_escalation`. `aoforge-stack-web--v1.0.0`: kind pack, `--latest=false`, notes 1,103 chars. |
+| `node --test` of `hooks/changelog-on-tag.test.js`, `scripts/release-tag.test.cjs`, `bin/lib/changelog.test.cjs` and `bin/lib/stack-packs.test.cjs` | 115 tests, 115 pass, 0 fail (test 20 `... 2026-10-17` included) |
+| `node scripts/ci-unit-gate.cjs`, local (Node 24.13.1) | Did not finish. `plugins/aoforge/aoforge/bin/lib/watcher-shell.test.cjs` held a `fish` child for over 9 minutes (the known W-3 hang on this machine, as above), so the run was stopped. Not a verdict. |
+| CI's two steps in node:26 Docker as the non-root `node` user (uid 1000) on a copy of the folded working tree: `npm ci`, then `node --test scripts/ci-unit-gate.test.cjs`, then `node scripts/ci-unit-gate.cjs` | node v26.11.1. The self-test passes 88/88 (exit 0). The gate resolves the patterns to 418 test files, with 1 known-failure entry. `tests: 13130 reported 13082 executed (floor 3000) failures: 0 skipped: 48`; `files: 418 selected; 418 attributed`; `runner exit: 0`, 151 s; **`[ci-unit-gate] PASS`**, gate exit 0. These are the same counts as the run above. |
+| `git status --porcelain` after the fold commit | `?? amp` only |
