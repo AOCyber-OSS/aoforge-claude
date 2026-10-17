@@ -66,8 +66,8 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 **Objective complete:** 73 — Handoff gaps and result injection (completed 2026-10-10, 14/14 TRDs)
 **Objective complete:** 75 — Prospective estimate retest and todo sweep (completed 2026-10-10, 5/5 TRDs)
 **Objective complete:** 78 — Remove the rename shims (completed 2026-10-17, 12/12 TRDs)
-**Status:** Executing objective 79 — 8/10 TRDs complete
-**Progress:** [██████████] 99%
+**Status:** Executing objective 80 — 1/9 TRDs complete
+**Progress:** [██████████] 98%
 
 ## Branch State (post-merge)
 
@@ -155,6 +155,6 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 
 ## Session Continuity
 
-Last session: 2026-10-17T04:05:36.702Z
+Last session: 2026-10-17T06:59:18.179Z
 Resume file: `None`
-Stopped at: Completed 79-08-full-validation-TRD.md
+Stopped at: Completed 80-04-legacy-messages-name-adopt-TRD.md
