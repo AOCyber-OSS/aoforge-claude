@@ -34,6 +34,9 @@ function cmdAdopt(cwd, args, raw) {
       const tail = result.reason != null ? result.reason : result.next;
       return helpers.output(result, raw, `${result.route}: ${tail}`, 3);
     }
+    if (result.mode === 'migrate') {
+      return helpers.output(result, raw, `migrated: ${result.converted} converted`, 0);
+    }
     return helpers.output(result, raw, `scaffolded: ${result.created.length} created`, 0);
   }
   if (sub === 'report') {

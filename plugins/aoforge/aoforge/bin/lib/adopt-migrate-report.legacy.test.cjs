@@ -153,7 +153,8 @@ function healthAt(repo, dir) {
 function backupDirs(repo) {
   const root = path.join(repo.home, '.claude', 'aoforge', 'backups');
   if (!fs.existsSync(root)) return [];
-  return fs.readdirSync(root).flatMap((key) => fs.readdirSync(path.join(root, key)).map((ts) => `${key}/${ts}`)).sort();
+  return fs.readdirSync(root, { withFileTypes: true }).filter((e) => e.isDirectory())
+    .flatMap((e) => fs.readdirSync(path.join(root, e.name)).map((ts) => `${e.name}/${ts}`)).sort();
 }
 
 const changedKeys = (before, after) => {
@@ -293,7 +294,7 @@ test('5. after the commit health has no legacy code at any root, and preflight n
 
 // ─── 6-7: idempotence and resume ─────────────────────────────────────────────
 
-test('6. scaffold and report are idempotent', (t) => {
+test('6. scaffold is idempotent: the second run converts nothing and keeps the record', (t) => {
   const repo = fleet(t, { nested: true, decoys: true });
   const o = opts(repo);
   adopt.begin(repo.root, o);
@@ -309,7 +310,13 @@ test('6. scaffold and report are idempotent', (t) => {
   assert.equal(JSON.stringify(second.marker.migration), record, 'the migration record is unchanged');
   assert.deepEqual(backupDirs(repo), backups, 'no second backup');
   assert.equal(JSON.stringify(adopt.readMarker(repo.root, repo.env).marker), markerBefore, 'the marker is unchanged');
+});
 
+test('6. report is idempotent: the same bytes and the same file list', (t) => {
+  const repo = fleet(t, { nested: true, decoys: true });
+  const o = opts(repo);
+  adopt.begin(repo.root, o);
+  adopt.scaffold(repo.root, o);
   const r1 = adopt.report(repo.root, o);
   const bytes1 = readFile(repo, r1.report_path);
   const r2 = adopt.report(repo.root, o);

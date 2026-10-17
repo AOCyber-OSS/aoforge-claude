@@ -31,6 +31,8 @@ const { mdCell } = require('./text-escape.cjs');
 const { planningRoot, planningRel, PLANNING_DIR_NAMES } = require('./compat.cjs');
 const { NAMES } = require('./legacy-names.cjs');
 const legacyMigrate = require('./legacy-migrate.cjs');
+const layout = require('./planning-layout.cjs');
+const { loadConfig } = require('./config.cjs');
 
 // The one adopt branch and marker. An adopt begun before the rename (its own branch and marker) is
 // not read (TRD 78-04): adopt is a one-shot bootstrap, so one left unfinished across two releases
@@ -759,6 +761,7 @@ function scaffold(root, opts = {}) {
   if (pf.route !== 'resume') {
     return { ...pf, created: [], skipped: [] };
   }
+  if (markerMode(pf.adopt.marker) === 'migrate') return scaffoldMigrate(pf, opts);
 
   const target = pf.target;
   // The LOCAL calendar day (SDR-07): STATE/ROADMAP dates are read by a human as "today".
@@ -1297,6 +1300,111 @@ function report(root, opts = {}) {
     health_errors: healthErrors,
     commit_files: commitFiles,
     commit_message: commitMessage,
+    marker,
+  };
+}
+
+// ─── the migrate route: scaffold (TRD 80-03) ───────────────────────────────
+//
+// begin() moved the planning trees. scaffold() converts what the move leaves behind (the config stamp key, the
+// CLAUDE.md block markers, the ignore lines) through legacy-migrate.convertResidue, after a backup of each planning
+// root outside the repository, and records what it did in marker.migration. It writes nothing else: no PROJECT,
+// STATE, ROADMAP or STACK, no new CLAUDE.md block, no upgrade migration (those rewrite planning content, which the
+// report lists as the next step). Every step is safe to repeat: a second run converts nothing and keeps the record.
+
+const byRoot = (a, b) => (a === b ? 0 : a === '' ? -1 : b === '' ? 1 : a < b ? -1 : 1);
+const absRoot = (target, dir) => (dir ? path.join(target, ...dir.split('/')) : target);
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+/** The planning roots of a migrate adopt (component directories, '' for the repository root), root first. */
+function migrateRoots(pf, marker) {
+  const dirs = new Set([...(pf.migration ? pf.migration.roots : []), ...markerMoves(marker).map((mv) => mv.dir)]);
+  return [...dirs].sort(byRoot);
+}
+
+/** Entries of `list` without repeats, by their JSON. */
+function uniqueByJson(list) {
+  const seen = new Set();
+  return list.filter((item) => {
+    const key = JSON.stringify(item);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+/**
+ * The migration record after one more convertResidue (`done`): the first run stores it, a later run adds only what
+ * it newly converted, so the record is never replaced by empty lists. Problems (an invalid config.json, a block that
+ * could not be converted) are the current run's, not accumulated. Unknown keys of the stored record are kept.
+ */
+function mergeMigration(prior, base, done) {
+  const p = prior || {};
+  const priorExclude = p.exclude || {};
+  const doneExclude = done.exclude || {};
+  return {
+    ...p,
+    moves: p.moves || base.moves,
+    stamps: uniqueByJson([...(p.stamps || []).filter((s) => s.action), ...done.stamps]),
+    blocks: uniqueByJson([...(p.blocks || []), ...done.blocks]),
+    malformed: done.malformed,
+    ignores: uniqueByJson([...(p.ignores || []), ...done.ignores]),
+    exclude: {
+      file: doneExclude.file || priorExclude.file || null,
+      added: [...new Set([...(priorExclude.added || []), ...(doneExclude.added || [])])],
+    },
+    skipped: p.skipped && p.skipped.length > 0 ? p.skipped : base.skipped,
+    backups: base.backups,
+    registry_key: base.registryKey,
+  };
+}
+
+/** What a convertResidue result converted: stamps renamed or merged, blocks and ignore changes (exclude lines are not counted). */
+function convertedCount(done) {
+  return done.stamps.filter((s) => s.action).length
+    + done.blocks.length
+    + done.ignores.reduce((n, ig) => n + ig.changes.length, 0);
+}
+
+function scaffoldMigrate(pf, opts) {
+  const { env = process.env, userHome = null, now = new Date() } = opts;
+  if (!pf.adopt.steps || !pf.adopt.steps.moved) {
+    throw new Error('run adopt begin first: the move is not finished');
+  }
+  const target = pf.target;
+  const marker = { ...pf.adopt.marker };
+  const plan = pf.migration || { roots: [], stamps: [], blocks: [], ignores: [], skipped: [] };
+  const roots = migrateRoots(pf, marker);
+  const prior = marker.migration || null;
+
+  // A backup of each planning root (its planning directory and CLAUDE.md) before the first conversion; a run with
+  // nothing left to convert takes none.
+  let backups = prior && Array.isArray(prior.backups) ? [...prior.backups] : [];
+  const converts = plan.stamps.some((s) => s.action) || plan.blocks.length > 0 || plan.ignores.length > 0;
+  if (converts) {
+    const backupRoots = roots.includes('') || !fs.existsSync(path.join(target, CLAUDE_MD_REL)) ? roots : ['', ...roots];
+    backups = [...backups, ...backupRoots.map((dir) => upgrade.backup({ projectRoot: absRoot(target, dir), userHome, now }))];
+  }
+
+  const done = legacyMigrate.convertResidue(target, { env, roots });
+  const reg = backupPrune.register({ userHome, projectRoot: target, now });
+
+  marker.steps = { ...(marker.steps || {}), scaffolded: true };
+  marker.migration = mergeMigration(prior, {
+    moves: markerMoves(marker).map((mv) => ({ ...mv, via: mv.tracked ? 'git mv' : 'rename' })),
+    skipped: plan.skipped,
+    backups,
+    registryKey: reg.key,
+  }, done);
+  writeMarker(target, env, marker);
+
+  return {
+    route: 'scaffold',
+    mode: 'migrate',
+    target,
+    converted: convertedCount(done),
+    changes: done,
+    migration: marker.migration,
     marker,
   };
 }
