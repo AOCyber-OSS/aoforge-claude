@@ -59,8 +59,14 @@ verification:
   test_pairing: true
 
 # Metrics
-duration: 30min
+duration: 18min
 completed: 2026-10-17
+tokens_input: 13415911
+tokens_output: 133379
+tokens_cache_read: 13180770
+tokens_cache_write: 234999
+token_model: "claude-opus-5-5"
+tokens_source: "live"
 ---
 
 # Objective 81 TRD 02: Pre-registered decision rule, statistics, scoring CLI and report renderer Summary
@@ -70,12 +76,13 @@ completed: 2026-10-17
 ## Progress
 - [x] Task 1: Write and commit the pre-registered decision rule, plus metrics fixture builders — e404e0f2
 - [x] Task 2: Statistics and the decision function — 5ff5da55
-- [x] Task 3: Scoring CLI and the 76-06 report renderer — (this commit)
+- [x] Task 3: Scoring CLI and the 76-06 report renderer — 9ea88493
 
 ## Performance
 
-- **Duration:** about 30 min
+- **Duration:** 18 min
 - **Started:** 2026-10-17T15:56:34Z
+- **Completed:** 2026-10-17T16:14:56Z
 - **Tasks:** 3
 - **Files created:** 10 (plus this SUMMARY)
 
@@ -96,7 +103,9 @@ completed: 2026-10-17
 
 1. **Task 1: Write and commit the pre-registered decision rule, plus metrics fixture builders** - `e404e0f2` (docs)
 2. **Task 2: Statistics and the decision function** - `5ff5da55` (feat)
-3. **Task 3: Scoring CLI and the 76-06 report renderer** - (this commit) (feat)
+3. **Task 3: Scoring CLI and the 76-06 report renderer** - `9ea88493` (feat)
+
+**Plan metadata:** the final `docs(81-02)` commit carrying this SUMMARY, STATE.md and ROADMAP.md
 
 ## Validation Gate Results
 
@@ -173,6 +182,13 @@ None - no external service configuration required.
 - 81-09..81-12 plug in at `scripts/eval81/score/<X>.cjs` exporting `score({root, outDir})` and return the batch result shape documented at the top of `decide.cjs` and `__fixtures__/metrics.cjs`. C's scorer (81-11) must set `planned` per role (or per model), because the batch-level `planned` covers all eight C roles.
 - 81-01's `rebuildLedger` reads `results/<X>.json` `spend` exactly as score.cjs writes it: `{ledger_version, batch, status, spent_usd, ledger_total_usd, entries}`.
 - 81-13/81-14: the rule doc's interpretive choices 1-10 are the items for the user's batch-A checkpoint.
+
+## Self-Check: PASSED
+
+- FOUND (tracked): 81-DECISION-RULE.md, 81-02-SUMMARY.md, scripts/eval81/__fixtures__/metrics.cjs, lib/stats.cjs (+test), lib/decide.cjs (+test), lib/report.cjs (+test), score.cjs (+test) - `git ls-files --error-unmatch` exit 0
+- FOUND: e404e0f2, 5ff5da55, 9ea88493 (`git log --oneline 8ba149b6..HEAD`)
+- Order: the rule doc's commit e404e0f2 precedes 5ff5da55, the first commit touching decide.cjs
+- node_modules symlink removed; no live API call made; nothing written outside the worktree except scratchpad files
 
 ---
 *Objective: 81-haiku-eval-and-model-efficiency-measurement*
