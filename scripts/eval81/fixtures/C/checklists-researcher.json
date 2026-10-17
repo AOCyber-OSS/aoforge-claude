@@ -1,0 +1,322 @@
+{
+  "topic_file": "scripts/eval81/fixtures/C/researcher-topic.md",
+  "written": "2026-10-17, by hand from established, citable practice, before any run",
+  "scoring": "Each dimension checklist is scored against that dimension's research document (research/<DIM>.md). The statement is the criterion; accept_any lists phrasings that count as stating it when used about the same thing. Items name practices, not pinned versions, so they stay true as libraries release.",
+  "dimension_documents": {
+    "stack": "STACK.md",
+    "features": "FEATURES.md",
+    "architecture": "ARCHITECTURE.md",
+    "pitfalls": "PITFALLS.md"
+  },
+  "checklists": {
+    "stack": [
+      {
+        "id": "stack-01",
+        "dimension": "stack",
+        "statement": "Recommends a currently supported Go release (Go supports each major release until two newer ones ship) rather than an old or unsupported toolchain.",
+        "accept_any": ["latest stable Go", "supported Go release", "current Go"],
+        "basis": "Go release policy (go.dev/doc/devel/release)"
+      },
+      {
+        "id": "stack-02",
+        "dimension": "stack",
+        "statement": "Recommends an embedded search engine rather than a server: SQLite with the FTS5 extension, or a pure-Go full-text library such as Bleve or Bluge, and explains the choice between them.",
+        "accept_any": ["FTS5", "Bleve", "Bluge", "SQLite full-text"],
+        "basis": "SQLite FTS5 documentation; Bleve and Bluge project documentation"
+      },
+      {
+        "id": "stack-03",
+        "dimension": "stack",
+        "statement": "If SQLite is chosen, names a driver and addresses cgo: a pure-Go driver (modernc.org/sqlite, or ncruces/go-sqlite3 via WebAssembly) for cgo-free builds, or mattn/go-sqlite3 with the cgo cross-compilation trade-off explained.",
+        "accept_any": ["modernc.org/sqlite", "ncruces/go-sqlite3", "mattn/go-sqlite3", "cgo", "CGO_ENABLED=0"],
+        "basis": "mattn/go-sqlite3 README (cgo required); modernc.org/sqlite documentation (cgo-free)"
+      },
+      {
+        "id": "stack-04",
+        "dimension": "stack",
+        "statement": "Uses github.com/fsnotify/fsnotify for file-system change notifications.",
+        "accept_any": ["fsnotify"],
+        "basis": "fsnotify README"
+      },
+      {
+        "id": "stack-05",
+        "dimension": "stack",
+        "statement": "Parses Markdown with a CommonMark-compliant parser such as goldmark (github.com/yuin/goldmark) to extract text, rather than stripping syntax with regular expressions.",
+        "accept_any": ["goldmark", "CommonMark"],
+        "basis": "goldmark README (CommonMark compliant)"
+      },
+      {
+        "id": "stack-06",
+        "dimension": "stack",
+        "statement": "Parses YAML front matter with a YAML library or a goldmark front-matter extension (for example goldmark-meta, go.abhg.dev/goldmark/frontmatter, gopkg.in/yaml.v3 or goccy/go-yaml).",
+        "accept_any": ["front matter", "frontmatter", "goldmark-meta", "yaml.v3", "go-yaml"],
+        "basis": "goldmark extension list; YAML library documentation"
+      },
+      {
+        "id": "stack-07",
+        "dimension": "stack",
+        "statement": "Chooses how to build the subcommand CLI (for example spf13/cobra, urfave/cli, kong, or the standard flag package) and says why.",
+        "accept_any": ["cobra", "urfave/cli", "kong", "flag package"],
+        "basis": "Go CLI library documentation"
+      },
+      {
+        "id": "stack-08",
+        "dimension": "stack",
+        "statement": "Handles ignore patterns with a gitignore-compatible or glob matcher (for example a go-gitignore package, go-git's gitignore support or bmatcuk/doublestar) rather than hand-rolled matching.",
+        "accept_any": ["gitignore", "doublestar", "glob"],
+        "basis": "gitignore pattern format (git-scm.com/docs/gitignore)"
+      },
+      {
+        "id": "stack-09",
+        "dimension": "stack",
+        "statement": "Ships one static binary per platform by cross-compiling with GOOS/GOARCH, typically released with GoReleaser.",
+        "accept_any": ["GoReleaser", "cross-compil", "GOOS", "single binary"],
+        "basis": "Go cross-compilation (go help environment); GoReleaser documentation"
+      },
+      {
+        "id": "stack-10",
+        "dimension": "stack",
+        "statement": "Says what not to use: no external search server (Elasticsearch, OpenSearch, Meilisearch, Typesense) for a local, single-user tool.",
+        "accept_any": ["Elasticsearch", "OpenSearch", "Meilisearch", "Typesense", "no server"],
+        "basis": "Project constraint (no server or network service) applied to the search-engine choice"
+      }
+    ],
+    "features": [
+      {
+        "id": "features-01",
+        "dimension": "features",
+        "statement": "Builds a full index of the notes folder on first use by walking it recursively for Markdown files.",
+        "accept_any": ["initial index", "full index", "index build", "walk"],
+        "basis": "Core requirement of the topic"
+      },
+      {
+        "id": "features-02",
+        "dimension": "features",
+        "statement": "Updates the index incrementally: only changed files are re-indexed (detected by modification time, size or content hash), including changes made while the tool was not running.",
+        "accept_any": ["incremental", "mtime", "content hash", "only changed files"],
+        "basis": "Standard incremental-indexing practice"
+      },
+      {
+        "id": "features-03",
+        "dimension": "features",
+        "statement": "Offers a watch mode that keeps the index current while it runs, covering created, modified, renamed and deleted notes.",
+        "accept_any": ["watch mode", "watch", "live update"],
+        "basis": "Core requirement of the topic"
+      },
+      {
+        "id": "features-04",
+        "dimension": "features",
+        "statement": "Removes or moves index entries on delete and rename so searches never return stale or missing notes.",
+        "accept_any": ["delete", "rename", "stale", "removed"],
+        "basis": "Index consistency requirement"
+      },
+      {
+        "id": "features-05",
+        "dimension": "features",
+        "statement": "Ranks results by relevance (BM25 or an equivalent scoring function).",
+        "accept_any": ["BM25", "ranked", "relevance", "ranking"],
+        "basis": "SQLite FTS5 bm25() auxiliary function; Bleve scoring"
+      },
+      {
+        "id": "features-06",
+        "dimension": "features",
+        "statement": "Shows a snippet for each result with the matched terms highlighted.",
+        "accept_any": ["snippet", "highlight"],
+        "basis": "SQLite FTS5 snippet() and highlight() auxiliary functions; Bleve highlighting"
+      },
+      {
+        "id": "features-07",
+        "dimension": "features",
+        "statement": "Supports a query syntax with phrase queries, boolean operators and prefix matching.",
+        "accept_any": ["phrase", "prefix", "boolean", "AND/OR"],
+        "basis": "SQLite FTS5 full-text query syntax; Bleve query string syntax"
+      },
+      {
+        "id": "features-08",
+        "dimension": "features",
+        "statement": "Extracts front-matter metadata, at least tags (and a title), and lets queries filter by tag.",
+        "accept_any": ["tags", "front matter", "frontmatter", "filter by tag"],
+        "basis": "Common Markdown-notes convention (YAML front matter)"
+      },
+      {
+        "id": "features-09",
+        "dimension": "features",
+        "statement": "Supports ignore patterns so configured paths are skipped (for example .git, hidden folders, attachments, or a .gitignore-style file).",
+        "accept_any": ["ignore", "exclude", ".gitignore"],
+        "basis": "Common practice for file indexers"
+      },
+      {
+        "id": "features-10",
+        "dimension": "features",
+        "statement": "Offers machine-readable output (for example a --json flag) for scripts and editor integration.",
+        "accept_any": ["--json", "JSON output", "machine-readable", "editor integration"],
+        "basis": "Common CLI practice for composable tools"
+      },
+      {
+        "id": "features-11",
+        "dimension": "features",
+        "statement": "Separates table-stakes features from differentiators and names what is out of scope (for example editing notes, sync or a server mode).",
+        "accept_any": ["table stakes", "differentiator", "out of scope", "anti-feature", "non-goal"],
+        "basis": "Feature categorization the research workflow asks for"
+      }
+    ],
+    "architecture": [
+      {
+        "id": "architecture-01",
+        "dimension": "architecture",
+        "statement": "Separates a watcher that produces change events from the indexer that consumes them, joined by a queue or channel.",
+        "accept_any": ["watcher", "queue", "channel", "producer", "pipeline"],
+        "basis": "Producer/consumer separation for file watchers"
+      },
+      {
+        "id": "architecture-02",
+        "dimension": "architecture",
+        "statement": "Debounces or coalesces bursts of events per path before re-indexing.",
+        "accept_any": ["debounce", "coalesce"],
+        "basis": "fsnotify README guidance on duplicate events"
+      },
+      {
+        "id": "architecture-03",
+        "dimension": "architecture",
+        "statement": "Has a parser stage that turns each Markdown file into plain text plus metadata (title, tags, headings) before indexing.",
+        "accept_any": ["parser", "parse", "plain text", "extract"],
+        "basis": "Standard indexing pipeline"
+      },
+      {
+        "id": "architecture-04",
+        "dimension": "architecture",
+        "statement": "Uses a single writer for the index (one goroutine or connection owns writes) while searches read concurrently.",
+        "accept_any": ["single writer", "one writer", "serialize writes", "single goroutine"],
+        "basis": "SQLite allows one writer at a time (sqlite.org/lockingv3.html, WAL documentation)"
+      },
+      {
+        "id": "architecture-05",
+        "dimension": "architecture",
+        "statement": "Models storage as a search index beside the document data: with SQLite an FTS5 virtual table next to a regular notes table (external-content or contentless FTS5) keyed by note path or id; with a library, an index mapping per field.",
+        "accept_any": ["virtual table", "external content", "external-content", "index mapping"],
+        "basis": "SQLite FTS5 documentation, external content tables"
+      },
+      {
+        "id": "architecture-06",
+        "dimension": "architecture",
+        "statement": "Batches index writes in transactions (many documents per transaction or batch) for throughput.",
+        "accept_any": ["transaction", "batch"],
+        "basis": "SQLite transaction cost (sqlite.org/faq.html, why INSERT is slow); Bleve Batch API"
+      },
+      {
+        "id": "architecture-07",
+        "dimension": "architecture",
+        "statement": "Lets searches read while the indexer writes: SQLite in WAL journal mode, or the library's equivalent.",
+        "accept_any": ["WAL", "write-ahead", "concurrent reads"],
+        "basis": "SQLite write-ahead logging documentation (sqlite.org/wal.html)"
+      },
+      {
+        "id": "architecture-08",
+        "dimension": "architecture",
+        "statement": "Stores per-file state (path plus modification time, size or hash) and reconciles it with a scan at startup, because events are not delivered while the tool is not running.",
+        "accept_any": ["reconcile", "startup scan", "file state", "mtime"],
+        "basis": "Watchers deliver no events for changes made while stopped"
+      },
+      {
+        "id": "architecture-09",
+        "dimension": "architecture",
+        "statement": "Keeps the index outside the watched notes tree (for example under os.UserCacheDir or an XDG data directory), or excludes its location, so writing the index does not trigger watch events.",
+        "accept_any": ["UserCacheDir", "XDG", "cache directory", "outside the notes"],
+        "basis": "Go os.UserCacheDir; XDG Base Directory specification"
+      },
+      {
+        "id": "architecture-10",
+        "dimension": "architecture",
+        "statement": "Lays out the code with the CLI entry point under cmd/ and the index, watch and parse logic in internal packages.",
+        "accept_any": ["cmd/", "internal/", "package layout"],
+        "basis": "Go module layout guidance (go.dev/doc/modules/layout)"
+      },
+      {
+        "id": "architecture-11",
+        "dimension": "architecture",
+        "statement": "Versions the index schema (for example SQLite user_version) so an upgrade that changes the schema or tokenizer triggers a rebuild.",
+        "accept_any": ["schema version", "user_version", "rebuild", "migration"],
+        "basis": "SQLite PRAGMA user_version"
+      }
+    ],
+    "pitfalls": [
+      {
+        "id": "pitfalls-01",
+        "dimension": "pitfalls",
+        "statement": "fsnotify does not watch recursively: every subdirectory must be added, and directories created later must be added (and scanned) when they appear.",
+        "accept_any": ["not recursive", "recursive", "subdirector", "new directories"],
+        "basis": "fsnotify README (recursive watches are not supported)"
+      },
+      {
+        "id": "pitfalls-02",
+        "dimension": "pitfalls",
+        "statement": "Editors often save atomically (write a temporary file, then rename it over the original, or remove and recreate), so the watcher must handle Rename, Remove and Create events, not only Write.",
+        "accept_any": ["atomic save", "rename", "temporary file", "temp file"],
+        "basis": "fsnotify README (editors update files atomically)"
+      },
+      {
+        "id": "pitfalls-03",
+        "dimension": "pitfalls",
+        "statement": "A single save or a bulk change (such as a git checkout) produces bursts of events, so indexing without debouncing repeats work.",
+        "accept_any": ["debounce", "burst", "duplicate events", "multiple events"],
+        "basis": "fsnotify README (multiple Write events per save)"
+      },
+      {
+        "id": "pitfalls-04",
+        "dimension": "pitfalls",
+        "statement": "Tokenizer choice matters for non-English text: use FTS5 unicode61 with remove_diacritics (or trigram for substring and CJK search) or the library's language analyzers; the defaults handle accents and other scripts poorly.",
+        "accept_any": ["unicode61", "remove_diacritics", "trigram", "tokenizer", "diacritics", "analyzer"],
+        "basis": "SQLite FTS5 documentation, tokenizers"
+      },
+      {
+        "id": "pitfalls-05",
+        "dimension": "pitfalls",
+        "statement": "A cgo SQLite driver breaks simple cross-compilation and CGO_ENABLED=0 static builds; choose a pure-Go driver or set up C cross toolchains.",
+        "accept_any": ["cgo", "CGO_ENABLED", "cross-compil", "C toolchain"],
+        "basis": "mattn/go-sqlite3 README (cross-compiling)"
+      },
+      {
+        "id": "pitfalls-06",
+        "dimension": "pitfalls",
+        "statement": "Large trees hit watch and descriptor limits: Linux inotify max_user_watches and max_user_instances, and on macOS a kqueue backend opens a file descriptor per watched file, so ulimit matters.",
+        "accept_any": ["max_user_watches", "inotify", "kqueue", "file descriptor", "ulimit"],
+        "basis": "fsnotify README (platform notes)"
+      },
+      {
+        "id": "pitfalls-07",
+        "dimension": "pitfalls",
+        "statement": "SQLite returns \"database is locked\" (SQLITE_BUSY) under concurrent writers; use one writer, WAL and a busy_timeout.",
+        "accept_any": ["database is locked", "SQLITE_BUSY", "busy_timeout"],
+        "basis": "SQLite result codes and PRAGMA busy_timeout"
+      },
+      {
+        "id": "pitfalls-08",
+        "dimension": "pitfalls",
+        "statement": "Changes made while the tool is not running produce no events, so the index drifts unless it reconciles with a scan at startup.",
+        "accept_any": ["missed events", "startup scan", "reconcil", "offline changes", "while not running"],
+        "basis": "Watchers only report changes while watching"
+      },
+      {
+        "id": "pitfalls-09",
+        "dimension": "pitfalls",
+        "statement": "Files inside the watched tree that are not notes (the index itself, editor swap and backup files, .git) cause noise or feedback loops and must be excluded.",
+        "accept_any": ["swap file", ".git", "feedback loop", "backup files", "exclude"],
+        "basis": "Common file-watcher practice"
+      },
+      {
+        "id": "pitfalls-10",
+        "dimension": "pitfalls",
+        "statement": "Passing raw user input as an FTS5 query fails on special characters (quotes, hyphens, colons, operators); queries must be escaped or quoted.",
+        "accept_any": ["escape", "syntax error", "special characters", "quote the query"],
+        "basis": "SQLite FTS5 documentation, full-text query syntax"
+      },
+      {
+        "id": "pitfalls-11",
+        "dimension": "pitfalls",
+        "statement": "Paths differ across platforms: case-insensitive file systems on macOS and Windows, Unicode normalization of file names (NFD on macOS) and path separators need normalizing before paths are used as keys.",
+        "accept_any": ["case-insensitive", "NFD", "NFC", "normaliz", "path separator"],
+        "basis": "Apple file system Unicode normalization; Go path/filepath documentation"
+      }
+    ]
+  }
+}

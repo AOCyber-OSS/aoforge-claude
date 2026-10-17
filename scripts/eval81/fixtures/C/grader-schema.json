@@ -1,0 +1,38 @@
+{
+  "type": "object",
+  "description": "Blind grader verdicts for one document against one reference checklist (test C).",
+  "additionalProperties": false,
+  "required": ["items", "fabrications"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "description": "One entry per checklist item, in checklist order.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "verdict", "evidence"],
+        "properties": {
+          "id": { "type": "string", "description": "The checklist item id, exactly as given." },
+          "verdict": { "type": "string", "enum": ["found", "wrong", "missing"] },
+          "evidence": {
+            "type": "string",
+            "description": "Verbatim quote from the document for found or wrong; empty string for missing."
+          }
+        }
+      }
+    },
+    "fabrications": {
+      "type": "array",
+      "description": "Specific claims the document makes that neither the checklist nor its own cited evidence supports.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim", "why"],
+        "properties": {
+          "claim": { "type": "string" },
+          "why": { "type": "string" }
+        }
+      }
+    }
+  }
+}

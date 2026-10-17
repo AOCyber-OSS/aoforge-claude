@@ -1,0 +1,9 @@
+{
+  "alias": "fleet-go-service",
+  "language": "go",
+  "source_commit": "d125b8f0c60a917adeb0f825582bb00187311c57",
+  "sha256": "86f909f54de3ea4f95933be99d6eb23da932435b8bb6da71c5be63cd4be05115",
+  "items_per_focus": { "tech": 12, "arch": 12, "quality": 11, "concerns": 11 },
+  "private_file": ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/private/fleet-checklists.json",
+  "note": "The fleet repository is private and this one is public: the checklists stay on the machine that wrote them (ignored by private/.gitignore). This file commits only the sha256 of the private file's bytes and its per-focus item counts, written before any run."
+}
