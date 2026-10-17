@@ -30,6 +30,7 @@ const backupPrune = require('./backup-prune.cjs');
 const { mdCell } = require('./text-escape.cjs');
 const { planningRoot, planningRel, PLANNING_DIR_NAMES } = require('./compat.cjs');
 const { NAMES } = require('./legacy-names.cjs');
+const legacyMigrate = require('./legacy-migrate.cjs');
 
 // The one adopt branch and marker. An adopt begun before the rename (its own branch and marker) is
 // not read (TRD 78-04): adopt is a one-shot bootstrap, so one left unfinished across two releases
@@ -90,6 +91,11 @@ function parsePorcelainZ(out) {
   return dirty;
 }
 
+/** True when `rel` (posix, relative to the root) is in HEAD's tree: committed, not merely staged. */
+function inHead(root, env, rel) {
+  return git(root, env, ['rev-parse', '-q', '--verify', `HEAD:${rel}`]).ok;
+}
+
 function isOwnedPath(rel) {
   return rel === 'CLAUDE.md' || PLANNING_DIR_NAMES.some((dir) => rel === dir || rel.startsWith(`${dir}/`));
 }
@@ -132,8 +138,8 @@ function gitFacts(root, { env = process.env } = {}) {
   const branchExistsRes = git(root, env, ['show-ref', '--verify', '--quiet', `refs/heads/${ADOPT_BRANCH}`]);
   const branch_exists = branchExistsRes.ok;
 
-  const roadmapRes = git(root, env, ['ls-files', '--error-unmatch', planningRel(root, 'ROADMAP.md')]);
-  const roadmap_tracked = roadmapRes.ok;
+  // HEAD, not the index: a migrate adopt stages its ROADMAP with `git mv` long before its commit.
+  const roadmap_tracked = !unborn && inHead(root, env, planningRel(root, 'ROADMAP.md'));
 
   return {
     is_repo, toplevel, branch, head_sha, detached, unborn, busy, dirty,
@@ -177,7 +183,26 @@ function writeMarker(root, env, marker) {
 
 // ─── resume progress (mix of disk-state and marker-stored state) ──────────
 
+/** 'migrate' for a marker begun on the migrate route; a marker with no `mode` is a fresh adopt. */
+function markerMode(marker) {
+  return marker && marker.mode === 'migrate' ? 'migrate' : 'adopt';
+}
+
+/** The moves a migrate marker recorded when begin planned them. */
+function markerMoves(marker) {
+  return marker && marker.plan && Array.isArray(marker.plan.moves) ? marker.plan.moves : [];
+}
+
 function resumeSteps(root, marker) {
+  if (markerMode(marker) === 'migrate') {
+    const reportRel = typeof marker.report_path === 'string' && marker.report_path ? marker.report_path : null;
+    return {
+      moved: legacyMigrate.movesDone(root, markerMoves(marker)),
+      scaffolded: !!(marker.steps && marker.steps.scaffolded === true),
+      reported: !!reportRel && fs.existsSync(path.join(root, ...reportRel.split('/'))),
+    };
+  }
+
   const mapped = CODEBASE_DOC_NAMES.every((name) => {
     try {
       return fs.statSync(path.join(planningRoot(root), 'codebase', `${name}.md`)).size > 0;
@@ -199,17 +224,29 @@ function resumeSteps(root, marker) {
   return { mapped, project_md, scaffolded, reported };
 }
 
-function nextForResume(steps) {
-  const order = ['mapped', 'project_md', 'scaffolded', 'reported'];
-  const first = order.find((k) => !steps[k]);
-  return first ? `resume: '${first}' step not done yet` : 'resume: all steps done, ready to commit';
+const RESUME_ORDER = Object.freeze({
+  adopt: ['mapped', 'project_md', 'scaffolded', 'reported'],
+  migrate: ['moved', 'scaffolded', 'reported'],
+});
+
+function nextForResume(steps, mode = 'adopt') {
+  const first = RESUME_ORDER[mode].find((k) => !steps[k]);
+  if (!first) return 'resume: all steps done, ready to commit';
+  const hint = mode === 'migrate' && first === 'moved' ? ' (run aof-tools --cwd <target> adopt begin to finish the move)' : '';
+  return `resume: '${first}' step not done yet${hint}`;
 }
 
 // ─── decideRoute(facts) — pure, total ──────────────────────────────────────
 //
 // facts: { target, isDirectory, git: {is_repo, toplevel, isTopLevel, branch,
 //   head_sha, detached, unborn, busy, dirty}, state, marker, branchExists,
-//   roadmapTracked }
+//   finished, roadmapTracked, legacy }
+//
+//   finished   the adopt's own commit is in HEAD (a fresh adopt: its ROADMAP; a migrate adopt: its report), so the
+//              marker no longer counts. `roadmapTracked` is the older name for the fresh case and is read only
+//              when `finished` is absent.
+//   legacy     { applies, refusal } from legacy-migrate (a pre-rename planning tree, stamp key, CLAUDE.md block or
+//              ignore line to convert / the refusal naming what it cannot move); absent for no legacy facts.
 //
 // Rule order (must_haves):
 //   1. not a directory -> refuse not-a-directory
@@ -218,8 +255,11 @@ function nextForResume(steps) {
 //   4. a rebase/merge/etc in progress -> refuse operation-in-progress
 //   5. detached HEAD -> refuse detached-head
 //   6. an in-progress adopt marker -> resume on the marker's branch, or refuse
-//      adopt-in-progress-elsewhere / dirty-tree (owned paths exempt)
+//      adopt-in-progress-elsewhere / dirty-tree (owned paths exempt; a migrate marker owns a wider set)
 //   7. dirty tree (tracked or untracked), no marker -> refuse dirty-tree
+//   7a. a legacy refusal (both planning directories, or a malformed pre-rename block) -> refuse with its reason
+//   7b. a legacy plan applies -> refuse no-commits (unborn) / adopt-branch-exists, else route migrate
+//       (these run before 8 and 9: a nested-only or residue-only repository reads as aoforge or greenfield)
 //   8. .aoforge/ present -> upgrade
 //   9. greenfield (no code, no manifest) -> new-project
 //   10. no commits yet -> refuse no-commits
@@ -227,7 +267,8 @@ function nextForResume(steps) {
 //       (a branch left by an adopt begun before the rename is not looked at)
 //   12. otherwise -> adopt
 function decideRoute(facts) {
-  const { isDirectory, git: g, state, marker, branchExists, roadmapTracked, target } = facts;
+  const { isDirectory, git: g, state, marker, branchExists, roadmapTracked, target, legacy } = facts;
+  const finished = facts.finished ?? roadmapTracked;
 
   if (!isDirectory) {
     return {
@@ -269,7 +310,7 @@ function decideRoute(facts) {
     };
   }
 
-  const activeMarker = (marker && !roadmapTracked) ? marker : null;
+  const activeMarker = (marker && !finished) ? marker : null;
   if (activeMarker && activeMarker.status === 'in_progress') {
     if (g.branch !== activeMarker.branch) {
       return {
@@ -278,7 +319,8 @@ function decideRoute(facts) {
         next: `switch to '${activeMarker.branch}' to resume, or delete the marker to abandon it`,
       };
     }
-    const offending = g.dirty.filter((p) => !isOwnedPath(p));
+    const owned = markerMode(activeMarker) === 'migrate' ? legacyMigrate.ownsMigratePath : isOwnedPath;
+    const offending = g.dirty.filter((p) => !owned(p));
     if (offending.length) {
       return {
         route: 'refuse', reason: 'dirty-tree',
@@ -298,6 +340,36 @@ function decideRoute(facts) {
       route: 'refuse', reason: 'dirty-tree',
       message: `the working tree has uncommitted changes: ${g.dirty.join(', ')}`,
       next: 'commit or stash them yourself, then re-run /aoforge:adopt (adopt never stashes)',
+    };
+  }
+
+  if (legacy && legacy.refusal) {
+    return {
+      route: 'refuse', reason: legacy.refusal.reason,
+      message: legacy.refusal.message,
+      next: legacy.refusal.next,
+    };
+  }
+
+  if (legacy && legacy.applies) {
+    if (g.unborn) {
+      return {
+        route: 'refuse', reason: 'no-commits',
+        message: 'the repository has no commits yet',
+        next: 'make an initial commit yourself, then re-run /aoforge:adopt',
+      };
+    }
+    if (branchExists) {
+      return {
+        route: 'refuse', reason: 'adopt-branch-exists',
+        message: `branch '${ADOPT_BRANCH}' already exists with no in-progress marker`,
+        next: `delete the stale '${ADOPT_BRANCH}' branch yourself, then re-run /aoforge:adopt`,
+      };
+    }
+    return {
+      route: 'migrate', reason: null,
+      message: 'ready to migrate a pre-rename project',
+      next: 'aof-tools --cwd <target> adopt begin',
     };
   }
 
@@ -364,6 +436,17 @@ function preflight(root, opts = {}) {
     if (read.warning) warnings.push(read.warning);
   }
 
+  // A pre-rename project (planning trees, stamp key, CLAUDE.md block, ignore lines), found by a read-only walk.
+  const plan = isDirectory && gf.is_repo && isTopLevel ? legacyMigrate.planMigration(target, { env }) : null;
+
+  // The marker counts until the adopt's own commit is in HEAD: a fresh adopt's ROADMAP, a migrate adopt's report.
+  let finished = false;
+  if (marker) {
+    finished = markerMode(marker) === 'migrate'
+      ? typeof marker.report_path === 'string' && !gf.unborn && inHead(target, env, marker.report_path)
+      : gf.roadmap_tracked;
+  }
+
   const facts = {
     target,
     isDirectory,
@@ -372,15 +455,18 @@ function preflight(root, opts = {}) {
     marker,
     branchExists: gf.branch_exists,
     roadmapTracked: gf.roadmap_tracked,
+    finished,
+    legacy: plan ? { applies: plan.applies, refusal: legacyMigrate.refusalFor(plan) } : null,
   };
 
   const decision = decideRoute(facts);
+  const mode = decision.route === 'migrate' || (marker && !finished && markerMode(marker) === 'migrate') ? 'migrate' : 'adopt';
   // The branch this adopt runs on: the marker's when resuming, else the one begin() creates.
   const adoptBranch = decision.route === 'resume' && marker && typeof marker.branch === 'string'
     ? marker.branch
     : ADOPT_BRANCH;
   const steps = decision.route === 'resume' ? resumeSteps(target, marker) : null;
-  const next = decision.next != null ? decision.next : (decision.route === 'resume' ? nextForResume(steps) : null);
+  const next = decision.next != null ? decision.next : (decision.route === 'resume' ? nextForResume(steps, mode) : null);
 
   const report = {
     route: decision.route,
@@ -403,18 +489,119 @@ function preflight(root, opts = {}) {
       branch_exists: gf.branch_exists,
       marker,
       steps,
+      mode,
     },
     next,
   };
+  if (plan && (decision.route === 'migrate' || (decision.route === 'resume' && mode === 'migrate'))) {
+    // What migrating covers: the planned moves (a resume reports the ones its marker recorded), and the residue
+    // conversion scaffold will do, all with post-move paths.
+    report.migration = {
+      roots: plan.roots,
+      moves: decision.route === 'resume' ? markerMoves(marker) : plan.moves,
+      stamps: plan.stamps,
+      blocks: plan.blocks,
+      ignores: plan.ignores,
+      exclude: plan.exclude,
+      skipped: plan.skipped,
+    };
+  }
   if (warnings.length) report.warnings = warnings;
   return report;
 }
 
 // ─── begin(root, opts) — creates the branch + marker, exactly once ────────
 
+/** The refusal begin returns when a move fails: the branch and marker stay, so a re-run resumes from the marker. */
+function moveFailure(pf, err, createdBranch) {
+  return {
+    ...pf,
+    route: 'refuse',
+    reason: 'move-failed',
+    message: `could not move the planning trees: ${err && err.message ? err.message : err}`,
+    next: 're-run /aoforge:adopt to resume (the marker records the plan)',
+    created_branch: createdBranch,
+  };
+}
+
+/**
+ * The migrate route of begin: the branch, then the marker (which records the plan), then the moves. The planning
+ * directory is never created first: `git mv` would then move a tree inside it.
+ */
+function beginMigrate(pf, env, pluginVersion) {
+  const target = pf.target;
+  let sw = git(target, env, ['switch', '-c', ADOPT_BRANCH]);
+  if (!sw.ok) sw = git(target, env, ['checkout', '-b', ADOPT_BRANCH]);
+  if (!sw.ok) {
+    return {
+      ...pf,
+      route: 'refuse',
+      reason: 'branch-failed',
+      message: `could not create branch '${ADOPT_BRANCH}'`,
+      next: 'check the repository state (git status, git branch), then re-run /aoforge:adopt',
+      created_branch: false,
+    };
+  }
+
+  const { moves, roots } = pf.migration;
+  // The report lives in the first planning root ('' is the repository root; a nested-only repository has none there).
+  const reportPath = path.posix.join(roots.length ? roots[0] : '', planningRel(target, REPORT_FILE));
+  const marker = {
+    version: 1,
+    status: 'in_progress',
+    mode: 'migrate',
+    branch: ADOPT_BRANCH,
+    base_branch: pf.git.branch,
+    base_sha: pf.git.head_sha,
+    started_at: new Date().toISOString(),
+    plugin_version: pluginVersion,
+    steps: {},
+    plan: { moves },
+    report_path: reportPath,
+  };
+  writeMarker(target, env, marker);
+
+  const out = {
+    ...pf,
+    git: { ...pf.git, branch: ADOPT_BRANCH },
+    adopt: { ...pf.adopt, branch_exists: true, marker, steps: null, mode: 'migrate' },
+  };
+  let moved;
+  try {
+    moved = legacyMigrate.moveTrees(target, moves, { env });
+  } catch (e) {
+    return moveFailure(out, e, true);
+  }
+  return { ...out, moved, created_branch: true };
+}
+
+/** Resume of a migrate adopt whose move did not finish: carry out the moves the marker recorded. */
+function resumeMove(pf, env) {
+  const marker = pf.adopt.marker;
+  let moved;
+  try {
+    moved = legacyMigrate.moveTrees(pf.target, markerMoves(marker), { env });
+  } catch (e) {
+    return moveFailure(pf, e, false);
+  }
+  const steps = resumeSteps(pf.target, marker);
+  return {
+    ...pf,
+    adopt: { ...pf.adopt, steps },
+    next: nextForResume(steps, 'migrate'),
+    moved,
+    created_branch: false,
+  };
+}
+
 function begin(root, opts = {}) {
   const { env = process.env, pluginVersion = '0.0.0' } = opts;
   const pf = preflight(root, opts);
+
+  if (pf.route === 'migrate') return beginMigrate(pf, env, pluginVersion);
+  if (pf.route === 'resume' && pf.adopt.mode === 'migrate' && pf.adopt.steps && !pf.adopt.steps.moved) {
+    return resumeMove(pf, env);
+  }
 
   if (pf.route !== 'adopt') {
     return { ...pf, created_branch: false };

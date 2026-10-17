@@ -11,6 +11,6 @@ status: checkpoint
 **In progress (checkpoint).**
 
 ## Progress
-- [x] Task 1: RED tests for the migrate route — (this commit)
-- [ ] Task 2: preflight, decideRoute, begin and resume for migrate — next step: in adopt.cjs add the HEAD-based `inHead` helper, `facts.legacy`/`facts.finished` in preflight, the three legacy rules after rule 7 in decideRoute, and the migrate branch of begin
-- [ ] Task 3: Guard exemption and help — next step: add the `adopt` reason string to EXEMPT_COMMANDS in legacy-layout-guard.cjs and the migrate sentence to the `adopt` entry in help.cjs
+- [x] Task 1: RED tests for the migrate route — bb97f56d
+- [x] Task 2: preflight, decideRoute, begin and resume for migrate — (this commit)
+- [ ] Task 3: Guard exemption and help — next step: commit the `adopt` reason string already added to EXEMPT_COMMANDS in legacy-layout-guard.cjs, and add the migrate sentence to the `adopt` entry in help.cjs (test 15)
