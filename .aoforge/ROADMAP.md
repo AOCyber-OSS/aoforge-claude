@@ -524,10 +524,10 @@ TRDs:
 - [x] 81-05-ui-judge-fixtures-d-TRD.md — (W1) ~20 labelled docs-site screenshots on 4 surfaces (Hugo, Chrome, port 8091; 74's pair from 7a2a07ee), PNG decoder, region-diff proofs
 - [x] 81-06-mapper-researcher-fixtures-c-TRD.md — (W1) synthetic Go codebase and checklists, private fleet-copy checklists committed by hash, research topic and checklists, blind grader prompt
 - [x] 81-07-static-resident-prompt-comparison-TRD.md — (W1, TDD) static resident-prompt bytes per spawn, 3.0.0 vs 3.1.0 (free half of 76-08)
-- [ ] 81-08-harness-runner-sandbox-dry-run-TRD.md — (W2, TDD) sandbox HOME, runtime pre-mirror, plugin trees, `claude -p --agent`, resumable queue, rate-limit pause, budget stop, tripwire, zero-API dry run
+- [x] 81-08-harness-runner-sandbox-dry-run-TRD.md — (W2, TDD) sandbox HOME, runtime pre-mirror, plugin trees, `claude -p --agent`, resumable queue, rate-limit pause, budget stop, tripwire, zero-API dry run
 - [x] 81-09-batch-specs-and-scorers-a-b-TRD.md — (W2, TDD) batches A and B with production spawn prompts; scorers
-- [ ] 81-10-batch-spec-and-scorer-d-TRD.md — (W2, TDD) batch D through the engine's own rubric in a headless session; scorer with the engine's vote rules
-- [ ] 81-11-batch-spec-grader-and-scorer-c-TRD.md — (W2, TDD) batch C mapper, researcher and grader runs; scorer and spot-check sampler
+- [x] 81-10-batch-spec-and-scorer-d-TRD.md — (W2, TDD) batch D through the engine's own rubric in a headless session; scorer with the engine's vote rules
+- [x] 81-11-batch-spec-grader-and-scorer-c-TRD.md — (W2, TDD) batch C mapper, researcher and grader runs; scorer and spot-check sampler
 - [x] 81-12-e-fixture-spec-and-role-metrics-TRD.md — (W2, TDD) test E fixture, hidden acceptance checks, ABBA workload, per-role transcript metrics, 76-08 renderer
 - [ ] 81-13-rehearsal-and-preregistration-freeze-TRD.md — (W3) trees, ledger, dry run of every batch, fake-claude rehearsal, hash manifest committed before any live run
 - [ ] 81-14-live-batch-a-verifier-TRD.md — (W4, checkpoint) confirm spend, then batch A live (36 runs, ~$5), score, spot-check
@@ -563,4 +563,4 @@ TRDs:
 | 78. Remove the rename shims | v1.6 | 12/12 | Complete | 2026-10-17 |
 | 79. Reconcile and release 3.1.0 | v1.6 | 8/10 | In Progress | - |
 | 80. Adopt migrates legacy projects | v1.6 | 9/9 | Complete | 2026-10-17 |
-| 81. Haiku eval and model-efficiency measurement | v1.6 | 8/19 | In Progress | - |
+| 81. Haiku eval and model-efficiency measurement | v1.6 | 12/19 | In Progress | - |
