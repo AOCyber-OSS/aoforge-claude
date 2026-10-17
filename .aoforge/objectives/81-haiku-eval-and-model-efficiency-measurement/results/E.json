@@ -1,0 +1,1890 @@
+{
+  "batch": "E",
+  "session_model": "opus",
+  "requested_model_ids": [
+    "claude-opus-5-5"
+  ],
+  "profile": "balanced",
+  "workload": {
+    "project": "notekit",
+    "quick_prompt": "/aoforge:quick Add a --json flag to `notekit list` that prints the notes as a JSON array of {id, text} objects, with a test.",
+    "build_prompt": "/aoforge:build 1 --skip-research --auto",
+    "order": [
+      "q31-r1",
+      "q30-r1",
+      "b31-r1",
+      "b30-r1",
+      "q30-r2",
+      "q31-r2",
+      "q31-r3",
+      "q30-r3",
+      "b30-r2",
+      "b31-r2"
+    ],
+    "pilots": [
+      "q31-r1",
+      "q30-r1",
+      "b31-r1",
+      "b30-r1"
+    ]
+  },
+  "planned": {
+    "3.0.0": 5,
+    "3.1.0": 5
+  },
+  "runs": [
+    {
+      "id": "q31-r1",
+      "version": "3.1.0",
+      "workflow": "quick",
+      "rep": 1,
+      "order": 0,
+      "status": "ok",
+      "session_model": "opus",
+      "requested_model_id": "claude-opus-5-5",
+      "cost_usd": 1.7785529,
+      "transcript_cost_usd": 1.778553,
+      "priced_cost_usd": 1.778553,
+      "charged_usd": 1.778553,
+      "cost_source": "transcript_sum",
+      "first_turn_input": 33637,
+      "first_turn_source": "transcript",
+      "total_tokens": 2388584,
+      "cache_writes": 160803,
+      "tokens_source": "transcripts",
+      "wall_s": 345.215,
+      "spawns": {
+        "orchestrator": 1,
+        "planner": 1,
+        "executor": 1
+      },
+      "transcripts": "readable",
+      "acceptance": true,
+      "tests_ok": true,
+      "tests_pass": 9,
+      "tests_fail": 0,
+      "verification_status": null,
+      "trd_count": 1,
+      "summaries": 1,
+      "upgrade_commit": true,
+      "new_commits": 5,
+      "flags": []
+    },
+    {
+      "id": "q30-r1",
+      "version": "3.0.0",
+      "workflow": "quick",
+      "rep": 1,
+      "order": 1,
+      "status": "ok",
+      "session_model": "opus",
+      "requested_model_id": "claude-opus-5-5",
+      "cost_usd": 2.0646968000000006,
+      "transcript_cost_usd": 2.064697,
+      "priced_cost_usd": 2.064697,
+      "charged_usd": 2.064697,
+      "cost_source": "transcript_sum",
+      "first_turn_input": 34564,
+      "first_turn_source": "transcript",
+      "total_tokens": 2424883,
+      "cache_writes": 158004,
+      "tokens_source": "transcripts",
+      "wall_s": 370.113,
+      "spawns": {
+        "orchestrator": 1,
+        "planner": 1,
+        "executor": 1
+      },
+      "transcripts": "readable",
+      "acceptance": true,
+      "tests_ok": true,
+      "tests_pass": 9,
+      "tests_fail": 0,
+      "verification_status": null,
+      "trd_count": 1,
+      "summaries": 1,
+      "upgrade_commit": false,
+      "new_commits": 4,
+      "flags": []
+    },
+    {
+      "id": "b31-r1",
+      "version": "3.1.0",
+      "workflow": "build",
+      "rep": 1,
+      "order": 2,
+      "status": "ok",
+      "session_model": "opus",
+      "requested_model_id": "claude-opus-5-5",
+      "cost_usd": 5.087312099999999,
+      "transcript_cost_usd": 5.082792,
+      "priced_cost_usd": 5.082792,
+      "charged_usd": 5.087312,
+      "cost_source": "reported",
+      "first_turn_input": 37967,
+      "first_turn_source": "transcript",
+      "total_tokens": 10856720,
+      "cache_writes": 476952,
+      "tokens_source": "transcripts",
+      "wall_s": 1110.233,
+      "spawns": {
+        "orchestrator": 1,
+        "planner": 1,
+        "job-checker": 1,
+        "general-purpose": 1,
+        "executor": 2,
+        "verifier": 1
+      },
+      "transcripts": "readable",
+      "acceptance": true,
+      "tests_ok": true,
+      "tests_pass": 27,
+      "tests_fail": 0,
+      "verification_status": "passed",
+      "trd_count": 2,
+      "summaries": 2,
+      "upgrade_commit": true,
+      "new_commits": 15,
+      "flags": []
+    },
+    {
+      "id": "b30-r1",
+      "version": "3.0.0",
+      "workflow": "build",
+      "rep": 1,
+      "order": 3,
+      "status": "ok",
+      "session_model": "opus",
+      "requested_model_id": "claude-opus-5-5",
+      "cost_usd": 4.896895699999999,
+      "transcript_cost_usd": 4.848856,
+      "priced_cost_usd": 4.848856,
+      "charged_usd": 4.896896,
+      "cost_source": "reported",
+      "first_turn_input": 39418,
+      "first_turn_source": "transcript",
+      "total_tokens": 9483357,
+      "cache_writes": 464565,
+      "tokens_source": "transcripts",
+      "wall_s": 956.766,
+      "spawns": {
+        "orchestrator": 1,
+        "planner": 1,
+        "job-checker": 1,
+        "general-purpose": 1,
+        "executor": 2,
+        "verifier": 2
+      },
+      "transcripts": "readable",
+      "acceptance": true,
+      "tests_ok": true,
+      "tests_pass": 33,
+      "tests_fail": 0,
+      "verification_status": "passed",
+      "trd_count": 2,
+      "summaries": 2,
+      "upgrade_commit": false,
+      "new_commits": 13,
+      "flags": []
+    },
+    {
+      "id": "q30-r2",
+      "version": "3.0.0",
+      "workflow": "quick",
+      "rep": 2,
+      "order": 4,
+      "status": "ok",
+      "session_model": "opus",
+      "requested_model_id": "claude-opus-5-5",
+      "cost_usd": 1.4083547000000003,
+      "transcript_cost_usd": 1.408355,
+      "priced_cost_usd": 1.408355,
+      "charged_usd": 1.408355,
+      "cost_source": "transcript_sum",
+      "first_turn_input": 34271,
+      "first_turn_source": "transcript",
+      "total_tokens": 1754831,
+      "cache_writes": 147810,
+      "tokens_source": "transcripts",
+      "wall_s": 236.697,
+      "spawns": {
+        "orchestrator": 1,
+        "planner": 1,
+        "executor": 1
+      },
+      "transcripts": "readable",
+      "acceptance": true,
+      "tests_ok": true,
+      "tests_pass": 11,
+      "tests_fail": 0,
+      "verification_status": null,
+      "trd_count": 1,
+      "summaries": 1,
+      "upgrade_commit": false,
+      "new_commits": 3,
+      "flags": []
+    },
+    {
+      "id": "q31-r2",
+      "version": "3.1.0",
+      "workflow": "quick",
+      "rep": 2,
+      "order": 5,
+      "status": "ok",
+      "session_model": "opus",
+      "requested_model_id": "claude-opus-5-5",
+      "cost_usd": 1.5923637,
+      "transcript_cost_usd": 1.590404,
+      "priced_cost_usd": 1.590403,
+      "charged_usd": 1.592364,
+      "cost_source": "reported",
+      "first_turn_input": 33386,
+      "first_turn_source": "transcript",
+      "total_tokens": 2162298,
+      "cache_writes": 141506,
+      "tokens_source": "transcripts",
+      "wall_s": 322.348,
+      "spawns": {
+        "orchestrator": 1,
+        "planner": 1,
+        "executor": 1
+      },
+      "transcripts": "readable",
+      "acceptance": true,
+      "tests_ok": true,
+      "tests_pass": 9,
+      "tests_fail": 0,
+      "verification_status": null,
+      "trd_count": 1,
+      "summaries": 1,
+      "upgrade_commit": true,
+      "new_commits": 4,
+      "flags": []
+    },
+    {
+      "id": "q31-r3",
+      "version": "3.1.0",
+      "workflow": "quick",
+      "rep": 3,
+      "order": 6,
+      "status": "ok",
+      "session_model": "opus",
+      "requested_model_id": "claude-opus-5-5",
+      "cost_usd": 1.5154646999999999,
+      "transcript_cost_usd": 1.515465,
+      "priced_cost_usd": 1.515465,
+      "charged_usd": 1.515465,
+      "cost_source": "transcript_sum",
+      "first_turn_input": 33386,
+      "first_turn_source": "transcript",
+      "total_tokens": 2178502,
+      "cache_writes": 111950,
+      "tokens_source": "transcripts",
+      "wall_s": 340.691,
+      "spawns": {
+        "orchestrator": 1,
+        "planner": 1,
+        "executor": 1
+      },
+      "transcripts": "readable",
+      "acceptance": true,
+      "tests_ok": true,
+      "tests_pass": 11,
+      "tests_fail": 0,
+      "verification_status": null,
+      "trd_count": 1,
+      "summaries": 1,
+      "upgrade_commit": true,
+      "new_commits": 4,
+      "flags": []
+    },
+    {
+      "id": "q30-r3",
+      "version": "3.0.0",
+      "workflow": "quick",
+      "rep": 3,
+      "order": 7,
+      "status": "ok",
+      "session_model": "opus",
+      "requested_model_id": "claude-opus-5-5",
+      "cost_usd": 1.7665874,
+      "transcript_cost_usd": 1.756927,
+      "priced_cost_usd": 1.756927,
+      "charged_usd": 1.766587,
+      "cost_source": "reported",
+      "first_turn_input": 34271,
+      "first_turn_source": "transcript",
+      "total_tokens": 2294133,
+      "cache_writes": 162006,
+      "tokens_source": "transcripts",
+      "wall_s": 391.244,
+      "spawns": {
+        "orchestrator": 1,
+        "planner": 1,
+        "executor": 1
+      },
+      "transcripts": "readable",
+      "acceptance": true,
+      "tests_ok": true,
+      "tests_pass": 10,
+      "tests_fail": 0,
+      "verification_status": null,
+      "trd_count": 1,
+      "summaries": 1,
+      "upgrade_commit": false,
+      "new_commits": 3,
+      "flags": []
+    },
+    {
+      "id": "b30-r2",
+      "version": "3.0.0",
+      "workflow": "build",
+      "rep": 2,
+      "order": 8,
+      "status": "ok",
+      "session_model": "opus",
+      "requested_model_id": "claude-opus-5-5",
+      "cost_usd": 3.6041622999999996,
+      "transcript_cost_usd": 3.566762,
+      "priced_cost_usd": 3.566763,
+      "charged_usd": 3.604162,
+      "cost_source": "reported",
+      "first_turn_input": 38957,
+      "first_turn_source": "transcript",
+      "total_tokens": 6695220,
+      "cache_writes": 377091,
+      "tokens_source": "transcripts",
+      "wall_s": 612.768,
+      "spawns": {
+        "orchestrator": 1,
+        "planner": 1,
+        "job-checker": 1,
+        "general-purpose": 1,
+        "executor": 1,
+        "verifier": 2
+      },
+      "transcripts": "readable",
+      "acceptance": true,
+      "tests_ok": true,
+      "tests_pass": 19,
+      "tests_fail": 0,
+      "verification_status": "passed",
+      "trd_count": 1,
+      "summaries": 1,
+      "upgrade_commit": false,
+      "new_commits": 8,
+      "flags": []
+    },
+    {
+      "id": "b31-r2",
+      "version": "3.1.0",
+      "workflow": "build",
+      "rep": 2,
+      "order": 9,
+      "status": "ok",
+      "session_model": "opus",
+      "requested_model_id": "claude-opus-5-5",
+      "cost_usd": 4.354001200000003,
+      "transcript_cost_usd": 4.350741,
+      "priced_cost_usd": 4.350741,
+      "charged_usd": 4.354001,
+      "cost_source": "reported",
+      "first_turn_input": 37590,
+      "first_turn_source": "transcript",
+      "total_tokens": 7683598,
+      "cache_writes": 414212,
+      "tokens_source": "transcripts",
+      "wall_s": 775.254,
+      "spawns": {
+        "orchestrator": 1,
+        "planner": 1,
+        "job-checker": 1,
+        "general-purpose": 1,
+        "executor": 1,
+        "verifier": 2
+      },
+      "transcripts": "readable",
+      "acceptance": true,
+      "tests_ok": true,
+      "tests_pass": 33,
+      "tests_fail": 0,
+      "verification_status": "passed",
+      "trd_count": 1,
+      "summaries": 1,
+      "upgrade_commit": true,
+      "new_commits": 9,
+      "flags": []
+    }
+  ],
+  "per_role": {
+    "3.0.0": {
+      "quick": {
+        "orchestrator": {
+          "spawns": 3,
+          "runs": 3,
+          "unreadable": 0,
+          "first_turn_input": {
+            "n": 3,
+            "median": 34271,
+            "mean": 34368.666667,
+            "min": 34271,
+            "max": 34564
+          },
+          "total_tokens": {
+            "n": 3,
+            "median": 347956,
+            "mean": 379049,
+            "min": 344922,
+            "max": 444269
+          },
+          "cache_writes": {
+            "n": 3,
+            "median": 31501,
+            "mean": 31980.666667,
+            "min": 30766,
+            "max": 33675
+          },
+          "cost_usd": {
+            "n": 3,
+            "median": 0.39334,
+            "mean": 0.41135,
+            "min": 0.386861,
+            "max": 0.45385
+          },
+          "wall_s": {
+            "n": 3,
+            "median": 369.33,
+            "mean": 331.651667,
+            "min": 235.302,
+            "max": 390.323
+          },
+          "models": [
+            "claude-opus-5-5"
+          ]
+        },
+        "planner": {
+          "spawns": 3,
+          "runs": 3,
+          "unreadable": 0,
+          "first_turn_input": {
+            "n": 3,
+            "median": 29350,
+            "mean": 29403.666667,
+            "min": 29337,
+            "max": 29524
+          },
+          "total_tokens": {
+            "n": 3,
+            "median": 935678,
+            "mean": 961759.333333,
+            "min": 735692,
+            "max": 1213908
+          },
+          "cache_writes": {
+            "n": 3,
+            "median": 65673,
+            "mean": 69089.333333,
+            "min": 64347,
+            "max": 77248
+          },
+          "cost_usd": {
+            "n": 3,
+            "median": 0.862605,
+            "mean": 0.892298,
+            "min": 0.739139,
+            "max": 1.075151
+          },
+          "wall_s": {
+            "n": 3,
+            "median": 187.504,
+            "mean": 201.148,
+            "min": 138.202,
+            "max": 277.738
+          },
+          "models": [
+            "claude-opus-5-5"
+          ]
+        },
+        "executor": {
+          "spawns": 3,
+          "runs": 3,
+          "unreadable": 0,
+          "first_turn_input": {
+            "n": 3,
+            "median": 29543,
+            "mean": 29565.666667,
+            "min": 29418,
+            "max": 29736
+          },
+          "total_tokens": {
+            "n": 3,
+            "median": 735303,
+            "mean": 817140.666667,
+            "min": 671183,
+            "max": 1044936
+          },
+          "cache_writes": {
+            "n": 3,
+            "median": 53992,
+            "mean": 54870,
+            "min": 51962,
+            "max": 58656
+          },
+          "cost_usd": {
+            "n": 3,
+            "median": 0.294915,
+            "mean": 0.439678,
+            "min": 0.275876,
+            "max": 0.748242
+          },
+          "wall_s": {
+            "n": 3,
+            "median": 63.977,
+            "mean": 83.396333,
+            "min": 57.535,
+            "max": 128.677
+          },
+          "models": [
+            "claude-opus-5-5",
+            "claude-sonnet-5-5"
+          ]
+        }
+      },
+      "build": {
+        "orchestrator": {
+          "spawns": 2,
+          "runs": 2,
+          "unreadable": 0,
+          "first_turn_input": {
+            "n": 2,
+            "median": 39187.5,
+            "mean": 39187.5,
+            "min": 38957,
+            "max": 39418
+          },
+          "total_tokens": {
+            "n": 2,
+            "median": 664324.5,
+            "mean": 664324.5,
+            "min": 647665,
+            "max": 680984
+          },
+          "cache_writes": {
+            "n": 2,
+            "median": 48894,
+            "mean": 48894,
+            "min": 44412,
+            "max": 53376
+          },
+          "cost_usd": {
+            "n": 2,
+            "median": 0.63386,
+            "mean": 0.63386,
+            "min": 0.6091,
+            "max": 0.658619
+          },
+          "wall_s": {
+            "n": 2,
+            "median": 783.979,
+            "mean": 783.979,
+            "min": 612.049,
+            "max": 955.909
+          },
+          "models": [
+            "claude-opus-5-5"
+          ]
+        },
+        "planner": {
+          "spawns": 2,
+          "runs": 2,
+          "unreadable": 0,
+          "first_turn_input": {
+            "n": 2,
+            "median": 29726,
+            "mean": 29726,
+            "min": 29661,
+            "max": 29791
+          },
+          "total_tokens": {
+            "n": 2,
+            "median": 1321277,
+            "mean": 1321277,
+            "min": 1084520,
+            "max": 1558034
+          },
+          "cache_writes": {
+            "n": 2,
+            "median": 70669,
+            "mean": 70669,
+            "min": 47091,
+            "max": 94247
+          },
+          "cost_usd": {
+            "n": 2,
+            "median": 1.160807,
+            "mean": 1.160807,
+            "min": 0.824525,
+            "max": 1.497089
+          },
+          "wall_s": {
+            "n": 2,
+            "median": 277.738,
+            "mean": 277.738,
+            "min": 195.698,
+            "max": 359.778
+          },
+          "models": [
+            "claude-opus-5-5"
+          ]
+        },
+        "job-checker": {
+          "spawns": 2,
+          "runs": 2,
+          "unreadable": 0,
+          "first_turn_input": {
+            "n": 2,
+            "median": 14502,
+            "mean": 14502,
+            "min": 14407,
+            "max": 14597
+          },
+          "total_tokens": {
+            "n": 2,
+            "median": 66857,
+            "mean": 66857,
+            "min": 64527,
+            "max": 69187
+          },
+          "cache_writes": {
+            "n": 2,
+            "median": 22315,
+            "mean": 22315,
+            "min": 19657,
+            "max": 24973
+          },
+          "cost_usd": {
+            "n": 2,
+            "median": 0.073551,
+            "mean": 0.073551,
+            "min": 0.068515,
+            "max": 0.078586
+          },
+          "wall_s": {
+            "n": 2,
+            "median": 11.213,
+            "mean": 11.213,
+            "min": 9.872,
+            "max": 12.554
+          },
+          "models": [
+            "claude-sonnet-5-5"
+          ]
+        },
+        "executor": {
+          "spawns": 3,
+          "runs": 2,
+          "unreadable": 0,
+          "first_turn_input": {
+            "n": 3,
+            "median": 30845,
+            "mean": 30793,
+            "min": 30427,
+            "max": 31107
+          },
+          "total_tokens": {
+            "n": 3,
+            "median": 2769891,
+            "mean": 2801589.666667,
+            "min": 2508774,
+            "max": 3126104
+          },
+          "cache_writes": {
+            "n": 3,
+            "median": 81736,
+            "mean": 74836.666667,
+            "min": 55770,
+            "max": 87004
+          },
+          "cost_usd": {
+            "n": 3,
+            "median": 0.69198,
+            "mean": 0.674604,
+            "min": 0.576844,
+            "max": 0.754987
+          },
+          "wall_s": {
+            "n": 3,
+            "median": 165.3,
+            "mean": 160.959667,
+            "min": 147.41,
+            "max": 170.169
+          },
+          "models": [
+            "claude-sonnet-5-5"
+          ]
+        },
+        "verifier": {
+          "spawns": 4,
+          "runs": 2,
+          "unreadable": 0,
+          "first_turn_input": {
+            "n": 4,
+            "median": 28769.5,
+            "mean": 28793.25,
+            "min": 28576,
+            "max": 29058
+          },
+          "total_tokens": {
+            "n": 4,
+            "median": 239811.5,
+            "mean": 258362.25,
+            "min": 211155,
+            "max": 342671
+          },
+          "cache_writes": {
+            "n": 4,
+            "median": 40739.5,
+            "mean": 40940.25,
+            "min": 37904,
+            "max": 44378
+          },
+          "cost_usd": {
+            "n": 4,
+            "median": 0.224338,
+            "mean": 0.244736,
+            "min": 0.150523,
+            "max": 0.379746
+          },
+          "wall_s": {
+            "n": 4,
+            "median": 33.7655,
+            "mean": 33.5015,
+            "min": 20.531,
+            "max": 45.944
+          },
+          "models": [
+            "claude-opus-5-5",
+            "claude-sonnet-5-5"
+          ]
+        },
+        "general-purpose": {
+          "spawns": 2,
+          "runs": 2,
+          "unreadable": 0,
+          "first_turn_input": {
+            "n": 2,
+            "median": 15393,
+            "mean": 15393,
+            "min": 15306,
+            "max": 15480
+          },
+          "total_tokens": {
+            "n": 2,
+            "median": 1317721,
+            "mean": 1317721,
+            "min": 1292781,
+            "max": 1342661
+          },
+          "cache_writes": {
+            "n": 2,
+            "median": 84814.5,
+            "mean": 84814.5,
+            "min": 84155,
+            "max": 85474
+          },
+          "cost_usd": {
+            "n": 2,
+            "median": 0.838215,
+            "mean": 0.838215,
+            "min": 0.801371,
+            "max": 0.875059
+          },
+          "wall_s": {
+            "n": 2,
+            "median": 381.586,
+            "mean": 381.586,
+            "min": 295.695,
+            "max": 467.477
+          },
+          "models": [
+            "claude-opus-5-5"
+          ]
+        }
+      }
+    },
+    "3.1.0": {
+      "quick": {
+        "orchestrator": {
+          "spawns": 3,
+          "runs": 3,
+          "unreadable": 0,
+          "first_turn_input": {
+            "n": 3,
+            "median": 33386,
+            "mean": 33469.666667,
+            "min": 33386,
+            "max": 33637
+          },
+          "total_tokens": {
+            "n": 3,
+            "median": 528563,
+            "mean": 559504.666667,
+            "min": 478398,
+            "max": 671553
+          },
+          "cache_writes": {
+            "n": 3,
+            "median": 35744,
+            "mean": 37212.333333,
+            "min": 33383,
+            "max": 42510
+          },
+          "cost_usd": {
+            "n": 3,
+            "median": 0.501058,
+            "mean": 0.530265,
+            "min": 0.470068,
+            "max": 0.61967
+          },
+          "wall_s": {
+            "n": 3,
+            "median": 339.961,
+            "mean": 335.372,
+            "min": 321.749,
+            "max": 344.406
+          },
+          "models": [
+            "claude-opus-5-5"
+          ]
+        },
+        "planner": {
+          "spawns": 3,
+          "runs": 3,
+          "unreadable": 0,
+          "first_turn_input": {
+            "n": 3,
+            "median": 26719,
+            "mean": 26778,
+            "min": 26710,
+            "max": 26905
+          },
+          "total_tokens": {
+            "n": 3,
+            "median": 910219,
+            "mean": 913231.333333,
+            "min": 713055,
+            "max": 1116420
+          },
+          "cache_writes": {
+            "n": 3,
+            "median": 64218,
+            "mean": 59588,
+            "min": 40558,
+            "max": 73988
+          },
+          "cost_usd": {
+            "n": 3,
+            "median": 0.867129,
+            "mean": 0.820094,
+            "min": 0.636146,
+            "max": 0.957008
+          },
+          "wall_s": {
+            "n": 3,
+            "median": 194.549,
+            "mean": 186.318667,
+            "min": 163.6,
+            "max": 200.807
+          },
+          "models": [
+            "claude-opus-5-5"
+          ]
+        },
+        "executor": {
+          "spawns": 3,
+          "runs": 3,
+          "unreadable": 0,
+          "first_turn_input": {
+            "n": 3,
+            "median": 23931,
+            "mean": 23959.333333,
+            "min": 23872,
+            "max": 24075
+          },
+          "total_tokens": {
+            "n": 3,
+            "median": 793894,
+            "mean": 770392,
+            "min": 517315,
+            "max": 999967
+          },
+          "cache_writes": {
+            "n": 3,
+            "median": 41544,
+            "mean": 41286,
+            "min": 28882,
+            "max": 53432
+          },
+          "cost_usd": {
+            "n": 3,
+            "median": 0.259649,
+            "mean": 0.277781,
+            "min": 0.222216,
+            "max": 0.351477
+          },
+          "wall_s": {
+            "n": 3,
+            "median": 77.193,
+            "mean": 73.301,
+            "min": 52.606,
+            "max": 90.104
+          },
+          "models": [
+            "claude-sonnet-5-5"
+          ]
+        }
+      },
+      "build": {
+        "orchestrator": {
+          "spawns": 2,
+          "runs": 2,
+          "unreadable": 0,
+          "first_turn_input": {
+            "n": 2,
+            "median": 37778.5,
+            "mean": 37778.5,
+            "min": 37590,
+            "max": 37967
+          },
+          "total_tokens": {
+            "n": 2,
+            "median": 599408,
+            "mean": 599408,
+            "min": 595642,
+            "max": 603174
+          },
+          "cache_writes": {
+            "n": 2,
+            "median": 47798.5,
+            "mean": 47798.5,
+            "min": 46334,
+            "max": 49263
+          },
+          "cost_usd": {
+            "n": 2,
+            "median": 0.618116,
+            "mean": 0.618116,
+            "min": 0.60487,
+            "max": 0.631361
+          },
+          "wall_s": {
+            "n": 2,
+            "median": 941.707,
+            "mean": 941.707,
+            "min": 773.997,
+            "max": 1109.417
+          },
+          "models": [
+            "claude-opus-5-5"
+          ]
+        },
+        "planner": {
+          "spawns": 2,
+          "runs": 2,
+          "unreadable": 0,
+          "first_turn_input": {
+            "n": 2,
+            "median": 27237.5,
+            "mean": 27237.5,
+            "min": 27075,
+            "max": 27400
+          },
+          "total_tokens": {
+            "n": 2,
+            "median": 2205629.5,
+            "mean": 2205629.5,
+            "min": 2044399,
+            "max": 2366860
+          },
+          "cache_writes": {
+            "n": 2,
+            "median": 104472.5,
+            "mean": 104472.5,
+            "min": 103608,
+            "max": 105337
+          },
+          "cost_usd": {
+            "n": 2,
+            "median": 1.783818,
+            "mean": 1.783818,
+            "min": 1.738867,
+            "max": 1.828769
+          },
+          "wall_s": {
+            "n": 2,
+            "median": 424.765,
+            "mean": 424.765,
+            "min": 387.32,
+            "max": 462.21
+          },
+          "models": [
+            "claude-opus-5-5"
+          ]
+        },
+        "job-checker": {
+          "spawns": 2,
+          "runs": 2,
+          "unreadable": 0,
+          "first_turn_input": {
+            "n": 2,
+            "median": 14500.5,
+            "mean": 14500.5,
+            "min": 14424,
+            "max": 14577
+          },
+          "total_tokens": {
+            "n": 2,
+            "median": 70801,
+            "mean": 70801,
+            "min": 43690,
+            "max": 97912
+          },
+          "cache_writes": {
+            "n": 2,
+            "median": 30589.5,
+            "mean": 30589.5,
+            "min": 28240,
+            "max": 32939
+          },
+          "cost_usd": {
+            "n": 2,
+            "median": 0.096658,
+            "mean": 0.096658,
+            "min": 0.08229,
+            "max": 0.111026
+          },
+          "wall_s": {
+            "n": 2,
+            "median": 13.4575,
+            "mean": 13.4575,
+            "min": 9.295,
+            "max": 17.62
+          },
+          "models": [
+            "claude-sonnet-5-5"
+          ]
+        },
+        "executor": {
+          "spawns": 3,
+          "runs": 2,
+          "unreadable": 0,
+          "first_turn_input": {
+            "n": 3,
+            "median": 25100,
+            "mean": 25066.666667,
+            "min": 24873,
+            "max": 25227
+          },
+          "total_tokens": {
+            "n": 3,
+            "median": 3326048,
+            "mean": 3268868.333333,
+            "min": 2749382,
+            "max": 3731175
+          },
+          "cache_writes": {
+            "n": 3,
+            "median": 97358,
+            "mean": 92459.333333,
+            "min": 71282,
+            "max": 108738
+          },
+          "cost_usd": {
+            "n": 3,
+            "median": 0.871716,
+            "mean": 0.802918,
+            "min": 0.65397,
+            "max": 0.883069
+          },
+          "wall_s": {
+            "n": 3,
+            "median": 193.907,
+            "mean": 190.029333,
+            "min": 162.008,
+            "max": 214.173
+          },
+          "models": [
+            "claude-sonnet-5-5"
+          ]
+        },
+        "verifier": {
+          "spawns": 3,
+          "runs": 2,
+          "unreadable": 0,
+          "first_turn_input": {
+            "n": 3,
+            "median": 23191,
+            "mean": 23217.333333,
+            "min": 23085,
+            "max": 23376
+          },
+          "total_tokens": {
+            "n": 3,
+            "median": 174188,
+            "mean": 156570,
+            "min": 107016,
+            "max": 188506
+          },
+          "cache_writes": {
+            "n": 3,
+            "median": 31447,
+            "mean": 24518.333333,
+            "min": 7435,
+            "max": 34673
+          },
+          "cost_usd": {
+            "n": 3,
+            "median": 0.112774,
+            "mean": 0.094539,
+            "min": 0.040005,
+            "max": 0.130838
+          },
+          "wall_s": {
+            "n": 3,
+            "median": 19.002,
+            "mean": 17.422,
+            "min": 10.928,
+            "max": 22.336
+          },
+          "models": [
+            "claude-sonnet-5-5"
+          ]
+        },
+        "general-purpose": {
+          "spawns": 2,
+          "runs": 2,
+          "unreadable": 0,
+          "first_turn_input": {
+            "n": 2,
+            "median": 15079,
+            "mean": 15079,
+            "min": 15036,
+            "max": 15122
+          },
+          "total_tokens": {
+            "n": 2,
+            "median": 1256163,
+            "mean": 1256163,
+            "min": 1119711,
+            "max": 1392615
+          },
+          "cache_writes": {
+            "n": 2,
+            "median": 87255,
+            "mean": 87255,
+            "min": 86100,
+            "max": 88410
+          },
+          "cost_usd": {
+            "n": 2,
+            "median": 0.871989,
+            "mean": 0.871989,
+            "min": 0.855112,
+            "max": 0.888866
+          },
+          "wall_s": {
+            "n": 2,
+            "median": 427.9555,
+            "mean": 427.9555,
+            "min": 307.739,
+            "max": 548.172
+          },
+          "models": [
+            "claude-opus-5-5"
+          ]
+        }
+      }
+    }
+  },
+  "deltas": {
+    "quick": {
+      "orchestrator": {
+        "first_turn_input": {
+          "median": -885,
+          "mean": -899,
+          "median_pct": -2.58
+        },
+        "total_tokens": {
+          "median": 180607,
+          "mean": 180455.666667,
+          "median_pct": 51.91
+        },
+        "cache_writes": {
+          "median": 4243,
+          "mean": 5231.666666,
+          "median_pct": 13.47
+        },
+        "cost_usd": {
+          "median": 0.107718,
+          "mean": 0.118915,
+          "median_pct": 27.39
+        },
+        "wall_s": {
+          "median": -29.369,
+          "mean": 3.720333,
+          "median_pct": -7.95
+        }
+      },
+      "planner": {
+        "first_turn_input": {
+          "median": -2631,
+          "mean": -2625.666667,
+          "median_pct": -8.96
+        },
+        "total_tokens": {
+          "median": -25459,
+          "mean": -48528,
+          "median_pct": -2.72
+        },
+        "cache_writes": {
+          "median": -1455,
+          "mean": -9501.333333,
+          "median_pct": -2.22
+        },
+        "cost_usd": {
+          "median": 0.004524,
+          "mean": -0.072204,
+          "median_pct": 0.52
+        },
+        "wall_s": {
+          "median": 7.045,
+          "mean": -14.829333,
+          "median_pct": 3.76
+        }
+      },
+      "executor": {
+        "first_turn_input": {
+          "median": -5612,
+          "mean": -5606.333334,
+          "median_pct": -19
+        },
+        "total_tokens": {
+          "median": 58591,
+          "mean": -46748.666667,
+          "median_pct": 7.97
+        },
+        "cache_writes": {
+          "median": -12448,
+          "mean": -13584,
+          "median_pct": -23.06
+        },
+        "cost_usd": {
+          "median": -0.035266,
+          "mean": -0.161897,
+          "median_pct": -11.96
+        },
+        "wall_s": {
+          "median": 13.216,
+          "mean": -10.095333,
+          "median_pct": 20.66
+        }
+      }
+    },
+    "build": {
+      "orchestrator": {
+        "first_turn_input": {
+          "median": -1409,
+          "mean": -1409,
+          "median_pct": -3.6
+        },
+        "total_tokens": {
+          "median": -64916.5,
+          "mean": -64916.5,
+          "median_pct": -9.77
+        },
+        "cache_writes": {
+          "median": -1095.5,
+          "mean": -1095.5,
+          "median_pct": -2.24
+        },
+        "cost_usd": {
+          "median": -0.015744,
+          "mean": -0.015744,
+          "median_pct": -2.48
+        },
+        "wall_s": {
+          "median": 157.728,
+          "mean": 157.728,
+          "median_pct": 20.12
+        }
+      },
+      "planner": {
+        "first_turn_input": {
+          "median": -2488.5,
+          "mean": -2488.5,
+          "median_pct": -8.37
+        },
+        "total_tokens": {
+          "median": 884352.5,
+          "mean": 884352.5,
+          "median_pct": 66.93
+        },
+        "cache_writes": {
+          "median": 33803.5,
+          "mean": 33803.5,
+          "median_pct": 47.83
+        },
+        "cost_usd": {
+          "median": 0.623011,
+          "mean": 0.623011,
+          "median_pct": 53.67
+        },
+        "wall_s": {
+          "median": 147.027,
+          "mean": 147.027,
+          "median_pct": 52.94
+        }
+      },
+      "job-checker": {
+        "first_turn_input": {
+          "median": -1.5,
+          "mean": -1.5,
+          "median_pct": -0.01
+        },
+        "total_tokens": {
+          "median": 3944,
+          "mean": 3944,
+          "median_pct": 5.9
+        },
+        "cache_writes": {
+          "median": 8274.5,
+          "mean": 8274.5,
+          "median_pct": 37.08
+        },
+        "cost_usd": {
+          "median": 0.023107,
+          "mean": 0.023107,
+          "median_pct": 31.42
+        },
+        "wall_s": {
+          "median": 2.2445,
+          "mean": 2.2445,
+          "median_pct": 20.02
+        }
+      },
+      "executor": {
+        "first_turn_input": {
+          "median": -5745,
+          "mean": -5726.333333,
+          "median_pct": -18.63
+        },
+        "total_tokens": {
+          "median": 556157,
+          "mean": 467278.666666,
+          "median_pct": 20.08
+        },
+        "cache_writes": {
+          "median": 15622,
+          "mean": 17622.666666,
+          "median_pct": 19.11
+        },
+        "cost_usd": {
+          "median": 0.179736,
+          "mean": 0.128314,
+          "median_pct": 25.97
+        },
+        "wall_s": {
+          "median": 28.607,
+          "mean": 29.069666,
+          "median_pct": 17.31
+        }
+      },
+      "verifier": {
+        "first_turn_input": {
+          "median": -5578.5,
+          "mean": -5575.916667,
+          "median_pct": -19.39
+        },
+        "total_tokens": {
+          "median": -65623.5,
+          "mean": -101792.25,
+          "median_pct": -27.36
+        },
+        "cache_writes": {
+          "median": -9292.5,
+          "mean": -16421.916667,
+          "median_pct": -22.81
+        },
+        "cost_usd": {
+          "median": -0.111564,
+          "mean": -0.150197,
+          "median_pct": -49.73
+        },
+        "wall_s": {
+          "median": -14.7635,
+          "mean": -16.0795,
+          "median_pct": -43.72
+        }
+      },
+      "general-purpose": {
+        "first_turn_input": {
+          "median": -314,
+          "mean": -314,
+          "median_pct": -2.04
+        },
+        "total_tokens": {
+          "median": -61558,
+          "mean": -61558,
+          "median_pct": -4.67
+        },
+        "cache_writes": {
+          "median": 2440.5,
+          "mean": 2440.5,
+          "median_pct": 2.88
+        },
+        "cost_usd": {
+          "median": 0.033774,
+          "mean": 0.033774,
+          "median_pct": 4.03
+        },
+        "wall_s": {
+          "median": 46.3695,
+          "mean": 46.3695,
+          "median_pct": 12.15
+        }
+      }
+    }
+  },
+  "outcomes": {
+    "3.0.0": {
+      "quick": {
+        "planned": 3,
+        "recorded": 3,
+        "ok": 3,
+        "acceptance_pass": 3,
+        "acceptance_n": 3,
+        "tests_ok": 3,
+        "verification_passed": 0,
+        "verification_present": 0,
+        "trd_counts": [
+          1,
+          1,
+          1
+        ],
+        "upgrade_commits": 0,
+        "cost_usd": {
+          "n": 3,
+          "median": 1.766587,
+          "mean": 1.746546,
+          "min": 1.408355,
+          "max": 2.064697
+        },
+        "priced_cost_usd": {
+          "n": 3,
+          "median": 1.756927,
+          "mean": 1.743326,
+          "min": 1.408355,
+          "max": 2.064697
+        },
+        "first_turn_input": {
+          "n": 3,
+          "median": 34271,
+          "mean": 34368.666667,
+          "min": 34271,
+          "max": 34564
+        },
+        "total_tokens": {
+          "n": 3,
+          "median": 2294133,
+          "mean": 2157949,
+          "min": 1754831,
+          "max": 2424883
+        },
+        "wall_s": {
+          "n": 3,
+          "median": 370.113,
+          "mean": 332.684667,
+          "min": 236.697,
+          "max": 391.244
+        }
+      },
+      "build": {
+        "planned": 2,
+        "recorded": 2,
+        "ok": 2,
+        "acceptance_pass": 2,
+        "acceptance_n": 2,
+        "tests_ok": 2,
+        "verification_passed": 2,
+        "verification_present": 2,
+        "trd_counts": [
+          2,
+          1
+        ],
+        "upgrade_commits": 0,
+        "cost_usd": {
+          "n": 2,
+          "median": 4.250529,
+          "mean": 4.250529,
+          "min": 3.604162,
+          "max": 4.896896
+        },
+        "priced_cost_usd": {
+          "n": 2,
+          "median": 4.20781,
+          "mean": 4.20781,
+          "min": 3.566763,
+          "max": 4.848856
+        },
+        "first_turn_input": {
+          "n": 2,
+          "median": 39187.5,
+          "mean": 39187.5,
+          "min": 38957,
+          "max": 39418
+        },
+        "total_tokens": {
+          "n": 2,
+          "median": 8089288.5,
+          "mean": 8089288.5,
+          "min": 6695220,
+          "max": 9483357
+        },
+        "wall_s": {
+          "n": 2,
+          "median": 784.767,
+          "mean": 784.767,
+          "min": 612.768,
+          "max": 956.766
+        }
+      }
+    },
+    "3.1.0": {
+      "quick": {
+        "planned": 3,
+        "recorded": 3,
+        "ok": 3,
+        "acceptance_pass": 3,
+        "acceptance_n": 3,
+        "tests_ok": 3,
+        "verification_passed": 0,
+        "verification_present": 0,
+        "trd_counts": [
+          1,
+          1,
+          1
+        ],
+        "upgrade_commits": 3,
+        "cost_usd": {
+          "n": 3,
+          "median": 1.592364,
+          "mean": 1.628794,
+          "min": 1.515465,
+          "max": 1.778553
+        },
+        "priced_cost_usd": {
+          "n": 3,
+          "median": 1.590403,
+          "mean": 1.62814,
+          "min": 1.515465,
+          "max": 1.778553
+        },
+        "first_turn_input": {
+          "n": 3,
+          "median": 33386,
+          "mean": 33469.666667,
+          "min": 33386,
+          "max": 33637
+        },
+        "total_tokens": {
+          "n": 3,
+          "median": 2178502,
+          "mean": 2243128,
+          "min": 2162298,
+          "max": 2388584
+        },
+        "wall_s": {
+          "n": 3,
+          "median": 340.691,
+          "mean": 336.084667,
+          "min": 322.348,
+          "max": 345.215
+        }
+      },
+      "build": {
+        "planned": 2,
+        "recorded": 2,
+        "ok": 2,
+        "acceptance_pass": 2,
+        "acceptance_n": 2,
+        "tests_ok": 2,
+        "verification_passed": 2,
+        "verification_present": 2,
+        "trd_counts": [
+          2,
+          1
+        ],
+        "upgrade_commits": 2,
+        "cost_usd": {
+          "n": 2,
+          "median": 4.720657,
+          "mean": 4.720657,
+          "min": 4.354001,
+          "max": 5.087312
+        },
+        "priced_cost_usd": {
+          "n": 2,
+          "median": 4.716767,
+          "mean": 4.716767,
+          "min": 4.350741,
+          "max": 5.082792
+        },
+        "first_turn_input": {
+          "n": 2,
+          "median": 37778.5,
+          "mean": 37778.5,
+          "min": 37590,
+          "max": 37967
+        },
+        "total_tokens": {
+          "n": 2,
+          "median": 9270159,
+          "mean": 9270159,
+          "min": 7683598,
+          "max": 10856720
+        },
+        "wall_s": {
+          "n": 2,
+          "median": 942.7435,
+          "mean": 942.7435,
+          "min": 775.254,
+          "max": 1110.233
+        }
+      }
+    }
+  },
+  "static": {
+    "source": "out",
+    "path": "/Users/justin/dev/aoforge-claude/.aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/static-prompt.json",
+    "from": {
+      "ref": "v3.0.0",
+      "sha": "b4a9d87030fbbdfe707514cedbd06601598e4041"
+    },
+    "to": {
+      "ref": "HEAD",
+      "sha": "c4694697820d8f7094541b358bc5582bbec81260"
+    },
+    "roles": {
+      "orchestrator": {
+        "na": "n/a (not a spawn)"
+      },
+      "planner": {
+        "from_bytes": 61255,
+        "to_bytes": 54865,
+        "delta_bytes": -6390,
+        "delta_pct": -10.43,
+        "from_tokens": 15314,
+        "to_tokens": 13716,
+        "delta_tokens": -1598
+      },
+      "job-checker": {
+        "from_bytes": 25476,
+        "to_bytes": 25430,
+        "delta_bytes": -46,
+        "delta_pct": -0.18,
+        "from_tokens": 6369,
+        "to_tokens": 6358,
+        "delta_tokens": -11
+      },
+      "executor": {
+        "from_bytes": 64529,
+        "to_bytes": 52632,
+        "delta_bytes": -11897,
+        "delta_pct": -18.44,
+        "from_tokens": 16132,
+        "to_tokens": 13158,
+        "delta_tokens": -2974
+      },
+      "verifier": {
+        "from_bytes": 48026,
+        "to_bytes": 31109,
+        "delta_bytes": -16917,
+        "delta_pct": -35.22,
+        "from_tokens": 12007,
+        "to_tokens": 7777,
+        "delta_tokens": -4230
+      },
+      "general-purpose": {
+        "from_bytes": 57,
+        "to_bytes": 57,
+        "delta_bytes": 0,
+        "delta_pct": 0,
+        "from_tokens": 14,
+        "to_tokens": 14,
+        "delta_tokens": 0
+      }
+    }
+  },
+  "flagged": [],
+  "excluded": [],
+  "notes": [
+    "Session model opus, profile balanced, the same for both versions.",
+    "3.1.0 runs include the SessionStart upgrade hook's commit (chore(aoforge): upgrade project to v3.1.0): 5 of 5 recorded 3.1.0 runs.",
+    "Role cells count only runs that ended ok, per spawn; n is spawns (runs).",
+    "model_ran is not used for E: subagents run on their profile tiers by design.",
+    "Pilot cost check (TRD 81-17 Task 2): the CLI reported cost includes subagent spend. q31-r1 reported 1.7785529 vs transcript 1.778553 (main 0.470068, subagents 1.308485); q30-r1 2.0646968 vs 2.064697 (0.45385, 1.610847); b31-r1 5.0873121 vs 5.082792 (0.631361, 4.451431); b30-r1 4.8968957 vs 4.848856 (0.6091, 4.239755). Reported >= 0.95 x transcript on all four; the ledger charged max(reported, transcript) on all ten runs. Overshoot 0 on every run (max charged/cap: quick 0.34, build 0.34), so whether --max-budget-usd bounds subagent spend is untested.",
+    "Post-hoc 3 (81-PREREG 9.3): the four pilots ran with the session cwd under the session scratchpad; the other six under the opaque sandbox root /private/tmp/claude-501/e81-<hex>. One quick and one build run per version fall in each group.",
+    "Out-of-sandbox reads by the 3.1.0 build executor (TRD 01-01, sonnet, spawn depth 2), both resolving ~/.claude/aoforge/references/tdd.md by guessing a home: b31-r1 Read /Users/<real user>/... (denied by the deny list, escape_attempt true); b31-r2 Read /Users/aocyber/... (a non-existent path, File does not exist, not denied). Both then read the sandbox copy. No 3.0.0 run did this.",
+    "Executor model per quick run: 3.1.0 sonnet 3/3; 3.0.0 sonnet 2/3 and opus 1/3 (q30-r1 spawned the executor with no model). Build verifiers: 3.0.0 runs spawned 2 each (one sonnet from the executing agent, one opus from the orchestrator); 3.1.0 b31-r1 1, b31-r2 2 (both sonnet)."
+  ],
+  "scored_at": "2026-10-17T21:15:11.455Z",
+  "spend": {
+    "ledger_version": 1,
+    "batch": "E",
+    "status": "complete",
+    "spent_usd": 28.068392,
+    "ledger_total_usd": 32.628238,
+    "entries": [
+      {
+        "id": "q31-r1",
+        "batch": "E",
+        "role": "workflow:quick",
+        "status": "ok",
+        "cap_usd": 6,
+        "reserve_usd": 7.5,
+        "reported_usd": 1.7785529,
+        "transcript_usd": 1.778553,
+        "charged_usd": 1.778553,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:28:51.655Z"
+      },
+      {
+        "id": "q30-r1",
+        "batch": "E",
+        "role": "workflow:quick",
+        "status": "ok",
+        "cap_usd": 6,
+        "reserve_usd": 7.5,
+        "reported_usd": 2.0646968000000006,
+        "transcript_usd": 2.064697,
+        "charged_usd": 2.064697,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:35:02.417Z"
+      },
+      {
+        "id": "b31-r1",
+        "batch": "E",
+        "role": "workflow:build",
+        "status": "ok",
+        "cap_usd": 15,
+        "reserve_usd": 18.75,
+        "reported_usd": 5.087312099999999,
+        "transcript_usd": 5.082792,
+        "charged_usd": 5.087312,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:54:28.347Z"
+      },
+      {
+        "id": "b30-r1",
+        "batch": "E",
+        "role": "workflow:build",
+        "status": "ok",
+        "cap_usd": 15,
+        "reserve_usd": 18.75,
+        "reported_usd": 4.896895699999999,
+        "transcript_usd": 4.848856,
+        "charged_usd": 4.896896,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T20:10:26.392Z"
+      },
+      {
+        "id": "q30-r2",
+        "batch": "E",
+        "role": "workflow:quick",
+        "status": "ok",
+        "cap_usd": 6,
+        "reserve_usd": 7.5,
+        "reported_usd": 1.4083547000000003,
+        "transcript_usd": 1.408355,
+        "charged_usd": 1.408355,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T20:33:40.343Z"
+      },
+      {
+        "id": "q31-r2",
+        "batch": "E",
+        "role": "workflow:quick",
+        "status": "ok",
+        "cap_usd": 6,
+        "reserve_usd": 7.5,
+        "reported_usd": 1.5923637,
+        "transcript_usd": 1.590404,
+        "charged_usd": 1.592364,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T20:39:03.277Z"
+      },
+      {
+        "id": "q31-r3",
+        "batch": "E",
+        "role": "workflow:quick",
+        "status": "ok",
+        "cap_usd": 6,
+        "reserve_usd": 7.5,
+        "reported_usd": 1.5154646999999999,
+        "transcript_usd": 1.515465,
+        "charged_usd": 1.515465,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T20:44:44.509Z"
+      },
+      {
+        "id": "q30-r3",
+        "batch": "E",
+        "role": "workflow:quick",
+        "status": "ok",
+        "cap_usd": 6,
+        "reserve_usd": 7.5,
+        "reported_usd": 1.7665874,
+        "transcript_usd": 1.756927,
+        "charged_usd": 1.766587,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T20:51:16.335Z"
+      },
+      {
+        "id": "b30-r2",
+        "batch": "E",
+        "role": "workflow:build",
+        "status": "ok",
+        "cap_usd": 15,
+        "reserve_usd": 18.75,
+        "reported_usd": 3.6041622999999996,
+        "transcript_usd": 3.566762,
+        "charged_usd": 3.604162,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:01:29.662Z"
+      },
+      {
+        "id": "b31-r2",
+        "batch": "E",
+        "role": "workflow:build",
+        "status": "ok",
+        "cap_usd": 15,
+        "reserve_usd": 18.75,
+        "reported_usd": 4.354001200000003,
+        "transcript_usd": 4.350741,
+        "charged_usd": 4.354001,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:14:26.268Z"
+      }
+    ]
+  }
+}
