@@ -1900,6 +1900,11 @@
       "objective": "81",
       "summary": "81-03: test A fixtures are string literals in a builder, materialised to temp dirs; commit author is Project Author because the word fixture must not appear in the repo",
       "rationale": null
+    },
+    {
+      "objective": "81",
+      "summary": "81-04: test B sets are TRD data rendered by one function; only B4 is flagged by verify trd-pre (task_completeness 02-02), B3/B5/B6 are judgment-only, recorded as precheck_flags in answer-key.json",
+      "rationale": null
     }
   ],
   "blockers": [
