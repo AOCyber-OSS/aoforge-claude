@@ -284,7 +284,9 @@ test('9. an untracked tree moves with an fs rename, byte for byte', (t) => {
 
 test('10. a second moveTrees is a no-op', (t) => {
   const repo = fleet(t, { nested: true });
-  const { m, plan } = migrate(repo);
+  const m = mod();
+  const plan = m.planMigration(repo.root, { env: repo.env });
+  m.moveTrees(repo.root, plan.moves, { env: repo.env });
   const snap = repo.snapshot();
   const again = m.moveTrees(repo.root, plan.moves, { env: repo.env });
   assert.deepEqual(again.map((d) => d.via), ['done', 'done', 'done']);
