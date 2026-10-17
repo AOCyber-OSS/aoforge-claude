@@ -67,7 +67,7 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 **Objective complete:** 75 — Prospective estimate retest and todo sweep (completed 2026-10-10, 5/5 TRDs)
 **Objective complete:** 78 — Remove the rename shims (completed 2026-10-17, 12/12 TRDs)
 **Objective complete:** 80 — Adopt migrates legacy projects (completed 2026-10-17, 9/9 TRDs)
-**Status:** Executing objective 81 — 7/19 TRDs complete
+**Status:** Executing objective 81 — 8/19 TRDs complete
 **Progress:** [██████████] 98%
 
 ## Branch State (post-merge)
