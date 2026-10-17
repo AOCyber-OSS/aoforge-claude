@@ -5216,6 +5216,7 @@ STATE.md stays lean; this file grows over time.
 - [Objective 81]: 81-15: batch B scorer lexical misses on B6 recorded as sensitivity lines in B-spotcheck.md; frozen scorer unchanged
 - [Objective 81]: 81-16: D cap not resized (2-run pilot projected $0.86 for 24); D disagreements tied to one-session-per-surface design, recorded as sensitivity, labels unchanged
 8.07
+- [Objective 81]: 81-18: post-hoc 4 access classes (user 'Reclassify + re-run impaired'); C complete $7.42, 0 real escapes, 1 final impaired; ledger $40.05; e81 sandbox deleted
 
 ## Performance Metrics
 
@@ -5471,3 +5472,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 81 P15 | 15min | 3 tasks | 3 files |
 | Objective 81 P16 | 10min | 3 tasks | 3 files |
 | Objective 81 P17 | 120min | 4 tasks | 16 files |
+| Objective 81 P18 | 85min | 3 tasks | 14 files |
