@@ -9,5 +9,5 @@ status: checkpoint
 # Objective 81 TRD 10: Batch spec and scorer for D (UI judge) Summary
 
 ## Progress
-- [x] Task 1: Canned judge outputs (fixture builder) — (this commit)
-- [ ] Task 2: Batch D module and scorer — next step: write scripts/eval81/batches/D.test.cjs test 1 (runs() returns 24 valid descriptors) and watch it fail, then scripts/eval81/batches/D.cjs
+- [x] Task 1: Canned judge outputs (fixture builder) — bb5be35a
+- [x] Task 2: Batch D module and scorer — (this commit)
