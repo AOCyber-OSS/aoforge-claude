@@ -10,7 +10,8 @@
 // 1. Scan set = `git ls-files` minus the codemod's SKIP minus ALLOW. It is non-empty
 //    (> 500 files) and includes plugins/aoforge/aoforge/bin/aof-tools.cjs and README.md.
 // 2. Main gate: zero findings across the scan set for the legacy product word (any case, after
-//    masking the codemod's PRESERVE tokens), the legacy CLI name and the legacy banner, in file
+//    masking the codemod's PRESERVE tokens), the legacy CLI name, the legacy banner and (quick 40,
+//    test 10, user-facing files only) a pre-plugin install-prefixed agent or skill name, in file
 //    content and in the path itself. A failure lists `file:line token` and the ALLOW table.
 // 3. Lines inside an ignore region (the rename-guard ignore-start ... ignore-end markers) are not
 //    scanned; only files in IGNORE_REGION_FILES may contain such a region, and every region in
@@ -40,6 +41,14 @@
 //    release, ALLOW holds no such entry, so a synthetic one is passed in: its spans are masked and
 //    another legacy word on another line is still found; the same text under another path yields
 //    every finding. Masking keeps line numbers.
+// 10. Install-prefixed agent and skill names (quick 40): the `installName` token is LEGACY.installPrefix
+//    followed by one of the tree's agent names (plugins/aoforge/agents/*.md) or skill directories
+//    (plugins/aoforge/skills/*/), read lazily, as a whole word not followed by `-`. It applies only to
+//    the user-facing set (agents, skills, workflows, references, templates, stack-profiles, live docs,
+//    site/content, README.md, CLAUDE.md; never a test or a fixture). Live conventions (the worktrees
+//    directory, the ws/ and exec/ branch prefixes), mkdtemp-style prefixes and globs never match; tests,
+//    fixtures, code, CHANGELOG, docs history and the planning tree are out of scope. Test 6 also holds
+//    the guard source to zero installName matches.
 //
 // Runtime model: read-only against the repository (5b writes only to its own tmp dir). Repo
 // root is path.resolve(__dirname, '..', '..', '..', '..', '..'); a mirror install (no README.md
@@ -149,6 +158,69 @@ function ignoredLines(lines) {
   return ignored;
 }
 
+// ─── pre-plugin install-prefixed agent and skill names (quick 40, test 10) ───────────
+// The pre-plugin install put every agent and skill under LEGACY.installPrefix. A user-facing file that
+// still names one points the reader at a name nothing resolves any more. The token is scoped to the
+// user-facing set: tests, fixtures, code under bin/ and hooks/, history and the planning tree keep their
+// prefixed inputs, mkdtemp prefixes and detectors on purpose, so the token never applies there.
+
+const INSTALL_NAME_SCOPE = [
+  'plugins/aoforge/agents/**',
+  'plugins/aoforge/skills/**',
+  'plugins/aoforge/aoforge/workflows/**',
+  'plugins/aoforge/aoforge/references/**',
+  'plugins/aoforge/aoforge/templates/**',
+  'plugins/aoforge/aoforge/stack-profiles/**',
+  'docs/**',
+  'site/content/**',
+  'README.md',
+  'CLAUDE.md',
+].map(globToRegExp);
+
+/** Whether `rel` is a user-facing file the installName token applies to (tests and fixtures never are). */
+function inInstallNameScope(rel) {
+  return (
+    INSTALL_NAME_SCOPE.some((re) => re.test(rel)) &&
+    !/\.test\.[^/]*$/.test(rel) &&
+    !/(^|\/)__fixtures__\//.test(rel)
+  );
+}
+
+/**
+ * Every agent (plugins/aoforge/agents/*.md) and skill (plugins/aoforge/skills/<dir>) name in the tree,
+ * longest first. Read lazily, on the first in-scope scan: a mirror install loads this module with no
+ * plugins/ tree.
+ */
+let _agentAndSkillNames = null;
+function agentAndSkillNames() {
+  if (!_agentAndSkillNames) {
+    const root = path.join(REPO_ROOT, 'plugins', 'aoforge');
+    const agents = fs
+      .readdirSync(path.join(root, 'agents'))
+      .filter((f) => f.endsWith('.md'))
+      .map((f) => f.slice(0, -'.md'.length));
+    const skills = fs
+      .readdirSync(path.join(root, 'skills'), { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name);
+    _agentAndSkillNames = [...new Set([...agents, ...skills])].sort((a, b) => b.length - a.length || a.localeCompare(b));
+  }
+  return _agentAndSkillNames;
+}
+
+/**
+ * The prefix, then one of the names, as a whole word. The trailing `-` exclusion keeps mkdtemp-style
+ * prefixes (the prefix, a name and a dash) out; a directory such as the worktrees root is no name.
+ */
+let _installNameRe = null;
+function installNameRe() {
+  if (!_installNameRe) {
+    const names = agentAndSkillNames().map(esc).join('|');
+    _installNameRe = new RegExp(`(?<![A-Za-z0-9_])${esc(LEGACY.installPrefix)}(?:${names})(?![A-Za-z0-9_-])`, 'g');
+  }
+  return _installNameRe;
+}
+
 // ─── tokens (built from LEGACY, test 6) ───────────────────────────────────────────
 
 const TOKENS = [
@@ -158,6 +230,14 @@ const TOKENS = [
   // TRD 72-06: the legacy planning directory, not followed by an identifier character (a longer
   // identifier is another word). Member access is filtered below with the codemod's occurrenceKind.
   { id: 'planningDir', re: new RegExp(`${esc(LEGACY.planningDir)}(?![A-Za-z0-9_])`, 'g'), directoryOnly: true },
+  // Quick 40: a pre-plugin install-prefixed agent or skill name, only in the user-facing set (`scope`).
+  {
+    id: 'installName',
+    get re() {
+      return installNameRe();
+    },
+    scope: inInstallNameScope,
+  },
 ];
 
 /** Kinds of a planning-directory occurrence that name the directory (codemod occurrenceKind). */
@@ -196,10 +276,12 @@ function wordAt(line, index, length) {
 function scanText(text, rel = '') {
   const lines = maskPreserved(text, rel).split('\n');
   const ignored = ignoredLines(lines);
+  // A scoped token (installName) applies only to the files its scope names; outside them its pattern is never built.
+  const tokens = TOKENS.filter((t) => !t.scope || t.scope(rel));
   const out = [];
   for (let i = 0; i < lines.length; i++) {
     if (ignored.has(i)) continue;
-    for (const t of TOKENS) {
+    for (const t of tokens) {
       for (const m of lines[i].matchAll(t.re)) {
         if (t.directoryOnly && !DIRECTORY_KINDS.has(codemod().occurrenceKind(lines[i], m.index))) continue;
         out.push({ line: i + 1, token: wordAt(lines[i], m.index, m[0].length) });
@@ -473,6 +555,12 @@ describe('rename-guard.repo.test.cjs', { skip: IS_AOFORGE_CHECKOUT ? false : 'no
     assert.equal(src.toLowerCase().includes(LEGACY.cli.toLowerCase()), false, 'legacy CLI name in the guard source');
     assert.equal(src.includes(LEGACY.banner), false, 'legacy banner in the guard source');
     assert.deepEqual(scanText(src, path.relative(REPO_ROOT, __filename)), [], 'legacy planning directory in the guard source');
+    // Quick 40: the guard source is out of the installName scope, so it is held to the pattern directly.
+    assert.deepEqual(
+      [...src.matchAll(installNameRe())].map((m) => m[0]),
+      [],
+      'install-prefixed agent or skill name in the guard source',
+    );
   });
 
   describe('8: the legacy planning directory (TRD 72-06)', () => {
@@ -561,6 +649,91 @@ describe('rename-guard.repo.test.cjs', { skip: IS_AOFORGE_CHECKOUT ? false : 'no
       assert.notEqual(masked, sample, 'the spans were masked');
       assert.equal(masked.length, sample.length);
       assert.equal(masked.split('\n').length, sample.split('\n').length);
+    });
+  });
+
+  describe('10: pre-plugin install-prefixed agent and skill names (quick 40)', () => {
+    const P = LEGACY.installPrefix;
+    const IN_SCOPE = 'plugins/aoforge/aoforge/references/x.md';
+
+    test('10a: an agent name, a backticked agent name and a skill path in scope are three findings', () => {
+      const text = [`${P}planner`, `\`${P}verifier\``, `${P}plan-objective/SKILL.md`].join('\n');
+      assert.deepEqual(scanText(text, IN_SCOPE), [
+        { line: 1, token: `${P}planner` },
+        { line: 2, token: `${P}verifier` },
+        { line: 3, token: `${P}plan-objective/SKILL.md` },
+      ]);
+    });
+
+    test('10b: live conventions and look-alikes in scope are no finding', () => {
+      const text = [
+        `.${P}worktrees/<repo>/<id>`,
+        'df/ws-auth',
+        'df/exec-79-07-claude-md',
+        `${P}quick-abc`,
+        `${P}*`,
+        `legacy-${P}install`,
+      ].join('\n');
+      assert.deepEqual(scanText(text, IN_SCOPE), []);
+    });
+
+    test('10c: tests, fixtures and ignore regions are out of scope; the live guide outside a region is not', () => {
+      const line = `${P}planner`;
+      assert.deepEqual(scanText(line, 'plugins/aoforge/aoforge/bin/lib/x.test.cjs'), []);
+      assert.deepEqual(scanText(line, 'plugins/aoforge/skills/x/__fixtures__/y.md'), []);
+      const guide = [`<!-- ${IGNORE_START} -->`, line, `<!-- ${IGNORE_END} -->`].join('\n');
+      assert.deepEqual(scanText(guide, 'docs/USER-GUIDE.md'), []);
+      assert.deepEqual(
+        scanText(`${guide}\n${line}`, 'docs/USER-GUIDE.md').map((f) => f.line),
+        [4],
+      );
+    });
+
+    test('10d: scanRepo finds the name only in the user-facing files of a scratch repo', () => {
+      const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'rename-guard-install-'));
+      try {
+        const git = (...args) => {
+          const r = spawnSync('git', args, { cwd: tmp, encoding: 'utf8' });
+          assert.equal(r.status, 0, `git ${args.join(' ')}: ${r.stderr}`);
+        };
+        git('init', '-q');
+        const files = [
+          'CHANGELOG.md',
+          'docs/x.md',
+          `${NAMES.planningDir}/x.md`,
+          'plugins/aoforge/aoforge/bin/lib/a.test.cjs',
+          'plugins/aoforge/aoforge/references/a.md',
+          'site/content/a.md',
+        ];
+        for (const rel of files) {
+          fs.mkdirSync(path.join(tmp, path.dirname(rel)), { recursive: true });
+          fs.writeFileSync(path.join(tmp, rel), `A ${P}planner note.\n`);
+        }
+        git('add', '--', ...files);
+        assert.deepEqual(
+          scanRepo(tmp, { allow: [] }).map((f) => `${f.file}:${f.line}`),
+          ['plugins/aoforge/aoforge/references/a.md:1', 'site/content/a.md:1'],
+        );
+      } finally {
+        fs.rmSync(tmp, { recursive: true, force: true });
+      }
+    });
+
+    test('10e: the names come from the tree and the pattern from LEGACY.installPrefix', () => {
+      const names = agentAndSkillNames();
+      const root = path.join(REPO_ROOT, 'plugins', 'aoforge');
+      const agents = fs.readdirSync(path.join(root, 'agents')).filter((f) => f.endsWith('.md'));
+      const skills = fs
+        .readdirSync(path.join(root, 'skills'), { withFileTypes: true })
+        .filter((d) => d.isDirectory())
+        .map((d) => d.name);
+      for (const f of agents) assert.ok(names.includes(f.slice(0, -'.md'.length)), `agent ${f} is in the name list`);
+      for (const d of skills) assert.ok(names.includes(d), `skill ${d} is in the name list`);
+      assert.ok(names.length >= 40, `expected >= 40 names, got ${names.length}`);
+      for (const n of ['planner', 'job-checker', 'plan-objective', 'objective']) assert.ok(names.includes(n), n);
+      const t = TOKENS.find((x) => x.id === 'installName');
+      assert.ok(t && typeof t.scope === 'function', 'a scoped installName token');
+      assert.ok(t.re.source.startsWith(`(?<![A-Za-z0-9_])${esc(LEGACY.installPrefix)}`), t.re.source);
     });
   });
 });
