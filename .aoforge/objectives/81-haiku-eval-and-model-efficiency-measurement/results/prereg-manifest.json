@@ -1,0 +1,610 @@
+{
+  "version": 1,
+  "created_at": "2026-10-17T17:50:59.704Z",
+  "head": "fe56ba4a5a7c4f3b9382f08307760cd215b72d25",
+  "trees": {
+    "3.0.0": {
+      "ref": "v3.0.0",
+      "sha": "b4a9d87030fbbdfe707514cedbd06601598e4041"
+    },
+    "3.1.0": {
+      "ref": "99950509d10a9905ff2d845e09df9d6b2e55e455",
+      "sha": "99950509d10a9905ff2d845e09df9d6b2e55e455"
+    }
+  },
+  "claude_version": "2.1.302 (Claude Code)",
+  "calibration_sha256": "e8d76a2687e0ea19b3403060b3cf7c982f96dc8fb0fa93934c0a058820ea88a1",
+  "projection": {
+    "source": "TRD 81-13 Task 1 dry runs (run.cjs --dry-run --materialize first) with the real calibration.json read-only; C graders computed with capFor(grader, sonnet)",
+    "global_cap_usd": 100,
+    "overall_estimate_usd": 83,
+    "totals": {
+      "runs": 202,
+      "sum_caps_usd": 294.04171,
+      "sum_reserves_usd": 367.552142,
+      "base_prompt_usd": 27.40896,
+      "overall_estimate_usd": 83,
+      "batch_caps_sum_usd": 71.5,
+      "room_for_C_if_A_B_D_E_hit_batch_caps_usd": 28.5
+    },
+    "batches": {
+      "A": {
+        "runs": 36,
+        "groups": {
+          "haiku": {
+            "runs": 18,
+            "cap_usd": 0.45975,
+            "reserve_usd": 0.574688,
+            "base_prompt_usd": 0.0189,
+            "sum_caps_usd": 8.2755
+          },
+          "sonnet": {
+            "runs": 18,
+            "cap_usd": 1.9974,
+            "reserve_usd": 2.49675,
+            "base_prompt_usd": 0.234,
+            "sum_caps_usd": 35.9532
+          }
+        },
+        "sum_caps_usd": 44.2287,
+        "sum_reserves_usd": 55.285884,
+        "base_prompt_usd": 4.5522,
+        "estimate_usd": 5,
+        "batch_cap_usd": 7.5,
+        "caps_exceed_batch_cap": true,
+        "run_start_threshold_usd": {
+          "haiku": 7.04025,
+          "sonnet": 5.5026
+        },
+        "completes_if_spend_at_most_x_estimate": 1.17,
+        "two_thirds_if_spend_at_most_x_estimate": 1.8,
+        "flat_avg_run_cost_limit_full_usd": 0.161841,
+        "flat_avg_run_cost_limit_two_thirds_usd": 0.250118
+      },
+      "B": {
+        "runs": 36,
+        "groups": {
+          "haiku": {
+            "runs": 18,
+            "cap_usd": 0.418325,
+            "reserve_usd": 0.522906,
+            "base_prompt_usd": 0.0189,
+            "sum_caps_usd": 7.52985
+          },
+          "sonnet": {
+            "runs": 18,
+            "cap_usd": 1.8317,
+            "reserve_usd": 2.289625,
+            "base_prompt_usd": 0.234,
+            "sum_caps_usd": 32.9706
+          }
+        },
+        "sum_caps_usd": 40.50045,
+        "sum_reserves_usd": 50.625558,
+        "base_prompt_usd": 4.5522,
+        "estimate_usd": 4,
+        "batch_cap_usd": 6,
+        "caps_exceed_batch_cap": true,
+        "run_start_threshold_usd": {
+          "haiku": 5.581675,
+          "sonnet": 4.1683
+        },
+        "completes_if_spend_at_most_x_estimate": 1.1,
+        "two_thirds_if_spend_at_most_x_estimate": 1.71,
+        "flat_avg_run_cost_limit_full_usd": 0.122597,
+        "flat_avg_run_cost_limit_two_thirds_usd": 0.189468
+      },
+      "D": {
+        "runs": 24,
+        "groups": {
+          "haiku": {
+            "runs": 12,
+            "cap_usd": 0.25558,
+            "reserve_usd": 0.319475,
+            "base_prompt_usd": 0.00558,
+            "sum_caps_usd": 3.06696
+          },
+          "sonnet": {
+            "runs": 12,
+            "cap_usd": 0.6008,
+            "reserve_usd": 0.751,
+            "base_prompt_usd": 0.1008,
+            "sum_caps_usd": 7.2096
+          }
+        },
+        "sum_caps_usd": 10.27656,
+        "sum_reserves_usd": 12.8457,
+        "base_prompt_usd": 1.27656,
+        "estimate_usd": 2,
+        "batch_cap_usd": 3,
+        "caps_exceed_batch_cap": true,
+        "run_start_threshold_usd": {
+          "haiku": 2.74442,
+          "sonnet": 2.3992
+        },
+        "completes_if_spend_at_most_x_estimate": 1.31,
+        "two_thirds_if_spend_at_most_x_estimate": 2.06,
+        "flat_avg_run_cost_limit_full_usd": 0.109055,
+        "flat_avg_run_cost_limit_two_thirds_usd": 0.171371
+      },
+      "E": {
+        "runs": 10,
+        "groups": {
+          "workflow:quick:opus": {
+            "runs": 6,
+            "cap_usd": 6,
+            "reserve_usd": 7.5,
+            "base_prompt_usd": 0.612,
+            "sum_caps_usd": 36
+          },
+          "workflow:build:opus": {
+            "runs": 4,
+            "cap_usd": 15,
+            "reserve_usd": 18.75,
+            "base_prompt_usd": 0.612,
+            "sum_caps_usd": 60
+          }
+        },
+        "sum_caps_usd": 96,
+        "sum_reserves_usd": 120,
+        "base_prompt_usd": 6.12,
+        "estimate_usd": 44,
+        "batch_cap_usd": 55,
+        "caps_exceed_batch_cap": true,
+        "run_start_threshold_usd": {
+          "opus": 49
+        },
+        "completes_if_spend_at_most_x_estimate": 1.08,
+        "two_thirds_if_spend_at_most_x_estimate": 1.98,
+        "flat_avg_run_cost_limit_full_usd": 4.444444,
+        "flat_avg_run_cost_limit_two_thirds_usd": 8.166667
+      },
+      "C": {
+        "runs": 96,
+        "groups": {
+          "codebase-mapper:sonnet": {
+            "runs": 16,
+            "cap_usd": 2.234,
+            "reserve_usd": 2.7925,
+            "base_prompt_usd": 0.234,
+            "sum_caps_usd": 35.744
+          },
+          "codebase-mapper:haiku": {
+            "runs": 16,
+            "cap_usd": 0.5189,
+            "reserve_usd": 0.648625,
+            "base_prompt_usd": 0.0189,
+            "sum_caps_usd": 8.3024
+          },
+          "project-researcher:sonnet": {
+            "runs": 8,
+            "cap_usd": 3,
+            "reserve_usd": 3.75,
+            "base_prompt_usd": 0.234,
+            "sum_caps_usd": 24
+          },
+          "project-researcher:haiku": {
+            "runs": 8,
+            "cap_usd": 0.7689,
+            "reserve_usd": 0.961125,
+            "base_prompt_usd": 0.0189,
+            "sum_caps_usd": 6.1512
+          },
+          "grader:sonnet": {
+            "runs": 48,
+            "cap_usd": 0.6008,
+            "reserve_usd": 0.751,
+            "base_prompt_usd": 0.1008,
+            "sum_caps_usd": 28.8384,
+            "listed": "on the second invocation, one per ok agent run with a document"
+          }
+        },
+        "sum_caps_usd": 103.036,
+        "sum_reserves_usd": 128.795,
+        "base_prompt_usd": 10.908,
+        "estimate_usd": 28,
+        "batch_cap_usd": null,
+        "caps_exceed_batch_cap": false,
+        "run_start_threshold_usd": null,
+        "completes_if_spend_at_most_x_estimate": 1.59,
+        "two_thirds_if_spend_at_most_x_estimate": 1.59,
+        "flat_avg_run_cost_limit_full_usd": 0.465779,
+        "flat_avg_run_cost_limit_two_thirds_usd": 0.465779,
+        "if_A_B_D_E_hit_batch_caps": {
+          "prior_spend_usd": 71.5,
+          "completes_if_spend_at_most_x_estimate": 1
+        }
+      }
+    },
+    "scenarios": {
+      "at_estimates": {
+        "note": "every run costs k x its cap, k chosen so a completed batch spends exactly its ledger estimate (A 5, B 4, D 2, E 44, C 28)",
+        "total_usd": 83.000002,
+        "batches": {
+          "A": {
+            "ran": 36,
+            "planned": 36,
+            "by_model": {
+              "haiku": "18/18",
+              "sonnet": "18/18"
+            },
+            "spent_usd": 5.000004,
+            "stopped_at": null,
+            "two_thirds_ok": true,
+            "insufficient": []
+          },
+          "B": {
+            "ran": 36,
+            "planned": 36,
+            "by_model": {
+              "haiku": "18/18",
+              "sonnet": "18/18"
+            },
+            "spent_usd": 4.000014,
+            "stopped_at": null,
+            "two_thirds_ok": true,
+            "insufficient": []
+          },
+          "D": {
+            "ran": 24,
+            "planned": 24,
+            "by_model": {
+              "haiku": "12/12",
+              "sonnet": "12/12"
+            },
+            "spent_usd": 1.999992,
+            "stopped_at": null,
+            "two_thirds_ok": true,
+            "insufficient": []
+          },
+          "E": {
+            "ran": 10,
+            "planned": 10,
+            "by_model": {
+              "opus": "10/10"
+            },
+            "spent_usd": 44,
+            "stopped_at": null,
+            "two_thirds_ok": null
+          },
+          "C": {
+            "ran": 48,
+            "planned": 48,
+            "graders_ran": 48,
+            "by_model": {
+              "sonnet": "24/24",
+              "haiku": "24/24"
+            },
+            "spent_usd": 27.999992,
+            "stopped_at": null,
+            "two_thirds_ok": true,
+            "insufficient": []
+          }
+        }
+      },
+      "estimates_x1_5": {
+        "note": "as at_estimates, every run 1.5x",
+        "total_usd": 99.459522,
+        "batches": {
+          "A": {
+            "ran": 29,
+            "planned": 36,
+            "by_model": {
+              "haiku": "15/18",
+              "sonnet": "14/18"
+            },
+            "spent_usd": 5.911285,
+            "stopped_at": "A-A3-sonnet-r3 (batch_cap)",
+            "two_thirds_ok": true,
+            "insufficient": []
+          },
+          "B": {
+            "ran": 26,
+            "planned": 36,
+            "by_model": {
+              "haiku": "13/18",
+              "sonnet": "13/18"
+            },
+            "spent_usd": 4.333329,
+            "stopped_at": "B-B2-sonnet-r3 (batch_cap)",
+            "two_thirds_ok": true,
+            "insufficient": []
+          },
+          "D": {
+            "ran": 21,
+            "planned": 24,
+            "by_model": {
+              "haiku": "11/12",
+              "sonnet": "10/12"
+            },
+            "spent_usd": 2.574611,
+            "stopped_at": "D-commands-sonnet-r3 (batch_cap)",
+            "two_thirds_ok": true,
+            "insufficient": []
+          },
+          "E": {
+            "ran": 8,
+            "planned": 10,
+            "by_model": {
+              "opus": "8/10"
+            },
+            "spent_usd": 45.375,
+            "stopped_at": "b30-r2 (batch_cap)",
+            "two_thirds_ok": null
+          },
+          "C": {
+            "ran": 48,
+            "planned": 48,
+            "graders_ran": 45,
+            "by_model": {
+              "sonnet": "24/24",
+              "haiku": "24/24"
+            },
+            "spent_usd": 41.265297,
+            "stopped_at": "C-grade-C-res-architecture-s-2 (global_cap)",
+            "two_thirds_ok": false,
+            "insufficient": [
+              "project-researcher:architecture:sonnet",
+              "project-researcher:pitfalls:haiku",
+              "project-researcher:pitfalls:sonnet"
+            ]
+          }
+        }
+      },
+      "calibration_p50": {
+        "note": "A/B at the calibration's production p50 spawn cost (verifier 0.3134, job-checker 0.2066) for sonnet and 0.25x that for haiku, no headless base overhead; D at 81-10's midpoint (sonnet 0.15, haiku 0.03); E and C at their estimates",
+        "total_usd": 83.906492,
+        "batches": {
+          "A": {
+            "ran": 29,
+            "planned": 36,
+            "by_model": {
+              "haiku": "15/18",
+              "sonnet": "14/18"
+            },
+            "spent_usd": 5.56285,
+            "stopped_at": "A-A3-sonnet-r3 (batch_cap)",
+            "two_thirds_ok": true,
+            "insufficient": []
+          },
+          "B": {
+            "ran": 33,
+            "planned": 36,
+            "by_model": {
+              "haiku": "17/18",
+              "sonnet": "16/18"
+            },
+            "spent_usd": 4.18365,
+            "stopped_at": "B-B5-sonnet-r3 (batch_cap)",
+            "two_thirds_ok": true,
+            "insufficient": []
+          },
+          "D": {
+            "ran": 24,
+            "planned": 24,
+            "by_model": {
+              "haiku": "12/12",
+              "sonnet": "12/12"
+            },
+            "spent_usd": 2.16,
+            "stopped_at": null,
+            "two_thirds_ok": true,
+            "insufficient": []
+          },
+          "E": {
+            "ran": 10,
+            "planned": 10,
+            "by_model": {
+              "opus": "10/10"
+            },
+            "spent_usd": 44,
+            "stopped_at": null,
+            "two_thirds_ok": null
+          },
+          "C": {
+            "ran": 48,
+            "planned": 48,
+            "graders_ran": 48,
+            "by_model": {
+              "sonnet": "24/24",
+              "haiku": "24/24"
+            },
+            "spent_usd": 27.999992,
+            "stopped_at": null,
+            "two_thirds_ok": true,
+            "insufficient": []
+          }
+        }
+      },
+      "calibration_p50_plus_base": {
+        "note": "as calibration_p50 plus each run's full base-prompt allowance from the dry run (sonnet 0.234, haiku 0.0189 for A/B); D at 81-10's upper end (sonnet 0.20, haiku 0.04); E at 1.25x its estimate; C at its estimate",
+        "total_usd": 87.248442,
+        "batches": {
+          "A": {
+            "ran": 18,
+            "planned": 36,
+            "by_model": {
+              "haiku": "9/18",
+              "sonnet": "9/18"
+            },
+            "spent_usd": 5.80185,
+            "stopped_at": "A-A4-sonnet-r2 (batch_cap)",
+            "two_thirds_ok": false,
+            "insufficient": [
+              "haiku",
+              "sonnet"
+            ]
+          },
+          "B": {
+            "ran": 18,
+            "planned": 36,
+            "by_model": {
+              "haiku": "9/18",
+              "sonnet": "9/18"
+            },
+            "spent_usd": 4.60035,
+            "stopped_at": "B-B4-sonnet-r2 (batch_cap)",
+            "two_thirds_ok": false,
+            "insufficient": [
+              "haiku",
+              "sonnet"
+            ]
+          },
+          "D": {
+            "ran": 21,
+            "planned": 24,
+            "by_model": {
+              "haiku": "11/12",
+              "sonnet": "10/12"
+            },
+            "spent_usd": 2.44,
+            "stopped_at": "D-commands-sonnet-r3 (batch_cap)",
+            "two_thirds_ok": true,
+            "insufficient": []
+          },
+          "E": {
+            "ran": 9,
+            "planned": 10,
+            "by_model": {
+              "opus": "9/10"
+            },
+            "spent_usd": 46.40625,
+            "stopped_at": "b31-r2 (batch_cap)",
+            "two_thirds_ok": null
+          },
+          "C": {
+            "ran": 48,
+            "planned": 48,
+            "graders_ran": 48,
+            "by_model": {
+              "sonnet": "24/24",
+              "haiku": "24/24"
+            },
+            "spent_usd": 27.999992,
+            "stopped_at": null,
+            "two_thirds_ok": true,
+            "insufficient": []
+          }
+        }
+      }
+    }
+  },
+  "command": "node scripts/eval81/prereg.cjs --write --out .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results --extra .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/private/fleet-checklists.json --calibration /Users/justin/.claude/aoforge/calibration.json --trees /private/tmp/claude-501/-Users-justin-dev-aoforge-claude/29d3d902-73eb-439c-9c64-ba469a668a6e/scratchpad/eval81/trees.json --claude-version '2.1.302 (Claude Code)' --projection /private/tmp/claude-501/-Users-justin-dev-aoforge-claude/29d3d902-73eb-439c-9c64-ba469a668a6e/scratchpad/eval81/projection-manifest.json",
+  "argv": [
+    "--write",
+    "--out",
+    ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results",
+    "--extra",
+    ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/private/fleet-checklists.json",
+    "--calibration",
+    "/Users/justin/.claude/aoforge/calibration.json",
+    "--trees",
+    "/private/tmp/claude-501/-Users-justin-dev-aoforge-claude/29d3d902-73eb-439c-9c64-ba469a668a6e/scratchpad/eval81/trees.json",
+    "--claude-version",
+    "2.1.302 (Claude Code)",
+    "--projection",
+    "/private/tmp/claude-501/-Users-justin-dev-aoforge-claude/29d3d902-73eb-439c-9c64-ba469a668a6e/scratchpad/eval81/projection-manifest.json"
+  ],
+  "includes": [
+    "scripts/eval81/**",
+    ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-DECISION-RULE.md",
+    ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/static-prompt.json"
+  ],
+  "excludes": [
+    "**/*.test.cjs",
+    "scripts/eval81/__fixtures__/fake-claude.cjs"
+  ],
+  "keep": [
+    "scripts/eval81/fixtures/*/proofs.test.cjs"
+  ],
+  "extras": [
+    ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/private/fleet-checklists.json",
+    "~/.claude/aoforge/calibration.json"
+  ],
+  "files": {
+    ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-DECISION-RULE.md": "0e579d42a1b95cd189015d4509c4f5b732ff120bc6acb3d440d5f3fe1671cda4",
+    ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/private/fleet-checklists.json": "86f909f54de3ea4f95933be99d6eb23da932435b8bb6da71c5be63cd4be05115",
+    ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/static-prompt.json": "cd57eaa512941dfc3b995375c7b67a0a2fd156bcfd06518a512fe03e1cccfeb7",
+    "scripts/eval81/README.md": "16afe664a97cf5bbf0f025d0fc26da3b42f025fe33ffe8159fe7b4b4a15cbe54",
+    "scripts/eval81/__fixtures__/agent-outputs.cjs": "bcba66e838a1a8e1aed9db6c32d069e3ca420486e75f28d94ad9e48cc11a7506",
+    "scripts/eval81/__fixtures__/c-outputs.cjs": "03444b00fb419358af731b7dfe98cc487928db8b1d3e3343bde8aff7ec95b605",
+    "scripts/eval81/__fixtures__/calibration.cjs": "9b7383a5e3e0383b6f94b3310803afff20ebe1d0a5d5c1cc32039d2710db7dd9",
+    "scripts/eval81/__fixtures__/judge-outputs.cjs": "94c5f908f753782538da5dc74f76a7eb5c942432818f5b744a9ad91e7aac1ddd",
+    "scripts/eval81/__fixtures__/metrics.cjs": "5b117be9081f4fbc78983efa14b2379d84c09c9dce66a757289d8a2ec5fedcb4",
+    "scripts/eval81/__fixtures__/stream-json.cjs": "e141f4d8148d9ebf3401335183e414918d31c7a717420b57272956ba61aef1ba",
+    "scripts/eval81/__fixtures__/stub-batch.cjs": "5a4bf86400b9d739086e746ca5900099934597031c33adb9f485cb4e669a7594",
+    "scripts/eval81/__fixtures__/transcripts.cjs": "54135332725b73dcdb9b8ec4f3c0055e153aee05f9e433696f0c78a0b22719c7",
+    "scripts/eval81/batches/A.cjs": "921033f024a1f1a76cb1821edf4402ddbbc84812392adca2f6ca6e6402fb2c1d",
+    "scripts/eval81/batches/B.cjs": "2a0809bedc45fee84b5f3487045f820ef628fa0fdcb2906c67ad5c58fa160546",
+    "scripts/eval81/batches/C.cjs": "e536f7b830e8ddef19ad37dd08cae74cf47a306a3a659df36bf999822aeaf425",
+    "scripts/eval81/batches/D.cjs": "26c41f7039962d851f7048bedc2b4218d3e984bc8bf69d0864b297300479c307",
+    "scripts/eval81/batches/E.cjs": "f4fa1bd458685cfcd2ae5317e0029c37c680a13ea3f2f3e6e65e166c9cd27a6e",
+    "scripts/eval81/fixtures/A/answer-key.json": "cfd40381f7dbfb06c8bc8225700f951e0e7ec35381fdac9711ac3ea6f424fcb0",
+    "scripts/eval81/fixtures/A/build.cjs": "b6119f418a9595243a2afab141bda92d1526fca35575a68f64bf577ead5836ca",
+    "scripts/eval81/fixtures/A/proofs.test.cjs": "3840fd573c4f64ddbe75c8efb51045d6cf5cd17e8140aa76686c40a16b240b7a",
+    "scripts/eval81/fixtures/B/answer-key.json": "d07f1cfecfcd5268561a2d0ff46669042ad875d5d4c93d56f45bb1b4436abf3b",
+    "scripts/eval81/fixtures/B/build.cjs": "bbd7435c18492f608b694e66194d03438426fb20e3783cb5a242b4bb620821df",
+    "scripts/eval81/fixtures/B/proofs.test.cjs": "097b24db8012268116510f2c6f480bff78487b064d7a39baae750bc5b2f04805",
+    "scripts/eval81/fixtures/C/checklists-researcher.json": "f27fae2228676f1a05cfb2a189a5a76afb03300bbef22c29629865eef9559b05",
+    "scripts/eval81/fixtures/C/checklists-synthetic.json": "3eece813b1a2e895446fef1531c0003428418927d2d68f6108ac76d3544494a3",
+    "scripts/eval81/fixtures/C/fleet-commitment.json": "8838d405ac1000daa867628bef8c7c9a11be537f1215c0346da9bc40a65e6aaa",
+    "scripts/eval81/fixtures/C/grader-prompt.md": "9a940c5d3afe80b9a4cf39f941b80c4fbf187676c035262f771e95b5b7cc611d",
+    "scripts/eval81/fixtures/C/grader-schema.json": "05fc9a553c0bffa26b3516107c8eddb65226c265f61c972ae335e99b28631747",
+    "scripts/eval81/fixtures/C/proofs.test.cjs": "d05abcbf5047fea18e114f6dbde5ad3edbf9ce451df4ef1f0a6c1ea69b05149b",
+    "scripts/eval81/fixtures/C/researcher-topic.md": "76ca15b21f947df920cef605225d16c2dbb8f19083267d4452f64a208695bdd8",
+    "scripts/eval81/fixtures/C/synthetic.cjs": "19b730e79a3828cea22f35b35d60f743959064f25efdbf09007afe20e0e0ec3d",
+    "scripts/eval81/fixtures/D/capture.cjs": "22fcf2220f85f1d37ff288b4de53e602848ed8e68317e85f03ff0265a495ec11",
+    "scripts/eval81/fixtures/D/labels.json": "6c8b106cc942735df050b4dcddff6b4fe8ab5d517fcd1160fcbd300c309ae1f9",
+    "scripts/eval81/fixtures/D/png.cjs": "948329b2a144bcb4577ddd535b1bb727a291fd74badfeca046511a9f804f6f83",
+    "scripts/eval81/fixtures/D/png/d01.png": "46e8980cd3a74a2502e017af76069137810b7946eff8d48d09e5156de7d44b1b",
+    "scripts/eval81/fixtures/D/png/d02.png": "2b9a0e0cb7f0e26b93e8fc2555e160faea1333e9e86ce06cfb5a73f68a2e1e54",
+    "scripts/eval81/fixtures/D/png/d03.png": "eb637acf62de3445cc92345aac43f865ddeecbecd4b8d4cc77dd3cb72c1d4806",
+    "scripts/eval81/fixtures/D/png/d04.png": "04f8565d175405f1723b633e87ffb84a8a2dc622c96df04e694aa35c3fee3bb1",
+    "scripts/eval81/fixtures/D/png/d05.png": "f04cb057da1cd10727b4af74da8c3bf262b0ddd0fce97785e9d9d7aae531d989",
+    "scripts/eval81/fixtures/D/png/d06.png": "36589074fd2c571310f90d1ccb2849ce7e191341293692c29bf38f40eacf4a5a",
+    "scripts/eval81/fixtures/D/png/d07.png": "d6eb885bd7c67ddc14ac6015dc0cd1d4ae48bff84d4049ca1e83915939aaf341",
+    "scripts/eval81/fixtures/D/png/d08.png": "836727acc01737715459d07816f07add3bec4279cb739117c5b7ed44eeda76bc",
+    "scripts/eval81/fixtures/D/png/d09.png": "2b1af0016b8972934ff4180a75869d37aaf42c300ba20cef59c1786f08acd97f",
+    "scripts/eval81/fixtures/D/png/d10.png": "ca79423f41462116b21a61b4bad2747b7da70adf4ed6b0b9c310c6106feeae19",
+    "scripts/eval81/fixtures/D/png/d11.png": "197c4173242ce961c83aded86a47c92c748f811b9ffa931523801ebfe98d1ab6",
+    "scripts/eval81/fixtures/D/png/d12.png": "5dd6052cefbd3f1c291b9ae670401e8ec9b1a7e32c3f6b09574a7a1207fd51da",
+    "scripts/eval81/fixtures/D/png/d13.png": "257a4b1c65eadc1966dd53b2ab8e7ee504d0ce784346a5f6066d430a760f916c",
+    "scripts/eval81/fixtures/D/png/d14.png": "e8e424095fc5ea57d3b036d366b2ac234f41ae1f7cd1e0c9d2383d87f2617a8e",
+    "scripts/eval81/fixtures/D/png/d15.png": "1ac21b384d4cf86f579c0a170152d213d8018a8be41283a9e258378d057b172d",
+    "scripts/eval81/fixtures/D/png/d16.png": "11bea41ec2fc30bdcfe7a3536b8114afa808b1e6c79db1720bed0123e6b98c9e",
+    "scripts/eval81/fixtures/D/png/d17.png": "aed7849afa6f06a24f7d721af0d99ee7e53177704e211c7536e27fb79f330e71",
+    "scripts/eval81/fixtures/D/png/d18.png": "f1ea50528eda7ca897593c46d3d71eb739a1feeaa376eebeee5ba29fed63c6bb",
+    "scripts/eval81/fixtures/D/png/d19.png": "c3b9cc8fefc5b691e56242605b5bd632a22ce062ad08a17da8249690245fba5c",
+    "scripts/eval81/fixtures/D/png/d20.png": "63f8c4e111a54607d548ed6e82d30bbe5a54204375ec9955824b309d11d1e052",
+    "scripts/eval81/fixtures/D/proofs.test.cjs": "b61e6d88be2d762d22a47ffdc1015307c2413cb88fe1730d5210d7fd6eb88895",
+    "scripts/eval81/fixtures/D/recipe.json": "2d463d4a9badedcbb15e4dbd2abc8b593d498249e10935d30f742fbba75bef67",
+    "scripts/eval81/fixtures/D/states.json": "2aa575bb2ee26ac8656713b238da523641dc0b3ed57265be4b28e77e9d8f6d98",
+    "scripts/eval81/fixtures/E/acceptance.cjs": "41d75cf00eb8853950a341e2f496585821506a40ff4bfaf7d5d291fa52643069",
+    "scripts/eval81/fixtures/E/build.cjs": "d4e6ed0aa0167dea7db332337ca620553636a78287a4caa0ce9e1b055b30e445",
+    "scripts/eval81/fixtures/E/proofs.test.cjs": "5d6ecca3e6c8a19671884d8b54f79828d6bd023f82352c0826bee29bcd3b01d6",
+    "scripts/eval81/fixtures/E/reference.cjs": "7117fbd98ee00114466f651e91ec094a645788987b338fb96ed8b738e95aa209",
+    "scripts/eval81/lib/caps.cjs": "87ff352f3b33b2b765ab46b45d7aa3a7284501a20992e595480cd17804225d5a",
+    "scripts/eval81/lib/command.cjs": "e114a9d1c581f54bb8589f611b79c0b0fa3201c6e0ae744b340c49bdf807a3c5",
+    "scripts/eval81/lib/contract.cjs": "cc06c5244c32765f91d30cce3ebf788b15edac382782516f2bb6694d1d2743eb",
+    "scripts/eval81/lib/decide.cjs": "bb7aa9af7cb5b4b069326e9a8253b1ada1da4ce6d63922b327961cb0116f2f53",
+    "scripts/eval81/lib/ledger.cjs": "e7ba6cf8b152ca6b453d7f9798c5535477d7aa40d0e4c409d4ae61dec361bf87",
+    "scripts/eval81/lib/report.cjs": "a4f571697e211a72a3f9a7b71481650bb521fdf3280a4bcb4e2d149adf618dfb",
+    "scripts/eval81/lib/result.cjs": "7f361e3ce34feca5b8f3ff8eb99ac46974864dc4189495bfb86ffe42f025a34d",
+    "scripts/eval81/lib/roles.cjs": "bbfcd5700249816fb1a0f8f9d6e5f10974cee4a12da72009dece73e8b73c8040",
+    "scripts/eval81/lib/runner.cjs": "047b5dec507de7ca34942af8e9f4a638b00f1ea3509c7b4f41796f4cabb1dd42",
+    "scripts/eval81/lib/sandbox.cjs": "9749a8243646e5898922bc89ab21ad7002ec5aed192c9f1be02a480680804517",
+    "scripts/eval81/lib/secret.cjs": "ab40c778c94af104a1346a68f22525de777c7e4470670dba5bc3c43640b048d3",
+    "scripts/eval81/lib/stats.cjs": "8b2ee26e1b1cc934fb34635c57edf00718cc6a982d85fb5c2a6336e696e1f1ff",
+    "scripts/eval81/lib/tripwire.cjs": "efa9c223d9db36a2c7168b337241c1b633ae4c9c9a5d305d5fd67ce3deda40d5",
+    "scripts/eval81/prereg.cjs": "c8b6903b5681fd94c3642480ec8214298b131e27b557c9552c6e8569bbf188e1",
+    "scripts/eval81/run.cjs": "f93d43fe4e1f48546aec0cec15a09d1b06faa4e93085a7400c299db71a88c020",
+    "scripts/eval81/score.cjs": "b13a3dc60e6a23825671fe09b191f4669780fbf409519eb12f8f18f503b58259",
+    "scripts/eval81/score/A.cjs": "6f066a19b6b6948aafdd5062f6d7403180fc1d191c6efae16402d4cc26cfc685",
+    "scripts/eval81/score/B.cjs": "535ec81f5ca6c0caaa7d3d6bc87dfa8684677807781bb471822c20d26ab23356",
+    "scripts/eval81/score/C.cjs": "651591e86348e4e45f58128a019f05e262535738ffc9c554cc0a386b8f7c98cd",
+    "scripts/eval81/score/D.cjs": "00c4a23d13af0c0c5ae12a02aeab2389b1601f887386cf495cdddd23824f0382",
+    "scripts/eval81/score/E.cjs": "bb107f4e8eae875bde0cd42d91f01958d0608da5cf9496117f019bf3cf2fb591",
+    "scripts/eval81/static-prompt.cjs": "ed68a28831e1f655201790916b1f3f15eecdcbbb875be7654134c634d5bdd5b6",
+    "~/.claude/aoforge/calibration.json": "e8d76a2687e0ea19b3403060b3cf7c982f96dc8fb0fa93934c0a058820ea88a1"
+  }
+}
