@@ -1,0 +1,92 @@
+{
+  "batch": "B",
+  "objective": "2",
+  "sets": [
+    {
+      "id": "B1",
+      "base": null,
+      "expected": "PASSED",
+      "planted": null,
+      "precheck": { "passed": true, "blockers": [] },
+      "health_warnings": []
+    },
+    {
+      "id": "B2",
+      "base": null,
+      "expected": "PASSED",
+      "planted": null,
+      "precheck": { "passed": true, "blockers": [] },
+      "health_warnings": []
+    },
+    {
+      "id": "B3",
+      "base": "B1",
+      "expected": "ISSUES",
+      "planted": {
+        "kind": "same_wave_overlap",
+        "trds": ["02-01", "02-02"],
+        "must_mention": ["cli.js"],
+        "any_of": ["overlap", "conflict", "same wave", "parallel", "both modify", "concurrent", "same file"],
+        "dimension_hint": "dependency_correctness",
+        "precheck_flags": false
+      },
+      "precheck": { "passed": true, "blockers": [] },
+      "health_warnings": []
+    },
+    {
+      "id": "B4",
+      "base": "B2",
+      "expected": "ISSUES",
+      "planted": {
+        "kind": "missing_verify",
+        "trds": ["02-02"],
+        "must_mention": ["02-02"],
+        "any_of": ["verify", "verification"],
+        "dimension_hint": "task_completeness",
+        "precheck_flags": true
+      },
+      "precheck": { "passed": false, "blockers": ["task_completeness:02-02:verify"] },
+      "health_warnings": []
+    },
+    {
+      "id": "B5",
+      "base": "B2",
+      "expected": "ISSUES",
+      "planted": {
+        "kind": "later_wave_dependency",
+        "trds": ["02-02", "02-04"],
+        "must_mention": ["02-04"],
+        "any_of": ["wave", "depend", "later", "order", "before"],
+        "dimension_hint": "dependency_correctness",
+        "precheck_flags": false
+      },
+      "precheck": { "passed": true, "blockers": [] },
+      "health_warnings": []
+    },
+    {
+      "id": "B6",
+      "base": "B1",
+      "expected": "ISSUES",
+      "planted": {
+        "kind": "uncovered_success_criterion",
+        "trds": ["02-03"],
+        "must_mention": [],
+        "any_of": [
+          "unknown format",
+          "unsupported format",
+          "invalid format",
+          "exit 2",
+          "exit code 2",
+          "criterion 3",
+          "sc-3",
+          "sc 3",
+          "sc3"
+        ],
+        "dimension_hint": "requirement_coverage",
+        "precheck_flags": false
+      },
+      "precheck": { "passed": true, "blockers": [] },
+      "health_warnings": []
+    }
+  ]
+}
