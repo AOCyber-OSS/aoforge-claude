@@ -38,7 +38,7 @@ const { spawnSync } = require('child_process');
 
 const { NAMES, LEGACY } = require('./legacy-names.cjs');
 const { PLANNING_MARKERS, legacyPlanningIssue } = require('./planning-layout.cjs');
-const { escapeRegExp } = require('./text-escape.cjs');
+const { escapeRegExp, mdCell } = require('./text-escape.cjs');
 
 // Destructured so a dotted access never spells the legacy names (the rename guard reads source text).
 const { planningDir: NEW_DIR, configKey: NEW_KEY, blockTag: NEW_TAG, product: PRODUCT } = NAMES;
@@ -642,6 +642,88 @@ function movesDone(root, moves) {
   return moves.every((mv) => isDir(absPath(root, mv.to)) && !lstatOf(absPath(root, mv.from)));
 }
 
+// ─── the residue ─────────────────────────────────────────────────────────────
+
+/** The planning roots found on disk (either directory name), minus roots holding both. */
+function residueRoots(root) {
+  const { found } = discover(root);
+  const dirs = [...new Set(found.map((f) => f.dir))];
+  return dirs.filter((d) => !(isDir(absPath(root, rel(d, NEW_DIR))) && isDir(absPath(root, rel(d, OLD_DIR))))).sort(rootFirst);
+}
+
+/**
+ * convertResidue(root, { env, roots }) -> { stamps, blocks, malformed, ignores, exclude } describing what it changed.
+ *
+ * Recomputes the plan from disk, then writes each changed file: `config.json` of every planning root (the stamp key
+ * renamed or merged, nothing else touched), `CLAUDE.md` at the root and each planning root (the block only), every
+ * tracked `.gitignore` outside planning directories, and `.git/info/exclude` (counterparts added, never removed).
+ * `roots` (the plan's) defaults to the planning roots on disk. A config.json that is not valid JSON is left alone and
+ * recorded as { file, action: null, error }; a malformed block is left alone and listed in `malformed`. Run after
+ * moveTrees; a second call returns empty lists and changes no byte.
+ */
+function convertResidue(root, { env, roots } = {}) {
+  root = path.resolve(root);
+  const inGit = isWorkTree(root, env);
+  const rootDirs = Array.isArray(roots) ? [...roots].sort(rootFirst) : residueRoots(root);
+  const r = residueEdits(root, env, inGit, rootDirs);
+  for (const edit of r.edits) fs.writeFileSync(edit.abs, edit.text);
+  return { stamps: r.stamps, blocks: r.blocks, malformed: r.malformed, ignores: r.ignores, exclude: r.exclude };
+}
+
+// ─── the report section ──────────────────────────────────────────────────────
+
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+/**
+ * renderMigrationSection(record) -> the `## Migration` section of ADOPT-REPORT.md.
+ *
+ * `record` = { moves: [moveTrees results], stamps, blocks, ignores, exclude, skipped } (the lists of the plan or of
+ * convertResidue; every one optional). One table row per moved tree, stamp key, CLAUDE.md block, ignore line and
+ * exclude line; every cell goes through text-escape's mdCell. A "Not moved" list names each skipped directory with
+ * its reason. A record with nothing in it renders "Nothing to migrate."
+ */
+function renderMigrationSection(record = {}) {
+  const rows = [];
+  for (const mv of record.moves || []) {
+    const how = mv.files === undefined ? mv.via : `${mv.via}, ${plural(mv.files, 'file')}`;
+    rows.push(['Planning tree', mv.from, mv.to, how]);
+  }
+  for (const st of record.stamps || []) {
+    if (st.action) rows.push([`Stamp key (${st.file})`, `"${OLD_KEY}"`, `"${NEW_KEY}"`, st.action]);
+    else rows.push([`Stamp key (${st.file})`, '-', '-', `left alone: ${st.error || 'nothing to do'}`]);
+  }
+  for (const b of record.blocks || []) {
+    rows.push([`${b.file} block`, `${OLD_TAG} markers`, `${NEW_TAG} markers`, `${b.markers} markers`]);
+  }
+  for (const ig of record.ignores || []) {
+    for (const c of ig.changes) {
+      rows.push([
+        'Ignore line',
+        `${ig.file}:${c.line} ${c.from}`,
+        c.to === null || c.to === undefined ? '(dropped)' : c.to,
+        c.action === 'drop' ? 'counterpart already present' : 'rewritten',
+      ]);
+    }
+  }
+  const exclude = record.exclude;
+  for (const line of (exclude && exclude.added) || []) {
+    rows.push(['Exclude line', '-', line, `added to ${exclude.file || 'info/exclude'}`]);
+  }
+
+  const out = ['## Migration', ''];
+  if (rows.length === 0) out.push('Nothing to migrate.');
+  else {
+    out.push('| Change | From | To | How |', '| --- | --- | --- | --- |');
+    for (const row of rows) out.push(`| ${row.map(mdCell).join(' | ')} |`);
+  }
+  const skipped = record.skipped || [];
+  if (skipped.length > 0) {
+    out.push('', '**Not moved:**');
+    for (const sk of skipped) out.push(`- \`${sk.path}\`: ${sk.reason}`);
+  }
+  return `${out.join('\n')}\n`;
+}
+
 /** True for a path the migration may write: inside a planning directory, or a .gitignore or CLAUDE.md anywhere. */
 function ownsMigratePath(relPath) {
   const parts = String(relPath).replace(/\\/g, '/').split('/').filter(Boolean);
@@ -656,9 +738,11 @@ module.exports = {
   refusalFor,
   moveTrees,
   movesDone,
+  convertResidue,
   ownsMigratePath,
   renameStampKeyText,
   rewriteBlockText,
   rewriteIgnoreText,
   addExcludeCounterparts,
+  renderMigrationSection,
 };

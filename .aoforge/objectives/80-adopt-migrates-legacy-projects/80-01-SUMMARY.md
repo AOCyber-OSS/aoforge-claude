@@ -12,5 +12,5 @@ requirements-completed: []
 
 ## Progress
 - [x] Task 1: Fixture builder and the RED test list — aa4ee790
-- [x] Task 2: Discovery, refusal and the move — (this commit)
-- [ ] Task 3: Residue converters, rendering, ALLOW entry — next step: add convertResidue and renderMigrationSection to plugins/aoforge/aoforge/bin/lib/legacy-migrate.cjs (the pure helpers already exist), then the ALLOW entry in rename-guard.repo.test.cjs and the two header comments
+- [x] Task 2: Discovery, refusal and the move — 3cfafb9f
+- [x] Task 3: Residue converters, rendering, ALLOW entry — (this commit)
