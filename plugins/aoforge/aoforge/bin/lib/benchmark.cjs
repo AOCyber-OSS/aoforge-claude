@@ -20,6 +20,18 @@ const readline = require('readline');
 const { execSync } = require('child_process');
 const { planningRoot, PLANNING_DIR_NAMES } = require('./compat.cjs');
 const { escapeRegExp } = require('./text-escape.cjs');
+const { NAMES, LEGACY } = require('./legacy-names.cjs');
+
+// A history reader counts today's executor and, in old transcripts, the pre-rename and install-prefixed ones
+// (agent-overhead.cjs, TRD 72-10). Quick 42: the old check compared a pre-rename literal, so executor_calls was
+// always 0 on AOForge transcripts.
+const EXECUTOR_TYPE_RE = new RegExp(
+  `^(?:${[NAMES.agentNs, LEGACY.agentNs, LEGACY.installPrefix].map(escapeRegExp).join('|')})executor$`
+);
+
+function isExecutorType(t) {
+  return typeof t === 'string' && EXECUTOR_TYPE_RE.test(t);
+}
 
 // ─── Pricing ($/M tokens) ────────────────────────────────────────────────────
 
@@ -350,7 +362,7 @@ async function buildPerObjective({ projectDir, repo, since, model }) {
     o.total_output += r.outputTokens;
     o.active_work += r.activeWork;
     o.cost += r.cost;
-    if (r.agentType === 'df-executor') {
+    if (isExecutorType(r.agentType)) {
       o.executor_calls++;
       o.executor_active += r.activeWork;
       o.executor_cost += r.cost;
@@ -670,6 +682,7 @@ module.exports = {
   canonicalize,
   dollars,
   parseSince,
+  isExecutorType,
   buildPerObjective,
   runBenchmarkSession,
   PRICING,
