@@ -133,6 +133,7 @@ Sequencing: 65 releases v1.5 first, so the installed runtime carries the v1.5 co
 - [ ] **Objective 79: Reconcile and release 3.1.0** - The fix branch (main + quick 34-39), PR #129 and objective 78 meet in one integration branch, the merged tree passes every guard, and 3.1.0 ships through one PR after per-step approval
 - [x] **Objective 80: Adopt migrates legacy projects** - 3.1.0's `/aoforge:adopt` moves a pre-rename `.planning/` project to `.aoforge/` as one recorded change, and adopt runs end to end on fresh, brownfield and legacy repos (completed 2026-10-17)
 - [x] **Objective 81: Haiku eval and model-efficiency measurement** - 76-06's Haiku 5.5 eval (verifier, job-checker, mapper, researcher, UI judge vs Sonnet on seeded fixtures) and 76-08's 3.0.0 vs 3.1.0 token measurement, run headless in a sandbox under a $100 cap; tier changes only by proposal (completed 2026-10-17)
+- [ ] **Objective 82: 3.1.0 follow-ups** - Planner and executor token growth on builds found and fixed, `~` reads use an expanded runtime path, the five approved tier changes applied with their measurements, `tokens --also-root`, objective 77's records closed
 
 ### Objective 65: Release v1.5
 
@@ -537,6 +538,19 @@ TRDs:
 - [x] 81-18-live-batch-c-mapper-researcher-TRD.md — (W8, checkpoint) confirm spend, then batch C live last (48 runs + 48 grader runs, ~$28)
 - [x] 81-19-report-76-records-and-proposals-TRD.md — (W9, checkpoint:decision) 76-06 report, 76 records and MEF-05/MEF-06 from evidence, tier proposals put to the user (never applied here)
 
+### Objective 82: 3.1.0 follow-ups
+
+**Goal**: The follow-ups objectives 79-81 left are closed before 3.1.0 ships (user decision 2026-10-18: target 3.1.0 while the cutover freeze blocks the push). (1) Why 3.1.0's planner spends ~67% more tokens and its executors ~20% more on a small build than 3.0.0 (81-MEASUREMENT.md, E build cell) is found, fixed or explained, and re-measured with the objective 81 harness. (2) 3.1.0 agents stop guessing an absolute home path for `~` reads (the Read tool does not expand `~`): agents get an expanded runtime path, with a guard. (3) The five approved tier proposals are applied with their caveats: P1 ui-evaluator balanced/budget -> haiku with escalation on split votes and the escalation rate measured; P2 arch-only focus override codebase-mapper.arch -> sonnet; P3 codebase-mapper concerns budget -> sonnet; P4/P5 project-researcher architecture/pitfalls budget -> haiku with a follow-up measurement. (4) `tokens` gains `--also-root` like `calibrate`. (5) Objective 77's records (STK-01, PCK-01..04, Progress row) agree with its passed verification. MEF-06 is updated from evidence.
+**Requirements**: MEF-06 (start-tier half)
+**Depends on**: Objectives 76, 77, 81
+**Success Criteria** (what must be TRUE):
+  1. A diagnosis names the cause of the build-cell planner (+67%) and executor (+20%) token growth with transcript evidence; a fix (or a recorded justification) lands, and a re-run of the E build cell under the objective 81 harness (live, behind a user approval gate and a spend cap) shows the effect.
+  2. No agent, skill or workflow asks an agent to Read a `~/...` path; agents receive an absolute runtime path from init/injected context; a repo test fails if a `~/` Read instruction returns; a sandboxed run shows no guessed home paths.
+  3. model-profiles.json / aoforge-stack.json carry P1-P5 exactly as approved (P2 as an arch-only focus override; tech and quality unchanged), tests pin them, docs (model-profiles.md, USER-GUIDE, CHANGELOG 3.1.0) state them with their evidence and caveats; the P1 escalation rate and P4/P5 quality are measured in a live check behind an approval gate, and the five todos are completed through `todo complete` with evidence.
+  4. `tokens trd|coverage|backfill` accept `--also-root` (repeatable) with the same matcher as calibrate; tests first; coverage over v1.6 reported with and without it.
+  5. Objective 77's requirement rows and Progress row agree with 77-VERIFICATION; `validate health`, `validate requirements`, `validate consistency` stay clean; the full suite passes (watcher-shell's known hang excluded).
+**TRDs**: to be planned
+
 ## Progress
 
 | Objective | Milestone | Plans | Status | Completed |
@@ -564,3 +578,4 @@ TRDs:
 | 79. Reconcile and release 3.1.0 | v1.6 | 8/10 | In Progress | - |
 | 80. Adopt migrates legacy projects | v1.6 | 9/9 | Complete | 2026-10-17 |
 | 81. Haiku eval and model-efficiency measurement | v1.6 | 19/19 | Complete | 2026-10-17 |
+| 82. 3.1.0 follow-ups | v1.6 | 0/0 | Not started | - |
