@@ -1,9 +1,9 @@
 {
   "current_objective": "82",
-  "current_job": 10,
+  "current_job": 11,
   "total_jobs": 11,
   "progress_pct": 100,
-  "status": "executing",
+  "status": "ready_for_verification",
   "last_activity": "2026-10-18",
   "metrics": {
     "jobs_completed": 0,
@@ -2089,6 +2089,11 @@
     {
       "objective": "82",
       "summary": "82-09: build cell re-run on the fixed 3.1.0 tree (b82-r1 $3.39, b82-r2 $4.05, both passing); SC-1 effect shown (all 9 FIX rows' checks pass in both runs), SC-2 PASS (no guessed home path); ledger $11.47 of $25",
+      "rationale": null
+    },
+    {
+      "objective": "82",
+      "summary": "82-10: integrate/3.1.0 re-validated PASS at VALIDATED_SHA 7da7485f (supersedes 9a4b0997); eden-ui-web 1.0.2 for 82-11's changes; objective 82's Requirements line is 'none mapped' so MEF-06 stays objective 76's and Partial; P1/P4 todos completed as evaluated and reverted by rule, P2/P3/P5 as applied; debugger start tier and P1 revisit are pending todos",
       "rationale": null
     }
   ],

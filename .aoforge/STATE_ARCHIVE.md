@@ -31418,6 +31418,7 @@ STATE.md stays lean; this file grows over time.
 - [Objective 82]: 82-08: P1 reverted (UI judge back to opus/sonnet/sonnet; broken_missed 1 of 13, rule needs 0), P4 reverted (researcher architecture back to sonnet on budget; item HU-A01 lost), P5 kept (pitfalls recall 39/44 vs 42/44); SC-2 PASS on the 16 researcher runs
 5); after D and C the total is $4.037729
 5
+- [Objective 82]: 82-10: integrate/3.1.0 re-validated PASS at VALIDATED_SHA 7da7485f (supersedes 9a4b0997); eden-ui-web 1.0.2 for 82-11's changes; objective 82's Requirements line is 'none mapped' so MEF-06 stays objective 76's and Partial; P1/P4 todos completed as evaluated and reverted by rule, P2/P3/P5 as applied; debugger start tier and P1 revisit are pending todos
 
 ## Performance Metrics
 
@@ -31684,3 +31685,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 82 P07 | 19min | 2 tasks | 9 files |
 | Objective 82 P08 | 43min | 3 tasks | 11 files |
 | Objective 82 P09 | 28min | 3 tasks | 3 files |
+| Objective 82 P10 | 32min | 3 tasks | 15 files |

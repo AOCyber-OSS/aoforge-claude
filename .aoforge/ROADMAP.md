@@ -133,7 +133,7 @@ Sequencing: 65 releases v1.5 first, so the installed runtime carries the v1.5 co
 - [ ] **Objective 79: Reconcile and release 3.1.0** - The fix branch (main + quick 34-39), PR #129 and objective 78 meet in one integration branch, the merged tree passes every guard, and 3.1.0 ships through one PR after per-step approval
 - [x] **Objective 80: Adopt migrates legacy projects** - 3.1.0's `/aoforge:adopt` moves a pre-rename `.planning/` project to `.aoforge/` as one recorded change, and adopt runs end to end on fresh, brownfield and legacy repos (completed 2026-10-17)
 - [x] **Objective 81: Haiku eval and model-efficiency measurement** - 76-06's Haiku 5.5 eval (verifier, job-checker, mapper, researcher, UI judge vs Sonnet on seeded fixtures) and 76-08's 3.0.0 vs 3.1.0 token measurement, run headless in a sandbox under a $100 cap; tier changes only by proposal (completed 2026-10-17)
-- [ ] **Objective 82: 3.1.0 follow-ups** - Planner and executor token growth on builds found and fixed, `~` reads use an expanded runtime path, the five approved tier changes applied with their measurements, `tokens --also-root`, objective 77's records closed
+- [x] **Objective 82: 3.1.0 follow-ups** - Planner and executor token growth on builds found and fixed, agents get an absolute runtime path instead of guessing a home path, the five approved tier changes applied with their measurements, `tokens --also-root`, objective 77's records closed (completed 2026-10-18)
 
 ### Objective 65: Release v1.5
 
@@ -561,7 +561,7 @@ TRDs:
 - [x] 82-07-build-cell-fixes-and-spawn-runtime-paths-TRD.md — (W3, TDD) planner and executor FIX rows pinned; offline effect in 82-DIAGNOSIS `## Fix applied` (the spawn runtime paths moved to 82-11)
 - [x] 82-08-live-tier-checks-d-and-c-TRD.md — (W3, checkpoint) approve spend with the build-2 fit shown and a raise to $25 (E $15) offered, then batches D and C live; 82-TIER-CHECKS.md; P1/P4/P5 kept or reverted by rule
 - [x] 82-09-live-build-cell-rerun-TRD.md — (W4, checkpoint) approve spend with the fit on actual D/C spend, then two build runs on the fixed tree; 82-MEASUREMENT.md mechanism checks (SC-1) and the transcript-scan guessed-path verdict (SC-2)
-- [ ] 82-10-docs-records-and-revalidation-TRD.md — (W5) CHANGELOG 3.1.0, guides, CLAUDE.md; objective 77 records (Completed 2026-10-16, verified 2026-10-17), MEF-06 from evidence (Partial by design) and a debugger start-tier todo, five todos resolved; 79-08 re-validation as a 79-REVALIDATION addendum
+- [x] 82-10-docs-records-and-revalidation-TRD.md — (W5) CHANGELOG 3.1.0, guides, CLAUDE.md; objective 77 records (Completed 2026-10-16, verified 2026-10-17), MEF-06 from evidence (Partial by design) and a debugger start-tier todo, five todos resolved; 79-08 re-validation as a 79-REVALIDATION addendum
 - [x] 82-11-runtime-paths-in-references-workflows-skills-templates-TRD.md — (W2, TDD) references and pack agent material, then workflows (spawn line `AOForge runtime: {runtime_root}`, 81's A/B/C comparisons), then skills, templates and pack skills use the absolute runtime path; the guard enforces every scope
 
 ## Progress
@@ -591,4 +591,4 @@ TRDs:
 | 79. Reconcile and release 3.1.0 | v1.6 | 8/10 | In Progress | - |
 | 80. Adopt migrates legacy projects | v1.6 | 9/9 | Complete | 2026-10-17 |
 | 81. Haiku eval and model-efficiency measurement | v1.6 | 19/19 | Complete | 2026-10-17 |
-| 82. 3.1.0 follow-ups | v1.6 | 10/11 | In Progress | - |
+| 82. 3.1.0 follow-ups | v1.6 | 11/11 | Complete | 2026-10-18 |
