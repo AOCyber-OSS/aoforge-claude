@@ -17,7 +17,8 @@
 // Every `~/.claude/aoforge` occurrence in a scanned markdown file is classified, first match wins:
 //   shell          inside a fenced block whose info string is empty, bash, sh, shell, zsh or console, or inside an
 //                  inline code span (in a fence of any kind), when the text from the start of that code line/span to the occurrence holds a
-//                  shell word, `$(`, `|`, `&&` or a `NAME=` assignment (the shell expands `~`)
+//                  shell word, `$(`, `|`, `&&` or a `NAME=` assignment (the shell expands `~`); also a `Bash(<command>)`
+//                  permission rule whose command text does (Claude Code matches it against the command as typed)
 //   skill_include  in a skills/**/SKILL.md, a line starting with `@~/.claude/aoforge/`, or a mid-line
 //                  `@~/.claude/aoforge/<rel>` whose <rel> the same file includes at a line start (Claude Code
 //                  expands a skill's @ lines into context)
@@ -44,6 +45,8 @@
 //  14. coverage: more than 60 files scanned, including agents/executor.md and references/trd-spec.md
 //  15. no scanned file hard-codes a guessed home (`/Users/<name>/.claude/aoforge`, `/home/<name>/...`)
 //  16. no plugin markdown outside every scope mentions the runtime path (except the named UNSCANNED entries)
+//  17. trd-spec.md's TRD skeleton (the planner copies it into every TRD) names `<runtime>/workflows/execute-trd.md`
+//      and `<runtime>/templates/summary.md` in its <execution_context>, with no `@~/` line (TRD 82-11)
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -86,8 +89,8 @@ const SCOPES = {
 };
 
 // 82-11 moves these to ENFORCED (Task 1: core_references, pack_agent_material; Task 2: core_workflows; Task 3: the rest).
-const ENFORCED = ['core_agents'];
-const PENDING = ['core_references', 'pack_agent_material', 'core_workflows', 'core_skills', 'core_templates', 'pack_skills_workflows'];
+const ENFORCED = ['core_agents', 'core_references', 'pack_agent_material'];
+const PENDING = ['core_workflows', 'core_skills', 'core_templates', 'pack_skills_workflows'];
 
 // A human-facing statement of where a user file lives (never an instruction to read one). At most 12 entries; an
 // agent-read instruction is never allowlisted. TRD 82-11 fills this from the references and workflows it keeps.
@@ -257,6 +260,10 @@ function classifyOccurrence(fileRel, lines, lineIndex, column, allow = ALLOW) {
     }
   }
 
+  // shell: a `Bash(<command>)` permission rule (settings.json allow/deny), matched against the command as typed
+  const rule = line.lastIndexOf('Bash(', column);
+  if (rule !== -1 && !line.slice(rule, column).includes(')') && looksShell(line.slice(rule + 'Bash('.length, column))) return 'shell';
+
   // skill_include
   if (isSkillFile(fileRel) && line[column - 1] === '@') {
     if (column === 1) return 'skill_include';
@@ -365,6 +372,16 @@ test('4. shell: a bash fence line, an inline span with a shell word, a continuat
     classifyIn('plugins/aoforge/agents/x.md', '```bash\nnode a.cjs \\\n  --out ~/.claude/aoforge/y.json\n```'),
     'shell',
     'a continuation line belongs to the command above it',
+  );
+  assert.equal(
+    classifyIn('plugins/aoforge/aoforge/references/x.md', '```json\n  "Bash(node ~/.claude/aoforge/bin/aof-tools.cjs *)",\n```'),
+    'shell',
+    'a Bash(...) permission rule is matched against the command as typed (82-11)',
+  );
+  assert.equal(
+    classifyIn('plugins/aoforge/aoforge/references/x.md', 'Bash(x) then Read ~/.claude/aoforge/references/tdd.md'),
+    'offender',
+    'a closed Bash(...) rule earlier on the line does not cover a later read',
   );
 });
 
@@ -525,4 +542,14 @@ test('16. no plugin markdown outside every scope mentions the runtime path (exce
     assert.ok(readLines(u.file).some((l) => l.includes(NEEDLE)), `UNSCANNED entry ${u.file} no longer mentions the runtime path: remove it`);
     assert.ok(!scanned.has(u.file), `UNSCANNED entry ${u.file} is now inside a scope: remove it`);
   }
+});
+
+test('17. trd-spec.md\'s TRD skeleton names <runtime>/ files in <execution_context>, with no @~/ line', { skip: SKIP_REASON }, () => {
+  const text = fs.readFileSync(path.join(PLUGIN, 'aoforge', 'references', 'trd-spec.md'), 'utf8');
+  const m = /<execution_context>\n([\s\S]*?)\n<\/execution_context>/.exec(text);
+  assert.ok(m, 'trd-spec.md has an <execution_context> block in its TRD skeleton');
+  const lines = m[1].split('\n').map((l) => l.trim()).filter(Boolean);
+  assert.ok(lines.includes('<runtime>/workflows/execute-trd.md'), `the skeleton names <runtime>/workflows/execute-trd.md:\n${m[1]}`);
+  assert.ok(lines.includes('<runtime>/templates/summary.md'), `the skeleton names <runtime>/templates/summary.md:\n${m[1]}`);
+  assert.deepEqual(lines.filter((l) => l.startsWith('@~/')), [], 'no @~/ line: the planner copies the skeleton into every TRD an agent reads');
 });
