@@ -4,9 +4,9 @@
 // Scoring CLI for objective 82's batches (TRD 82-05).
 //
 //   node scripts/eval82/score.cjs --batch D|E|C --root <eval root> --out <objective dir>
-//        [--e81 <81 results/E.json>] [--home-parent <dir>] [--real-home <dir>]
+//        [--e81 <81 results/E.json>] [--c81 <81 results/C.json>] [--home-parent <dir>] [--real-home <dir>]
 //
-// Loads `scripts/eval82/score/<X>.cjs` (C arrives with TRD 82-06), reads `<root>/ledger.json` with objective 81's
+// Loads `scripts/eval82/score/<X>.cjs` (C from TRD 82-06), reads `<root>/ledger.json` with objective 81's
 // frozen loader first (results without spend are never written; a missing ledger exits 1 with nothing written), calls
 // the scorer's `score({root, outDir, now, ...})` and writes under --out:
 //   results/<X>.json  the result + `scored_at` + the spend block (objective 81's score.cjs spendBlock, so 81's
@@ -14,6 +14,12 @@
 //   results/<X>.md    the scorer's renderResults(saved), else objective 81's generic renderBatchTable
 //   extra_files       e.g. 82-MEASUREMENT.md for E; an absolute path or a `..` segment is refused before any write
 // Deterministic for the same inputs and clock (`main(argv, {now})`). No API call; writes only under --out.
+//
+//   node scripts/eval82/score.cjs --rules --out <objective dir> [--root <eval root>]
+//
+// Renders <out>/82-TIER-CHECKS.md from <out>/results/D.json and <out>/results/C.json with check-rules.cjs (TRD 82-06;
+// 82-CHECK-RULES.md sections 1, 2 and 4). A missing result is rendered as the rules' inconclusive case. --root is
+// accepted for symmetry with the batch commands and not read: the rules read the scored results only.
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -23,22 +29,36 @@ const { spendBlock } = require('../eval81/score.cjs');
 const { renderBatchTable } = require('../eval81/lib/report.cjs');
 
 const BATCHES = ['C', 'D', 'E'];
-const USAGE = 'usage: node scripts/eval82/score.cjs --batch D|E|C --root <eval root> --out <objective dir> [--e81 <E.json>] [--home-parent <dir>] [--real-home <dir>]';
+const USAGE = [
+  'usage: node scripts/eval82/score.cjs --batch D|E|C --root <eval root> --out <objective dir> [--e81 <E.json>] [--c81 <C.json>] [--home-parent <dir>] [--real-home <dir>]',
+  '       node scripts/eval82/score.cjs --rules --out <objective dir> [--root <eval root>]',
+].join('\n');
+const TIER_CHECKS = '82-TIER-CHECKS.md';
 
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 
 class UsageError extends Error {}
 
 function parseArgs(argv) {
-  const takes = { '--batch': 'batch', '--root': 'root', '--out': 'out', '--e81': 'e81Path', '--home-parent': 'homeParent', '--real-home': 'realHome' };
+  const takes = { '--batch': 'batch', '--root': 'root', '--out': 'out', '--e81': 'e81Path', '--c81': 'c81Path', '--home-parent': 'homeParent', '--real-home': 'realHome' };
   const opts = {};
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
+    if (arg === '--rules') {
+      opts.rules = true;
+      continue;
+    }
     if (!takes[arg]) throw new UsageError(`unknown argument ${arg}`);
     const value = argv[i + 1];
     if (value === undefined || value.startsWith('--')) throw new UsageError(`${arg} needs a value`);
     opts[takes[arg]] = value;
     i += 1;
+  }
+  if (opts.rules) {
+    if (!opts.out) throw new UsageError('--rules needs --out');
+    const extra = ['batch', 'e81Path', 'c81Path', 'homeParent', 'realHome'].filter((k) => opts[k] !== undefined);
+    if (extra.length) throw new UsageError(`--rules takes only --out and --root (got ${extra.join(', ')})`);
+    return opts;
   }
   if (!opts.batch || !opts.root || !opts.out) throw new UsageError('--batch, --root and --out are required');
   if (!BATCHES.includes(opts.batch)) throw new UsageError(`unknown batch ${opts.batch}; objective 82 batches: ${BATCHES.join(', ')}`);
@@ -76,7 +96,7 @@ async function runBatch(opts, { stdout, now, scorerOpts }) {
 
   const mod = require(scorer);
   const flagOpts = {};
-  for (const k of ['e81Path', 'homeParent', 'realHome']) if (opts[k]) flagOpts[k] = k === 'e81Path' ? path.resolve(opts[k]) : opts[k];
+  for (const k of ['e81Path', 'c81Path', 'homeParent', 'realHome']) if (opts[k]) flagOpts[k] = k.endsWith('81Path') ? path.resolve(opts[k]) : opts[k];
   const result = await mod.score({ root, outDir: out, now, ...flagOpts, ...scorerOpts });
   if (!isObj(result) || result.batch !== batch) throw new Error(`scorer for batch ${batch} returned no batch ${batch} result`);
 
@@ -99,13 +119,39 @@ async function runBatch(opts, { stdout, now, scorerOpts }) {
   return 0;
 }
 
+function readResult(file) {
+  if (!fs.existsSync(file)) return null;
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+/** --rules: 82-TIER-CHECKS.md from the scored D and C results (check-rules.cjs renderTierChecks). */
+function runRules(opts, { stdout }) {
+  const rules = require('./check-rules.cjs');
+  const out = path.resolve(opts.out);
+  const d = readResult(path.join(out, 'results', 'D.json'));
+  const c = readResult(path.join(out, 'results', 'C.json'));
+  const text = rules.renderTierChecks({ d, c });
+  const file = path.join(out, TIER_CHECKS);
+  fs.mkdirSync(out, { recursive: true });
+  fs.writeFileSync(file, text);
+  const p1 = rules.p1Verdict(d);
+  const p4 = rules.researcherVerdict(c, 'architecture');
+  const p5 = rules.researcherVerdict(c, 'pitfalls');
+  const sc2 = rules.guessedPathVerdict(c && c.guessed_paths ? c.guessed_paths.runs : []);
+  const label = (v) => (v.inconclusive ? 'REVERT (inconclusive)' : v.verdict);
+  stdout(`${JSON.stringify({ rules: file, P1: label(p1), P4: label(p4), P5: label(p5), SC2: sc2.verdict })}\n`);
+  return 0;
+}
+
 /** main(argv, deps?) -> Promise<exit code>. deps: {stdout, stderr, now, scorerOpts} (tests). */
 async function main(argv, deps = {}) {
   const stdout = deps.stdout || ((s) => process.stdout.write(s));
   const stderr = deps.stderr || ((s) => process.stderr.write(s));
   const now = deps.now || (() => new Date());
   try {
-    return await runBatch(parseArgs(argv), { stdout, now, scorerOpts: deps.scorerOpts || {} });
+    const opts = parseArgs(argv);
+    if (opts.rules) return runRules(opts, { stdout });
+    return await runBatch(opts, { stdout, now, scorerOpts: deps.scorerOpts || {} });
   } catch (err) {
     stderr(`score: ${err.message}\n${err instanceof UsageError ? `${USAGE}\n` : ''}`);
     return 1;
@@ -118,4 +164,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { main, BATCHES };
+module.exports = { main, BATCHES, TIER_CHECKS };

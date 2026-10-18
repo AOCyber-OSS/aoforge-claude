@@ -1,0 +1,296 @@
+{
+  "topic_files": {
+    "gateway": "scripts/eval82/fixtures/C/topic-gateway.md",
+    "hub": "scripts/eval82/fixtures/C/topic-hub.md"
+  },
+  "written": "2026-10-18, by hand for TRD 82-06 from established, citable practice, item by item, before any batch C run of objective 82",
+  "scoring": "Each checklist is scored against the research document of its dimension (research/ARCHITECTURE.md or research/PITFALLS.md) written for its topic. The statement is the criterion; accept_any lists phrasings that count as stating it when used about the same thing; source names the document the practice or failure mode is established in (shown to the grader as basis, as objective 81's grader saw its items' basis). Items name practices, never pinned versions.",
+  "dimension_documents": {
+    "architecture": "ARCHITECTURE.md",
+    "pitfalls": "PITFALLS.md"
+  },
+  "topics": {
+    "gateway": {
+      "architecture": [
+        {
+          "id": "GA-A01",
+          "statement": "Relays the provider's streaming response to the caller incrementally (server-sent events or chunked transfer), flushing each chunk as it arrives instead of buffering the whole response.",
+          "accept_any": ["server-sent events", "flush each chunk", "stream through", "pass-through streaming"],
+          "source": "WHATWG HTML Living Standard, Server-sent events; Go net/http package documentation (http.Flusher)"
+        },
+        {
+          "id": "GA-A02",
+          "statement": "Defines one internal request and response model with an adapter per provider that translates to and from that provider's API, so callers use a single API whatever provider serves them.",
+          "accept_any": ["provider adapter", "provider interface", "normalized request format", "translation layer"],
+          "source": "Gamma, Helm, Johnson and Vlissides, Design Patterns (the Adapter pattern)"
+        },
+        {
+          "id": "GA-A03",
+          "statement": "Stores tenant API keys only as hashes, never in plaintext, and verifies a presented key by hashing it and comparing in constant time.",
+          "accept_any": ["store only a hash of the key", "hashed API keys", "constant-time comparison", "never store the plaintext key"],
+          "source": "OWASP Secrets Management Cheat Sheet; Go crypto/subtle package documentation (ConstantTimeCompare)"
+        },
+        {
+          "id": "GA-A04",
+          "statement": "Enforces per-tenant rate limits with counters shared by every instance (a central store such as Redis updated atomically, for example a token bucket or sliding window), not per-instance memory.",
+          "accept_any": ["shared rate-limit store", "Redis", "distributed rate limiter", "token bucket"],
+          "source": "Redis documentation, the INCR rate limiter pattern; Stripe engineering blog, Scaling your API with rate limiters"
+        },
+        {
+          "id": "GA-A05",
+          "statement": "Meters each request's input and output tokens from the provider's usage report, attributes the cost to the tenant, and checks the tenant's monthly budget before admitting a request.",
+          "accept_any": ["usage metering", "token accounting", "budget check before the request", "cost attribution"],
+          "source": "OpenAI API reference, the usage object; Anthropic Messages API documentation, usage"
+        },
+        {
+          "id": "GA-A06",
+          "statement": "Writes request-log records off the request path, through an asynchronous buffer or queue to a separate store, so logging adds no latency and its failure does not fail requests.",
+          "accept_any": ["asynchronous logging", "log pipeline", "queue the log records", "background writer"],
+          "source": "The Twelve-Factor App, factor XI (Logs) and factor VI (Processes)"
+        },
+        {
+          "id": "GA-A07",
+          "statement": "Redacts secrets (API keys, authorization headers) and personal data from the searchable request log before storing it, and keeps the log under access control and a retention limit.",
+          "accept_any": ["redact", "mask secrets", "personal data in the log", "retention period"],
+          "source": "OWASP Logging Cheat Sheet (data to exclude, sanitization)"
+        },
+        {
+          "id": "GA-A08",
+          "statement": "Wraps each provider in a circuit breaker fed by health or error signals, and routes to the next provider in a configured fallback order when a provider is slow or failing.",
+          "accept_any": ["circuit breaker", "fallback provider", "failover order", "health tracking"],
+          "source": "Michael Nygard, Release It! (Circuit Breaker); Martin Fowler, CircuitBreaker (martinfowler.com)"
+        },
+        {
+          "id": "GA-A09",
+          "statement": "Gives every upstream call a deadline and ties it to the incoming request's context, so a caller's disconnect or timeout cancels the provider request.",
+          "accept_any": ["context cancellation", "deadline", "propagate cancellation", "client disconnect cancels"],
+          "source": "Go context package documentation; Go net/http documentation (Request.Context)"
+        },
+        {
+          "id": "GA-A10",
+          "statement": "Keeps instances stateless: keys, limits, budgets and usage live in shared stores, so any instance behind the load balancer can serve any request and instances scale horizontally.",
+          "accept_any": ["stateless instances", "shared state", "horizontal scaling", "any instance can serve"],
+          "source": "The Twelve-Factor App, factor VI (Processes) and factor VIII (Concurrency)"
+        },
+        {
+          "id": "GA-A11",
+          "statement": "Emits per-request metrics (latency including time to first token, errors per provider, tokens) and traces with a request id that also appears in the logs.",
+          "accept_any": ["metrics", "distributed tracing", "OpenTelemetry", "time to first token"],
+          "source": "OpenTelemetry documentation (traces and metrics); Google, Site Reliability Engineering, Monitoring Distributed Systems (the four golden signals)"
+        },
+        {
+          "id": "GA-A12",
+          "statement": "Centralises the cross-cutting concerns in one entry point as an ordered request pipeline: authenticate, apply rate limit and budget, route to a provider, then meter and log.",
+          "accept_any": ["middleware chain", "request pipeline", "gateway offloading", "authenticate then rate limit"],
+          "source": "Microsoft Azure Architecture Center, Gateway Offloading pattern"
+        }
+      ],
+      "pitfalls": [
+        {
+          "id": "GA-P01",
+          "statement": "A reverse proxy, load balancer or compression middleware buffers the streamed response so tokens arrive all at once; streaming needs buffering turned off and a flush after each write.",
+          "accept_any": ["proxy buffering", "X-Accel-Buffering", "response is buffered", "flush after each write"],
+          "source": "NGINX documentation, proxy_buffering and the X-Accel-Buffering header"
+        },
+        {
+          "id": "GA-P02",
+          "statement": "When a caller disconnects mid-stream, the provider keeps generating, and billing, unless the gateway cancels the upstream request.",
+          "accept_any": ["client disconnect", "cancel the upstream request", "orphaned upstream request", "paying for tokens nobody reads"],
+          "source": "Go net/http documentation (the request context is cancelled when the client's connection closes)"
+        },
+        {
+          "id": "GA-P03",
+          "statement": "A streamed response's token usage is only known at the end of the stream; charging at request start, or dropping usage when a stream is cut off, makes cost accounting wrong, so partial streams must still be metered.",
+          "accept_any": ["usage arrives at the end of the stream", "partial stream", "interrupted stream billing", "final usage event"],
+          "source": "OpenAI API reference (stream_options include_usage); Anthropic streaming messages documentation (message_delta usage)"
+        },
+        {
+          "id": "GA-P04",
+          "statement": "Logging raw headers or request and response bodies leaks API keys and users' personal data into logs.",
+          "accept_any": ["API keys in logs", "Authorization header logged", "PII in logs", "sensitive data in logs"],
+          "source": "OWASP Logging Cheat Sheet; OWASP Top 10, Security Logging and Monitoring Failures"
+        },
+        {
+          "id": "GA-P05",
+          "statement": "A read-then-write limit check across instances races and lets a tenant exceed its limit; the counter update must be atomic in the shared store.",
+          "accept_any": ["race condition", "atomic increment", "check-then-set", "Lua script"],
+          "source": "Redis documentation, the INCR rate limiter pattern and the atomicity of scripts"
+        },
+        {
+          "id": "GA-P06",
+          "statement": "Retrying a request the provider already started generating, or one that timed out, bills twice; retries belong only to failures known to be safe, with idempotency where the provider offers it.",
+          "accept_any": ["duplicate charges", "double billing", "idempotency", "retry after a partial response"],
+          "source": "Amazon Builders' Library, Making retries safe with idempotent APIs; Stripe API documentation, idempotent requests"
+        },
+        {
+          "id": "GA-P07",
+          "statement": "Providers report errors in different shapes and status codes (rate limited, overloaded, context too long, content filtered); without mapping them to consistent gateway errors, callers see inconsistent failures and failover fires on errors that a retry elsewhere cannot fix.",
+          "accept_any": ["error mapping", "normalize provider errors", "429 versus 400", "fail over on the wrong errors"],
+          "source": "RFC 9110, HTTP Semantics (status codes); RFC 6585 (429 Too Many Requests)"
+        },
+        {
+          "id": "GA-P08",
+          "statement": "Unbounded request bodies and prompt sizes let one caller exhaust memory or spend; the gateway must cap body size and prompt length.",
+          "accept_any": ["request size limit", "MaxBytesReader", "body size limit", "resource exhaustion"],
+          "source": "Go net/http documentation (MaxBytesReader); OWASP API Security Top 10, Unrestricted Resource Consumption"
+        },
+        {
+          "id": "GA-P09",
+          "statement": "Immediate retries from every instance amplify a provider outage into a retry storm; retries need exponential backoff with jitter, a retry budget and a circuit breaker.",
+          "accept_any": ["retry storm", "exponential backoff", "jitter", "thundering herd"],
+          "source": "Amazon Builders' Library, Timeouts, retries, and backoff with jitter; Google, Site Reliability Engineering, Addressing Cascading Failures"
+        },
+        {
+          "id": "GA-P10",
+          "statement": "Go's default HTTP client has no timeout, so a slow provider holds goroutines and connections; set connect, time-to-first-byte and idle timeouts, but no total timeout that would cut a long stream.",
+          "accept_any": ["default HTTP client has no timeout", "time to first byte", "idle timeout", "hung connections"],
+          "source": "Cloudflare blog, The complete guide to Go net/http timeouts; Go net/http documentation (Client.Timeout)"
+        },
+        {
+          "id": "GA-P11",
+          "statement": "Limiting only requests per minute lets large prompts blow through providers' tokens-per-minute quotas and tenants' budgets; limits must also count tokens.",
+          "accept_any": ["tokens per minute", "token-based rate limit", "TPM", "requests per minute alone"],
+          "source": "OpenAI rate limits guide (requests and tokens per minute); Anthropic API documentation, rate limits (input and output tokens per minute)"
+        }
+      ]
+    },
+    "hub": {
+      "architecture": [
+        {
+          "id": "HU-A01",
+          "statement": "Talks to the daemon over a local-only channel (a Unix domain socket, or HTTP bound to the loopback interface) and authenticates with file permissions or a token stored in a file only the user can read.",
+          "accept_any": ["Unix domain socket", "loopback only", "local token", "socket file permissions"],
+          "source": "Docker Engine API documentation (the local Unix socket); Linux man-pages, unix(7)"
+        },
+        {
+          "id": "HU-A02",
+          "statement": "Separates a daemon client or repository layer, behind an interface, from UI state held in a state-management layer, so widgets never call the daemon API directly.",
+          "accept_any": ["repository layer", "service layer", "state management", "separate UI from data"],
+          "source": "Flutter documentation, Guide to app architecture (UI layer, data layer, repositories and services)"
+        },
+        {
+          "id": "HU-A03",
+          "statement": "Exposes the connection to the daemon as a state stream (connecting, connected, disconnected) and reconnects with exponential backoff, the UI showing the daemon as unavailable instead of failing.",
+          "accept_any": ["reconnect with backoff", "connection state", "daemon unavailable", "exponential backoff"],
+          "source": "Amazon Builders' Library, Timeouts, retries, and backoff with jitter; Flutter API documentation, StreamBuilder"
+        },
+        {
+          "id": "HU-A04",
+          "statement": "Receives service status as events pushed by the daemon (a WebSocket, server-sent events or a watch stream) rather than tight polling.",
+          "accept_any": ["event stream", "WebSocket", "server-sent events", "subscribe to status"],
+          "source": "RFC 6455, The WebSocket Protocol; WHATWG HTML Living Standard, Server-sent events"
+        },
+        {
+          "id": "HU-A05",
+          "statement": "Renders live logs in a lazily built, virtualised list and keeps only a bounded number of recent lines in memory (a ring buffer), fetching older lines from the daemon on demand.",
+          "accept_any": ["ListView.builder", "virtualized list", "ring buffer", "bounded log buffer"],
+          "source": "Flutter API documentation, ListView.builder; Flutter documentation, Performance best practices"
+        },
+        {
+          "id": "HU-A06",
+          "statement": "Batches incoming log lines and applies them to the UI at a bounded rate (for example once per frame or every few hundred milliseconds) instead of rebuilding on every line.",
+          "accept_any": ["batch log updates", "throttle UI updates", "once per frame", "avoid rebuilding per line"],
+          "source": "Flutter documentation, Performance best practices (control build cost)"
+        },
+        {
+          "id": "HU-A07",
+          "statement": "Negotiates the API version with the daemon on connect (reading its version or capabilities) and checks compatibility before using the API.",
+          "accept_any": ["API version negotiation", "version check on connect", "capabilities", "compatibility check"],
+          "source": "Docker Engine API documentation (API version negotiation)"
+        },
+        {
+          "id": "HU-A08",
+          "statement": "Signs the app with a Developer ID certificate, enables the hardened runtime, submits it to Apple's notary service and staples the ticket.",
+          "accept_any": ["Developer ID", "notarization", "hardened runtime", "staple"],
+          "source": "Apple Developer documentation, Notarizing macOS software before distribution"
+        },
+        {
+          "id": "HU-A09",
+          "statement": "Declares the entitlements the app needs in its entitlements files, deciding whether it runs in the App Sandbox (with the network client entitlement) or outside it for direct-download distribution.",
+          "accept_any": ["entitlements", "App Sandbox", "com.apple.security.network.client", "Release.entitlements"],
+          "source": "Flutter documentation, Building macOS apps with Flutter (Entitlements and the App Sandbox); Apple Developer documentation, App Sandbox"
+        },
+        {
+          "id": "HU-A10",
+          "statement": "Registers start at login through the system login-item API (SMAppService) rather than a hand-written launch agent or a deprecated API.",
+          "accept_any": ["SMAppService", "login item", "launch at login", "start at login"],
+          "source": "Apple Developer documentation, SMAppService"
+        },
+        {
+          "id": "HU-A11",
+          "statement": "Lives in the menu bar through a status item (NSStatusItem), typically with the Dock icon hidden as an agent app (LSUIElement).",
+          "accept_any": ["NSStatusItem", "menu bar item", "LSUIElement", "tray"],
+          "source": "Apple Developer documentation, NSStatusItem; Apple Developer documentation, Information Property List (LSUIElement)"
+        }
+      ],
+      "pitfalls": [
+        {
+          "id": "HU-P01",
+          "statement": "The App Sandbox blocks network and local-socket connections the app has no entitlement for, so a release build cannot reach the daemon although the debug build did.",
+          "accept_any": ["App Sandbox blocks", "missing entitlement", "network.client", "works in debug but not release"],
+          "source": "Flutter documentation, Building macOS apps with Flutter (Entitlements and the App Sandbox); Apple Developer documentation, App Sandbox"
+        },
+        {
+          "id": "HU-P02",
+          "statement": "Binding the daemon's API to all network interfaces instead of the loopback interface exposes it to the network.",
+          "accept_any": ["all interfaces", "bind to loopback", "localhost only", "exposed to the network"],
+          "source": "Docker documentation, Protect the Docker daemon socket"
+        },
+        {
+          "id": "HU-P03",
+          "statement": "An unauthenticated local API can be driven by any local process, or by a web page through DNS rebinding or cross-site requests; it needs a token and a check of the Host or Origin header.",
+          "accept_any": ["unauthenticated local API", "DNS rebinding", "any local process", "Origin header"],
+          "source": "OWASP Community, DNS Rebinding; OWASP Cross-Site Request Forgery Prevention Cheat Sheet"
+        },
+        {
+          "id": "HU-P04",
+          "statement": "Parsing and processing a high-volume log stream on the UI isolate drops frames; heavy work belongs in a background isolate.",
+          "accept_any": ["background isolate", "compute", "jank", "dropped frames"],
+          "source": "Flutter documentation, Concurrency and isolates; Flutter documentation, Performance best practices"
+        },
+        {
+          "id": "HU-P05",
+          "statement": "Stream subscriptions and sockets not cancelled in dispose leak memory and keep updating disposed widgets (setState after dispose).",
+          "accept_any": ["cancel the subscription", "dispose", "memory leak", "setState after dispose"],
+          "source": "Dart API documentation, StreamSubscription.cancel; Flutter API documentation, State.dispose"
+        },
+        {
+          "id": "HU-P06",
+          "statement": "While the daemon restarts or upgrades, in-flight requests fail, the socket can be stale or refuse connections, and subscriptions are lost; the app must treat restarting as a state, retry only idempotent calls, re-subscribe and re-fetch state after reconnecting.",
+          "accept_any": ["daemon restart", "re-subscribe", "stale socket", "in-flight requests fail"],
+          "source": "Amazon Builders' Library, Making retries safe with idempotent APIs"
+        },
+        {
+          "id": "HU-P07",
+          "statement": "After a daemon upgrade the app and daemon can speak different API versions (version skew); without a version check calls fail or misbehave silently.",
+          "accept_any": ["version skew", "incompatible API version", "API mismatch after upgrade", "version check"],
+          "source": "Kubernetes documentation, Version Skew Policy; Docker Engine API documentation (versioning)"
+        },
+        {
+          "id": "HU-P08",
+          "statement": "Notarization is rejected when the hardened runtime is off, a nested binary or framework is unsigned, or the signature lacks a secure timestamp; any bundled helper binary must be signed too.",
+          "accept_any": ["notarization rejected", "unsigned nested binary", "secure timestamp", "sign every binary"],
+          "source": "Apple Developer documentation, Resolving common notarization issues"
+        },
+        {
+          "id": "HU-P09",
+          "statement": "An app that runs from login and polls the daemon frequently drains battery and CPU; prefer pushed events and back off when the window is hidden.",
+          "accept_any": ["polling", "battery drain", "energy use", "CPU usage"],
+          "source": "Apple Developer documentation, Energy Efficiency Guide for Mac Apps"
+        },
+        {
+          "id": "HU-P10",
+          "statement": "Keeping every streamed log line in memory grows memory without bound over a long-running session.",
+          "accept_any": ["unbounded memory", "memory growth", "keep every line", "out of memory"],
+          "source": "Flutter documentation, Use the Memory view (DevTools)"
+        },
+        {
+          "id": "HU-P11",
+          "statement": "Using deprecated login-item APIs (SMLoginItemSetEnabled, shared file lists) or a launch agent alongside the app starts duplicate instances or silently stops working; the app should register once and stay single-instance.",
+          "accept_any": ["deprecated login item API", "SMLoginItemSetEnabled", "duplicate instance", "single instance"],
+          "source": "Apple Developer documentation, SMAppService (replacing SMLoginItemSetEnabled)"
+        }
+      ]
+    }
+  }
+}
