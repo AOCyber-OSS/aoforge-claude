@@ -7,12 +7,15 @@ notes:
   - kind: test_portability
     path: scripts/eval81/prereg.cjs
     note: "prereg.test.cjs tests 1 and 2c fail (508/510) when TMPDIR is the macOS default /var/folders/... (a symlink to /private/var). extraLabel() compares the extra's path with the repo path without realpath, so a repo extra is labelled absolute. With a realpath TMPDIR the suite is 510/510. The committed manifest is unaffected (the checkout path has no symlink) and prereg --check passes. Advisory: realpath both sides in extraLabel/isInside."
+    resolved: "quick 44: prereg.test.cjs builds its world on the physical temp path; prereg.cjs is unchanged because the manifest freezes it"
   - kind: stale_wording
     path: .aoforge/objectives/76-model-efficiency-and-stack-specific-content/76-VERIFICATION.md
     note: "The frontmatter score line, the requirements_traceability note (MEF-06 SATISFIED) and the closing paragraph still say 76-06/76-08 stay open; the deferred[] entries and the 'Closed by objective 81' addendum say closed and MEF-06 PARTIALLY SATISFIED. The authoritative entries are correct; the older lines are stale."
+    resolved: "quick 44: 76-VERIFICATION, 76-RETROACTIVE-SUMMARY, ROADMAP and STATE agree with the closing evidence"
   - kind: stale_checkbox
     path: .aoforge/REQUIREMENTS.md
     note: "MEF-05's checkbox (line 70) is still [ ] while its traceability row says Complete. validate requirements --objective 76 reports no findings."
+    resolved: "quick 44: MEF-01..05 ticked via requirements mark-complete"
   - kind: objective_gate
     note: "npm test: 13612/13641 pass, 1 fail (watcher-shell.test.cjs W-3, fish ShellSession, 600 s timeout under the scratch HOME). Objective 81 changed nothing under plugins/ (git diff 7e9151b7^ HEAD -- plugins/ is empty), so this is environmental or pre-existing, not a gap of this objective. Re-run under the real HOME to confirm."
   - kind: workload_shape
@@ -69,7 +72,7 @@ notes:
 
 | Requirement | Source | Status | Evidence |
 |---|---|---|---|
-| MEF-05 (Haiku half) | ROADMAP obj 81 | SATISFIED | 81-HAIKU-EVAL.md; pin stays claude-haiku-5-5 |
+| MEF-05 (Haiku half) | Objective 76 (objective 81 maps no requirement) | Haiku half delivered; the requirement is objective 76's and is closed in its records | 81-HAIKU-EVAL.md; pin stays claude-haiku-5-5; 76-VERIFICATION.md and 76-RETROACTIVE-SUMMARY.md carry MEF-05 |
 | MEF-06 (start-tier half) | ROADMAP obj 81 | Explicitly NOT MET, recorded | P1 approved as a todo, not applied; debugger start tier not measured |
 
 ### Anti-Patterns Found
