@@ -5231,6 +5231,7 @@ STATE.md stays lean; this file grows over time.
 - [Objective 82]: 82-05: D dry run shows per-session caps summing to ## Decisions
 
 2 against D's $4.5 batch cap; the batch cap binds and would refuse the escalation sessions (last in order) if sessions run costlier than the $3.8 estimate: show it at the 82-08 gate
+- [Objective 82]: 82-11: readers decide the runtime path form: agent-read text names <runtime>/, orchestrator text {runtime_root}/ (init JSON runtime_root, else RUNTIME_ROOT=$(echo ~/.claude/aoforge)); every AOForge spawn carries 'AOForge runtime: {runtime_root}' right after its prompt's opening line; the guard enforces all seven scopes
 
 ## Performance Metrics
 
@@ -5492,3 +5493,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 82 P02 | 15min | 3 tasks | 15 files |
 | Objective 82 P04 | 16min | 3 tasks | 10 files |
 | Objective 82 P05 | 92min | 3 tasks | 21 files |
+| Objective 82 P11 | 24min | 3 tasks | 61 files |

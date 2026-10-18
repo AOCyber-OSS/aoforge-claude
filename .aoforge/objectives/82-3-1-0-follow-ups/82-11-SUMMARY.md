@@ -54,8 +54,14 @@ verification:
   tdd_evidence: true
   test_pairing: true
 
-duration: 60min
+duration: 24min
 completed: 2026-10-18
+tokens_input: 47942982
+tokens_output: 145342
+tokens_cache_read: 47587506
+tokens_cache_write: 355104
+token_model: "claude-opus-5-5"
+tokens_source: "live"
 ---
 
 # Objective 82 TRD 11: runtime paths in references, workflows, skills and templates Summary
@@ -64,16 +70,16 @@ completed: 2026-10-18
 
 ## Performance
 
-- **Duration:** about 60 min
+- **Duration:** 24 min
 - **Started:** 2026-10-18T02:51:15Z
-- **Completed:** COMPLETED_AT
+- **Completed:** 2026-10-18T03:14:34Z
 - **Tasks:** 3 (6 commits: RED and GREEN per task)
 - **Files modified:** 61
 
 ## Progress
 - [x] Task 1: References and pack agent material — ccb30f7a (RED 35400216)
 - [x] Task 2: Workflows, their spawn lines and 81's template comparisons — 7a78a9b0 (RED 21adb02a)
-- [x] Task 3: Skills, templates and pack skills/workflows; PENDING emptied — (this commit) (RED 2b094ba1)
+- [x] Task 3: Skills, templates and pack skills/workflows; PENDING emptied — add7a1d8 (RED 2b094ba1)
 
 ## Accomplishments
 
@@ -140,7 +146,7 @@ General-purpose spawns (build.md, plan-objective.md and discuss-objective.md cha
 
 1. **Task 1** RED `35400216` (test), GREEN `ccb30f7a` (fix)
 2. **Task 2** RED `21adb02a` (test), GREEN `7a78a9b0` (fix)
-3. **Task 3** RED `2b094ba1` (test), GREEN TASK3_HASH (fix)
+3. **Task 3** RED `2b094ba1` (test), GREEN `add7a1d8` (fix)
 
 ## TDD Evidence
 
@@ -178,13 +184,13 @@ See `key-decisions`.
 - **Found during:** Task 2
 - **Issue:** the TRD adds `{runtime_root}` to spawn prompts but the workflows' "Parse JSON for:" / "Extract from init JSON:" lines did not name the field, so the orchestrator had no stated source for the placeholder.
 - **Fix:** `` `runtime_root` (fills `{runtime_root}`) `` leads each list in execute-objective, plan-objective, new-project, new-milestone, quick, build, verify-work, map-codebase, security-audit, audit-milestone, resume-project and the research-objective skill.
-- **Committed in:** 7a78a9b0, TASK3_HASH
+- **Committed in:** 7a78a9b0, `add7a1d8`
 
 **2. [Rule 1 - guessed home] Routed skills told the model to "expand `~`" itself**
 - **Found during:** Task 3
 - **Issue:** milestone, objective, status, todo and workstreams said "Read the `workflow` path the route returns (expand `~`)", which asks the model to type a home directory.
 - **Fix:** Read `{runtime_root}/workflows/<name>` (route's file name), with the fallback line and "never type a home directory yourself"; the routes list names files only.
-- **Committed in:** TASK3_HASH
+- **Committed in:** `add7a1d8`
 
 **3. [Rule 3 - classifier] `Bash(<command>)` permission rules are shell**
 - **Found during:** Task 1 (unattended-operation.md:81 is a settings.json allow rule in a json fence)
@@ -217,6 +223,13 @@ None - no external service configuration required.
 ## Next Objective Readiness
 
 82-07 can edit the executor spawn list and planner text on top of the enforced guard; 82-06/82-08's batch C can fill `AOForge runtime: {runtime_root}` with the sandbox runtime root (see the interface note).
+
+## Self-Check: PASSED
+
+- Commits 35400216, ccb30f7a, 21adb02a, 7a78a9b0, 2b094ba1 and add7a1d8 are in the log.
+- The guard, the eval81 A/B/C tests, trd-spec.md and templates/debug-subagent-prompt.md exist; `node --test runtime-path-reads.repo.test.cjs` is 18/18 with every scope ENFORCED at 0 offenders.
+- `git diff dcbfad2a -- scripts/eval81/*.cjs ':!**/*.test.cjs'` is empty (81's frozen modules untouched); `prereg.cjs --check` OK, 86 files.
+- No added line claims the Read tool fails on `~`.
 
 ---
 *Objective: 82-3-1-0-follow-ups*
