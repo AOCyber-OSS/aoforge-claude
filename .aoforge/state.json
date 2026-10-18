@@ -2010,6 +2010,16 @@
       "objective": "82",
       "summary": "82-02: agents take <runtime> from the spawn prompt's AOForge runtime line, else init runtime_root, else echo ~/.claude/aoforge; the rationale is that a supplied absolute path removes the chance to guess a home directory, not that the Read tool fails on ~",
       "rationale": null
+    },
+    {
+      "objective": "82",
+      "summary": "82-04: tokens trd|coverage|backfill --also-root normalise former roots in tokens-cli (calibrate's rules; calibrator helpers are unexported) and match through the one token-usage.repoMatcher",
+      "rationale": null
+    },
+    {
+      "objective": "82",
+      "summary": "82-04: v1.6 coverage is 111/113 with and without --also-root /Users/justin/dev/devflow-claude; the former root adds 367 executor transcripts and recovers 64-09 and 64-10 in the backfill dry run",
+      "rationale": null
     }
   ],
   "blockers": [

@@ -159,13 +159,16 @@
  * Estimation data:
  *   tokens trd <trd-id>                Executor token totals of one TRD from transcripts
  *     [--objective-dir d] [--repo p] [--root dir]   (read-only; exit 0 even when none is found)
+ *     [--also-root dir]...
  *   tokens stamp <trd-id> --draft <path>  Write tokens_input/tokens_output/... into a SUMMARY draft
  *     [--objective-dir d] [--repo p] [--root dir]   (a draft inside .aoforge/ is refused; run before summary post)
  *   tokens backfill [--write] [--force]  Recover token usage for historical SUMMARYs from surviving transcripts
  *     [--repo p] [--root dir]            (dry run unless --write: counts recovered/unrecovered by reason, changes no file;
- *                                         --write stamps through summary post; --force restamps already stamped SUMMARYs)
+ *     [--also-root dir]...                --write stamps through summary post; --force restamps already stamped SUMMARYs)
  *   tokens coverage [--milestone v | --objective N]  Forward-stamp coverage (live/counted) of TRD SUMMARYs; read-only
  *     [--repo p] [--root dir]            (default scope: the current milestone; exit 0 for every report)
+ *     [--also-root dir]...               --also-root dir (repeatable; trd, coverage and backfill, never stamp): a former
+ *                                         checkout path whose executor transcripts also count (TRD 82-04)
  *   calibrate [--paths a,b] [--out f]  Build per-task-class medians/P90s (minutes, tokens, dollars) into calibration.json
  *     [--rates f] [--root dir | --no-overhead] [--also-root dir]... [--window <N|all>]
  *     [--minutes <task_sum|trd_level>] [--through <N>] [--dry-run]
@@ -933,7 +936,8 @@ async function main() {
     }
 
     case 'tokens': {
-      // aof-tools tokens <trd|stamp|backfill> ... — TRD 57-03, backfill TRD 57-06
+      // aof-tools tokens <trd|stamp|backfill|coverage> ... [--also-root dir]... — TRD 57-03, backfill TRD 57-06,
+      // coverage TRD 66-01, --also-root (trd, coverage, backfill) TRD 82-04
       const { output: outputTokens } = require('./lib/helpers.cjs');
       const { runTokens } = require('./lib/tokens-cli.cjs');
       const r = runTokens({ argv: args.slice(1), cwd });

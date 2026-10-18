@@ -15,7 +15,12 @@
 //     11 executor.md <self_check>: tokens stamp before summary post   12 execute-trd.md create_summary_with_evidence
 //     13 templates/summary.md documents the fields                    14 executor.md record-metric passes --job, not --trd
 //
-// TRD 66-01 adds `tokens coverage` (EST-09): its tests are the last describe in this file, named `66-01 1.` onwards.
+// TRD 82-04 adds `--also-root <dir>` to trd, coverage and backfill: its tests are the last describe, named `82-04 1.` on.
+//   1 trd finds a former root's executor   2 coverage: stamp_skipped   3 backfill dry run recovers it, writes nothing
+//   4 repeatable, order-free, also_roots / ` · also roots` only when given   5 relative, equal to --repo, containing it
+//   6 stamp refuses it; a missing value      7 default outputs byte-identical to before   10 help names it
+//
+// TRD 66-01 adds `tokens coverage` (EST-09): its tests are the describe before 82-04's, named `66-01 1.` onwards.
 //   66-01 1. default scope is the current milestone      2. --raw text: the summary line, then one line per non-live entry
 //   66-01 3. --milestone v1.5 reads the archived dirs    4. --objective 65 scopes to one objective directory
 //   66-01 5. missing reasons from transcripts; --root and --repo honored
@@ -34,7 +39,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 const {
-  makeFakeHome, projectKeyFor, assistantRecords, executorPrompt, writeSubagentTranscript, THREE_MESSAGES,
+  makeFakeHome, projectKeyFor, assistantRecords, executorPrompt, writeSubagentTranscript, formerRootExecutor, THREE_MESSAGES,
 } = require('./__fixtures__/transcript-fixtures.cjs');
 const { makeCoverageProject, V16_FIXTURE } = require('./__fixtures__/token-coverage-fixtures.cjs');
 
@@ -901,5 +906,248 @@ describe('66-01 tokens coverage (end to end)', () => {
     assert.equal(readRootFor({ mode: 'store', main: '/m', checkout: '/w' }), '/m');
     assert.equal(readRootFor({ mode: 'local', main: '/m', checkout: '/w' }), '/w');
     assert.equal(readRootFor({ mode: 'local', main: '/m', checkout: null }), '/m');
+  });
+});
+
+// ─── TRD 82-04: --also-root on trd, coverage and backfill ───────────────────
+
+/**
+ * The V16 coverage project plus three executor transcripts: 66-02 recorded in the repo itself, 65-03 under former root
+ * A and 65-02 under former root B (each a REPO_ROOT line naming the former root, its project key and cwd). Neither
+ * former root exists on disk, like a real checkout that moved.
+ */
+function makeFormerRootProject() {
+  const p = makeCoverageProject(V16_FIXTURE);
+  const FORMER_A = path.join(p.tmp, 'former-a');
+  const FORMER_B = path.join(p.tmp, 'former-b');
+  p.transcript('66-02', '66-stamp');
+  formerRootExecutor(p.projectsRoot, { former: FORMER_A, trdId: '65-03', objectiveDir: '65-release' });
+  formerRootExecutor(p.projectsRoot, { former: FORMER_B, trdId: '65-02', objectiveDir: '65-release' });
+  return { ...p, FORMER_A, FORMER_B };
+}
+
+/** Run aof-tools, assert exit 0, return stdout. */
+function stdoutOf(p, args) {
+  const r = p.run(args);
+  assert.equal(r.status, 0, `aof-tools ${args.join(' ')}\n${r.stdout}\n${r.stderr}`);
+  return r.stdout;
+}
+
+/** `s` with the fake home, the temp dir and the repo's project key replaced, so outputs compare across runs. */
+function placeheld(p, s) {
+  return s.split(p.home).join('<HOME>').split(p.tmp).join('<TMP>').split(projectKeyFor(p.repo)).join('<KEY>');
+}
+
+const sha256 = (s) => require('node:crypto').createHash('sha256').update(s).digest('hex');
+
+// Captured with the code before TRD 82-04 changed tokens-cli.cjs (scratch capture of makeFormerRootProject, placeholders
+// as in placeheld): the default --raw text of each run, and the sha256 of its default JSON (449, 121, 2484 and 746 bytes).
+const DEFAULT_OUTPUTS = {
+  trd_found: {
+    args: ['tokens', 'trd', '66-02'],
+    json_sha256: 'bdc4b3c19e7df4dad8cfabc2fbb06e5424710bf9a72ec13fb2d2456514129af6',
+    text: 'tokens_input=140747 tokens_output=1370 transcripts=1',
+  },
+  trd_missing: {
+    args: ['tokens', 'trd', '65-03'],
+    json_sha256: 'd758a5cd029cc3a5d59aa8d91ed653c0749ff6cf5b666bf657cd7d9dfde68266',
+    text: 'not found: no_transcript',
+  },
+  coverage: {
+    args: ['tokens', 'coverage'],
+    json_sha256: 'bfc4d73d281d4e6fee33a17662c9b031250b02a6b65955c431cfb2d3ee67ea27',
+    text: [
+      V16_LINE_1,
+      '  65-02 missing (no_transcript)',
+      '  65-03 missing (no_transcript)',
+      '  66-01 backfill',
+      '  66-02 unlabeled',
+      '  66-03 in progress',
+    ].join('\n'),
+  },
+  backfill: {
+    args: ['tokens', 'backfill'],
+    json_sha256: 'f5f5614fb5cd39ae3f601a51de8216a37ae7d696731fd6ba0f0af43d2d968baa',
+    text: [
+      'summaries 7 · already stamped 4 · recovered 0 · unrecovered 3 (no_transcript 3)',
+      'executor transcripts 3 (identified 1, unidentified 0, ambiguous 0, foreign 2)',
+    ].join('\n'),
+  },
+};
+
+const missingReasons = (r) => Object.fromEntries(r.entries.filter((e) => e.class === 'missing').map((e) => [e.id, e.reason]));
+const hasAlsoRoots = (r) => Object.prototype.hasOwnProperty.call(r, 'also_roots');
+
+describe('82-04 tokens --also-root (end to end)', () => {
+  test('82-04 1. tokens trd finds the executor recorded under a named former root; without the flag no_transcript', () => {
+    const p = makeFormerRootProject();
+    try {
+      const base = ['tokens', 'trd', '65-03', '--root', p.projectsRoot, '--repo', p.repo];
+      const found = JSON.parse(stdoutOf(p, [...base, '--also-root', p.FORMER_A]));
+      assert.equal(found.found, true, JSON.stringify(found));
+      assert.equal(found.fields.tokens_input, 140747);
+      assert.equal(found.fields.tokens_output, 1370);
+      assert.equal(found.transcripts.length, 1);
+      assert.ok(found.transcripts[0].file.includes(projectKeyFor(p.FORMER_A)), 'the transcript under the former key');
+      assert.deepEqual(found.also_roots, [p.FORMER_A]);
+      assert.equal(
+        stdoutOf(p, [...base, '--also-root', p.FORMER_A, '--raw']).trim(),
+        `tokens_input=140747 tokens_output=1370 transcripts=1 · also roots ${p.FORMER_A}`,
+      );
+
+      const none = JSON.parse(stdoutOf(p, base));
+      assert.equal(none.found, false);
+      assert.equal(none.reason, 'no_transcript');
+      assert.equal(hasAlsoRoots(none), false);
+    } finally {
+      p.cleanup();
+    }
+  });
+
+  test('82-04 2. tokens coverage: a missing SUMMARY whose executor ran under the former root is stamp_skipped', () => {
+    const p = makeFormerRootProject();
+    try {
+      const withA = coverageJson(p, ['--objective', '65', '--also-root', p.FORMER_A]);
+      assert.deepEqual(missingReasons(withA), { '65-02': 'no_transcript', '65-03': 'stamp_skipped' });
+      assert.deepEqual(withA.also_roots, [p.FORMER_A]);
+      const without = coverageJson(p, ['--objective', '65']);
+      assert.deepEqual(missingReasons(without), { '65-02': 'no_transcript', '65-03': 'no_transcript' });
+      assert.equal(hasAlsoRoots(without), false);
+    } finally {
+      p.cleanup();
+    }
+  });
+
+  test('82-04 3. tokens backfill (dry run) recovers that SUMMARY only with the flag; no file changes either way', () => {
+    const p = makeFormerRootProject();
+    try {
+      const repoBefore = p.hashTree(p.repo);
+      const rootBefore = p.hashTree(p.projectsRoot);
+
+      const withA = JSON.parse(stdoutOf(p, ['tokens', 'backfill', '--also-root', p.FORMER_A]));
+      assert.deepEqual(withA.recovered, ['65-03']);
+      assert.deepEqual(withA.unrecovered.map((u) => [u.id, u.reason]), [['65-02', 'no_transcript'], ['66-03', 'no_transcript']]);
+      assert.equal(withA.counts.recovered, 1);
+      assert.deepEqual(withA.also_roots, [p.FORMER_A]);
+      assert.equal(Object.prototype.hasOwnProperty.call(withA, 'applied'), false, 'a dry run');
+
+      const without = JSON.parse(stdoutOf(p, ['tokens', 'backfill']));
+      assert.deepEqual(without.recovered, []);
+      assert.equal(without.counts.unrecovered, 3);
+      assert.equal(hasAlsoRoots(without), false);
+
+      assert.deepEqual(p.hashTree(p.repo), repoBefore);
+      assert.deepEqual(p.hashTree(p.projectsRoot), rootBefore);
+    } finally {
+      p.cleanup();
+    }
+  });
+
+  test('82-04 4. --also-root repeats; order does not matter; also_roots and " · also roots" appear only when given', () => {
+    const p = makeFormerRootProject();
+    try {
+      const suffix = ` · also roots ${p.FORMER_A}, ${p.FORMER_B}`;
+      const ab = ['--also-root', p.FORMER_A, '--also-root', p.FORMER_B];
+      const ba = ['--also-root', p.FORMER_B, '--also-root', p.FORMER_A];
+
+      const cov = coverageJson(p, ba);
+      assert.deepEqual(missingReasons(cov), { '65-02': 'stamp_skipped', '65-03': 'stamp_skipped' });
+      assert.deepEqual(cov.also_roots, [p.FORMER_A, p.FORMER_B], 'resolved and sorted');
+      for (const sub of [['tokens', 'coverage'], ['tokens', 'backfill'], ['tokens', 'trd', '65-02']]) {
+        assert.equal(stdoutOf(p, [...sub, ...ab]), stdoutOf(p, [...sub, ...ba]), `${sub.join(' ')} JSON is order-free`);
+        const textAb = stdoutOf(p, [...sub, ...ab, '--raw']);
+        assert.equal(textAb, stdoutOf(p, [...sub, ...ba, '--raw']), `${sub.join(' ')} text is order-free`);
+        assert.ok(textAb.split('\n')[0].endsWith(suffix), `${sub.join(' ')} headline ends with the roots: ${textAb}`);
+        assert.equal(stdoutOf(p, [...sub, '--raw']).includes('also roots'), false, `${sub.join(' ')} without the flag`);
+      }
+      const bf = JSON.parse(stdoutOf(p, ['tokens', 'backfill', ...ab]));
+      assert.deepEqual(bf.recovered, ['65-02', '65-03']);
+      assert.deepEqual(bf.also_roots, [p.FORMER_A, p.FORMER_B]);
+      // a root named twice counts once
+      assert.deepEqual(coverageJson(p, ['--also-root', p.FORMER_A, '--also-root', p.FORMER_A]).also_roots, [p.FORMER_A]);
+    } finally {
+      p.cleanup();
+    }
+  });
+
+  test('82-04 5. a relative root resolves against cwd; one equal to the repo is dropped; one containing it is refused', () => {
+    const p = makeFormerRootProject();
+    try {
+      // aof-tools runs with --cwd <repo>, so ../former-a is former root A
+      const rel = coverageJson(p, ['--objective', '65', '--also-root', '../former-a']);
+      assert.deepEqual(rel.also_roots, [p.FORMER_A]);
+      assert.equal(missingReasons(rel)['65-03'], 'stamp_skipped');
+
+      for (const sub of [['tokens', 'coverage'], ['tokens', 'backfill'], ['tokens', 'trd', '65-03']]) {
+        const plain = stdoutOf(p, sub);
+        assert.equal(stdoutOf(p, [...sub, '--repo', p.repo, '--also-root', p.repo]), stdoutOf(p, [...sub, '--repo', p.repo]),
+          `${sub.join(' ')}: a root equal to --repo is dropped`);
+        assert.equal(stdoutOf(p, [...sub, '--also-root', '.']), plain, `${sub.join(' ')}: . is the repo itself`);
+
+        const before = p.hashTree(p.repo);
+        const r = p.run([...sub, '--also-root', p.tmp]);
+        assert.equal(r.status, 1, `${sub.join(' ')} --also-root <parent of repo> exits 1\n${r.stdout}\n${r.stderr}`);
+        assert.match(r.stderr, USAGE);
+        assert.match(r.stderr, /contains/);
+        assert.deepEqual(p.hashTree(p.repo), before);
+      }
+    } finally {
+      p.cleanup();
+    }
+  });
+
+  test('82-04 6. stamp refuses --also-root and a missing value is a usage error; the draft is unchanged', () => {
+    const p = makeFormerRootProject();
+    try {
+      const drafts = path.join(p.tmp, 'drafts', 'objectives', '65-release');
+      fs.mkdirSync(drafts, { recursive: true });
+      const draft = path.join(drafts, '65-03-SUMMARY.md');
+      fs.writeFileSync(draft, SUMMARY_TEXT);
+      const cases = [
+        [['tokens', 'stamp', '65-03', '--draft', draft, '--also-root', p.FORMER_A], /--also-root applies to tokens trd, coverage and backfill/],
+        [['tokens', 'trd', '65-03', '--also-root'], /--also-root needs a value/],
+        [['tokens', 'coverage', '--also-root', '--objective', '65'], /--also-root needs a value/],
+        [['tokens', 'backfill', '--also-root'], /--also-root needs a value/],
+      ];
+      for (const [args, want] of cases) {
+        const r = p.run(args);
+        assert.equal(r.status, 1, `aof-tools ${args.join(' ')} should exit 1\n${r.stdout}\n${r.stderr}`);
+        assert.match(r.stderr, USAGE, `aof-tools ${args.join(' ')} prints a usage line`);
+        assert.match(r.stderr, want, `aof-tools ${args.join(' ')}`);
+      }
+      assert.equal(fs.readFileSync(draft, 'utf-8'), SUMMARY_TEXT, 'the draft is unchanged');
+    } finally {
+      p.cleanup();
+    }
+  });
+
+  test('82-04 7. without the flag every default output is byte-identical to the one captured before the change', () => {
+    const p = makeFormerRootProject();
+    try {
+      for (const [name, want] of Object.entries(DEFAULT_OUTPUTS)) {
+        const json = placeheld(p, stdoutOf(p, want.args));
+        assert.equal(sha256(json), want.json_sha256, `${name} JSON changed:\n${json}`);
+        assert.equal(placeheld(p, stdoutOf(p, [...want.args, '--raw'])), want.text, `${name} text changed`);
+      }
+    } finally {
+      p.cleanup();
+    }
+  });
+
+  test('82-04 10. the help usage, details and tokens --help name --also-root for trd, coverage and backfill', () => {
+    const { COMMANDS } = require('./help.cjs');
+    assert.match(COMMANDS.tokens.usage, /\[--also-root <dir>\]\.\.\./);
+    assert.match(COMMANDS.tokens.details, /--also-root <dir>/);
+    assert.match(COMMANDS.tokens.details, /trd, coverage and backfill/);
+    assert.match(require('./tokens-cli.cjs').USAGE, /\[--also-root <dir>\]\.\.\./);
+
+    const p = makeFormerRootProject();
+    try {
+      const r = p.run(['tokens', '--help']);
+      assert.equal(r.status, 0, r.stderr);
+      assert.match(r.stdout, /--also-root/);
+    } finally {
+      p.cleanup();
+    }
   });
 });

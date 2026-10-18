@@ -5223,6 +5223,8 @@ STATE.md stays lean; this file grows over time.
 - [Objective 82]: Build-cell causes are priced as removal upper bounds (issuing plus carry of the cause's calls) and labelled single-run when only one run shows them
 - [Objective 82]: The planner commit-tail cost (P-2) has no plugin trigger: the harness attribution reminder is in all four planner transcripts, so the fix is one explicit sentence in planner.md and executor.md
 - [Objective 82]: 82-02: agents take <runtime> from the spawn prompt's AOForge runtime line, else init runtime_root, else echo ~/.claude/aoforge; the rationale is that a supplied absolute path removes the chance to guess a home directory, not that the Read tool fails on ~
+- [Objective 82]: 82-04: tokens trd|coverage|backfill --also-root normalise former roots in tokens-cli (calibrate's rules; calibrator helpers are unexported) and match through the one token-usage.repoMatcher
+- [Objective 82]: 82-04: v1.6 coverage is 111/113 with and without --also-root /Users/justin/dev/devflow-claude; the former root adds 367 executor transcripts and recovers 64-09 and 64-10 in the backfill dry run
 
 ## Performance Metrics
 
@@ -5482,3 +5484,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 81 P19 | 18min | 4 tasks | 10 files |
 | Objective 82 P01 | 26min | 3 tasks | 4 files |
 | Objective 82 P02 | 15min | 3 tasks | 15 files |
+| Objective 82 P04 | 16min | 3 tasks | 10 files |
