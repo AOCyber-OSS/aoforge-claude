@@ -555,14 +555,17 @@ describe('objective 82: approved tier proposals (81 P2-P5)', () => {
     }
   });
 
-  test('init new-project and new-milestone: researcher architecture and pitfalls follow opus/sonnet/haiku', () => {
-    const want = { quality: 'inherit', balanced: 'sonnet', budget: 'haiku' };
+  // TRD 82-08 measured P4 and P5 live (82-CHECK-RULES.md section 2): P4 reverted (item lost: hub HU-A01, Sonnet 2 of 2
+  // runs, Haiku 0 of 2), so architecture is opus/sonnet/sonnet again; P5 kept, so pitfalls stays opus/sonnet/haiku.
+  test('init new-project and new-milestone: researcher architecture opus/sonnet/sonnet (P4 reverted), pitfalls opus/sonnet/haiku (P5 kept)', () => {
+    const wantArch = { quality: 'inherit', balanced: 'sonnet', budget: 'sonnet' };
+    const wantPit = { quality: 'inherit', balanced: 'sonnet', budget: 'haiku' };
     for (const profile of PROFILES) {
       const dir = project(profile);
       for (const wf of ['new-project', 'new-milestone']) {
         const r = run(dir, 'init', wf).researcher_models;
-        assert.equal(r.architecture, want[profile], `${wf} ${profile} architecture`);
-        assert.equal(r.pitfalls, want[profile], `${wf} ${profile} pitfalls`);
+        assert.equal(r.architecture, wantArch[profile], `${wf} ${profile} architecture`);
+        assert.equal(r.pitfalls, wantPit[profile], `${wf} ${profile} pitfalls`);
       }
     }
   });
@@ -576,10 +579,10 @@ describe('objective 82: approved tier proposals (81 P2-P5)', () => {
     }
   });
 
-  test('table pins: P2 arch, P3 concerns, P4 architecture, P5 pitfalls', () => {
+  test('table pins: P2 arch, P3 concerns, P4 architecture (reverted by 82-08), P5 pitfalls', () => {
     assert.deepEqual(profiles.focus['codebase-mapper'].arch, { quality: 'sonnet', balanced: 'sonnet', budget: 'sonnet' });
     assert.deepEqual(profiles.focus['codebase-mapper'].concerns, { quality: 'sonnet', balanced: 'sonnet', budget: 'sonnet' });
-    assert.deepEqual(profiles.focus['project-researcher'].architecture, { quality: 'opus', balanced: 'sonnet', budget: 'haiku' });
+    assert.deepEqual(profiles.focus['project-researcher'].architecture, { quality: 'opus', balanced: 'sonnet', budget: 'sonnet' });
     assert.deepEqual(profiles.focus['project-researcher'].pitfalls, { quality: 'opus', balanced: 'sonnet', budget: 'haiku' });
   });
 
