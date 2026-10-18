@@ -21,6 +21,15 @@
 //   4. P-4 validation calls: planner.md's validate_plan names frontmatter validate, verify job-structure,
 //      trd-tdd inspect and verify trd-pre in that order, says their output is authoritative and not to read
 //      <runtime>/bin, and that angle-bracket literals in task text are fine.
+//   5. E-1 summary template: executor.md's <summary_creation> carries a SUMMARY skeleton that names every key of
+//      FRONTMATTER_SCHEMAS.summary.required and every `## ` heading of templates/summary.md's File Template; the
+//      template is read only for a field the skeleton lacks; neither executor spawn in execute-objective.md nor
+//      execute-trd.md tells the executor to read templates/summary.md.
+//   6. E-2 tdd.md: executor.md's <tdd_execution> is the procedure (RED, GREEN, REFACTOR, their commits, evidence,
+//      test naming, the TDD-EXCEPTION marker) and reads tdd.md only to settle a TDD-precedence question; neither
+//      executor spawn nor execute-trd.md tells the executor to read references/tdd.md.
+//   7. E-5 repeated SUMMARY write: executor.md's <summary_creation> says `summary checkpoint --tick` edits the draft
+//      in place, to Read the draft immediately before the final Write, and never to Write the whole SUMMARY twice.
 //   8. X-1: every `aof-tools verify <sub>` an agent, workflow, skill or reference names is a subcommand that
 //      `aof-tools verify` lists.
 
@@ -113,6 +122,79 @@ test('4. P-4: validate_plan names the exact checkers, in order, and their output
   const text = squash(validate);
   assert.match(text, /The checkers' output is authoritative: do not read `<runtime>\/bin`/);
   assert.match(text, /Angle-bracket literals in task text/);
+});
+
+/** The <execution_context> block of every `subagent_type="executor"` spawn in execute-objective.md. */
+function executorSpawnContexts() {
+  const workflow = read(RUNTIME, 'workflows', 'execute-objective.md');
+  const blocks = [];
+  let from = 0;
+  for (;;) {
+    const at = workflow.indexOf('subagent_type="executor"', from);
+    if (at === -1) break;
+    const block = blockOf(workflow.slice(at), /<execution_context>/, '</execution_context>');
+    if (block) blocks.push(block);
+    from = at + 1;
+  }
+  return blocks;
+}
+
+const summaryCreation = () => blockOf(executor(), /<summary_creation>/, '</summary_creation>');
+
+test('5. E-1: the executor carries a SUMMARY skeleton and is not sent to templates/summary.md', () => {
+  const { FRONTMATTER_SCHEMAS } = require('./frontmatter.cjs');
+  const creation = summaryCreation();
+  assert.ok(creation, 'executor.md has <summary_creation>');
+  const skeleton = blockOf(creation, /\*\*SUMMARY skeleton/, '\n```\n');
+  assert.ok(skeleton, '<summary_creation> holds the SUMMARY skeleton fence');
+  assert.ok(skeleton.length <= 2600, `the skeleton stays small (${skeleton.length} chars)`);
+  for (const key of FRONTMATTER_SCHEMAS.summary.required) {
+    assert.match(skeleton, new RegExp(`^${key}:`, 'm'), `E-1: the skeleton names the required key \`${key}\``);
+  }
+  const template = read(RUNTIME, 'templates', 'summary.md');
+  const fileTemplate = blockOf(template, /## File Template/, '<frontmatter_guidance>');
+  const headings = [...fileTemplate.matchAll(/^## (.+)$/gm)].map((m) => m[1].trim()).filter((h) => h !== 'File Template');
+  assert.ok(headings.length >= 12, `the template's section headings are read (${headings.join(' | ')})`);
+  for (const h of headings) {
+    assert.ok(skeleton.includes(`## ${h}`), `E-1: the skeleton lists the section \`## ${h}\``);
+  }
+
+  const exec = executor();
+  assert.doesNotMatch(exec, /Use template/, 'E-1: executor.md no longer says "Use template"');
+  for (const line of exec.split('\n').filter((l) => l.includes('templates/summary.md'))) {
+    assert.match(line, /only for a field the skeleton lacks/, `E-1: executor.md reads the template only on demand: ${line}`);
+  }
+  const contexts = executorSpawnContexts();
+  assert.equal(contexts.length, 2, 'execute-objective.md has two executor spawns with an <execution_context>');
+  for (const ctx of contexts) {
+    assert.doesNotMatch(ctx, /templates\/summary\.md/, 'E-1: the executor spawn does not list templates/summary.md');
+    assert.match(ctx, /references\/checkpoints\.md — only if the TRD has a checkpoint task/, 'the spawn keeps checkpoints.md, conditional');
+  }
+  assert.doesNotMatch(read(RUNTIME, 'workflows', 'execute-trd.md'), /templates\/summary\.md/, 'E-1: execute-trd.md does not send the executor to templates/summary.md');
+});
+
+test('6. E-2: <tdd_execution> is the TDD procedure and nothing sends the executor to tdd.md up front', () => {
+  const tdd = blockOf(executor(), /<tdd_execution>/, '</tdd_execution>');
+  assert.ok(tdd, 'executor.md has <tdd_execution>');
+  for (const phrase of [/RED phase/, /GREEN phase/, /REFACTOR phase/, /test\(\{objective\}-\{trd\}\)/, /feat\(\{objective\}-\{trd\}\)/,
+    /Capture evidence/, /TDD-EXCEPTION/, /descriptive name/]) {
+    assert.match(tdd, phrase, `E-2: <tdd_execution> carries ${phrase}`);
+  }
+  assert.match(squash(tdd), /Read `<runtime>\/references\/tdd\.md` only to settle a TDD-precedence question/);
+  for (const line of executor().split('\n').filter((l) => l.includes('references/tdd.md'))) {
+    assert.match(line, /only to settle a TDD-precedence question/, `E-2: executor.md reads tdd.md only on demand: ${line}`);
+  }
+  for (const ctx of executorSpawnContexts()) {
+    assert.doesNotMatch(ctx, /references\/tdd\.md/, 'E-2: the executor spawn does not list references/tdd.md');
+  }
+  assert.doesNotMatch(read(RUNTIME, 'workflows', 'execute-trd.md'), /references\/tdd\.md/, 'E-2: execute-trd.md does not send the executor to tdd.md');
+});
+
+test('7. E-5: the final SUMMARY write follows a fresh Read of the draft', () => {
+  const text = squash(summaryCreation());
+  assert.match(text, /`summary checkpoint --tick` edits the draft in place/);
+  assert.match(text, /Read the draft immediately before the final Write/);
+  assert.match(text, /never Write the whole SUMMARY twice/);
 });
 
 /** The subcommands `aof-tools verify` lists in its unknown-subcommand error. */
