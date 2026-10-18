@@ -38,6 +38,12 @@ function extractTemplate() {
   return text.slice(start, end);
 }
 
+// Objective 82 (TRD 82-11): live spawn prompts carry the line `AOForge runtime: {runtime_root}`, which hands the agent
+// its absolute runtime path. 81's frozen template predates it, so the comparison drops exactly that line (after
+// trimming indentation) and nothing else.
+const RUNTIME_LINE = 'AOForge runtime: {runtime_root}';
+const dropRuntimeLine = (text) => text.split('\n').filter((l) => l.trim() !== RUNTIME_LINE).join('\n');
+
 function fill(template, values) {
   let out = template;
   for (const [name, value] of Object.entries(values)) out = out.split(`{${name}}`).join(value);
@@ -150,6 +156,13 @@ describe('batch B runs() (test list 8)', () => {
 describe('batch B prompts (test list 9)', () => {
   test('the module template is plan-objective.md\'s checker prompt, verbatim', () => {
     assert.equal(B.CHECKER_TEMPLATE, extractTemplate());
+  });
+
+  test('objective 82: the comparison ignores exactly the runtime line; any other added line still fails it', () => {
+    const [first, ...rest] = B.CHECKER_TEMPLATE.split('\n');
+    assert.equal(dropRuntimeLine([first, RUNTIME_LINE, ...rest].join('\n')), B.CHECKER_TEMPLATE);
+    assert.notEqual(dropRuntimeLine([first, 'AOForge runtime: /abs/runtime', ...rest].join('\n')), B.CHECKER_TEMPLATE, 'a filled runtime line is not ignored');
+    assert.notEqual(dropRuntimeLine([first, RUNTIME_LINE, '**Extra:** x', ...rest].join('\n')), B.CHECKER_TEMPLATE, 'another added line fails');
   });
 
   test('each prompt is that template filled with goal, TRD paths, pre-check, requirement IDs and REQUIREMENTS.md', () => {

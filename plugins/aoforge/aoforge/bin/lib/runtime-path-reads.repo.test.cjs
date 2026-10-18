@@ -47,6 +47,11 @@
 //  16. no plugin markdown outside every scope mentions the runtime path (except the named UNSCANNED entries)
 //  17. trd-spec.md's TRD skeleton (the planner copies it into every TRD) names `<runtime>/workflows/execute-trd.md`
 //      and `<runtime>/templates/summary.md` in its <execution_context>, with no `@~/` line (TRD 82-11)
+//  18a. unit: spawn extraction (literal, variable, template, YAML form) and the runtime line's position
+//  18. every AOForge or pack agent spawn in a SPAWN_SCOPES file carries `AOForge runtime: {runtime_root}` as the
+//      first or second line of its prompt (SPAWN_EXEMPT names a sketch with a reason)
+//  19. every SPAWN_SCOPES file that spawns such an agent or names `{runtime_root}` runs an init whose JSON has
+//      runtime_root, or defines `RUNTIME_ROOT=$(echo ~/.claude/aoforge)`
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -89,8 +94,8 @@ const SCOPES = {
 };
 
 // 82-11 moves these to ENFORCED (Task 1: core_references, pack_agent_material; Task 2: core_workflows; Task 3: the rest).
-const ENFORCED = ['core_agents', 'core_references', 'pack_agent_material'];
-const PENDING = ['core_workflows', 'core_skills', 'core_templates', 'pack_skills_workflows'];
+const ENFORCED = ['core_agents', 'core_references', 'pack_agent_material', 'core_workflows'];
+const PENDING = ['core_skills', 'core_templates', 'pack_skills_workflows'];
 
 // A human-facing statement of where a user file lives (never an instruction to read one). At most 12 entries; an
 // agent-read instruction is never allowlisted. TRD 82-11 fills this from the references and workflows it keeps.
@@ -356,6 +361,151 @@ function staleAllowEntries(allow, linesOf) {
   return stale;
 }
 
+// ─── spawn prompts (TRD 82-11) ────────────────────────────────────────────────
+
+// Every spawn of an AOForge or pack agent hands the agent its absolute runtime path on this line, inside the
+// prompt, right after the prompt's opening line; the pinned <runtime_paths> block takes `<runtime>` from it.
+const RUNTIME_LINE = 'AOForge runtime: {runtime_root}';
+// A file with no `aof-tools init` call defines this once; `{runtime_root}` then means the path it holds.
+const RUNTIME_FALLBACK = 'RUNTIME_ROOT=$(echo ~/.claude/aoforge)';
+// The compound inits whose JSON carries runtime_root (82-02; runtime-root.test.cjs runs each one).
+const INITS_WITH_RUNTIME_ROOT = [
+  'execute-objective', 'plan-objective', 'new-project', 'new-milestone', 'quick', 'resume', 'verify-work',
+  'objective-op', 'todos', 'milestone-op', 'map-codebase', 'security-audit', 'progress',
+];
+
+// Scopes whose spawns test 18 checks and whose `{runtime_root}` sources test 19 checks
+// (82-11 Task 2: workflows; Task 3: skills and the packs' skills and workflows).
+const SPAWN_SCOPES = ['core_workflows'];
+
+// A spawn-shaped block that sketches another spawn rather than spelling out a prompt.
+const SPAWN_EXEMPT = [
+  {
+    file: 'plugins/aoforge/aoforge/workflows/execute-objective.md',
+    needle: 'prompt="...",',
+    reason: 'the background-execution sketch of the executor spawn above it; its prompt is that spawn\'s prompt',
+  },
+];
+
+// A spawn whose `prompt=<variable>` is filled from a template file rather than from a block in its own file.
+const PROMPT_TEMPLATES = {
+  'plugins/aoforge/aoforge/workflows/diagnose-issues.md': {
+    filled_debug_subagent_prompt: 'plugins/aoforge/aoforge/templates/debug-subagent-prompt.md',
+  },
+};
+
+/** Core agent names (bare and `aoforge:`-qualified) and pack agents as `<pack>:<agent>`. */
+function agentNames() {
+  const names = new Set();
+  for (const f of walkMd(path.join(PLUGIN, 'agents'), false)) {
+    const n = path.basename(f, '.md');
+    names.add(n);
+    names.add(`aoforge:${n}`);
+  }
+  for (const p of fs.readdirSync(PLUGINS).filter((n) => n.startsWith('aoforge-stack-'))) {
+    for (const f of walkMd(path.join(PLUGINS, p, 'agents'), true)) names.add(`${p}:${path.basename(f, '.md')}`);
+  }
+  return names;
+}
+
+/** Closed fenced blocks: [{ open, close, info }] with 0-based indexes of the fence lines. */
+function fencesOf(lines) {
+  const out = [];
+  let cur = null;
+  lines.forEach((l, i) => {
+    const m = /^\s*(`{3,}|~{3,})(.*)$/.exec(l);
+    if (!m) return;
+    if (!cur) cur = { open: i, ch: m[1][0], len: m[1].length, info: (m[2].trim().split(/\s+/)[0] || '').toLowerCase() };
+    else if (m[1][0] === cur.ch && m[1].length >= cur.len && m[2].trim() === '') {
+      out.push({ open: cur.open, close: i, info: cur.info });
+      cur = null;
+    }
+  });
+  return out;
+}
+
+const TASK_CALL_RE = /^\s*(?:[A-Za-z_][\w.]*\s*=\s*)?Task\((?:\s*$|prompt=)/;
+const YAML_AGENT_RE = /^\s*subagent_type:\s*"([^"]+)"/;
+
+/** The runtime line is the prompt's first or second line (right after its opening line). */
+const leadsWithRuntimeLine = (promptLines) => promptLines.slice(0, 2).some((l) => l.trim() === RUNTIME_LINE);
+
+/**
+ * Every spawn in a file: [{ line (1-based), agent, form, ok, why, exempt }]. Forms: a `Task(` call (literal
+ * `prompt="..."`/`"""`, or `prompt=<variable>` filled from the nearest ```markdown block above it, or from a
+ * PROMPT_TEMPLATES file), and the YAML form (a fence holding `subagent_type: "..."`, the next fence its prompt).
+ */
+function spawnsIn(fileRel, lines, { readText = (f) => fs.readFileSync(path.join(REPO_ROOT, f), 'utf8') } = {}) {
+  const fences = fencesOf(lines);
+  const out = [];
+  const starts = [];
+  for (const f of fences) {
+    for (let i = f.open + 1; i < f.close; i++) if (TASK_CALL_RE.test(lines[i])) starts.push({ at: i, fence: f });
+  }
+  starts.forEach(({ at, fence }, k) => {
+    const next = starts[k + 1];
+    const end = next && next.fence === fence ? next.at : fence.close;
+    const text = lines.slice(at, end).join('\n');
+    const agentM = /subagent_type\s*=\s*"([^"]+)"/.exec(text);
+    const spawn = { line: at + 1, agent: agentM ? agentM[1] : null, form: 'task', ok: false, why: '', exempt: null };
+    spawn.exempt = SPAWN_EXEMPT.find((e) => e.file === fileRel && text.includes(e.needle)) || null;
+    const lit = /prompt\s*=\s*("""|")/.exec(text);
+    const vari = /prompt\s*=\s*([A-Za-z_]\w*)/.exec(text);
+    if (lit) {
+      spawn.ok = leadsWithRuntimeLine(text.slice(lit.index + lit[0].length).split('\n'));
+      spawn.why = spawn.ok ? '' : `the prompt's first two lines lack "${RUNTIME_LINE}"`;
+    } else if (vari) {
+      const tpl = (PROMPT_TEMPLATES[fileRel] || {})[vari[1]];
+      let body = null;
+      if (tpl) {
+        const tLines = readText(tpl).split('\n');
+        const mf = fencesOf(tLines).find((f) => f.info === 'markdown');
+        if (mf) body = tLines.slice(mf.open + 1, mf.close);
+      } else {
+        const before = fences.filter((f) => f.close < fence.open && f.info === 'markdown').pop();
+        const between = before ? starts.some((s) => s.at > before.close && s.at < at) : true;
+        if (before && !between) body = lines.slice(before.open + 1, before.close);
+      }
+      spawn.form = 'task-variable';
+      spawn.ok = body ? leadsWithRuntimeLine(body) : false;
+      spawn.why = body ? (spawn.ok ? '' : `the ${vari[1]} block's first two lines lack "${RUNTIME_LINE}"`)
+        : `no \`\`\`markdown block above defines ${vari[1]} (or name its template in PROMPT_TEMPLATES)`;
+    } else {
+      spawn.why = 'no prompt= argument';
+    }
+    out.push(spawn);
+  });
+  fences.forEach((f, k) => {
+    for (let i = f.open + 1; i < f.close; i++) {
+      const m = YAML_AGENT_RE.exec(lines[i]);
+      if (!m) continue;
+      const promptFence = fences[k + 1];
+      const body = promptFence ? lines.slice(promptFence.open + 1, promptFence.close) : [];
+      const ok = leadsWithRuntimeLine(body);
+      out.push({ line: i + 1, agent: m[1], form: 'yaml', ok, why: ok ? '' : `the Prompt block's first two lines lack "${RUNTIME_LINE}"`, exempt: null });
+    }
+  });
+  return out.sort((a, b) => a.line - b.line);
+}
+
+/** AOForge and pack agent spawns in the files of the given scopes, with any problem. */
+function aoforgeSpawns(scopes) {
+  const names = agentNames();
+  const out = [];
+  for (const f of [...new Set(scopes.flatMap(scopeFiles))]) {
+    for (const s of spawnsIn(f, readLines(f))) if (s.agent && names.has(s.agent)) out.push({ file: f, ...s });
+  }
+  return out;
+}
+
+/** How a file supplies `{runtime_root}`: the init it runs, the fallback line, or null. */
+function runtimeRootSource(text) {
+  for (const m of text.matchAll(/aof-tools\.cjs init ([a-z][a-z-]*)/g)) {
+    if (INITS_WITH_RUNTIME_ROOT.includes(m[1])) return `init ${m[1]}`;
+  }
+  return text.includes(RUNTIME_FALLBACK) ? 'fallback' : null;
+}
+
 // ─── unit helpers ─────────────────────────────────────────────────────────────
 
 /** Class of the n-th occurrence in `text`, as the file `fileRel`. */
@@ -563,4 +713,61 @@ test('17. trd-spec.md\'s TRD skeleton names <runtime>/ files in <execution_conte
   assert.ok(lines.includes('<runtime>/workflows/execute-trd.md'), `the skeleton names <runtime>/workflows/execute-trd.md:\n${m[1]}`);
   assert.ok(lines.includes('<runtime>/templates/summary.md'), `the skeleton names <runtime>/templates/summary.md:\n${m[1]}`);
   assert.deepEqual(lines.filter((l) => l.startsWith('@~/')), [], 'no @~/ line: the planner copies the skeleton into every TRD an agent reads');
+});
+
+test('18a. unit: spawn extraction (literal, variable, template, YAML) and the runtime-line position', () => {
+  const lit = (body) => ['```', 'Task(', '  subagent_type="executor",', '  prompt="', ...body, '  ",', ')', '```'];
+  const one = (lines, file = 'plugins/aoforge/aoforge/workflows/x.md', opts) => spawnsIn(file, lines, opts);
+  assert.equal(one(lit([`    ${RUNTIME_LINE}`, '', '    <objective>', '    x', '    </objective>']))[0].ok, true);
+  assert.equal(one(lit(['    <objective>', '    x', `    ${RUNTIME_LINE}`]))[0].ok, false, 'the line comes right after the opening line');
+  assert.equal(one(lit(['    <objective>', '    x']))[0].ok, false);
+  const opener = ['```', `Task(prompt="<research_type>`, RUNTIME_LINE, 'R.', '</research_type>', '", subagent_type="project-researcher", model="{m}")', '```'];
+  assert.deepEqual(one(opener).map((s) => [s.agent, s.ok]), [['project-researcher', true]], 'content on the opening line: the next line');
+  const variable = ['Checker prompt:', '```markdown', '<ctx>', RUNTIME_LINE, '</ctx>', '```', '', '```', 'Task(', '  prompt=checker_prompt,', '  subagent_type="job-checker"', ')', '```'];
+  assert.deepEqual(one(variable).map((s) => [s.form, s.ok]), [['task-variable', true]]);
+  assert.equal(one(variable.filter((l) => l !== RUNTIME_LINE))[0].ok, false);
+  const templated = ['```', 'Task(', '  prompt=filled_debug_subagent_prompt,', '  subagent_type="debugger"', ')', '```'];
+  const readText = () => ['# T', '```markdown', '<objective>', RUNTIME_LINE, '```'].join('\n');
+  assert.equal(one(templated, 'plugins/aoforge/aoforge/workflows/diagnose-issues.md', { readText })[0].ok, true, 'a PROMPT_TEMPLATES entry');
+  assert.equal(one(templated, 'plugins/aoforge/aoforge/workflows/other.md', { readText })[0].ok, false, 'no markdown block above, no template');
+  const yaml = ['```', 'subagent_type: "codebase-mapper"', 'model: "{m}"', '```', 'Prompt:', '```', 'Focus: tech', RUNTIME_LINE, '', 'Go.', '```'];
+  assert.deepEqual(one(yaml).map((s) => [s.form, s.agent, s.ok]), [['yaml', 'codebase-mapper', true]]);
+  assert.equal(one(yaml.filter((l) => l !== RUNTIME_LINE))[0].ok, false);
+  const two = ['```', 'Task(prompt="a', RUNTIME_LINE, '", subagent_type="verifier")', '', 'Task(prompt="b', 'x', '", subagent_type="planner")', '```'];
+  assert.deepEqual(one(two).map((s) => [s.agent, s.ok]), [['verifier', true], ['planner', false]], 'two calls in one fence are two spawns');
+  assert.deepEqual(one(['Use `Task(...)` here, or Task() calls.']), [], 'a prose mention is not a spawn');
+  assert.ok(agentNames().has('executor') && agentNames().has('aoforge-stack-flutter:ui-evaluator'));
+  assert.equal(runtimeRootSource('INIT=$(node ~/.claude/aoforge/bin/aof-tools.cjs init quick "$D")'), 'init quick');
+  assert.equal(runtimeRootSource(`${RUNTIME_FALLBACK} && echo "$RUNTIME_ROOT"`), 'fallback');
+  assert.equal(runtimeRootSource('node ~/.claude/aoforge/bin/aof-tools.cjs init nonesuch'), null);
+});
+
+test('18. every AOForge or pack agent spawn carries the runtime line right after its prompt\'s opening line', { skip: SKIP_REASON }, (t) => {
+  const spawns = aoforgeSpawns(SPAWN_SCOPES);
+  const exempt = spawns.filter((s) => s.exempt);
+  const bad = spawns.filter((s) => !s.exempt && !s.ok);
+  t.diagnostic(`${spawns.length - exempt.length} AOForge spawns checked in ${SPAWN_SCOPES.join(', ')}; ${exempt.length} exempt`);
+  for (const e of SPAWN_EXEMPT) {
+    assert.ok(spawns.some((s) => s.exempt === e), `SPAWN_EXEMPT entry no longer matches a spawn: ${e.file} ${JSON.stringify(e.needle)}`);
+  }
+  assert.ok(spawns.length > 10, `only ${spawns.length} AOForge spawns found: the extractor lost them`);
+  assert.deepEqual(bad.map((s) => `${s.file}:${s.line} ${s.agent}: ${s.why}`), [],
+    `a spawn must hand its agent the absolute runtime path: add the line "${RUNTIME_LINE}" right after the prompt's opening line`);
+});
+
+test('19. every file in a spawn scope that spawns an AOForge agent or names {runtime_root} supplies it', { skip: SKIP_REASON }, () => {
+  const initList = fs.readFileSync(path.join(__dirname, 'runtime-root.test.cjs'), 'utf8');
+  const block = /const INIT_COMMANDS = \[([\s\S]*?)\n\];/.exec(initList);
+  assert.ok(block, 'runtime-root.test.cjs keeps its INIT_COMMANDS list');
+  assert.deepEqual([...block[1].matchAll(/\[\s*'([a-z-]+)'/g)].map((m) => m[1]).sort(), [...INITS_WITH_RUNTIME_ROOT].sort(),
+    'INITS_WITH_RUNTIME_ROOT is the list runtime-root.test.cjs proves prints runtime_root');
+  const spawning = new Set(aoforgeSpawns(SPAWN_SCOPES).filter((s) => !s.exempt).map((s) => s.file));
+  const missing = [];
+  for (const f of [...new Set(SPAWN_SCOPES.flatMap(scopeFiles))]) {
+    const text = fs.readFileSync(path.join(REPO_ROOT, f), 'utf8');
+    if (!spawning.has(f) && !text.includes('{runtime_root}')) continue;
+    if (!runtimeRootSource(text)) missing.push(`${f}${spawning.has(f) ? ' (spawns an AOForge agent)' : ''}`);
+  }
+  assert.deepEqual(missing, [],
+    `run an \`aof-tools.cjs init <cmd>\` whose JSON has runtime_root, or define the fallback once: ${RUNTIME_FALLBACK}`);
 });
