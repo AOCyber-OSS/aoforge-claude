@@ -149,6 +149,7 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 | 41 | calibrate --also-root counts a moved checkout's agent overhead; live calibration rebuilt (164 spawns, Sonnet 5.5 cache 0.05x) | 2026-10-17 | 7983bacd | Done | [41-calibrate-matches-pre-move-transcripts](./quick/41-calibrate-matches-pre-move-transcripts/) |
 | 42 | Objective 76 gaps: every workflow model placeholder supplied (guard), ui-evaluator escalation, benchmark counts executors, retroactive 76/77 SUMMARYs | 2026-10-17 | 1cb50783 | Done | [42-close-objective-76-gaps](./quick/42-close-objective-76-gaps/) |
 | 43 | Adopt finishes a migrated ignored tree at its commit; migration 0005 keeps ## sections (data-loss fix); reference names /aoforge:adopt; checker nits | 2026-10-17 | 81e89eb2 | Done | [43-adopt-routes-past-a-migrated-gitignored-](./quick/43-adopt-routes-past-a-migrated-gitignored-/) |
+| 44 | Objective 76 records agree with objective 81 (76 complete, MEF-06 partial), MEF-01..05 ticked, eval81 prereg tests symlink-safe | 2026-10-18 | ca1d0de0 | Done | [44-cleanups-stale-objective-76-wording-mef-](./quick/44-cleanups-stale-objective-76-wording-mef-/) |
 
 ## Accumulated Context
 
