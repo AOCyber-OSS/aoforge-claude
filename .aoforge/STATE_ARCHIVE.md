@@ -5219,6 +5219,8 @@ STATE.md stays lean; this file grows over time.
 - [Objective 81]: 81-18: post-hoc 4 access classes (user 'Reclassify + re-run impaired'); C complete $7.42, 0 real escapes, 1 final impaired; ledger $40.05; e81 sandbox deleted
 - [Objective 81]: Objective 81 tier proposals: user approve-selected P1 (ui-evaluator Haiku start; measure escalation rate on real projects), P2 arch-only (focus.codebase-mapper.arch at Sonnet), P3 (concerns budget to Sonnet), P4/P5 (researcher architecture/pitfalls budget to Haiku with a follow-up measurement); P2 quality half not approved; nothing applied in objective 81, five follow-up todos
 - [Objective 81]: 76 records from objective 81: 76-06 closed (MEF-05 SATISFIED); 76-08 measurement closed, start-tier half not met, so MEF-06 is PARTIALLY SATISFIED and left 76's requirements-completed
+- [Objective 82]: 82-04: tokens trd|coverage|backfill --also-root normalise former roots in tokens-cli (calibrate's rules; calibrator helpers are unexported) and match through the one token-usage.repoMatcher
+- [Objective 82]: 82-04: v1.6 coverage is 111/113 with and without --also-root /Users/justin/dev/devflow-claude; the former root adds 367 executor transcripts and recovers 64-09 and 64-10 in the backfill dry run
 
 ## Performance Metrics
 
@@ -5476,3 +5478,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 81 P17 | 120min | 4 tasks | 16 files |
 | Objective 81 P18 | 85min | 3 tasks | 14 files |
 | Objective 81 P19 | 18min | 4 tasks | 10 files |
+| Objective 82 P04 | 16min | 3 tasks | 10 files |

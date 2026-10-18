@@ -54,8 +54,14 @@ verification:
   test_pairing: true
 
 # Metrics
-duration: 15min
+duration: 16min
 completed: 2026-10-17
+tokens_input: 22889419
+tokens_output: 95907
+tokens_cache_read: 22605376
+tokens_cache_write: 283809
+token_model: "claude-opus-5-5"
+tokens_source: "live"
 ---
 
 # Objective 82 TRD 04: `tokens --also-root` Summary
@@ -65,13 +71,13 @@ completed: 2026-10-17
 ## Progress
 - [x] Task 1: The index and backfill take alsoRoots (test list 8-9) — RED 5f697e77, GREEN 4b773418
 - [x] Task 2: tokens-cli --also-root on trd, coverage and backfill; help and reference (test list 1-7, 10) — RED 0ba40e3b, GREEN a3d34271
-- [x] Task 3: Report v1.6 coverage and backfill with and without the former root — (this commit)
+- [x] Task 3: Report v1.6 coverage and backfill with and without the former root — 28e9285e
 
 ## Performance
 
-- **Duration:** about 15 min
+- **Duration:** about 16 min
 - **Started:** 2026-10-18T01:14:25Z
-- **Completed:** 2026-10-18T01:29Z
+- **Completed:** 2026-10-18T01:30Z
 - **Tasks:** 3
 - **Files modified:** 10 (plus this SUMMARY)
 
@@ -116,14 +122,14 @@ Why v1.6 does not move: the coverage JSON with the flag equals the one without a
 
 1. **Task 1: The index and backfill take alsoRoots** - `5f697e77` (test, RED), `4b773418` (feat, GREEN)
 2. **Task 2: tokens-cli --also-root on trd, coverage and backfill; help and reference** - `0ba40e3b` (test, RED), `a3d34271` (feat, GREEN)
-3. **Task 3: Report v1.6 coverage and backfill with and without the former root** - this SUMMARY's Task 3 checkpoint commit (docs)
+3. **Task 3: Report v1.6 coverage and backfill with and without the former root** - `28e9285e` (docs)
 
 ## Validation Gate Results
 
 | Gate | Command | Exit Code | Status |
 |---|---|---|---|
 | test (task, scoped) | `node --test` on the Task 1 and Task 2 files, HOME/TMPDIR in the scratchpad | 0 | PASS |
-| test (bin/lib regression) | every `plugins/aoforge/aoforge/bin/lib/*.test.cjs` except watcher-shell, plus `bin/aof-tools.test.cjs`, scratch HOME/TMPDIR | running | pending |
+| test (bin/lib regression) | every `plugins/aoforge/aoforge/bin/lib/*.test.cjs` except watcher-shell, plus `bin/aof-tools.test.cjs`, scratch HOME/TMPDIR | 1 (11938 pass, 1 fail: roadmap-reconcile E2E1, see Issues), then 0 on re-run | PASS |
 | repo static checks | rename-guard, planning-writes, aof-tools-deprecations, estimate-surfacing, regex-escape, stack-neutrality, context-budget `.repo.test.cjs` | 0 | PASS |
 | objective 81 frozen modules | `node scripts/eval81/prereg.cjs --check --repo <checkout> --manifest .aoforge/objectives/81-.../results/prereg-manifest.json` | 0 (86 files match) | PASS |
 
@@ -186,6 +192,7 @@ The full `npm test` run belongs to 82-10.
 **Total deviations:** 2 auto-fixed (2 blocking). **Impact on plan:** none on scope; one shared fixture function added.
 
 ## Issues Encountered
+- The bin/lib regression run (320 files, watcher-shell excluded) had one failure: `roadmap-reconcile.test.cjs` E2E1, the self-test that this repo's ROADMAP.md shows zero drift. The drift was this TRD's own row: the Task 3 checkpoint had every Progress item ticked, so reconcile counts 82-04 as complete while ROADMAP.md still showed `- [ ] 82-04-...`. `roadmap update-job-progress 82` (run before the post rather than after it, so the evidence could be recorded here) ticked the row, and `roadmap-reconcile.test.cjs` then passed in full. Not a code defect.
 - The TRD's `--raw JSON` wording: in `aof-tools tokens`, JSON is the default output and `--raw` prints text. Implemented as the test list describes: the JSON gains `also_roots` only when given, and the text ends its first line with ` · also roots`.
 
 ## Discovered commands
@@ -197,6 +204,14 @@ None - no external service configuration required.
 ## Next Objective Readiness
 - 82-10 (docs, records and revalidation) owns the CHANGELOG and USER-GUIDE lines for `tokens --also-root` and the full `npm test` run.
 - Running `tokens backfill --write --also-root /Users/justin/dev/devflow-claude` would stamp 64-09 and 64-10; not run here (the TRD forbids `--write`).
+
+## Self-Check: PASSED
+
+- FOUND: tokens-cli.cjs, token-usage.cjs, token-backfill.cjs, help.cjs, aof-tools.cjs, AOF-TOOLS-REFERENCE.md, transcript-fixtures.cjs and the three test files (all modified, committed)
+- FOUND commits: 5f697e77, 4b773418, 0ba40e3b, a3d34271, 28e9285e on `df/exec-82-04-tokens-also-root`
+- key_links: `alsoRoots` appears 25 times in tokens-cli.cjs; every `indexExecutorTranscripts` call there and the `planBackfill` call pass it
+- No node_modules link left in the worktree; the temporary private-file link for the objective 81 check was removed
+- Not touched: scripts/eval81/**, scripts/eval82/**, init.cjs, agents/*.md, references/model-profiles.*, calibrator.cjs, CHANGELOG, USER-GUIDE
 
 ---
 *Objective: 82-3-1-0-follow-ups*
