@@ -1,0 +1,2797 @@
+{
+  "batch": "D",
+  "objective": 82,
+  "role": "ui-evaluator",
+  "planned": {
+    "start": 120,
+    "escalation": 3
+  },
+  "states_total": 20,
+  "states": [
+    {
+      "id": "d01",
+      "label": "broken",
+      "defect_type": "blank_empty",
+      "severity": "high",
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "fail",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "fail",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "broken",
+        "source": "haiku"
+      }
+    },
+    {
+      "id": "d02",
+      "label": "ok",
+      "defect_type": null,
+      "severity": null,
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 1,
+          "ok": 2
+        },
+        "majority": "ok",
+        "outcome": "review",
+        "split": true,
+        "escalated": true,
+        "final": "ok"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "ok"
+      },
+      "escalation": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "ok",
+        "source": "escalation"
+      }
+    },
+    {
+      "id": "d03",
+      "label": "broken",
+      "defect_type": "overflow",
+      "severity": "medium",
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "broken",
+        "source": "haiku"
+      }
+    },
+    {
+      "id": "d04",
+      "label": "broken",
+      "defect_type": "misalignment",
+      "severity": "high",
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "broken",
+        "source": "haiku"
+      }
+    },
+    {
+      "id": "d05",
+      "label": "broken",
+      "defect_type": "overlap_zindex",
+      "severity": "high",
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "fail",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "fail",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "broken",
+        "source": "haiku"
+      }
+    },
+    {
+      "id": "d06",
+      "label": "broken",
+      "defect_type": "overflow",
+      "severity": "high",
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "fail",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "fail",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "broken",
+        "source": "haiku"
+      }
+    },
+    {
+      "id": "d07",
+      "label": "broken",
+      "defect_type": "blank_empty",
+      "severity": "high",
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "fail",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "fail",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "broken",
+        "source": "haiku"
+      }
+    },
+    {
+      "id": "d08",
+      "label": "broken",
+      "defect_type": "contrast_legibility",
+      "severity": "medium",
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 2,
+          "ok": 1
+        },
+        "majority": "broken",
+        "outcome": "pass",
+        "split": true,
+        "escalated": false,
+        "final": "broken"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "broken",
+        "source": "haiku"
+      }
+    },
+    {
+      "id": "d09",
+      "label": "ok",
+      "defect_type": null,
+      "severity": null,
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "ok"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "ok"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "ok",
+        "source": "haiku"
+      }
+    },
+    {
+      "id": "d10",
+      "label": "ok",
+      "defect_type": null,
+      "severity": null,
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "ok"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "ok"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "ok",
+        "source": "haiku"
+      }
+    },
+    {
+      "id": "d11",
+      "label": "broken",
+      "defect_type": "overlap_zindex",
+      "severity": "high",
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "fail",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "fail",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "broken",
+        "source": "haiku"
+      }
+    },
+    {
+      "id": "d12",
+      "label": "broken",
+      "defect_type": "contrast_legibility",
+      "severity": "medium",
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "fail",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "fail",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "broken",
+        "source": "haiku"
+      }
+    },
+    {
+      "id": "d13",
+      "label": "broken",
+      "defect_type": "broken_layout",
+      "severity": "high",
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "fail",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "fail",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "broken",
+        "source": "haiku"
+      }
+    },
+    {
+      "id": "d14",
+      "label": "broken",
+      "defect_type": "overflow",
+      "severity": "high",
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "fail",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "fail",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "broken",
+        "source": "haiku"
+      }
+    },
+    {
+      "id": "d15",
+      "label": "broken",
+      "defect_type": "overflow",
+      "severity": "high",
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "fail",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "outcome": "fail",
+        "split": false,
+        "escalated": false,
+        "final": "broken"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "broken",
+        "source": "haiku"
+      }
+    },
+    {
+      "id": "d16",
+      "label": "ok",
+      "defect_type": null,
+      "severity": null,
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "ok"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "ok"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "ok",
+        "source": "haiku"
+      }
+    },
+    {
+      "id": "d17",
+      "label": "broken",
+      "defect_type": "misalignment",
+      "severity": "medium",
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "ok"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "ok"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "ok",
+        "source": "haiku"
+      }
+    },
+    {
+      "id": "d18",
+      "label": "ok",
+      "defect_type": null,
+      "severity": null,
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "ok"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "ok"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "ok",
+        "source": "haiku"
+      }
+    },
+    {
+      "id": "d19",
+      "label": "ok",
+      "defect_type": null,
+      "severity": null,
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "ok"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "ok"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "ok",
+        "source": "haiku"
+      }
+    },
+    {
+      "id": "d20",
+      "label": "ok",
+      "defect_type": null,
+      "severity": null,
+      "haiku": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "outcome": "pass",
+        "split": false,
+        "escalated": false,
+        "final": "ok"
+      },
+      "sonnet": {
+        "n_samples": 3,
+        "complete": true,
+        "votes": {
+          "broken": 2,
+          "ok": 1
+        },
+        "majority": "broken",
+        "outcome": "pass",
+        "split": true,
+        "escalated": false,
+        "final": "broken"
+      },
+      "escalation": {
+        "n_samples": 0,
+        "complete": false,
+        "votes": null,
+        "majority": null,
+        "outcome": null,
+        "split": null,
+        "escalated": false
+      },
+      "haiku_start": {
+        "final": "ok",
+        "source": "haiku"
+      }
+    }
+  ],
+  "arms": {
+    "haiku_start": {
+      "accuracy": {
+        "k": 19,
+        "n": 20,
+        "rate": 0.95,
+        "low": 0.7638641064874331,
+        "high": 0.9911187805671268
+      },
+      "broken_missed": {
+        "k": 1,
+        "n": 13,
+        "rate": 0.07692307692307693,
+        "low": 0.013710066379696323,
+        "high": 0.3331453392824736
+      },
+      "false_fail": {
+        "k": 0,
+        "n": 7,
+        "rate": 0,
+        "low": 0,
+        "high": 0.35433884297520657
+      },
+      "incomplete": []
+    },
+    "haiku": {
+      "accuracy": {
+        "k": 19,
+        "n": 20,
+        "rate": 0.95,
+        "low": 0.7638641064874331,
+        "high": 0.9911187805671268
+      },
+      "broken_missed": {
+        "k": 1,
+        "n": 13,
+        "rate": 0.07692307692307693,
+        "low": 0.013710066379696323,
+        "high": 0.3331453392824736
+      },
+      "false_fail": {
+        "k": 0,
+        "n": 7,
+        "rate": 0,
+        "low": 0,
+        "high": 0.35433884297520657
+      },
+      "incomplete": [],
+      "split_rate": {
+        "k": 2,
+        "n": 20,
+        "rate": 0.1,
+        "low": 0.027865893984153206,
+        "high": 0.30103820641179335
+      },
+      "escalation_rate": {
+        "k": 1,
+        "n": 20,
+        "rate": 0.05,
+        "low": 0.008881219432873136,
+        "high": 0.23613589351256675
+      },
+      "escalation_rate_ok": {
+        "k": 1,
+        "n": 7,
+        "rate": 0.14285714285714285,
+        "low": 0.02567895594897479,
+        "high": 0.51313450331903
+      },
+      "escalated": [
+        "d02"
+      ]
+    },
+    "sonnet": {
+      "accuracy": {
+        "k": 18,
+        "n": 20,
+        "rate": 0.9,
+        "low": 0.6989617935882066,
+        "high": 0.9721341060158468
+      },
+      "broken_missed": {
+        "k": 1,
+        "n": 13,
+        "rate": 0.07692307692307693,
+        "low": 0.013710066379696323,
+        "high": 0.3331453392824736
+      },
+      "false_fail": {
+        "k": 1,
+        "n": 7,
+        "rate": 0.14285714285714285,
+        "low": 0.02567895594897479,
+        "high": 0.51313450331903
+      },
+      "incomplete": [],
+      "split_rate": {
+        "k": 1,
+        "n": 20,
+        "rate": 0.05,
+        "low": 0.008881219432873136,
+        "high": 0.23613589351256675
+      },
+      "escalation_rate": {
+        "k": 0,
+        "n": 20,
+        "rate": 0,
+        "low": 0,
+        "high": 0.16113012549493322
+      },
+      "escalation_rate_ok": {
+        "k": 0,
+        "n": 7,
+        "rate": 0,
+        "low": 0,
+        "high": 0.35433884297520657
+      },
+      "escalated": []
+    }
+  },
+  "escalated_agreement": {
+    "k": 1,
+    "n": 1,
+    "rate": 1,
+    "low": 0.20654329147389294,
+    "high": 1,
+    "states": [
+      "d02"
+    ]
+  },
+  "cost": {
+    "haiku_start": {
+      "samples_usd": 0.077283,
+      "escalation_usd": 0.056122,
+      "total_usd": 0.133405,
+      "records": 63
+    },
+    "sonnet_start": {
+      "samples_usd": 1.146167,
+      "escalation_estimate_usd": 0,
+      "escalation_basis": "estimate: the sonnet arm escalated no state",
+      "total_usd": 1.146167,
+      "records": 60
+    }
+  },
+  "contaminated": [],
+  "notes": [
+    "Each state is judged in its own session (the engine's one-state call); every state is treated as expect:pass for the escalation rules.",
+    "The Sonnet start's escalations (to opus) are not run: their cost is an estimate from the sonnet sessions' tokens at opus rates."
+  ],
+  "scored_at": "2026-10-18T11:44:08.328Z",
+  "spend": {
+    "ledger_version": 1,
+    "batch": "D",
+    "status": "complete",
+    "spent_usd": 1.279572,
+    "ledger_total_usd": 4.037729,
+    "entries": [
+      {
+        "id": "D-d01-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0017189200000000003,
+        "transcript_usd": 0.001719,
+        "charged_usd": 0.001719,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:07:32.078Z"
+      },
+      {
+        "id": "D-d01-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.027414400000000002,
+        "transcript_usd": 0.027414,
+        "charged_usd": 0.027414,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:07:38.116Z"
+      },
+      {
+        "id": "D-d01-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0012923600000000002,
+        "transcript_usd": 0.001292,
+        "charged_usd": 0.001292,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:07:43.424Z"
+      },
+      {
+        "id": "D-d01-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0190468,
+        "transcript_usd": 0.019047,
+        "charged_usd": 0.019047,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:07:48.254Z"
+      },
+      {
+        "id": "D-d01-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00126486,
+        "transcript_usd": 0.001265,
+        "charged_usd": 0.001265,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:07:53.325Z"
+      },
+      {
+        "id": "D-d01-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0191568,
+        "transcript_usd": 0.019157,
+        "charged_usd": 0.019157,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:07:58.308Z"
+      },
+      {
+        "id": "D-d02-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0014525800000000002,
+        "transcript_usd": 0.001453,
+        "charged_usd": 0.001453,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:08:04.661Z"
+      },
+      {
+        "id": "D-d02-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.018194000000000002,
+        "transcript_usd": 0.018194,
+        "charged_usd": 0.018194,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:08:08.764Z"
+      },
+      {
+        "id": "D-d02-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0013980800000000001,
+        "transcript_usd": 0.001398,
+        "charged_usd": 0.001398,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:08:15.458Z"
+      },
+      {
+        "id": "D-d02-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.018194000000000002,
+        "transcript_usd": 0.018194,
+        "charged_usd": 0.018194,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:08:20.910Z"
+      },
+      {
+        "id": "D-d02-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0013875800000000002,
+        "transcript_usd": 0.001388,
+        "charged_usd": 0.001388,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:08:27.255Z"
+      },
+      {
+        "id": "D-d02-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.018194000000000002,
+        "transcript_usd": 0.018194,
+        "charged_usd": 0.018194,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:08:31.383Z"
+      },
+      {
+        "id": "D-d03-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00127681,
+        "transcript_usd": 0.001277,
+        "charged_usd": 0.001277,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:08:36.186Z"
+      },
+      {
+        "id": "D-d03-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0194363,
+        "transcript_usd": 0.019436,
+        "charged_usd": 0.019436,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:08:40.984Z"
+      },
+      {
+        "id": "D-d03-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00134481,
+        "transcript_usd": 0.001345,
+        "charged_usd": 0.001345,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:08:46.510Z"
+      },
+      {
+        "id": "D-d03-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0195363,
+        "transcript_usd": 0.019536,
+        "charged_usd": 0.019536,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:08:51.691Z"
+      },
+      {
+        "id": "D-d03-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00136731,
+        "transcript_usd": 0.001367,
+        "charged_usd": 0.001367,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:08:57.845Z"
+      },
+      {
+        "id": "D-d03-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0194363,
+        "transcript_usd": 0.019436,
+        "charged_usd": 0.019436,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:09:03.090Z"
+      },
+      {
+        "id": "D-d04-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00134231,
+        "transcript_usd": 0.001342,
+        "charged_usd": 0.001342,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:09:08.412Z"
+      },
+      {
+        "id": "D-d04-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0262461,
+        "transcript_usd": 0.026246,
+        "charged_usd": 0.026246,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:09:16.688Z"
+      },
+      {
+        "id": "D-d04-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00133781,
+        "transcript_usd": 0.001338,
+        "charged_usd": 0.001338,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:09:21.676Z"
+      },
+      {
+        "id": "D-d04-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0217663,
+        "transcript_usd": 0.021766,
+        "charged_usd": 0.021766,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:09:28.737Z"
+      },
+      {
+        "id": "D-d04-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0014053100000000001,
+        "transcript_usd": 0.001405,
+        "charged_usd": 0.001405,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:09:34.518Z"
+      },
+      {
+        "id": "D-d04-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0208963,
+        "transcript_usd": 0.020896,
+        "charged_usd": 0.020896,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:09:40.126Z"
+      },
+      {
+        "id": "D-d05-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00133782,
+        "transcript_usd": 0.001338,
+        "charged_usd": 0.001338,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:09:45.559Z"
+      },
+      {
+        "id": "D-d05-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0202904,
+        "transcript_usd": 0.02029,
+        "charged_usd": 0.02029,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:09:51.038Z"
+      },
+      {
+        "id": "D-d05-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0013293200000000002,
+        "transcript_usd": 0.001329,
+        "charged_usd": 0.001329,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:09:56.593Z"
+      },
+      {
+        "id": "D-d05-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0203104,
+        "transcript_usd": 0.02031,
+        "charged_usd": 0.02031,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:10:02.558Z"
+      },
+      {
+        "id": "D-d05-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0013783200000000002,
+        "transcript_usd": 0.001378,
+        "charged_usd": 0.001378,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:10:08.373Z"
+      },
+      {
+        "id": "D-d05-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0209604,
+        "transcript_usd": 0.02096,
+        "charged_usd": 0.02096,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:10:14.436Z"
+      },
+      {
+        "id": "D-d06-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0011734599999999999,
+        "transcript_usd": 0.001173,
+        "charged_usd": 0.001173,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:10:20.000Z"
+      },
+      {
+        "id": "D-d06-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.017047800000000002,
+        "transcript_usd": 0.017048,
+        "charged_usd": 0.017048,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:10:26.243Z"
+      },
+      {
+        "id": "D-d06-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00116746,
+        "transcript_usd": 0.001167,
+        "charged_usd": 0.001167,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:10:32.311Z"
+      },
+      {
+        "id": "D-d06-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0167778,
+        "transcript_usd": 0.016778,
+        "charged_usd": 0.016778,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:10:38.151Z"
+      },
+      {
+        "id": "D-d06-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0011964599999999999,
+        "transcript_usd": 0.001196,
+        "charged_usd": 0.001196,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:10:44.258Z"
+      },
+      {
+        "id": "D-d06-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.016647799999999997,
+        "transcript_usd": 0.016648,
+        "charged_usd": 0.016648,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:10:50.432Z"
+      },
+      {
+        "id": "D-d07-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0012583100000000001,
+        "transcript_usd": 0.001258,
+        "charged_usd": 0.001258,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:10:54.580Z"
+      },
+      {
+        "id": "D-d07-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0200163,
+        "transcript_usd": 0.020016,
+        "charged_usd": 0.020016,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:11:00.781Z"
+      },
+      {
+        "id": "D-d07-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00127031,
+        "transcript_usd": 0.00127,
+        "charged_usd": 0.00127,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:11:05.895Z"
+      },
+      {
+        "id": "D-d07-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0198063,
+        "transcript_usd": 0.019806,
+        "charged_usd": 0.019806,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:11:11.518Z"
+      },
+      {
+        "id": "D-d07-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00122581,
+        "transcript_usd": 0.001226,
+        "charged_usd": 0.001226,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:11:19.146Z"
+      },
+      {
+        "id": "D-d07-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.019686299999999997,
+        "transcript_usd": 0.019686,
+        "charged_usd": 0.019686,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:11:24.963Z"
+      },
+      {
+        "id": "D-d08-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00135732,
+        "transcript_usd": 0.001357,
+        "charged_usd": 0.001357,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:11:30.404Z"
+      },
+      {
+        "id": "D-d08-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0195804,
+        "transcript_usd": 0.01958,
+        "charged_usd": 0.01958,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:11:35.266Z"
+      },
+      {
+        "id": "D-d08-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00128132,
+        "transcript_usd": 0.001281,
+        "charged_usd": 0.001281,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:11:40.877Z"
+      },
+      {
+        "id": "D-d08-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0208804,
+        "transcript_usd": 0.02088,
+        "charged_usd": 0.02088,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:11:46.646Z"
+      },
+      {
+        "id": "D-d08-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00129132,
+        "transcript_usd": 0.001291,
+        "charged_usd": 0.001291,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:11:52.183Z"
+      },
+      {
+        "id": "D-d08-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0195704,
+        "transcript_usd": 0.01957,
+        "charged_usd": 0.01957,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:11:57.560Z"
+      },
+      {
+        "id": "D-d09-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0011543200000000001,
+        "transcript_usd": 0.001154,
+        "charged_usd": 0.001154,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:12:01.510Z"
+      },
+      {
+        "id": "D-d09-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0181404,
+        "transcript_usd": 0.01814,
+        "charged_usd": 0.01814,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:12:05.899Z"
+      },
+      {
+        "id": "D-d09-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0011628200000000002,
+        "transcript_usd": 0.001163,
+        "charged_usd": 0.001163,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:12:10.533Z"
+      },
+      {
+        "id": "D-d09-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0181404,
+        "transcript_usd": 0.01814,
+        "charged_usd": 0.01814,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:12:14.867Z"
+      },
+      {
+        "id": "D-d09-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0011563200000000002,
+        "transcript_usd": 0.001156,
+        "charged_usd": 0.001156,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:12:20.722Z"
+      },
+      {
+        "id": "D-d09-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0181404,
+        "transcript_usd": 0.01814,
+        "charged_usd": 0.01814,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:12:24.812Z"
+      },
+      {
+        "id": "D-d10-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00128831,
+        "transcript_usd": 0.001288,
+        "charged_usd": 0.001288,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:12:29.681Z"
+      },
+      {
+        "id": "D-d10-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0182063,
+        "transcript_usd": 0.018206,
+        "charged_usd": 0.018206,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:12:33.535Z"
+      },
+      {
+        "id": "D-d10-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0013553100000000002,
+        "transcript_usd": 0.001355,
+        "charged_usd": 0.001355,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:12:39.068Z"
+      },
+      {
+        "id": "D-d10-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0182063,
+        "transcript_usd": 0.018206,
+        "charged_usd": 0.018206,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:12:43.281Z"
+      },
+      {
+        "id": "D-d10-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00139031,
+        "transcript_usd": 0.00139,
+        "charged_usd": 0.00139,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:12:49.240Z"
+      },
+      {
+        "id": "D-d10-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0182063,
+        "transcript_usd": 0.018206,
+        "charged_usd": 0.018206,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:12:53.762Z"
+      },
+      {
+        "id": "D-d11-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00153158,
+        "transcript_usd": 0.001532,
+        "charged_usd": 0.001532,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:13:01.454Z"
+      },
+      {
+        "id": "D-d11-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.021124,
+        "transcript_usd": 0.021124,
+        "charged_usd": 0.021124,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:13:07.193Z"
+      },
+      {
+        "id": "D-d11-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00149058,
+        "transcript_usd": 0.001491,
+        "charged_usd": 0.001491,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:13:15.062Z"
+      },
+      {
+        "id": "D-d11-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.020904,
+        "transcript_usd": 0.020904,
+        "charged_usd": 0.020904,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:13:20.914Z"
+      },
+      {
+        "id": "D-d11-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0014630800000000003,
+        "transcript_usd": 0.001463,
+        "charged_usd": 0.001463,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:13:27.312Z"
+      },
+      {
+        "id": "D-d11-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.021064,
+        "transcript_usd": 0.021064,
+        "charged_usd": 0.021064,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:13:33.323Z"
+      },
+      {
+        "id": "D-d12-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0014180800000000002,
+        "transcript_usd": 0.001418,
+        "charged_usd": 0.001418,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:13:39.691Z"
+      },
+      {
+        "id": "D-d12-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.019594,
+        "transcript_usd": 0.019594,
+        "charged_usd": 0.019594,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:13:46.247Z"
+      },
+      {
+        "id": "D-d12-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00146008,
+        "transcript_usd": 0.00146,
+        "charged_usd": 0.00146,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:13:52.671Z"
+      },
+      {
+        "id": "D-d12-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.019714000000000002,
+        "transcript_usd": 0.019714,
+        "charged_usd": 0.019714,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:13:57.941Z"
+      },
+      {
+        "id": "D-d12-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0014505800000000001,
+        "transcript_usd": 0.001451,
+        "charged_usd": 0.001451,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:14:04.399Z"
+      },
+      {
+        "id": "D-d12-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.019814,
+        "transcript_usd": 0.019814,
+        "charged_usd": 0.019814,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:14:10.297Z"
+      },
+      {
+        "id": "D-d13-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0013625800000000002,
+        "transcript_usd": 0.001363,
+        "charged_usd": 0.001363,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:14:16.601Z"
+      },
+      {
+        "id": "D-d13-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.019743999999999998,
+        "transcript_usd": 0.019744,
+        "charged_usd": 0.019744,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:14:22.170Z"
+      },
+      {
+        "id": "D-d13-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0013165800000000001,
+        "transcript_usd": 0.001317,
+        "charged_usd": 0.001317,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:14:27.945Z"
+      },
+      {
+        "id": "D-d13-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.019814,
+        "transcript_usd": 0.019814,
+        "charged_usd": 0.019814,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:14:33.506Z"
+      },
+      {
+        "id": "D-d13-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0013955800000000002,
+        "transcript_usd": 0.001396,
+        "charged_usd": 0.001396,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:14:39.308Z"
+      },
+      {
+        "id": "D-d13-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.019884,
+        "transcript_usd": 0.019884,
+        "charged_usd": 0.019884,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:14:44.025Z"
+      },
+      {
+        "id": "D-d14-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0012465800000000002,
+        "transcript_usd": 0.001247,
+        "charged_usd": 0.001247,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:14:48.742Z"
+      },
+      {
+        "id": "D-d14-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.019514,
+        "transcript_usd": 0.019514,
+        "charged_usd": 0.019514,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:14:53.621Z"
+      },
+      {
+        "id": "D-d14-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0012550800000000002,
+        "transcript_usd": 0.001255,
+        "charged_usd": 0.001255,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:14:58.237Z"
+      },
+      {
+        "id": "D-d14-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.019614,
+        "transcript_usd": 0.019614,
+        "charged_usd": 0.019614,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:15:03.138Z"
+      },
+      {
+        "id": "D-d14-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00122608,
+        "transcript_usd": 0.001226,
+        "charged_usd": 0.001226,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:15:07.816Z"
+      },
+      {
+        "id": "D-d14-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.019614,
+        "transcript_usd": 0.019614,
+        "charged_usd": 0.019614,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:15:12.506Z"
+      },
+      {
+        "id": "D-d15-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00123832,
+        "transcript_usd": 0.001238,
+        "charged_usd": 0.001238,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:15:17.719Z"
+      },
+      {
+        "id": "D-d15-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0195904,
+        "transcript_usd": 0.01959,
+        "charged_usd": 0.01959,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:15:23.359Z"
+      },
+      {
+        "id": "D-d15-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0012378200000000002,
+        "transcript_usd": 0.001238,
+        "charged_usd": 0.001238,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:15:28.960Z"
+      },
+      {
+        "id": "D-d15-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0196004,
+        "transcript_usd": 0.0196,
+        "charged_usd": 0.0196,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:15:34.566Z"
+      },
+      {
+        "id": "D-d15-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00123882,
+        "transcript_usd": 0.001239,
+        "charged_usd": 0.001239,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:15:42.332Z"
+      },
+      {
+        "id": "D-d15-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.019550400000000002,
+        "transcript_usd": 0.01955,
+        "charged_usd": 0.01955,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:15:47.569Z"
+      },
+      {
+        "id": "D-d16-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00119982,
+        "transcript_usd": 0.0012,
+        "charged_usd": 0.0012,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:15:51.510Z"
+      },
+      {
+        "id": "D-d16-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0181404,
+        "transcript_usd": 0.01814,
+        "charged_usd": 0.01814,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:15:55.021Z"
+      },
+      {
+        "id": "D-d16-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0011398200000000002,
+        "transcript_usd": 0.00114,
+        "charged_usd": 0.00114,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:15:59.019Z"
+      },
+      {
+        "id": "D-d16-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0181404,
+        "transcript_usd": 0.01814,
+        "charged_usd": 0.01814,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:16:03.033Z"
+      },
+      {
+        "id": "D-d16-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00115082,
+        "transcript_usd": 0.001151,
+        "charged_usd": 0.001151,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:16:06.714Z"
+      },
+      {
+        "id": "D-d16-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0181404,
+        "transcript_usd": 0.01814,
+        "charged_usd": 0.01814,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:16:10.263Z"
+      },
+      {
+        "id": "D-d17-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00124736,
+        "transcript_usd": 0.001247,
+        "charged_usd": 0.001247,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:16:14.866Z"
+      },
+      {
+        "id": "D-d17-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.018226799999999998,
+        "transcript_usd": 0.018227,
+        "charged_usd": 0.018227,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:16:19.297Z"
+      },
+      {
+        "id": "D-d17-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0013733600000000001,
+        "transcript_usd": 0.001373,
+        "charged_usd": 0.001373,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:16:24.802Z"
+      },
+      {
+        "id": "D-d17-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.018226799999999998,
+        "transcript_usd": 0.018227,
+        "charged_usd": 0.018227,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:16:29.268Z"
+      },
+      {
+        "id": "D-d17-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00130986,
+        "transcript_usd": 0.00131,
+        "charged_usd": 0.00131,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:16:35.145Z"
+      },
+      {
+        "id": "D-d17-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.018226799999999998,
+        "transcript_usd": 0.018227,
+        "charged_usd": 0.018227,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:16:39.738Z"
+      },
+      {
+        "id": "D-d18-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00099296,
+        "transcript_usd": 0.000993,
+        "charged_usd": 0.000993,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:16:43.983Z"
+      },
+      {
+        "id": "D-d18-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0146678,
+        "transcript_usd": 0.014668,
+        "charged_usd": 0.014668,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:16:48.176Z"
+      },
+      {
+        "id": "D-d18-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00097196,
+        "transcript_usd": 0.000972,
+        "charged_usd": 0.000972,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:16:53.422Z"
+      },
+      {
+        "id": "D-d18-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0153878,
+        "transcript_usd": 0.015388,
+        "charged_usd": 0.015388,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:16:57.879Z"
+      },
+      {
+        "id": "D-d18-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00100396,
+        "transcript_usd": 0.001004,
+        "charged_usd": 0.001004,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:17:02.655Z"
+      },
+      {
+        "id": "D-d18-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0151778,
+        "transcript_usd": 0.015178,
+        "charged_usd": 0.015178,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:17:07.082Z"
+      },
+      {
+        "id": "D-d19-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00138886,
+        "transcript_usd": 0.001389,
+        "charged_usd": 0.001389,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:17:12.780Z"
+      },
+      {
+        "id": "D-d19-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.018226799999999998,
+        "transcript_usd": 0.018227,
+        "charged_usd": 0.018227,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:17:16.860Z"
+      },
+      {
+        "id": "D-d19-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0013603600000000001,
+        "transcript_usd": 0.00136,
+        "charged_usd": 0.00136,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:17:21.941Z"
+      },
+      {
+        "id": "D-d19-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.018226799999999998,
+        "transcript_usd": 0.018227,
+        "charged_usd": 0.018227,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:17:25.878Z"
+      },
+      {
+        "id": "D-d19-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00141536,
+        "transcript_usd": 0.001415,
+        "charged_usd": 0.001415,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:17:31.946Z"
+      },
+      {
+        "id": "D-d19-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.018226799999999998,
+        "transcript_usd": 0.018227,
+        "charged_usd": 0.018227,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:17:35.847Z"
+      },
+      {
+        "id": "D-d20-h-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.00101021,
+        "transcript_usd": 0.00101,
+        "charged_usd": 0.00101,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:17:40.294Z"
+      },
+      {
+        "id": "D-d20-s-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.017099299999999998,
+        "transcript_usd": 0.017099,
+        "charged_usd": 0.017099,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:17:46.108Z"
+      },
+      {
+        "id": "D-d20-h-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0010107100000000002,
+        "transcript_usd": 0.001011,
+        "charged_usd": 0.001011,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:17:50.687Z"
+      },
+      {
+        "id": "D-d20-s-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0174693,
+        "transcript_usd": 0.017469,
+        "charged_usd": 0.017469,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:17:56.694Z"
+      },
+      {
+        "id": "D-d20-h-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.05,
+        "reserve_usd": 0.0625,
+        "reported_usd": 0.0010152100000000001,
+        "transcript_usd": 0.001015,
+        "charged_usd": 0.001015,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:18:01.005Z"
+      },
+      {
+        "id": "D-d20-s-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.015319300000000001,
+        "transcript_usd": 0.015319,
+        "charged_usd": 0.015319,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:18:06.251Z"
+      },
+      {
+        "id": "D-d02-esc-1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0196744,
+        "transcript_usd": 0.019674,
+        "charged_usd": 0.019674,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:18:57.757Z"
+      },
+      {
+        "id": "D-d02-esc-2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0182244,
+        "transcript_usd": 0.018224,
+        "charged_usd": 0.018224,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:19:01.954Z"
+      },
+      {
+        "id": "D-d02-esc-3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.15,
+        "reserve_usd": 0.1875,
+        "reported_usd": 0.0182244,
+        "transcript_usd": 0.018224,
+        "charged_usd": 0.018224,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:19:06.548Z"
+      }
+    ]
+  }
+}
