@@ -203,7 +203,7 @@ Every task commit leaves a resumable trail. You never put the SUMMARY under `.ao
 node ~/.claude/aoforge/bin/aof-tools.cjs planning draft objectives/XX-name/{objective}-{trd}-SUMMARY.md
 ```
 
-It prints an absolute path outside the project, seeded from the current SUMMARY when one exists. An existing draft is never replaced, so a resumed run picks up its own draft. Write the draft ONCE at the first task: frontmatter, the `## Progress` list with every task of the TRD as `- [ ] Task N: <name>`, and a one-line `next step:` on the first. After every task thereafter, tick the task and checkpoint in ONE command, with no Write of the draft:
+It prints an absolute path outside the project, seeded from the current SUMMARY when one exists. An existing draft is never replaced, so a resumed run picks up its own draft. Write the draft ONCE at the first task: frontmatter (the keys of the SUMMARY skeleton in `<summary_creation>`), the `## Progress` list with every task of the TRD as `- [ ] Task N: <name>`, and a one-line `next step:` on the first. After every task thereafter, tick the task and checkpoint in ONE command, with no Write of the draft:
 
 ```bash
 node ~/.claude/aoforge/bin/aof-tools.cjs summary checkpoint {objective}-{trd} --tick <task number> --hash <short hash of HEAD>
@@ -467,9 +467,15 @@ For each task, `tdd_effective: true` triggers RED→GREEN→REFACTOR. `tdd_effec
   ```
 - Commit only if changes: `refactor({objective}-{trd}): clean up [feature]`
 
-**Error handling:** RED doesn't fail → investigate (feature exists or test wrong). GREEN doesn't pass after 3 attempts → document and continue. REFACTOR breaks → undo refactor changes.
+**Error handling:** RED doesn't fail → investigate (feature exists or test wrong). GREEN doesn't pass after 3 attempts → document and continue. REFACTOR breaks → undo refactor changes. Unrelated tests break → stop and investigate before going on.
+
+**Tests:** one behavior per test, each with a descriptive name ("rejects an empty email", never "test1"); assert the public API and observable behavior, not internals.
+
+**TDD exception:** only for a config-only, styling-only or docs-only change, a dependency bump or generated code. Mark it `<!-- TDD-EXCEPTION: <reason> -->` and list the task under `## TDD Exceptions` in the SUMMARY. "Too simple to test" is not a reason.
 
 **Evidence storage:** All phase evidence (command, output, exit code) is stored for SUMMARY.md TDD Evidence table.
+
+This block is the TDD procedure. Read `<runtime>/references/tdd.md` only to settle a TDD-precedence question it leaves open.
 </tdd_execution>
 
 <per_task_verification>
@@ -746,11 +752,65 @@ node ~/.claude/aoforge/bin/aof-tools.cjs summary post {objective}-{trd} --from <
 
 **ALWAYS use the Write or Edit tool on the draft path** — never use `Bash(cat << 'EOF')` or heredoc commands to produce it.
 
-**Use template:** Read `<runtime>/templates/summary.md` before the first `summary checkpoint` (once per TRD).
+**The draft changes under you.** `summary checkpoint --tick` edits the draft in place after every task, and Claude Code refuses a Write over a file changed since you last read it. Read the draft immediately before the final Write (or build the final body with Edit on the draft), and let the self-check below publish it with `aof-tools summary post`; never Write the whole SUMMARY twice.
 
-**Frontmatter:** objective, trd (or legacy job), subsystem, tags, dependency graph (requires/provides/affects), tech-stack (added/patterns), key-files (created/modified), decisions, metrics (duration, completed date), token usage (stamped by `aof-tools tokens stamp`, never typed).
+**SUMMARY skeleton** (the shape `summary post` and the validators expect; it replaces the template, also when a TRD's `<execution_context>` lists it):
 
-**Title:** `# Objective [X] TRD [Y]: [Name] Summary`
+```markdown
+---
+objective: XX-name
+job: "NN"
+subsystem: <category>
+tags: [<tech>]
+requires:
+  - objective: <id>
+    provides: "<what it built that this uses>"
+provides: ["<what this TRD delivered>"]
+affects: [<objectives or keywords>]
+tech-stack:
+  added: []
+  patterns: []
+key-files:
+  created: []
+  modified: []
+key-decisions: ["<decision and why>"]
+# requirements-completed: every ID in the TRD's `requirements:`
+requirements-completed: []
+verification:
+  gates_defined: N
+  gates_passed: N
+  auto_fix_cycles: 0
+  tdd_evidence: false
+  test_pairing: true
+duration: <N>min
+completed: YYYY-MM-DD
+# tokens_*: added by `aof-tools tokens stamp`, never typed
+---
+
+# Objective [X] TRD [Y]: [Name] Summary
+
+**<substantive one-liner>**
+
+## Performance               (duration, started, completed, tasks, files modified)
+## Progress                  (every task ticked)
+## Accomplishments
+## Task Evidence             (table below)
+## Task Commits              (task, hash, type; a TDD task lists its RED and GREEN commits)
+## Validation Gate Results   (if the TRD defines gates)
+## Discovered commands       (if any)
+## TDD Evidence              (TDD tasks only)
+## Post-TRD Verification
+## TDD Exceptions            (only if a TDD-EXCEPTION marker was used)
+## Files Created/Modified
+## Decisions Made
+## Deviations from Plan
+## Issues Encountered
+## User Setup Required       ("None" if none)
+## Next Objective Readiness
+## Self-Check: PASSED|FAILED (last, after the self-check runs)
+```
+
+Read `<runtime>/templates/summary.md` only for a field the skeleton lacks, with `offset`/`limit`.
 
 **One-liner must be substantive:**
 - Good: "JWT auth with refresh rotation using jose library"

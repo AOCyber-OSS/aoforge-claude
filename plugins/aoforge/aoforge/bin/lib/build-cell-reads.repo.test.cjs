@@ -124,7 +124,10 @@ test('4. P-4: validate_plan names the exact checkers, in order, and their output
   assert.match(text, /Angle-bracket literals in task text/);
 });
 
-/** The <execution_context> block of every `subagent_type="executor"` spawn in execute-objective.md. */
+/**
+ * The <execution_context> block of every `subagent_type="executor"` spawn in execute-objective.md, searched only up
+ * to the next spawn, so the background sketch (`prompt="..."`, no block of its own) is not counted twice.
+ */
 function executorSpawnContexts() {
   const workflow = read(RUNTIME, 'workflows', 'execute-objective.md');
   const blocks = [];
@@ -132,7 +135,8 @@ function executorSpawnContexts() {
   for (;;) {
     const at = workflow.indexOf('subagent_type="executor"', from);
     if (at === -1) break;
-    const block = blockOf(workflow.slice(at), /<execution_context>/, '</execution_context>');
+    const next = workflow.indexOf('subagent_type=', at + 1);
+    const block = blockOf(workflow.slice(at, next === -1 ? undefined : next), /<execution_context>/, '</execution_context>');
     if (block) blocks.push(block);
     from = at + 1;
   }

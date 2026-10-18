@@ -10,8 +10,8 @@ completed: in progress
 # Objective 82 TRD 07: build-cell fixes Summary
 
 ## Progress
-- [x] Task 1: Planner-side FIX rows (P-1, P-2, P-3, P-4, X-1) — (this commit)
-- [ ] Task 2: Executor-side FIX rows (E-1, E-2, E-5), the offline effect and `## Fix applied` — next step: add tests 5-7 (E-1 skeleton keys and spawn lists, E-2 TDD card and tdd.md lines, E-5 read-before-write) to plugins/aoforge/aoforge/bin/lib/build-cell-reads.repo.test.cjs and commit RED
+- [x] Task 1: Planner-side FIX rows (P-1, P-2, P-3, P-4, X-1) — 002117b3 (RED 85ec0064)
+- [ ] Task 2: Executor-side FIX rows (E-1, E-2, E-5), the offline effect and `## Fix applied` — RED f666a1e6, GREEN (this commit); next step: run `node scripts/eval81/static-prompt.cjs --from 99950509 --to HEAD --json $SP/82-07/static.json --md $SP/82-07/static.md`, count the before-first-write read bytes, then append `## Fix applied` to the 82-DIAGNOSIS.md draft and `doc put` it
 
 ## Deviations from Plan (running)
 
