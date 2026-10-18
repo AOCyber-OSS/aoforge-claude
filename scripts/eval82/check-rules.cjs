@@ -38,15 +38,25 @@ function p1Verdict(d) {
   }
   const { haiku_start: hs, haiku: h, sonnet: s } = d.arms;
   const incomplete = [];
+  const parts = [];
   for (const [label, arm] of [['haiku start', hs], ['haiku', h], ['sonnet', s]]) {
-    if (!isObj(arm) || !isObj(arm.accuracy)) incomplete.push(`${label} arm missing`);
-    else for (const id of arm.incomplete || []) incomplete.push(`${id} (${label})`);
+    if (!isObj(arm) || !isObj(arm.accuracy)) {
+      incomplete.push(`${label} arm missing`);
+      parts.push(`the ${label} arm is missing`);
+      continue;
+    }
+    const ids = arm.incomplete || [];
+    for (const id of ids) incomplete.push(`${id} (${label})`);
+    if (ids.length) parts.push(`${label} ${ids.length} state(s) (${ids.slice(0, 6).join(', ')}${ids.length > 6 ? `, and ${ids.length - 6} more` : ''})`);
   }
   const hCost = d.cost.haiku_start && d.cost.haiku_start.total_usd;
   const sCost = d.cost.sonnet_start && d.cost.sonnet_start.total_usd;
-  if (!isNum(hCost) || !isNum(sCost)) incomplete.push('a cost total is missing');
+  if (!isNum(hCost) || !isNum(sCost)) {
+    incomplete.push('a cost total is missing');
+    parts.push('a cost total is missing');
+  }
   if (incomplete.length) {
-    return { ...base, incomplete, deciding: `inconclusive: incomplete ${incomplete.join(', ')}; an incomplete batch D reverts P1 (section 1)` };
+    return { ...base, incomplete, deciding: `inconclusive: incomplete ${parts.join('; ')}; an incomplete batch D reverts P1 (section 1)` };
   }
   const missed = hs.broken_missed;
   const accH = hs.accuracy;
@@ -514,15 +524,15 @@ function guessedPathVerdict(rows) {
   const five = `tilde ${counts.tilde}, guessed_home ${counts.guessed_home}, real ${counts.real}, guessed_nonexistent ${counts.guessed_nonexistent}, tilde_denied ${counts.tilde_denied}`;
   if (failures.length) {
     verdict = 'FAIL';
-    sentence = `FAIL: ${failures.map((f) => `${f.run} ${f.class} \`${f.path}\``).join('; ')} (${list.length} run(s); ${five}).`;
+    sentence = `${failures.map((f) => `${f.run} ${f.class} \`${f.path}\``).join('; ')} (${list.length} run(s); ${five}).`;
   } else if (list.length === 0 || unscanned.length) {
     verdict = 'INCONCLUSIVE';
     sentence = list.length === 0
-      ? 'INCONCLUSIVE: no run to check, so SC-2 is not shown.'
-      : `INCONCLUSIVE: no guessed path found, but ${unscanned.length} of ${list.length} run(s) could not be scanned (${unscanned.join(', ')}), so SC-2 is not shown (${five}).`;
+      ? 'No run to check, so SC-2 is not shown.'
+      : `No guessed path found, but ${unscanned.length} of ${list.length} run(s) could not be scanned (${unscanned.join(', ')}), so SC-2 is not shown (${five}).`;
   } else {
     verdict = 'PASS';
-    sentence = `PASS: ${list.length} run(s) scanned, no guessed absolute home path and no recorded escape (${five}).`;
+    sentence = `${list.length} run(s) scanned, no guessed absolute home path and no recorded escape (${five}).`;
   }
   return { verdict, runs: list.length, failures, unscanned, not_recorded: notRecorded, counts, informational, sentence };
 }
