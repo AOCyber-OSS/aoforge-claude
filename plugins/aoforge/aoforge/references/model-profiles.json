@@ -35,7 +35,7 @@
     },
     "project-researcher": {
       "pitfalls":     { "quality": "opus",   "balanced": "sonnet",  "budget": "haiku"  },
-      "architecture": { "quality": "opus",   "balanced": "sonnet",  "budget": "haiku"  }
+      "architecture": { "quality": "opus",   "balanced": "sonnet",  "budget": "sonnet" }
     }
   },
   "verdict_floor": { "tier": "sonnet", "agents": ["verifier", "job-checker"] }

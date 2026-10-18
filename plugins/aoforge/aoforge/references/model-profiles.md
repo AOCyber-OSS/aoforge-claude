@@ -36,7 +36,7 @@ new-project` / `init new-milestone` emit `researcher_models`, one model per focu
 |-------|-------|-----------|------------|----------|
 | `codebase-mapper` | `arch` | sonnet | sonnet | sonnet |
 | `codebase-mapper` | `concerns` | sonnet | sonnet | sonnet |
-| `project-researcher` | `architecture` | opus | sonnet | haiku |
+| `project-researcher` | `architecture` | opus | sonnet | sonnet |
 | `project-researcher` | `pitfalls` | opus | sonnet | haiku |
 
 A focus entry never sits below its agent's row (`model-profiles.test.cjs` refuses it), and a
@@ -52,13 +52,19 @@ P4, P5"), applied by objective 82 (TRD 82-03):
 - **P3, `codebase-mapper` `concerns` raised to sonnet on budget.** Haiku's concerns recall was
   21/38 against Sonnet's 26/38 (-13.2 points).
 - **P4 and P5, `project-researcher` `architecture` and `pitfalls` lowered to haiku on budget.**
-  This reverses 76-06's raise to sonnet and puts both back on the agent's own `budget` tier.
+  This reversed 76-06's raise to sonnet and put both back on the agent's own `budget` tier.
   Recall was 21/22 (P4) and 22/22 (P5) on Haiku against 17/22 and 21/22 on Sonnet, with
   fabrications 0 against 0. Caveat: n = 2 runs per model, a weak endorsement.
+  - **P4 measured by 82-08 and not applied:** an item was lost (hub HU-A01: Sonnet 2 of 2 runs,
+    Haiku 0 of 2), so `architecture` is opus / sonnet / sonnet again (pooled recall 43/46 against
+    45/46 and fabrications 0 against 0 held).
+  - **P5 measured by 82-08 and kept:** no item lost, pooled recall 39/44 against Sonnet's 42/44
+    (6.8 points, inside the 10-point bound), fabrications 0 against 0 per run.
 
 P1 (the UI judge) lives in the stack pack that ships it, not in this table, and is described below.
-**P1, P4 and P5 stay only if they pass TRD 82-08's live measurement:** that TRD checks them against
-the rule pre-registered in `82-CHECK-RULES.md` (TRD 82-06) and reverts any that fail it.
+**P1, P4 and P5 stayed only if they passed TRD 82-08's live measurement** against the rule
+pre-registered in `82-CHECK-RULES.md` (TRD 82-06), on two new topics (`82-TIER-CHECKS.md`): P1 and
+P4 were reverted, P5 was kept.
 
 ### UI judge start tier (stack pack)
 
