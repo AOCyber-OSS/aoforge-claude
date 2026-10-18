@@ -9,9 +9,9 @@ status: checkpoint
 # Objective 82 TRD 09: Live build-cell re-run Summary
 
 ## Progress
-- [x] Task 1: Confirm spend for batch E — (this commit)
-- [ ] Task 2: Run batch E — next step: run `node scripts/eval81/run.cjs --batch E --root <R> --token-file <T> --batch-dir scripts/eval82/batches --results-dir <O>/results --sandbox-root /private/tmp/claude-501/e82-b36bc77c513b45df --repo <checkout> --raw` in the background from the repo root
-- [ ] Task 3: Score, mechanism checks, guessed-path check, publish 82-MEASUREMENT.md
+- [x] Task 1: Confirm spend for batch E — ac242e6d
+- [x] Task 2: Run batch E — (this commit)
+- [ ] Task 3: Score, mechanism checks, guessed-path check, publish 82-MEASUREMENT.md — next step: `node scripts/eval82/score.cjs --batch E --root <R> --out <O>`, then `node <SP>/82-09/mech.cjs <R> <SP>/82-09/E-scan.json <SP>/82-09/mech.json` and fill `## Mechanism checks` in a `planning draft` of 82-MEASUREMENT.md
 
 ## User gate decision (2026-10-18)
 
@@ -40,3 +40,31 @@ From the dispatch, before any spend: **"Go D, C, E at cap $25"**. The approval c
 | expected | 1.279572 | 2.758157 | 4.72 | 8.125 | 16.882729 of 25 (fits, 8.117271 spare) | 11.22 of 15 (fits) |
 
 Break-even build-1 cost: 8.5. **Build 2 guaranteed: yes.**
+
+## Task 2: batch E live
+
+`node scripts/eval81/run.cjs --batch E --root <R> --token-file <T> --batch-dir scripts/eval82/batches --results-dir
+<O>/results --sandbox-root <S2> --repo <checkout> --raw` (no control), one invocation, exit 0, tripwire no diffs,
+batch E `complete`, nothing pending.
+
+| Run | Status | Reported | Transcript | Charged | Cap | Overshoot | Wall | TRDs / SUMMARYs | Acceptance | Tests | Verification | Transcripts | real / non-escape | Isolation |
+|---|---|---:|---:|---:|---:|---:|---:|---|---|---|---|---:|---|---|
+| b82-r1 | ok | $3.389853 | $3.112273 | $3.389853 | $6.5 | 0 | 595 s | 1 / 1 | pass | ok | passed | 6 | 0 / 0 | sandbox project, no real entry |
+| b82-r2 | ok | $4.047350 | $4.038930 | $4.047350 | $6.5 | 0 | 818 s | 2 / 2 | pass | ok | passed | 8 | 0 / 0 | sandbox project, no real entry |
+
+- **Ledger:** E $7.437203 of $15; total **$11.474932 of $25**.
+- **Denials inside the sandbox (b82-r2, 2, not escapes):** a Bash call running the notekit CLI against a
+  `mktemp -d` scratch file, and a raw `git add ... && git commit` (with an attribution trailer) from the backstop
+  verifier, refused by AOForge's `gate-commits` (its message is in the transcript). `escape_paths` and
+  `denied_inside` are empty, `escape_attempt` false.
+
+### Guessed-path scan (`guessed-paths.cjs --root <R> --batch E --raw`)
+
+| Run | Files | Tool uses | tilde | guessed_home | real | guessed_nonexistent | tilde_denied |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| b82-r1 | 6 | 122 | 0 | 0 | 0 | 0 | 0 |
+| b82-r2 | 8 | 184 | 0 | 0 | 0 | 0 | 0 |
+
+Baseline, the same scan over objective 81's recorded build runs (`--root <SP>/eval81 --batch E`): b30-r1 0, b30-r2 1
+(`/Users/../private/tmp/.../b30-r2/home/.claude/aoforge/templates/summary.md`), b31-r1 1 (`<home>/.claude/aoforge/references/tdd.md`,
+denied), b31-r2 1 (`/Users/<guess>/.claude/aoforge/references/tdd.md`); `tilde` 0 in all four.
