@@ -515,6 +515,24 @@ describe('7b. mentions', () => {
   });
 });
 
+describe('7c. written', () => {
+  test('7. written counts the chars the model put into tool inputs, per category and per tool call', () => {
+    const { apiCalls, attribute, mergeSummaries } = load();
+    const pair = fx.planner3031Pair();
+    const { calls } = apiCalls(pair.new.rows.map((r) => JSON.stringify(r)));
+    const draft = JSON.stringify({ file_path: fx.DRAFT, content: '# TRD' }).length;
+    const validate = JSON.stringify({ command: `${fx.AOF} frontmatter validate ${fx.DRAFT}` }).length;
+    const a = attribute(calls);
+    assert.equal(a.written.draft_write, draft);
+    assert.equal(a.written.validate_publish, validate);
+    assert.equal(a.written['(final)'], undefined, 'a call with no tool wrote no tool input');
+    assert.equal(calls[3].tools[0].input_chars, draft);
+    const s = plannerSummary(plannerRun('new'));
+    assert.equal(s.written.draft_write, draft);
+    assert.equal(mergeSummaries([s, s]).written.draft_write, 2 * draft);
+  });
+});
+
 describe('8. compare', () => {
   test('8. the decomposition identity holds on the hand-built pair', () => {
     const { compare } = load();

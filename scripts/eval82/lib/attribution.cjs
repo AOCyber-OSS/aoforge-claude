@@ -250,7 +250,7 @@ function inferHomes(rows) {
  * apiCalls(lines, {toolResultsDir}) -> {calls, skipped_lines, homes}.
  * @param {string|Array<string|object>} lines  the transcript text, or its lines (a line may already be a parsed row)
  * Each call: {index (1-based), id, model, input_tokens, cache_creation, cache_read, context, output_tokens, total,
- *   tools: [{id, name, input, result_chars, persisted_chars, is_error, result_missing}]} in transcript order.
+ *   tools: [{id, name, input, input_chars, result_chars, persisted_chars, is_error, result_missing}]} in transcript order.
  * A line that is not JSON (or not an object) is skipped and counted in skipped_lines; a blank line is ignored.
  */
 function apiCalls(lines, { toolResultsDir = null } = {}) {
@@ -335,6 +335,7 @@ function apiCalls(lines, { toolResultsDir = null } = {}) {
           name: t.name,
           input: t.input,
           result_chars: r ? r.chars : 0,
+          input_chars: JSON.stringify(t.input).length,
           persisted_chars: r ? r.persisted : null,
           is_error: r ? r.is_error : false,
           result_missing: !r,
@@ -636,12 +637,14 @@ function sortedObject(map) {
  * (it mutates the tool objects), and per category gives {count, issuing, carry} as described in the module comment.
  * `by_tool` is the same table keyed by tool name (`(none)` for the calls that issued no tool). `mentions` counts, per
  * category, the tool calls that touch it at all (a compound command counts once under each category it contains).
+ * `written` is the chars the model put into the tool inputs of each category (a draft's size is `written.draft_write`).
  */
 function attribute(calls, opts = {}) {
   const n = calls.length;
   const categories = new Map();
   const tools = new Map();
   const mentions = new Map();
+  const written = new Map();
   const mention = (key) => mentions.set(key, (mentions.get(key) || 0) + 1);
   calls.forEach((call, i) => {
     const later = n - 1 - i;
@@ -657,6 +660,7 @@ function attribute(calls, opts = {}) {
       t.category = category;
       t.detail = detail;
       t.also = also;
+      written.set(category, (written.get(category) || 0) + t.input_chars);
       for (const c of also) mention(c);
       const carry = tokensOf(t.result_chars) * later;
       bump(categories, category, share, carry);
@@ -665,7 +669,9 @@ function attribute(calls, opts = {}) {
   });
   const sortedMentions = {};
   for (const key of [...mentions.keys()].sort()) sortedMentions[key] = mentions.get(key);
-  return { categories: sortedObject(categories), by_tool: sortedObject(tools), mentions: sortedMentions };
+  const sortedWritten = {};
+  for (const key of [...written.keys()].sort()) sortedWritten[key] = written.get(key);
+  return { categories: sortedObject(categories), by_tool: sortedObject(tools), mentions: sortedMentions, written: sortedWritten };
 }
 
 /** The per-call listing used as evidence: no tool inputs, details capped. */
@@ -675,14 +681,14 @@ function callList(calls) {
     id: c.id,
     context: c.context,
     output: c.output_tokens,
-    tools: c.tools.map((t) => ({ name: t.name, category: t.category, also: t.also, detail: t.detail, result_chars: t.result_chars, persisted_chars: t.persisted_chars, is_error: t.is_error })),
+    tools: c.tools.map((t) => ({ name: t.name, category: t.category, also: t.also, detail: t.detail, input_chars: t.input_chars, result_chars: t.result_chars, persisted_chars: t.persisted_chars, is_error: t.is_error })),
   }));
 }
 
 /**
  * summarizeSpawn(spawn, {calls: false, homes}) -> one spawn's summary:
  *   {role, agent_type, agent_id, description, file, calls, first_context, last_context, context_tokens,
- *    output_tokens, total_tokens, mean_context, skipped_lines, categories, by_tool, mentions [, call_list]}
+ *    output_tokens, total_tokens, mean_context, skipped_lines, categories, by_tool, mentions, written [, call_list]}
  * `spawn` is an entry of roleSpawns().spawns. `calls: true` adds the per-call listing.
  */
 function summarizeSpawn(spawn, { calls: withCalls = false, homes } = {}) {
@@ -717,6 +723,7 @@ function summarizeSpawn(spawn, { calls: withCalls = false, homes } = {}) {
     categories: attr.categories,
     by_tool: attr.by_tool,
     mentions: attr.mentions,
+    written: attr.written,
   };
   if (withCalls) out.call_list = callList(parsed.calls);
   return out;
@@ -764,6 +771,7 @@ function mergeSummaries(list) {
     categories: mergeTable(list.map((x) => x.categories)),
     by_tool: mergeTable(list.map((x) => x.by_tool)),
     mentions: mergeMentions(list.map((x) => x.mentions)),
+    written: mergeMentions(list.map((x) => x.written)),
   };
 }
 
