@@ -76,15 +76,17 @@ function objectivePartOf(id) {
  * SUMMARY's directory, with `sharedNumber` when several directories carry the objective number). A transcript match on a
  * file with no frontmatter block is `unrecovered/no_frontmatter`: apply could not stamp it.
  *
- * @param {{checkoutRoot: string, repoRoot: string, root?: string, force?: boolean}} opts
- *   root: the Claude Code projects root (default `~/.claude/projects`); force: ignore existing token fields
+ * @param {{checkoutRoot: string, repoRoot: string, root?: string, force?: boolean, alsoRoots?: string[]}} opts
+ *   root: the Claude Code projects root (default `~/.claude/projects`); force: ignore existing token fields;
+ *   alsoRoots (TRD 82-04, `tokens backfill --also-root`): absolute former checkout roots of the repository, passed to the
+ *   executor index unchanged, so a TRD executed before the checkout moved is recovered. Omitted or [] changes nothing.
  * @returns {{checkout: string, repo: string, transcripts_root: string,
  *   index_counts: {executor_transcripts: number, identified: number, unidentified: number, ambiguous: number, foreign: number},
  *   entries: Array<{objective_dir: string, file: string, id: string|null,
  *     status: 'already_stamped'|'recovered'|'unrecovered', reason?: string, fields?: Array<[string, string]>}>,
  *   counts: {summaries: number, already_stamped: number, recovered: number, unrecovered: number, by_reason: object}}}
  */
-function planBackfill({ checkoutRoot, repoRoot, root, force = false } = {}) {
+function planBackfill({ checkoutRoot, repoRoot, root, force = false, alsoRoots = [] } = {}) {
   if (typeof checkoutRoot !== 'string' || !checkoutRoot) {
     throw new Error('planBackfill: checkoutRoot (the checkout whose .aoforge/ is read) is required');
   }
@@ -92,7 +94,7 @@ function planBackfill({ checkoutRoot, repoRoot, root, force = false } = {}) {
     throw new Error('planBackfill: repoRoot (the main checkout, which transcripts name) is required');
   }
   const transcriptsRoot = typeof root === 'string' && root !== '' ? root : tu.defaultTranscriptRoot();
-  const index = tu.indexExecutorTranscripts({ root: transcriptsRoot, repoRoot });
+  const index = tu.indexExecutorTranscripts({ root: transcriptsRoot, repoRoot, alsoRoots });
 
   const objectivesDir = path.join(planningRoot(checkoutRoot), 'objectives');
   const sharedByObjective = new Map();

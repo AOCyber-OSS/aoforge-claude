@@ -21,7 +21,8 @@
  *
  * repoMatcher also takes `alsoRoots` (quick 41, used by the agent-overhead scan of `calibrate --also-root`): former
  * checkout roots of the same repository, matched by the same tests, whose planning paths may also use the legacy
- * planning directory name. Executor indexing here never passes them.
+ * planning directory name. indexExecutorTranscripts passes them through when given (TRD 82-04, `tokens trd|coverage|
+ * backfill --also-root`); with none the index is what it was.
  */
 
 const fs = require('fs');
@@ -319,15 +320,20 @@ const META_RE = /^agent-(.+)\.meta\.json$/;
  * counts partition `executor_transcripts`: `unidentified` (no TRD id, or no readable first record), `ambiguous`
  * (several ids), `foreign` (identified, another repository) and `identified` (identified and this repo: the entries).
  *
- * @param {{root?: string, repoRoot: string}} opts  repoRoot is the MAIN checkout (executors in worktrees name it)
+ * `alsoRoots` (TRD 82-04) names former checkout roots of the same repository and goes to repoMatcher unchanged, so an
+ * executor recorded before the checkout moved is identified with the same `match` kinds. Omitted or [] gives the index
+ * of before; anything but an array of absolute paths is repoMatcher's TypeError (callers resolve relative paths).
+ *
+ * @param {{root?: string, repoRoot: string, alsoRoots?: string[]}} opts  repoRoot is the MAIN checkout (executors in
+ *   worktrees name it)
  * @returns {{entries: Array<{file, session, agent_id, id, dirs, match}>,
  *   counts: {executor_transcripts, identified, unidentified, ambiguous, foreign}}}
  */
-function indexExecutorTranscripts({ root = defaultTranscriptRoot(), repoRoot } = {}) {
+function indexExecutorTranscripts({ root = defaultTranscriptRoot(), repoRoot, alsoRoots = [] } = {}) {
   if (typeof repoRoot !== 'string' || !repoRoot) {
     throw new Error('indexExecutorTranscripts: repoRoot (the main checkout path) is required');
   }
-  const repo = repoMatcher(repoRoot);
+  const repo = repoMatcher(repoRoot, { alsoRoots });
   const counts = { executor_transcripts: 0, identified: 0, unidentified: 0, ambiguous: 0, foreign: 0 };
   const entries = [];
 
