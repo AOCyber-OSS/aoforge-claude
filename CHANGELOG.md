@@ -516,7 +516,8 @@ performance work and quick 34 to 39). Objective 79 joined them in one merge and 
   `sync-pack.cjs` that still promised a "one release" shim, or named a test file that does not exist, were corrected.
 - **One CHANGELOG section, matching versions and fresh site data** (TRD 79-06). The two blocks above `[3.0.0]` are this
   section, the version files and the marketplace read 3.1.0, `eden-ui-flutter` gets a patch bump (1.0.2) for its one
-  changed skill line, and `site/data/aoforge.json` is regenerated from the final tree.
+  changed skill line, and `site/data/aoforge.json` is regenerated from the final tree. `eden-ui-web` gets 1.0.2 too, for
+  objective 82's runtime-path wording in its skill and brand presets (TRD 82-10).
 
 ### 3.1.0 follow-ups (objective 82)
 
