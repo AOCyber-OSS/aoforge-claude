@@ -30,6 +30,7 @@ const fs = require('fs');
 const path = require('path');
 const ledgerLib = require('../eval81/lib/ledger.cjs');
 const { round6 } = require('../eval81/lib/contract.cjs');
+const { E_RUN_CAP_USD } = require('./batches/E.cjs');
 
 const GLOBAL_CAP_USD = 20;
 const ORDER = ['D', 'C', 'E', 'A', 'B'];
@@ -40,7 +41,6 @@ const BATCH_ROWS = {
 };
 const NOT_82 = ['A', 'B'];
 const NOT_82_REASON = 'not an objective 82 batch';
-const E_RUN_CAP_USD = 6.5;
 const E_EXPECTED_BUILD_USD = 4.72;
 const BUILD_ROLE = 'workflow:build';
 const BUILD1_ID = 'b82-r1';

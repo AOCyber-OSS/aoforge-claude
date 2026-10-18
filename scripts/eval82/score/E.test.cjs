@@ -101,7 +101,9 @@ test('12: per role, the new runs beside 81\'s recorded 3.0.0 and 3.1.0 build cel
   assert.equal(b1.total_tokens, 193100);
   assert.equal(b1.priced_cost_usd, 0.9335);
   assert.equal(r.runs[1].total_tokens, 181100);
-  assert.deepEqual(r.recorded_runs.map((x) => [x.id, x.version, x.acceptance]), [['b31-r1', '3.1.0', true], ['b30-r1', '3.0.0', true]]);
+  assert.deepEqual(r.recorded_runs.map((x) => [x.id, x.version, x.acceptance]), [
+    ['b31-r1', '3.1.0', true], ['b30-r1', '3.0.0', true], ['b30-r2', '3.0.0', true], ['b31-r2', '3.1.0', true],
+  ]);
   assert.deepEqual(r.claude_versions, { '81': '2.1.302 (Claude Code)', '82': ['2.1.400'] });
 });
 

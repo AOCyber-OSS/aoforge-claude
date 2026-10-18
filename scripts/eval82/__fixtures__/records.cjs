@@ -228,6 +228,8 @@ function e81Json({ runs, perRole, claudeVersion } = {}) {
     runs: runs || [
       { id: 'b31-r1', version: '3.1.0', workflow: 'build', status: 'ok', cost_usd: 5.09, charged_usd: 5.09, first_turn_input: 37967, total_tokens: 10856720, wall_s: 1110, acceptance: true, tests_ok: true, verification_status: 'passed', trd_count: 2, summaries: 2 },
       { id: 'b30-r1', version: '3.0.0', workflow: 'build', status: 'ok', cost_usd: 4.9, charged_usd: 4.9, first_turn_input: 39418, total_tokens: 9483357, wall_s: 957, acceptance: true, tests_ok: true, verification_status: 'passed', trd_count: 2, summaries: 2 },
+      { id: 'b30-r2', version: '3.0.0', workflow: 'build', status: 'ok', cost_usd: 3.6, charged_usd: 3.6, first_turn_input: 38957, total_tokens: 6695220, wall_s: 613, acceptance: true, tests_ok: true, verification_status: 'passed', trd_count: 1, summaries: 1 },
+      { id: 'b31-r2', version: '3.1.0', workflow: 'build', status: 'ok', cost_usd: 4.35, charged_usd: 4.35, first_turn_input: 37590, total_tokens: 7683598, wall_s: 775, acceptance: true, tests_ok: true, verification_status: 'passed', trd_count: 1, summaries: 1 },
       { id: 'q31-r1', version: '3.1.0', workflow: 'quick', status: 'ok', cost_usd: 1.78, charged_usd: 1.78, first_turn_input: 33637, total_tokens: 2388584, wall_s: 345, acceptance: true, tests_ok: true, verification_status: null, trd_count: 1, summaries: 1 },
     ],
     per_role: Object.fromEntries(Object.entries(pr).map(([v, roles]) => [v, { quick: {}, build: roles }])),
