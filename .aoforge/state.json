@@ -1,9 +1,9 @@
 {
-  "current_objective": "81",
-  "current_job": 19,
-  "total_jobs": 19,
+  "current_objective": "82",
+  "current_job": 1,
+  "total_jobs": 11,
   "progress_pct": 100,
-  "status": "ready_for_verification",
+  "status": "executing",
   "last_activity": "2026-10-17",
   "metrics": {
     "jobs_completed": 0,

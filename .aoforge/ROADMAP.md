@@ -554,7 +554,7 @@ TRDs:
 TRDs:
 - [ ] 82-01-build-cell-token-diagnosis-TRD.md — (W1, TDD) transcript attribution lib; 82-DIAGNOSIS.md: planner +67% / executor +20% decomposed and attributed from 81's b30/b31 transcripts, Fix list (FIX/JUSTIFY)
 - [ ] 82-02-absolute-runtime-path-agents-and-guard-TRD.md — (W1, TDD) `runtime_root` in every init; runtime-path-reads guard (core agents enforced, the other six scopes PENDING for 82-11); core agents use `<runtime>/` with the `<runtime_paths>` block
-- [ ] 82-03-apply-tier-proposals-p1-p5-TRD.md — (W1, TDD) P1 (pack ui-evaluator opus/haiku/haiku), P2 arch-only focus, P3 concerns budget sonnet, P4/P5 budget haiku; pin tests; model-profiles.md and pack changelog with evidence and caveats
+- [x] 82-03-apply-tier-proposals-p1-p5-TRD.md — (W1, TDD) P1 (pack ui-evaluator opus/haiku/haiku), P2 arch-only focus, P3 concerns budget sonnet, P4/P5 budget haiku; pin tests; model-profiles.md and pack changelog with evidence and caveats
 - [ ] 82-04-tokens-also-root-TRD.md — (W1, TDD) `tokens trd|coverage|backfill --also-root` through quick 41's matcher; v1.6 coverage with and without
 - [ ] 82-05-eval82-ledger-and-e-d-batches-TRD.md — (W1, TDD) $20 ledger for the frozen 81 runner with `--fit` (build-2 fit) and `--raise`; transcript scan for `~` and guessed-home reads, proven on 81's recorded runs; batch E (two 3.1.0 builds) and its scorer; per-state batch D (absolute screenshot path from `EVAL82_SANDBOX_ROOT`, engine-rule escalation) and its scorer; D dry run
 - [ ] 82-06-eval82-c-batch-and-check-rules-TRD.md — (W2, TDD) two real-product research topics and checklists; batch C and scorer (with the guessed-path scan); 82-CHECK-RULES.md pre-registered and coded (incl. SC-2's guessed-path verdict); fake-claude rehearsal of D and C, E dry run; prereg freeze
@@ -591,4 +591,4 @@ TRDs:
 | 79. Reconcile and release 3.1.0 | v1.6 | 8/10 | In Progress | - |
 | 80. Adopt migrates legacy projects | v1.6 | 9/9 | Complete | 2026-10-17 |
 | 81. Haiku eval and model-efficiency measurement | v1.6 | 19/19 | Complete | 2026-10-17 |
-| 82. 3.1.0 follow-ups | v1.6 | 0/0 | Not started | - |
+| 82. 3.1.0 follow-ups | v1.6 | 1/11 | In Progress | - |
