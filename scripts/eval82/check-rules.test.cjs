@@ -215,13 +215,18 @@ test('9a: the Fix list parses from 82-DIAGNOSIS.md, and `## Fix applied` moves a
     assert.equal(R.MECHANISM_SPECS[r.id].category_cell, r.category, `${r.id}: the pre-registered category is the table's`);
     assert.equal(R.MECHANISM_SPECS[r.id].target_cell, r.target, `${r.id}: the pre-registered target is the table's`);
   }
-  const applied = `${text}\n## Fix applied\n\n| Row | Outcome | Commit |\n|---|---|---|\n| P-1 | FIX | abc123 |\n| E-5 | JUSTIFY: the draft write was not refused again | n/a |\n`;
+  // 82-07 published the real `## Fix applied` (every row keeps its listed disposition); the synthetic sections below
+  // replace it, since fixListAsApplied reads the first `## Fix applied` (objective 82, TRD 82-07).
+  assert.ok(rows.every((r) => r.applied === null || r.applied === r.listed), 'the real ## Fix applied keeps the listed dispositions');
+  const base = text.replace(/\n## Fix applied\n[\s\S]*?(?=\n## |$)/, '\n');
+  assert.doesNotMatch(base, /^## Fix applied$/m);
+  const applied = `${base}\n## Fix applied\n\n| Row | Outcome | Commit |\n|---|---|---|\n| P-1 | FIX | abc123 |\n| E-5 | JUSTIFY: the draft write was not refused again | n/a |\n`;
   const after = R.fixListAsApplied(applied);
   assert.equal(after.find((r) => r.id === 'E-5').disposition, 'JUSTIFY');
   assert.equal(after.find((r) => r.id === 'E-5').applied, 'JUSTIFY');
   assert.equal(after.find((r) => r.id === 'P-1').applied, 'FIX');
   assert.equal(after.find((r) => r.id === 'P-2').applied, null);
-  const listForm = R.fixListAsApplied(`${text}\n## Fix applied\n\n- E-2: JUSTIFY, kept the read for precedence questions\n`);
+  const listForm = R.fixListAsApplied(`${base}\n## Fix applied\n\n- E-2: JUSTIFY, kept the read for precedence questions\n`);
   assert.equal(listForm.find((r) => r.id === 'E-2').disposition, 'JUSTIFY');
 });
 
