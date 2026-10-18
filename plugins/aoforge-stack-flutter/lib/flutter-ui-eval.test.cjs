@@ -781,7 +781,7 @@ test.describe('P1 (objective 82): the judge start tier', () => {
       assert.strictEqual(start.model, 'sonnet');
       const up = resolve('--escalate-from', 'sonnet');
       assert.strictEqual(up.tier, 'opus');
-      assert.strictEqual(up.model, 'opus');
+      assert.strictEqual(up.model, 'inherit'); // the opus tier spawns with `inherit` (init.cjs tierAlias)
       assert.strictEqual(up.ceiling, false);
     } finally {
       fs.rmSync(tmp, { recursive: true, force: true });

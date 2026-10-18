@@ -63,15 +63,15 @@ the rule pre-registered in `82-CHECK-RULES.md` (TRD 82-06) and reverts any that 
 ### UI judge start tier (stack pack)
 
 A stack pack sets its own agents' tiers in its manifest `models{}` (`resolve-model` reads them from
-the mirrored pack). The pack that ships the `ui-evaluator` vision judge now sets it to opus / haiku
-/ haiku (`quality` / `balanced` / `budget`), so the judge starts at haiku on balanced and budget. A
-split vote escalates one rung up (haiku to sonnet, `resolve-model ui-evaluator --escalate-from
-haiku`) through that pack's `ui-eval` skill, and opus stays the ceiling. Evidence
-(`81-HAIKU-EVAL.md`, P1): Haiku scored 18/20 against Sonnet's 20/20, exactly the 10-point bound,
-with a split rate of 8/20 against 2/20 and engine escalations on ok states 4/7 against 1/7, at
-about 1/16 of Sonnet's cost per judge session. TRD 82-08 measures whether escalation keeps verdicts
-right at a cost below a Sonnet start, and reverts P1 if it does not. `verdict_floor` is unchanged
-and does not list `ui-evaluator`.
+the mirrored pack). The pack that ships the `ui-evaluator` vision judge sets it to opus / sonnet /
+sonnet (`quality` / `balanced` / `budget`), so the judge starts at sonnet on balanced and budget. A
+split vote escalates one rung up (sonnet to opus, `resolve-model ui-evaluator --escalate-from
+sonnet`) through that pack's `ui-eval` skill, and opus is the ceiling. P1 (start at haiku,
+escalate to sonnet; `81-HAIKU-EVAL.md`: Haiku 18/20 against Sonnet's 20/20 with a split rate of
+8/20 against 2/20) was applied by TRD 82-03, measured by 82-08 and not applied:
+broken_missed(Haiku start, final) = 1 of 13 broken states, and the pre-registered rule needs 0
+(`82-TIER-CHECKS.md`; accuracy 19/20 against the Sonnet start's 18/20 and cost $0.13 against
+$1.15 held). `verdict_floor` is unchanged and does not list `ui-evaluator`.
 
 ## Tier → model id
 

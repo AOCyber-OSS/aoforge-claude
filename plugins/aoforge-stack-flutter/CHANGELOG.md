@@ -34,7 +34,8 @@ All notable changes to the aoforge-stack-flutter stack pack. Released with tags 
 
 ### Changed
 
-- The UI judge starts at haiku on balanced and budget (`models.ui-evaluator` opus/haiku/haiku, was opus/sonnet/sonnet);
-  a split vote still escalates one rung, now to sonnet. Objective 81 measured 18/20 against Sonnet's 20/20 (exactly the
-  10-point bound) with a 40% split rate, and objective 82's live check (TRD 82-08) reverts this if escalation does not
-  keep verdicts right at a cost below a Sonnet start. (objective 81 P1, TRD 82-03)
+- The UI judge start tier stays at sonnet on balanced and budget (`models.ui-evaluator` opus/sonnet/sonnet). Objective
+  81's proposal P1 (start at haiku, escalate a split vote to sonnet) was applied by TRD 82-03, measured by 82-08 and
+  not applied: broken_missed(Haiku start, final) = 1 of 13 broken states, and the pre-registered rule needs 0
+  (accuracy 19/20 against the Sonnet start's 18/20 and cost $0.13 against $1.15 held). (objective 81 P1, TRDs 82-03
+  and 82-08)
