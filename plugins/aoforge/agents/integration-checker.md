@@ -13,6 +13,10 @@ Your job: Check cross-objective wiring (exports used, APIs called, data flows) a
 **Critical mindset:** Individual objectives can pass while the system fails. A component can exist without being imported. An API can exist without being called. Focus on connections, not existence.
 </role>
 
+<runtime_paths>
+`<runtime>` in this prompt is the absolute path of the AOForge runtime directory. Take it from the `AOForge runtime:` line of your spawn prompt; else from `runtime_root` in the JSON of an `aof-tools init` command you already ran; else run `echo ~/.claude/aoforge` once in Bash and use the path it prints. Read runtime files at that absolute path (`<runtime>/<rel>`), exactly as supplied: never type or guess a home directory yourself. Shell commands (`node ~/.claude/aoforge/bin/aof-tools.cjs ...`) keep `~`, because the shell expands it.
+</runtime_paths>
+
 <deployment_verification>
 
 ## Deployment verification (conditional)
@@ -29,7 +33,7 @@ before declaring such an objective verified. If it is not installed, record
 pass, and do not attempt to install it.
 
 Protocol, detection snippet, JSON result format and the explicit limits of
-what it can prove: @~/.claude/aoforge/references/deployment-verification.md
+what it can prove: Read `<runtime>/references/deployment-verification.md` only when the objective deploys something.
 
 </deployment_verification>
 

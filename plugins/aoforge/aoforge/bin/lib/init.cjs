@@ -9,7 +9,7 @@ const { planningMode } = require('./planning-mode.cjs');
 const { findObjectiveInternal } = require('./objective.cjs');
 const { getMilestoneInfo, getRoadmapObjectiveInternal } = require('./roadmap.cjs');
 const { bootstrapProjectMd, bootstrapObjectiveMd } = require('./project-bootstrap.cjs');
-const { planningRoot, planningRel, planningDirName, planningDirLabel, PLANNING_DIR_NAMES, userDotFile } = require('./compat.cjs');
+const { planningRoot, planningRel, planningDirName, planningDirLabel, PLANNING_DIR_NAMES, userDotFile, runtimeHome } = require('./compat.cjs');
 
 // ─── Git plumbing (TRD 22-01) ─────────────────────────────────────────────────
 //
@@ -580,6 +580,16 @@ function _pushLegacyPlanningAdvisory(cwd, warnings) {
   if (issue) warnings.push(layout.advisoryLine(issue));
 }
 
+/**
+ * The absolute AOForge runtime directory (the ~/.claude/aoforge mirror), spread into every compound init's JSON
+ * (TRD 82-02). An agent that reads a runtime file takes `<runtime>` from this field instead of typing a home
+ * directory itself; there is no `~` in it. One source: compat.runtimeHome, the directory sync-runtime mirrors to.
+ * Nothing is created: the directory may not exist yet.
+ */
+function runtimeRootField() {
+  return { runtime_root: runtimeHome(require('os').homedir()) };
+}
+
 function cmdInitExecuteObjective(cwd, objective, includes, raw, args = []) {
   if (!objective) {
     error('objective required for init execute-objective');
@@ -592,6 +602,7 @@ function cmdInitExecuteObjective(cwd, objective, includes, raw, args = []) {
   const prl = _prLifecycle(cwd, config);
 
   const result = {
+    ...runtimeRootField(),
     // Models
     executor_model: resolveModelInternal(cwd, 'executor', objective),
     verifier_model: resolveModelInternal(cwd, 'verifier', objective),
@@ -717,6 +728,7 @@ function cmdInitPlanObjective(cwd, objective, includes, raw, args = []) {
   const objectiveInfo = findObjectiveInternal(cwd, objective);
 
   const result = {
+    ...runtimeRootField(),
     // Models
     researcher_model: resolveModelInternal(cwd, 'objective-researcher', objective),
     planner_model: resolveModelInternal(cwd, 'planner', objective),
@@ -868,6 +880,7 @@ function cmdInitNewProject(cwd, raw, args = []) {
   const isBrownfield = repoSignals.code_files > 0 || repoSignals.has_manifest;
 
   const result = {
+    ...runtimeRootField(),
     // Models
     researcher_model: resolveModelInternal(cwd, 'project-researcher'),
     // per research dimension (TRD 76-06): the new-project workflow spawns each researcher with its own
@@ -909,6 +922,7 @@ function cmdInitNewMilestone(cwd, raw, args = []) {
   const milestone = getMilestoneInfo(cwd);
 
   const result = {
+    ...runtimeRootField(),
     // Models
     researcher_model: resolveModelInternal(cwd, 'project-researcher'),
     researcher_models: researcherModels(cwd),
@@ -953,6 +967,7 @@ function cmdInitQuick(cwd, description, raw, args = []) {
   } catch {}
 
   const result = {
+    ...runtimeRootField(),
     // Models
     planner_model: resolveModelInternal(cwd, 'planner'),
     executor_model: resolveModelInternal(cwd, 'executor'),
@@ -995,6 +1010,7 @@ function cmdInitResume(cwd, raw, args = []) {
   } catch {}
 
   const result = {
+    ...runtimeRootField(),
     // File existence
     state_exists: pathExistsInternal(cwd, planningRel(cwd, 'STATE.md')),
     roadmap_exists: pathExistsInternal(cwd, planningRel(cwd, 'ROADMAP.md')),
@@ -1023,6 +1039,7 @@ function cmdInitVerifyWork(cwd, objective, raw, args = []) {
   const objectiveInfo = findObjectiveInternal(cwd, objective);
 
   const result = {
+    ...runtimeRootField(),
     // Models
     planner_model: resolveModelInternal(cwd, 'planner', objective),
     checker_model: resolveModelInternal(cwd, 'job-checker', objective),
@@ -1071,6 +1088,7 @@ function cmdInitObjectiveOp(cwd, objective, raw, args = []) {
   }
 
   const result = {
+    ...runtimeRootField(),
     // Config
     commit_docs: config.commit_docs,
     brave_search: config.brave_search,
@@ -1134,6 +1152,7 @@ function cmdInitTodos(cwd, area, raw, args = []) {
   } catch {}
 
   const result = {
+    ...runtimeRootField(),
     // Config
     commit_docs: config.commit_docs,
 
@@ -1194,6 +1213,7 @@ function cmdInitMilestoneOp(cwd, raw, args = []) {
   } catch {}
 
   const result = {
+    ...runtimeRootField(),
     // Config
     commit_docs: config.commit_docs,
 
@@ -1239,6 +1259,7 @@ function cmdInitMapCodebase(cwd, raw, args = []) {
   } catch {}
 
   const result = {
+    ...runtimeRootField(),
     // Models
     mapper_model: resolveModelInternal(cwd, 'codebase-mapper'),
     // per focus (TRD 76-06): the map-codebase workflow spawns each mapper with its own
@@ -1307,6 +1328,7 @@ function cmdInitSecurityAudit(cwd, raw, args = []) {
   }
 
   const result = {
+    ...runtimeRootField(),
     auditor_model: auditorModel,
     parallelization: config.parallelization,
     output_dir: outputDir,
@@ -1384,6 +1406,7 @@ function cmdInitProgress(cwd, includes, raw, args = []) {
   } catch {}
 
   const result = {
+    ...runtimeRootField(),
     // Models
     executor_model: resolveModelInternal(cwd, 'executor'),
     planner_model: resolveModelInternal(cwd, 'planner'),

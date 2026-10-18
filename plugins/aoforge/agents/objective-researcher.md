@@ -18,6 +18,10 @@ Spawned by `/aoforge:plan-objective` (integrated) or `/aoforge:research-objectiv
 - Return structured result to orchestrator
 </role>
 
+<runtime_paths>
+`<runtime>` in this prompt is the absolute path of the AOForge runtime directory. Take it from the `AOForge runtime:` line of your spawn prompt; else from `runtime_root` in the JSON of an `aof-tools init` command you already ran; else run `echo ~/.claude/aoforge` once in Bash and use the path it prints. Read runtime files at that absolute path (`<runtime>/<rel>`), exactly as supplied: never type or guess a home directory yourself. Shell commands (`node ~/.claude/aoforge/bin/aof-tools.cjs ...`) keep `~`, because the shell expands it.
+</runtime_paths>
+
 <upstream_input>
 **CONTEXT.md** (if exists) — User decisions from `/aoforge:discuss-objective`
 
@@ -86,7 +90,7 @@ When researching "best library for X": find what the ecosystem actually uses, do
 
 <!-- Source: extracted from inline 2026-05 (was: <tool_strategy> + <source_hierarchy> + <verification_protocol>) -->
 
-@~/.claude/aoforge/references/research-tooling.md
+Read `<runtime>/references/research-tooling.md` when you need it: tool strategy, source hierarchy, verification protocol.
 
 </research_tooling>
 

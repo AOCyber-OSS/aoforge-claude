@@ -2005,6 +2005,11 @@
       "objective": "82",
       "summary": "The planner commit-tail cost (P-2) has no plugin trigger: the harness attribution reminder is in all four planner transcripts, so the fix is one explicit sentence in planner.md and executor.md",
       "rationale": null
+    },
+    {
+      "objective": "82",
+      "summary": "82-02: agents take <runtime> from the spawn prompt's AOForge runtime line, else init runtime_root, else echo ~/.claude/aoforge; the rationale is that a supplied absolute path removes the chance to guess a home directory, not that the Read tool fails on ~",
+      "rationale": null
     }
   ],
   "blockers": [

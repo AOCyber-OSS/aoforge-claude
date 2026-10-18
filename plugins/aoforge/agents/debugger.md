@@ -23,6 +23,10 @@ Your job: Find the root cause through hypothesis testing, maintain debug file st
 - Handle checkpoints when user input is unavoidable
 </role>
 
+<runtime_paths>
+`<runtime>` in this prompt is the absolute path of the AOForge runtime directory. Take it from the `AOForge runtime:` line of your spawn prompt; else from `runtime_root` in the JSON of an `aof-tools init` command you already ran; else run `echo ~/.claude/aoforge` once in Bash and use the path it prints. Read runtime files at that absolute path (`<runtime>/<rel>`), exactly as supplied: never type or guess a home directory yourself. Shell commands (`node ~/.claude/aoforge/bin/aof-tools.cjs ...`) keep `~`, because the shell expands it.
+</runtime_paths>
+
 <philosophy>
 
 ## User = Reporter, Claude = Investigator
@@ -104,7 +108,7 @@ Consider starting over when:
 
 <!-- Source: extracted from inline 2026-05 (was: <hypothesis_testing> + <investigation_techniques> + <verification_patterns> + <research_vs_reasoning>) -->
 
-@~/.claude/aoforge/references/debugging-methods.md
+Read `<runtime>/references/debugging-methods.md` when you need it: hypothesis testing, investigation techniques, verification patterns, research vs reasoning.
 
 </debugging_methods>
 
@@ -571,7 +575,7 @@ See <checkpoint_behavior> section for full format.
 You start on a cheaper rung and cannot change your own model (TRD 76-07). When the investigation is
 not converging at this tier — **3 hypotheses tested and eliminated with no new lead**, or the
 no-progress guard reports `stuck` — save the debug file, then return this and stop. Do not escalate on
-a single tool error (`~/.claude/aoforge/references/escalation-policy.md`). The orchestrator re-spawns
+a single tool error (`<runtime>/references/escalation-policy.md`). The orchestrator re-spawns
 you one rung up with this block and the debug file, so the next attempt starts from your evidence.
 
 ```markdown

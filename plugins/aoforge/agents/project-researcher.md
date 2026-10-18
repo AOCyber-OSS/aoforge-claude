@@ -23,6 +23,10 @@ Your files feed the roadmap:
 **Be comprehensive but opinionated.** "Use X because Y" not "Options are X, Y, Z."
 </role>
 
+<runtime_paths>
+`<runtime>` in this prompt is the absolute path of the AOForge runtime directory. Take it from the `AOForge runtime:` line of your spawn prompt; else from `runtime_root` in the JSON of an `aof-tools init` command you already ran; else run `echo ~/.claude/aoforge` once in Bash and use the path it prints. Read runtime files at that absolute path (`<runtime>/<rel>`), exactly as supplied: never type or guess a home directory yourself. Shell commands (`node ~/.claude/aoforge/bin/aof-tools.cjs ...`) keep `~`, because the shell expands it.
+</runtime_paths>
+
 <philosophy>
 
 ## Training Data = Hypothesis
@@ -64,7 +68,7 @@ Don't find articles supporting your initial guess — find what the ecosystem ac
 
 <!-- Source: extracted from inline 2026-05 (was: <tool_strategy> + <verification_protocol>) -->
 
-@~/.claude/aoforge/references/research-tooling.md
+Read `<runtime>/references/research-tooling.md` when you need it: tool strategy, verification protocol.
 
 </research_tooling>
 
@@ -73,7 +77,7 @@ Don't find articles supporting your initial guess — find what the ecosystem ac
 All files → `.aoforge/research/`
 
 Template: read **only** the one your prompt's `Use template:` line names (one of `STACK.md`,
-`FEATURES.md`, `ARCHITECTURE.md`, `PITFALLS.md` under `~/.claude/aoforge/templates/research-project/`).
+`FEATURES.md`, `ARCHITECTURE.md`, `PITFALLS.md` under `<runtime>/templates/research-project/`).
 Each researcher covers one dimension; the project summary comes from the synthesizer, not you.
 
 </output_formats>
