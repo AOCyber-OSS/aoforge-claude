@@ -470,26 +470,47 @@ function aofArgs(w) {
   return args;
 }
 
-const CONTEXT_LOAD = { init: null, state: ['digest'], intent: ['resolve'], stack: ['context', 'resolve'], 'history-digest': null };
-const VALIDATE_PUBLISH = { frontmatter: ['validate'], verify: null, 'trd-tdd': null, plan: ['put-trd', 'push'], summary: ['checkpoint', 'post'], tokens: ['stamp'] };
+// aof-tools verb tables: category -> {verb: [subcommands] | null (any)}. Order matters only for `commit`, which is first.
+const AOF_CATEGORIES = [
+  ['commit', { commit: null }],
+  ['context_load', { init: null, state: ['digest'], intent: ['resolve'], stack: ['context', 'resolve', 'command'], 'history-digest': null }],
+  ['validate_publish', { frontmatter: ['validate'], verify: null, 'trd-tdd': null, plan: ['put-trd', 'push'], summary: ['checkpoint', 'post'], tokens: ['stamp'] }],
+  ['draft_setup', { planning: ['draft'] }],
+  ['state_record', {
+    state: ['advance-job', 'update-progress', 'record-metric', 'add-decision', 'record-session', 'add-blocker', 'patch', 'update'],
+    roadmap: ['update-job-progress'],
+    requirements: ['mark-complete'],
+    trd: ['finalize'],
+  }],
+  ['exec_context', { 'exec-context': null }],
+];
 
 function aofCategory(args) {
   const [verb, sub] = args;
-  if (verb === 'commit') return 'commit';
-  for (const [table, category] of [[CONTEXT_LOAD, 'context_load'], [VALIDATE_PUBLISH, 'validate_publish']]) {
+  for (const [category, table] of AOF_CATEGORIES) {
     if (!Object.prototype.hasOwnProperty.call(table, verb)) continue;
     const subs = table[verb];
-    if (subs === null || (subs && subs.includes(sub))) return category;
+    if (subs === null || subs.includes(sub)) return category;
   }
   return null;
 }
 
-/** Category of one simple shell command, or null when no rule matches. */
-function classifySimple(simple) {
+const GIT_READ = new Set(['status', 'diff', 'log', 'show', 'ls-files', 'rev-parse', 'branch', 'remote', 'blame', 'shortlog', 'describe']);
+const SHELL_KEYWORDS = new Set(['do', 'then', 'else', '{', '(', '!']);
+
+/**
+ * Category of one simple shell command, or null when no rule matches. `state.inBin` is true after a `cd` into the
+ * aoforge bin directory earlier in the same command line: a read or listing there is tool investigation too.
+ */
+function classifySimple(simple, state) {
   let w = words(simple);
-  while (w.length && /^[A-Za-z_][A-Za-z0-9_]*=/.test(w[0])) w = w.slice(1);
+  while (w.length && (/^[A-Za-z_][A-Za-z0-9_]*=/.test(w[0]) || SHELL_KEYWORDS.has(w[0]))) w = w.slice(1);
   if (w.length === 0) return null;
   const cmd = path.basename(w[0]);
+  if (cmd === 'cd') {
+    state.inBin = BIN_PATH.test(w[1] || '');
+    return null;
+  }
 
   if (cmd === 'git') {
     const rest = w.slice(1);
@@ -498,10 +519,11 @@ function classifySimple(simple) {
     const sub = rest[i];
     if (sub === 'commit') return { category: 'raw_commit', detail: head(simple) };
     if ((sub === 'log' || sub === 'show') && /%[Bb]|--pretty=full/.test(simple)) return { category: 'commit_inspect', detail: head(simple) };
+    if (GIT_READ.has(sub)) return { category: 'git_inspect', detail: head(simple) };
   }
 
   if (w.includes('--help')) return { category: 'tool_investigation', detail: head(simple) };
-  if (INVESTIGATORS.has(cmd) && w.slice(1).some((x) => BIN_PATH.test(x))) return { category: 'tool_investigation', detail: head(simple) };
+  if (INVESTIGATORS.has(cmd) && (state.inBin || w.slice(1).some((x) => BIN_PATH.test(x)))) return { category: 'tool_investigation', detail: head(simple) };
 
   const args = aofArgs(w);
   if (args) {
@@ -519,6 +541,8 @@ function classifySimple(simple) {
   if (cmd === 'echo' && w.slice(1).some((x) => x === '$HOME' || x === '~')) return { category: 'runtime_lookup', detail: head(simple) };
   if (cmd === 'printenv' && w[1] === 'HOME') return { category: 'runtime_lookup', detail: head(simple) };
 
+  if (cmd === 'cp' && w.slice(1).some((x) => /^-[A-Za-z]*[Rra][A-Za-z]*$/.test(x))) return { category: 'scratch_copy', detail: head(simple) };
+
   if (cmd === 'node' && w.includes('--test')) return { category: 'test_run', detail: head(simple) };
   if (['npm', 'pnpm', 'yarn'].includes(cmd) && (w[1] === 'test' || (w[1] === 'run' && w[2] === 'test'))) return { category: 'test_run', detail: head(simple) };
   return null;
@@ -535,8 +559,14 @@ function classifySimple(simple) {
  *     git log|show with %B                       commit_inspect
  *     --help, or reading/listing .claude/aoforge/bin   tool_investigation
  *     aof-tools commit                           commit
- *     aof-tools init|state digest|intent resolve|stack context|stack resolve|history-digest   context_load
+ *     aof-tools init|state digest|intent resolve|stack context|stack resolve|stack command|history-digest   context_load
  *     aof-tools frontmatter validate|verify *|trd-tdd|plan put-trd|plan push|summary checkpoint|summary post|tokens stamp   validate_publish
+ *     aof-tools planning draft                   draft_setup
+ *     aof-tools state advance-job|update-progress|record-metric|add-decision|record-session|..., roadmap update-job-progress,
+ *       requirements mark-complete, trd finalize state_record
+ *     aof-tools exec-context                     exec_context
+ *     git status|diff|log|show|ls-files|...      git_inspect             (after commit_inspect)
+ *     cp -R|-r|-a                                scratch_copy
  *     cat|head|tail|sed -n of .claude/aoforge/<rel>   runtime_read:<rel>
  *     grep|rg of .claude/aoforge/<rel>           runtime_grep:<rel>
  *     ls|find of .claude/aoforge/..., echo $HOME runtime_lookup
@@ -564,8 +594,9 @@ function categorize(tool, { homes = [] } = {}) {
   }
   if (name === 'Bash') {
     const command = String(input.command || '');
+    const state = { inBin: false };
     for (const simple of splitSimple(command)) {
-      const hit = classifySimple(simple);
+      const hit = classifySimple(simple, state);
       if (hit) return hit;
     }
     return { category: 'other', detail: head(command) };

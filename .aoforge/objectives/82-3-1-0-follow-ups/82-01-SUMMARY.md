@@ -13,5 +13,5 @@ requirements-completed: []
 
 ## Progress
 - [x] Task 1: Hand-built transcript builder for attribution tests — 1a46961f
-- [x] Task 2: attribution.cjs (test list 1-9) — RED bc27e3e0, GREEN (this commit): 76 tests pass
-- [ ] Task 3: Run the attribution on the four build runs and publish 82-DIAGNOSIS.md — next step: run summarizeSpawn on the four runs and compare with 81-MEASUREMENT.md role totals (planner 1,321,277 vs 2,205,630; executor 2,769,891 vs 3,326,048)
+- [x] Task 2: attribution.cjs (test list 1-9) — RED bc27e3e0, GREEN e77c26ca (76 tests); finer categories for the real planner/executor `other` bucket added test-first (92 tests) — (this commit)
+- [ ] Task 3: Run the attribution on the four build runs and publish 82-DIAGNOSIS.md — next step: totals already match 81 (planner 1,321,277 / 2,205,630, executor 2,769,891 / 3,326,048); now confirm or reject H-P1..H-E5 per call with show.cjs, find the 99950509 vs v3.0.0 triggers, write the draft and `doc put` it
