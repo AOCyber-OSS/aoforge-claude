@@ -27,8 +27,8 @@
 //   allow          an entry of ALLOW {file, needle, reason}: a human-facing statement of where a user file lives
 //   offender       everything else
 //
-// Scopes: ENFORCED scopes must have zero offenders; PENDING scopes are scanned and reported with their offender
-// counts but do not fail. TRD 82-11 rewrites them and moves them to ENFORCED.
+// Scopes: ENFORCED scopes must have zero offenders; PENDING scopes (none since TRD 82-11) are scanned and reported with their offender
+// counts but do not fail.
 //
 // Test list
 //   4. unit: shell classification (fence line, inline span with a shell word, continuation line)
@@ -93,9 +93,10 @@ const SCOPES = {
   ],
 };
 
-// 82-11 moves these to ENFORCED (Task 1: core_references, pack_agent_material; Task 2: core_workflows; Task 3: the rest).
-const ENFORCED = ['core_agents', 'core_references', 'pack_agent_material', 'core_workflows'];
-const PENDING = ['core_skills', 'core_templates', 'pack_skills_workflows'];
+// TRD 82-11 moved every scope to ENFORCED (Task 1: core_references, pack_agent_material; Task 2: core_workflows;
+// Task 3: the rest). PENDING stays empty: a new scope starts ENFORCED.
+const ENFORCED = ['core_agents', 'core_references', 'pack_agent_material', 'core_workflows', 'core_skills', 'core_templates', 'pack_skills_workflows'];
+const PENDING = [];
 
 // A human-facing statement of where a user file lives (never an instruction to read one). At most 12 entries; an
 // agent-read instruction is never allowlisted. TRD 82-11 fills this from the references and workflows it keeps.
@@ -376,7 +377,7 @@ const INITS_WITH_RUNTIME_ROOT = [
 
 // Scopes whose spawns test 18 checks and whose `{runtime_root}` sources test 19 checks
 // (82-11 Task 2: workflows; Task 3: skills and the packs' skills and workflows).
-const SPAWN_SCOPES = ['core_workflows'];
+const SPAWN_SCOPES = ['core_workflows', 'core_skills', 'pack_skills_workflows'];
 
 // A spawn-shaped block that sketches another spawn rather than spelling out a prompt.
 const SPAWN_EXEMPT = [
@@ -496,6 +497,21 @@ function aoforgeSpawns(scopes) {
     for (const s of spawnsIn(f, readLines(f))) if (s.agent && names.has(s.agent)) out.push({ file: f, ...s });
   }
   return out;
+}
+
+/**
+ * A SKILL.md's text with the workflows it includes at a line start appended (Claude Code expands those into the
+ * skill's context, so an init the included workflow runs supplies `{runtime_root}` to the skill too).
+ */
+function withSkillIncludes(fileRel, text) {
+  if (!isSkillFile(fileRel)) return text;
+  const parts = [text];
+  for (const l of text.split('\n')) {
+    const rel = l.startsWith('@' + NEEDLE + '/') ? includeRel(l, 0) : null;
+    if (!rel || !rel.startsWith('workflows/')) continue;
+    try { parts.push(fs.readFileSync(path.join(PLUGIN, 'aoforge', rel), 'utf8')); } catch { /* a missing include is another test's finding */ }
+  }
+  return parts.join('\n');
 }
 
 /** How a file supplies `{runtime_root}`: the init it runs, the fallback line, or null. */
@@ -635,6 +651,8 @@ test('11. every scope is ENFORCED or PENDING; PENDING scopes report their counts
   const all = Object.keys(SCOPES).sort();
   assert.deepEqual([...ENFORCED, ...PENDING].sort(), all, 'every scope is in ENFORCED or PENDING, and in only one');
   assert.equal(new Set([...ENFORCED, ...PENDING]).size, ENFORCED.length + PENDING.length, 'no scope is in both lists');
+  assert.deepEqual(PENDING, [], 'TRD 82-11 enforces every scope: a new scope starts ENFORCED');
+  assert.deepEqual([...SPAWN_SCOPES].sort(), ['core_skills', 'core_workflows', 'pack_skills_workflows'], 'spawns are checked wherever an orchestrator spawns');
   for (const scope of all) {
     const files = scopeFiles(scope);
     const offenders = offendersOf(scope);
@@ -766,7 +784,7 @@ test('19. every file in a spawn scope that spawns an AOForge agent or names {run
   for (const f of [...new Set(SPAWN_SCOPES.flatMap(scopeFiles))]) {
     const text = fs.readFileSync(path.join(REPO_ROOT, f), 'utf8');
     if (!spawning.has(f) && !text.includes('{runtime_root}')) continue;
-    if (!runtimeRootSource(text)) missing.push(`${f}${spawning.has(f) ? ' (spawns an AOForge agent)' : ''}`);
+    if (!runtimeRootSource(withSkillIncludes(f, text))) missing.push(`${f}${spawning.has(f) ? ' (spawns an AOForge agent)' : ''}`);
   }
   assert.deepEqual(missing, [],
     `run an \`aof-tools.cjs init <cmd>\` whose JSON has runtime_root, or define the fallback once: ${RUNTIME_FALLBACK}`);
