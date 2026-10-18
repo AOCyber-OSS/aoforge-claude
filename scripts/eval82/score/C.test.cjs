@@ -208,6 +208,8 @@ test('6d: guessed paths per researcher run come from the transcripts, beside the
   assert.deepEqual([h2.files_scanned, h2.tool_uses_scanned, h2.tilde, h2.guessed_home], [1, 1, 0, 1]);
   assert.deepEqual(h2.recorded, { real: 0, guessed_nonexistent: 1, tilde_denied: 0 });
   assert.deepEqual(h2.entries.map((e) => [e.class, e.tool, e.field]), [['guessed_home', 'Read', 'file_path']]);
+  assert.deepEqual(h2.recorded_entries, [{ class: 'guessed_nonexistent', tool: 'Read', path: '/Users/nobody/.claude/aoforge/templates/research-project/ARCHITECTURE.md' }]);
+  assert.deepEqual(hub.recorded_entries, []);
   assert.equal(rows.get('C82-res-hub-pitfalls-s-1').recorded, 'not_recorded');
   const s1 = rows.get('C82-res-gateway-architecture-s-1');
   assert.deepEqual([s1.files_scanned, s1.scanned], [0, false]);

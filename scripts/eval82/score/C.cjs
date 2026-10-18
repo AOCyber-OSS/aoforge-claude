@@ -24,7 +24,8 @@
  *                              `guessed_nonexistent`, `tilde_denied`, or 'not_recorded'). Never record.access alone:
  *                              an allowed `~` Read is not recorded by the runner. `tilde` is counted for the record
  *                              (the Read tool expands `~`); `guessed_home` is the defect signal. A run whose
- *                              transcripts hold nothing is `scanned: false`, never a clean zero.
+ *                              transcripts hold nothing is `scanned: false`, never a clean zero. `recorded_entries`
+ *                              lists the runner's recorded accesses (class, tool, redacted path) for the SC-2 verdict.
  *   recorded_81                objective 81's own topic, carried from its results/C.json (architecture and pitfalls
  *                              roles and runs) without recomputation. 81's C.json holds no item-level verdicts, so
  *                              its topic is aggregate only and says so.
@@ -182,6 +183,14 @@ function recorded81(c81Path) {
   };
 }
 
+/** The runner's recorded accesses as [{class, tool, path}] (paths as the runner redacted them), for the SC-2 verdict. */
+function recordedEntries(record) {
+  const a = isObj(record) && isObj(record.access) ? record.access : null;
+  if (!a) return [];
+  const pick = (e) => ({ class: e.class, tool: typeof e.tool === 'string' ? e.tool : null, path: typeof e.path === 'string' ? e.path : null });
+  return [...(Array.isArray(a.real) ? a.real : []), ...(Array.isArray(a.non_escape) ? a.non_escape : [])].filter(isObj).map(pick);
+}
+
 /** score(...) -> the batch C result (see the module comment). */
 function score({ root, c81Path = DEFAULT_C81, homeParent = defaultHomeParent(), realHome = defaultRealHome() } = {}) {
   if (typeof root !== 'string' || root === '') throw new TypeError('score C: root is required');
@@ -267,6 +276,7 @@ function score({ root, c81Path = DEFAULT_C81, homeParent = defaultHomeParent(), 
         guessed_home: scan.guessed_home,
         recorded: recorded === null ? 'not_recorded' : recorded,
         entries: scan.entries,
+        recorded_entries: recordedEntries(r),
       });
     }
   }
