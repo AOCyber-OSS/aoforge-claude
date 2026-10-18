@@ -16,14 +16,16 @@ files_modified:
   - .aoforge/ROADMAP.md
   - .aoforge/objectives/76-model-efficiency-and-stack-specific-content/76-VERIFICATION.md
   - ".aoforge/todos/pending/2026-10-17-apply-objective-81-tier-proposal-*.md (moved to todos/completed by todo complete)"
+  - ".aoforge/todos/pending/<date>-measure-the-debugger-start-tier*.md (new, written by todo add; none exists at planning time)"
   - .aoforge/objectives/79-reconcile-and-release-3-1-0/79-REVALIDATION.md
 autonomous: true
 requirements: [SC-3, SC-5, MEF-06]
 must_haves:
   truths:
     - "CHANGELOG's `## [3.1.0]` section carries an objective 82 subsection (runtime paths and the guard; the build-cell fixes with the measured effect; P1-P5 as finally kept or reverted with evidence and caveats; `tokens --also-root`; objective 77's records) and `changelog check 3.1.0` passes; USER-GUIDE, AOF-TOOLS-REFERENCE and CLAUDE.md state the same facts, CLAUDE.md within its 200-line / 20,000-char budget"
-    - "Objective 77's STK-01 and PCK-01..04 are Complete in REQUIREMENTS.md (checkboxes and traceability rows) and its Progress row reads 5/5 Complete 2026-10-16, agreeing with 77-VERIFICATION (passed 5/5)"
-    - "MEF-06 is recorded from evidence in REQUIREMENTS.md and 76-VERIFICATION.md: the UI judge's start tier as 82-TIER-CHECKS.md decided it, and the debugger's start tier still unmeasured, so MEF-06 stays Partial unless the evidence covers both halves"
+    - "Objective 77's STK-01 and PCK-01..04 are Complete in REQUIREMENTS.md (checkboxes and traceability rows) and its Progress row reads 5/5 Complete with Completed 2026-10-16 (the landing date, PRs #132-#134) and 77-VERIFICATION's 2026-10-17 verification date noted beside it in the Status cell, agreeing with 77-VERIFICATION (passed 5/5)"
+    - "MEF-06 is recorded from evidence in REQUIREMENTS.md and 76-VERIFICATION.md: the UI judge's start tier as 82-TIER-CHECKS.md decided it, and the debugger's start tier not measured by objective 82 (out of scope by the ROADMAP's own sentence), so MEF-06 stays Partial by design"
+    - "A pending todo records the debugger's start-tier measurement as MEF-06's remaining half (written here, since none exists), and the MEF-06 rows cite it"
     - "The five tier-proposal todos each carry a `## Resolution (objective 82, <date>)` with checkable evidence (commits, pin tests and their pass lines, the 82-TIER-CHECKS verdict and any revert) and are moved by `todo complete`"
     - "`validate health`, `validate requirements` and `validate consistency` are clean; the full suite passes with watcher-shell excluded and named; 79-08's checks (CI gate self-test, node:26 Docker CI-equivalent, named guards incl. the two new ones, fleet drafter test, site data, release preconditions, both prereg checks) pass and are recorded in a 79-REVALIDATION.md addendum with the new VALIDATED_SHA"
   artifacts:
@@ -62,6 +64,7 @@ Output: docs, records, the re-validation addendum.
 @.aoforge/objectives/82-3-1-0-follow-ups/82-MEASUREMENT.md
 @.aoforge/objectives/82-3-1-0-follow-ups/82-04-SUMMARY.md
 @.aoforge/objectives/82-3-1-0-follow-ups/82-07-SUMMARY.md
+@.aoforge/objectives/82-3-1-0-follow-ups/82-11-SUMMARY.md
 @.aoforge/objectives/79-reconcile-and-release-3-1-0/79-08-full-validation-TRD.md
 @.aoforge/objectives/79-reconcile-and-release-3-1-0/79-REVALIDATION.md
 
@@ -84,11 +87,16 @@ Facts:
 - Objective 77: 77-VERIFICATION.md status passed 5/5, coverage SATISFIED for PCK-01..04 and STK-01;
   77-RETROACTIVE-SUMMARY.md `requirements-completed: [PCK-01, PCK-02, PCK-03, PCK-04, STK-01]`, `completed: 2026-10-16`;
   REQUIREMENTS.md lines 72 and 76-79 are `- [ ]` and rows 133-137 read Pending; the ROADMAP Progress row reads
-  `| 77. Stack packs: contract and extraction | v1.6 | 5/5 | In Progress | - |`. Quick 44 closed objective 76 the
-  same way (`requirements mark-complete`, bounded ROADMAP edits, diffs checked line by line).
+  `| 77. Stack packs: contract and extraction | v1.6 | 5/5 | In Progress | - |`. 77 landed on `main` on 2026-10-16
+  (77-VERIFICATION `retroactive_note`: PRs #132/#133/#134) and was verified retroactively on 2026-10-17
+  (`verified: 2026-10-17`): the Completed column takes the landing date; the verification date goes beside it, as row
+  76 carries its note in the Status cell. Quick 44 closed objective 76 the same way (`requirements mark-complete`,
+  bounded ROADMAP edits, diffs checked line by line).
 - MEF-06: REQUIREMENTS.md line 71 (`- [ ]`) and row 132 ("Partial: escalation complete (quick 42); start-tier half not
   met ..."); 76-VERIFICATION.md row 106 (published through `verification post 76`). The debugger's start tier was not
-  measured by objective 81 or 82.
+  measured by objective 81 or 82: ROADMAP Objective 82 says so ("The debugger's start tier is not measured here and
+  stays a recorded todo, so MEF-06 remains Partial by design"). No pending todo covers it at planning time (only the
+  ui-evaluator tier todo mentions it, line 55).
 - Todos: the five files `.aoforge/todos/pending/2026-10-17-apply-objective-81-tier-proposal-{ui-evaluator,codebase-mapper-arch,codebase-mapper-concerns,project-researcher-architecture,project-researcher-pitfalls}.md`.
   Procedure (objective 75-04): `AOF planning draft todos/pending/<file>` → append the Resolution section (never
   shorten the body, never change `title:`) → `AOF todo add --stem <filename without .md> --from <draft>` (check it
@@ -147,7 +155,7 @@ printf '%s' '{"tool_name":"Bash","tool_input":{"command":"git tag -a v3.1.0 -m x
   <action>
 CHANGELOG `## [3.1.0]`: add `### 3.1.0 follow-ups (objective 82)` with bullets: agents and spawns read runtime files at
 an absolute path (`init` JSON `runtime_root`, the `<runtime_paths>` block, `AOForge runtime: {runtime_root}` in spawn
-prompts, guard `runtime-path-reads.repo.test.cjs`); the build-cell token fixes by Fix-list id with 82-MEASUREMENT.md's
+prompts, guard `runtime-path-reads.repo.test.cjs` on every scope; 82-09's SC-2 verdict from the transcript scan); the build-cell token fixes by Fix-list id with 82-MEASUREMENT.md's
 verdict and numbers (n=2, the spread caveat); each tier proposal P1-P5 as finally kept or reverted with its evidence and
 caveat (from 82-03's docs and 82-TIER-CHECKS.md: escalation rate, verdicts, cost against a Sonnet start; recall and item
 matrix for P4/P5); `tokens trd|coverage|backfill --also-root <dir>` with 82-04's coverage numbers; objective 77's records
@@ -176,14 +184,19 @@ or two sentences and the Estimation bullet `tokens ... --also-root`, paid for by
    exactly the 5 checkboxes and the 5 traceability rows (error_recovery otherwise); each row cites
    `objectives/77-stack-packs-contract-and-extraction/77-VERIFICATION.md` if the verb leaves the cell without a source
    (add it through a draft + `doc put REQUIREMENTS.md`).
-2. ROADMAP Progress row for 77 → `| 77. Stack packs: contract and extraction | v1.6 | 5/5 | Complete | 2026-10-16 |`
-   (one bounded edit; `git diff` shows exactly one `-` and one `+` line).
+2. ROADMAP Progress row for 77 → `| 77. Stack packs: contract and extraction | v1.6 | 5/5 | Complete (verified 2026-10-17, 77-VERIFICATION) | 2026-10-16 |`
+   (Completed = the landing date 2026-10-16; the verification date beside it; one bounded Edit of ROADMAP.md, which
+   is hand-maintained in local mode (`doc put` refuses it); `git diff` shows exactly one `-` and one `+` line).
 3. MEF-06 (draft REQUIREMENTS.md; `doc put`): the traceability row states the evidence: "Partial: escalation complete
    (quick 42); UI judge start tier <KEEP: haiku on balanced and budget, escalation rate x/20, final accuracy, cost vs a
    Sonnet start (82-TIER-CHECKS.md)> | <REVERT: measured by objective 82 and not applied: <clause>>; debugger start tier
    not measured". The checkbox stays `[ ]` (both halves are not met). The same facts go into 76-VERIFICATION.md's MEF-06
-   row (draft, `AOF verification post 76 --from <draft>`), frontmatter untouched. If no pending todo covers measuring
-   the debugger's start tier, add one (`AOF todo add --from <draft>`, area model-tiers, naming MEF-06's remaining half).
+   row (draft, `AOF verification post 76 --from <draft>`), frontmatter untouched. Then write the debugger todo (none
+   exists; check `rg -l -i 'debugger' .aoforge/todos/pending` first and reuse one only if it is about the start tier):
+   `AOF todo add --from <draft>` with title "Measure the debugger's start tier (MEF-06's remaining half)", area
+   model-tiers, body: what objective 81 and 82 measured (the UI judge only), what is missing (a debugger start-tier
+   check at Haiku or Sonnet with escalation, scored like 82-08's P1 rule), and the ROADMAP Objective 82 sentence that
+   scoped it out; cite the todo's file name in the MEF-06 traceability row and 76-VERIFICATION's row.
 4. The five todos per the procedure in context. Resolution evidence per todo: 82-03's commits and pin-test pass lines
    (`node --test --test-name-pattern '<test name>' <file>` output), and for P1, P4 and P5 the 82-TIER-CHECKS.md verdict
    with its numbers and, if reverted, 82-08's revert commits ("measured; not applied: <clause>").
@@ -191,10 +204,10 @@ or two sentences and the Estimation bullet `tokens ... --also-root`, paid for by
    (passed), the roadmap-coverage check named in `AOF validate --help`; and the records tests:
    `requirements-agreement.repo.test.cjs`, `requirements-agreement.test.cjs`, `validate-requirements*.test.cjs`,
    `roadmap-reconcile*.test.cjs` under the scratch HOME.
-Commit `AOF commit "docs(82-10): objective 77 records, MEF-06 from evidence, tier todos resolved" --files .aoforge/REQUIREMENTS.md .aoforge/ROADMAP.md .aoforge/objectives/76-model-efficiency-and-stack-specific-content/76-VERIFICATION.md <the todo paths the verbs wrote>`.
+Commit `AOF commit "docs(82-10): objective 77 records, MEF-06 from evidence, tier todos resolved, debugger todo" --files .aoforge/REQUIREMENTS.md .aoforge/ROADMAP.md .aoforge/objectives/76-model-efficiency-and-stack-specific-content/76-VERIFICATION.md <the todo paths the verbs wrote, the new debugger todo included>`.
   </action>
-  <verify>REQUIREMENTS diff as stated; ROADMAP diff one row; `ls .aoforge/todos/completed | rg -c 'apply-objective-81-tier-proposal'` prints 5 and none remain pending; validators clean; records tests pass</verify>
-  <done>Objective 77's records agree with its verification, MEF-06 says exactly what the evidence shows, and the five todos are closed with evidence.</done>
+  <verify>REQUIREMENTS diff as stated; ROADMAP diff one row reading Completed 2026-10-16 with "verified 2026-10-17" beside it; `ls .aoforge/todos/completed | rg -c 'apply-objective-81-tier-proposal'` prints 5 and none remain pending; `ls .aoforge/todos/pending | rg -c 'debugger'` prints 1; validators clean; records tests pass</verify>
+  <done>Objective 77's records agree with its verification, MEF-06 says exactly what the evidence shows (Partial by design, the debugger half a recorded todo), and the five todos are closed with evidence.</done>
   <recovery>`todo add --stem` wrote a new file: `todo complete` the stray as a duplicate, note it, redo with the exact stem.</recovery>
 </task>
 

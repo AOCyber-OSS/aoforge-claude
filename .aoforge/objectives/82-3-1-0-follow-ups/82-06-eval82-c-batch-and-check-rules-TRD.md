@@ -20,19 +20,20 @@ files_modified:
   - .aoforge/objectives/82-3-1-0-follow-ups/82-CHECK-RULES.md
   - .aoforge/objectives/82-3-1-0-follow-ups/results/prereg-manifest.json
 autonomous: true
-requirements: [SC-1, SC-3]
+requirements: [SC-1, SC-2, SC-3]
 must_haves:
   truths:
     - "Two research topics drawn from real AOCyber products (an LLM gateway in Go; a Flutter macOS hub for a local daemon) and their architecture and pitfalls checklists (10-12 items each, each with a source) are committed and frozen before any live run"
-    - "Batch C (objective 82) runs project-researcher architecture and pitfalls at haiku and sonnet, 2 repeats per topic, with the production spawn prompt read from the tree under test, and plans a Sonnet grader run for each finished researcher run"
-    - "82-CHECK-RULES.md pre-registers, before any live run, the keep/revert rule for P1 (D), for P4 and P5 (C), the build-cell mechanism checks for SC-1 (E) built from 82-DIAGNOSIS.md's Fix list, the sandbox and escape rules, and the spend rules"
-    - "check-rules.cjs implements those rules as pure functions tested on hand-built results and renders 82-TIER-CHECKS.md; a fake-claude rehearsal runs D, C and E end to end in a scratch root with zero API calls"
+    - "Batch C (objective 82) runs project-researcher architecture and pitfalls at haiku and sonnet, 2 repeats per topic, with the production spawn prompt read from the tree under test, and plans a Sonnet grader run for each finished researcher run; the C scorer reports per run 82-05's transcript scan (`tilde`, `guessed_home`) beside the runner's recorded `real`, `guessed_nonexistent` and `tilde_denied` classes"
+    - "82-CHECK-RULES.md pre-registers, before any live run, the keep/revert rule for P1 (D), for P4 and P5 (C), the build-cell mechanism checks for SC-1 (E) built from 82-DIAGNOSIS.md's Fix list, SC-2's guessed-path check (zero in all five counts on every new E and C run, an unscanned run inconclusive), the sandbox and escape rules, and the spend rules"
+    - "check-rules.cjs implements those rules (p1Verdict, researcherVerdict, mechanismChecks, guessedPathVerdict) as pure functions tested on hand-built results and on 82-05's real 81 extracts, and renders 82-TIER-CHECKS.md"
+    - "A fake-claude rehearsal runs batches D and C end to end through the frozen runner in a scratch root with `EVAL82_SANDBOX_ROOT` set and zero API calls, asserting D's prompts name the absolute screenshot path under the rehearsal sandbox root; E is rehearsed as a dry run (planned runs, reserves, fit), not executed"
     - "`results/prereg-manifest.json` freezes scripts/eval82 (unit tests excepted) and 82-CHECK-RULES.md, and `prereg.cjs --check` on it exits 0"
   artifacts:
     - path: .aoforge/objectives/82-3-1-0-follow-ups/82-CHECK-RULES.md
-      provides: "the pre-registered keep/revert and effect rules"
+      provides: "the pre-registered keep/revert, effect and guessed-path rules"
     - path: scripts/eval82/check-rules.cjs
-      provides: "p1Verdict, researcherVerdict, mechanismChecks, renderTierChecks"
+      provides: "p1Verdict, researcherVerdict, mechanismChecks, guessedPathVerdict, renderTierChecks"
     - path: .aoforge/objectives/82-3-1-0-follow-ups/results/prereg-manifest.json
       provides: "the freeze 82-08 and 82-09 check before spending"
   key_links:
@@ -44,6 +45,10 @@ must_haves:
       to: .aoforge/objectives/82-3-1-0-follow-ups/82-TIER-CHECKS.md
       via: "renderTierChecks in 82-08"
       pattern: "82-TIER-CHECKS"
+    - from: scripts/eval82/lib/guessed-paths.cjs
+      to: scripts/eval82/check-rules.cjs guessedPathVerdict
+      via: "per-run scan rows (files_scanned, tilde, guessed_home) plus recordedAccess"
+      pattern: "guessedPathVerdict"
 ---
 
 # TRD 82-06: Objective 82's eval harness, part 2: batch C, the pre-registered rules and the freeze
@@ -53,10 +58,10 @@ P4 and P5 were approved "with a follow-up measurement: compare budget-profile ar
 real projects with a Sonnet run of the same topic, on two or three topics; revert if Haiku misses findings Sonnet
 makes". P1 was approved "only if escalation keeps the verdicts right and the cost below a Sonnet start". Build the
 researcher batch on two new topics (objective 81's topic, already measured, is the third), write the keep/revert
-rules and the build-cell effect rule down before any run, implement them as tested functions, rehearse every batch
-with the fake claude binary, and freeze the harness by hash.
+rules, the build-cell effect rule and SC-2's guessed-path rule down before any run, implement them as tested
+functions, rehearse D and C end to end with the fake claude binary and E as a dry run, and freeze the harness by hash.
 
-Purpose: SC-3's follow-up measurement design and SC-1's effect rule, fixed before spending.
+Purpose: SC-3's follow-up measurement design, SC-1's effect rule and SC-2's sandboxed check, fixed before spending.
 Output: topics and checklists, batch C and its scorer, 82-CHECK-RULES.md, check-rules.cjs, the prereg manifest.
 </objective>
 
@@ -86,10 +91,17 @@ background-skip env, timeout 25 min, grader 5 min. Read C.cjs for how a research
 project with `.aoforge/PROJECT.md` = `# <title>` + summary) and collected (the newest research document from the
 run's draft dirs), and reuse by import wherever the function takes its inputs as parameters.
 
-Spawn-prompt runtime line: after 82-07, new-project.md's researcher spawn carries `AOForge runtime: {runtime_root}`.
-In batch C fill `{runtime_root}` with `<S>/runs/C/<id>/home/.claude/aoforge` when the runner env has
-`EVAL82_SANDBOX_ROOT=<S>` (82-08 sets it on the command), else remove that line (tests and dry runs). If 82-07 has not
-landed when this runs, the placeholder is absent and the fill is a no-op (handle both).
+Spawn-prompt runtime line: after 82-11 (same wave as this TRD), new-project.md's researcher spawn carries
+`AOForge runtime: {runtime_root}`. In batch C fill `{runtime_root}` with `<S>/runs/C/<id>/home/.claude/aoforge` when
+the runner env has `EVAL82_SANDBOX_ROOT=<S>` (82-08 sets it on the command), else remove that line (tests and dry
+runs). Resolve S exactly as batch D does (82-05: `fs.realpathSync`, absolute, `S/trees.json` present, else throw). If
+82-11 has not landed when this runs, the placeholder is absent and the fill is a no-op (handle both).
+
+Guessed paths (82-05, read its SUMMARY): `scripts/eval82/lib/guessed-paths.cjs` exports `scanGuessedPaths` and
+`recordedAccess`. The runner's `record.access` (frozen `scanAccess`) records only `real`, `guessed_nonexistent` and
+`tilde_denied` (a DENIED `~` path); an undenied `~` Read is not recorded at all (81's C-res-architecture-h-2 made two
+and its `access` is empty), so every SC-2 count here uses the scan, with the recorded classes beside it.
+`scripts/eval82/__fixtures__/runs-81/` holds the real 81 extracts the tests below reuse.
 
 Costs (81, per run): researcher architecture haiku ~$0.04 / sonnet ~$0.14, pitfalls ~$0.045 / ~$0.19; grader ~$0.064.
 82 C plan: 2 topics x 2 dimensions x 2 models x 2 repeats = 16 researcher runs + 16 grader runs, ~$2.6, batch cap $3.5;
@@ -166,7 +178,10 @@ batches/C.test.cjs
 score/C.test.cjs
 6. On hand-built researcher and grader records: recall (found / items) per topic x dimension x model with Wilson
    intervals; pooled recall per dimension x model over the new topics; grader-reported fabrications per run;
-   an item matrix (Sonnet found in 0/1/2 runs, Haiku found in 0/1/2 runs); cost per run; writes results/C.json, C.md.
+   an item matrix (Sonnet found in 0/1/2 runs, Haiku found in 0/1/2 runs); cost per run; per researcher run the
+   scan's `tilde`/`guessed_home` and the recorded `real`/`guessed_nonexistent`/`tilde_denied` counts (a researcher
+   fixture copied from `runs-81/C-res-architecture-h-2`, whose `access` is empty, shows `tilde` 2); writes
+   results/C.json, C.md.
 check-rules.test.cjs
 7. p1Verdict on hand-built D results: KEEP when broken_missed(haiku start, final) = 0, accuracy(haiku start, final) >=
    accuracy(sonnet start) and cost(haiku start incl. escalations) < cost(sonnet start incl. its estimate); REVERT with
@@ -177,7 +192,14 @@ check-rules.test.cjs
 9. mechanismChecks(attribution per run, fixList) passes when every FIX row's category count equals its target in
    every new run and fails naming the row and run otherwise; outcomes (acceptance, tests, verification) must all hold.
 10. renderTierChecks writes a document with sections P1, P4, P5 (and the 81 topic as recorded context), each with the
-    verdict, the rule clause that decided it, and the numbers; deterministic.
+    verdict, the rule clause that decided it, and the numbers, plus `## Guessed runtime paths (SC-2, researcher runs)`
+    with guessedPathVerdict's result; deterministic.
+11. guessedPathVerdict(perRun rows from scanGuessedPaths + recordedAccess): PASS only when every run has
+    `files_scanned >= 1` and `tool_uses_scanned >= 1` and `tilde`, `guessed_home`, `real`, `guessed_nonexistent`
+    and `tilde_denied` are all 0 (a missing recorded `access` counts as 0 for those three, and is listed); FAIL naming
+    run, class and redacted path otherwise; INCONCLUSIVE when any run is unscanned. On the `runs-81/` extracts it is
+    FAIL for C-res-architecture-h-2 (`tilde` 2) and b31-r2 (`guessed_home` 1); an old-style verdict over
+    `record.access` alone would have passed C-res-architecture-h-2, and the test asserts that contrast.
 
 <tasks>
 
@@ -213,18 +235,19 @@ RED: tests 3-6 (hand-built records with `scripts/eval82/__fixtures__/records.cjs
 minimal `plugins/aoforge/aoforge/workflows/new-project.md` with two researcher Task blocks, one carrying an
 `AOForge runtime: {runtime_root}` line). Commit `AOF commit "test(82-06): researcher batch C and scorer (RED)" --files <test files>`.
 GREEN: batches/C.cjs per tests 3-5 (order: repeat 1 of every topic x dim before repeat 2; models alternate within a
-pair, as 81). score/C.cjs per test 6, plus `score.cjs --batch C`. Also read 81's `results/C.json` for the 81 topic's
+pair, as 81). score/C.cjs per test 6 (guessed paths through `scanGuessedPaths` on each researcher run's transcripts
+and `recordedAccess` on its record; never `record.access` alone), plus `score.cjs --batch C`. Also read 81's `results/C.json` for the 81 topic's
 architecture and pitfalls rows (recall, fabrications and, if present, item-level verdicts) and carry them into
 `results/C.json` under `recorded_81` (no recomputation). Commit
 `AOF commit "feat(82-06): researcher batch C on two real-product topics, and its scorer" --files <files>`.
   </action>
   <verify>`node --test scripts/eval82/batches/C.test.cjs scripts/eval82/score/C.test.cjs` pass under the scratch HOME; `rg -n "eval81/batches/C.cjs" scripts/eval82/batches/C.cjs` shows the import</verify>
-  <done>Batch C plans 16 researcher runs and their graders; the scorer gives recall, fabrications and the item matrix.</done>
+  <done>Batch C plans 16 researcher runs and their graders; the scorer gives recall, fabrications, the item matrix and per-run guessed-path counts from the transcripts.</done>
   <recovery>If 81's C.json lacks item-level data for its topic, record aggregate-only for the third topic and say so in the scorer output.</recovery>
 </task>
 
 <task type="auto" tdd="true">
-  <name>Task 3: Pre-registered rules, check-rules.cjs, fake-claude rehearsal and the freeze (test list 7-10)</name>
+  <name>Task 3: Pre-registered rules, check-rules.cjs, rehearsal (D and C with fake claude, E dry run) and the freeze (test list 7-11)</name>
   <files>.aoforge/objectives/82-3-1-0-follow-ups/82-CHECK-RULES.md, scripts/eval82/check-rules.cjs, scripts/eval82/check-rules.test.cjs, scripts/eval82/README.md, .aoforge/objectives/82-3-1-0-follow-ups/results/prereg-manifest.json</files>
   <action>
 1. Draft 82-CHECK-RULES.md (`AOF planning draft objectives/82-3-1-0-follow-ups/82-CHECK-RULES.md`): §1 P1 rule (test
@@ -236,30 +259,40 @@ architecture and pitfalls rows (recall, fabrications and, if present, item-level
    finally applied (82-07 records each row's outcome in `## Fix applied` before any E run; a row it moved to JUSTIFY
    is not checked); each check is the row's category and target count per run; copy today's FIX rows into a table as
    the expected set; "effect shown" = every mechanism check passes in every new E run AND acceptance, tests and
-   verification hold; totals are reported against both recorded versions with n=2 and carry no verdict; §4 sandbox: opaque sandbox root
-   `/private/tmp/claude-501/e82-<hex>`, the runner's deny list, 81's post-hoc 4 access classes (`tilde` and
-   `guessed_nonexistent` are non-escapes and are counted; any `real` access is an escape: exit 5 stops the batch);
-   SC-2's sandboxed check = zero `tilde`, `guessed_nonexistent` and `real` in E and C; §5 spend: global $20 hard cap,
-   batch caps D 4.5, C 3.5, E 12, order D, C, E, per-run caps, the ledger charges the larger of reported and transcript
-   cost, a budget stop (exit 3) goes to the user. Publish with `AOF doc put ... --from <draft>`.
-2. TDD check-rules.cjs: RED tests 7-10, commit `AOF commit "test(82-06): keep/revert and effect rules (RED)" --files scripts/eval82/check-rules.test.cjs`;
+   verification hold; totals are reported against both recorded versions with n=2 and carry no verdict; §4 sandbox,
+   escapes and SC-2: opaque sandbox root `/private/tmp/claude-501/e82-<hex>`, the runner's deny list, 81's post-hoc 4
+   classes exactly as `scanAccess` records them (`real` is an escape: exit 5 stops the batch; `guessed_nonexistent`
+   and `tilde_denied`, a DENIED `~` path, are non-escapes and are counted), the fact that an undenied `~` input is
+   not recorded by the runner, and therefore SC-2's sandboxed check = guessedPathVerdict PASS over every new E and C
+   run: zero scanned `tilde` and `guessed_home` inputs (Read/Glob/Grep, from the transcripts) and zero recorded
+   `real`, `guessed_nonexistent` and `tilde_denied`, with an unscanned run inconclusive (SC-2 not shown), never a pass;
+   §5 spend: global $20 hard cap, batch caps D 4.5, C 3.5, E 12, order D, C, E, per-run caps, the ledger charges the
+   larger of reported and transcript cost, the build-2 fit (`ledger82 --fit`) shown at both spend gates with the
+   cap-raise offer, a cap raised only on the user's recorded word (`ledger82 --raise`), a budget stop (exit 3) goes to
+   the user. Publish with `AOF doc put ... --from <draft>`.
+2. TDD check-rules.cjs: RED tests 7-11, commit `AOF commit "test(82-06): keep/revert, effect and guessed-path rules (RED)" --files scripts/eval82/check-rules.test.cjs`;
    GREEN `p1Verdict`, `researcherVerdict`, `mechanismChecks` (input: per-run category counts from
    `scripts/eval82/lib/attribution.cjs` and the FIX rows parsed from 82-DIAGNOSIS.md's Fix list, minus rows its
-   `## Fix applied` section marks JUSTIFY when that section exists), `renderTierChecks`; add
+   `## Fix applied` section marks JUSTIFY when that section exists), `guessedPathVerdict`, `renderTierChecks`; add
    `score.cjs --rules` to render 82-TIER-CHECKS.md from results/D.json and results/C.json. Commit
-   `AOF commit "feat(82-06): pre-registered keep/revert and effect rules as code" --files <files> .aoforge/objectives/82-3-1-0-follow-ups/82-CHECK-RULES.md`.
-3. Fake-claude rehearsal (zero API) in a scratch root `$SP/82-06/rehearsal` with an opaque scratch sandbox root
-   (`/private/tmp/claude-501/e82-rh-<hex>`): ledger82 --init; exportTrees({'3.1.0': 'HEAD'}); run D with
-   `--claude-bin node:scripts/eval81/__fixtures__/fake-claude.cjs --stop-after 6`, then C `--stop-after 4` (close D
-   first in the scratch ledger), then E dry-run only; score what exists. It proves records, ledger entries, access
-   classification and scorers run end to end; record what the fake scenarios could not exercise. Delete the scratch
-   roots after.
+   `AOF commit "feat(82-06): pre-registered keep/revert, effect and guessed-path rules as code" --files <files> .aoforge/objectives/82-3-1-0-follow-ups/82-CHECK-RULES.md`.
+3. Rehearsal (zero API) in a scratch root `$SP/82-06/rehearsal` with an opaque scratch sandbox root
+   `S_rh` = `/private/tmp/claude-501/e82-rh-<16 hex>`: ledger82 --init; exportTrees({'3.1.0': 'HEAD'}) into S_rh; D end
+   to end with fake claude, `EVAL82_SANDBOX_ROOT=<S_rh> node scripts/eval81/run.cjs --batch D ... --sandbox-root <S_rh> --claude-bin node:scripts/eval81/__fixtures__/fake-claude.cjs --stop-after 6`;
+   assert, by reading each rehearsed run's `argv.json` (or the record's prompt), that the prompt names
+   `<S_rh>/runs/D/<id>/work/<state>.png` and that file exists, and that `fixture.screenshot_path` is `absolute`; close D
+   in the scratch ledger; C end to end the same way with `--stop-after 4` (check the researcher prompt's runtime line
+   points under `<S_rh>/runs/C/<id>/home` if 82-11 has landed); then E as a dry run only (`--dry-run --materialize
+   none`, after closing C) and `ledger82 --fit`. Score D and C, run `lib/guessed-paths.cjs --root <rehearsal R> --batch D`
+   and `--batch C`, and `score.cjs --rules` on what exists. Record per batch what ran, the scan's `files_scanned` per
+   run (0 means fake claude wrote no transcript: guessedPathVerdict must say INCONCLUSIVE there, which the rehearsal
+   checks), and what the fake scenarios could not exercise. Delete the scratch roots after.
 4. Freeze: `node scripts/eval81/prereg.cjs --write --out .aoforge/objectives/82-3-1-0-follow-ups/results --include 'scripts/eval82/**' --include '.aoforge/objectives/82-3-1-0-follow-ups/82-CHECK-RULES.md' --exclude '**/*.test.cjs' --keep 'scripts/eval82/fixtures/*/proofs.test.cjs' --claude-version "<output of claude --version>"`,
    then `--check --manifest .aoforge/objectives/82-3-1-0-follow-ups/results/prereg-manifest.json` exits 0. Commit
    `AOF commit "chore(82-06): freeze the objective 82 harness and rules before any live run" --files .aoforge/objectives/82-3-1-0-follow-ups/results/prereg-manifest.json scripts/eval82/README.md`.
   </action>
   <verify>All scripts/eval82 tests pass; the 82 prereg check prints OK; 81's prereg check prints OK; `rg -n '^## ' .aoforge/objectives/82-3-1-0-follow-ups/82-CHECK-RULES.md` shows the five sections</verify>
-  <done>The rules are written and coded before any spend, every batch has been rehearsed without the API, and the harness is frozen.</done>
+  <done>The rules are written and coded before any spend, D and C have been rehearsed end to end and E as a dry run without the API, and the harness is frozen.</done>
   <recovery>The fake claude cannot produce a D or C structured output shape: rehearse the plumbing with the scenario it has (records and ledger) and test the scorer on hand-built records only; record the gap. A later harness fix (in 82-08) is a post-hoc amendment: test-first, re-freeze with the same command, recorded in 82-CHECK-RULES.md under "Post-hoc".</recovery>
 </task>
 
@@ -270,7 +303,8 @@ architecture and pitfalls rows (recall, fabrications and, if present, item-level
 </validation_gates>
 
 <verification>
-- Topics and checklists frozen; batch C and scorer tested; rules written and coded; rehearsal done; prereg checks OK.
+- Topics and checklists frozen; batch C and scorer tested; rules (incl. guessedPathVerdict) written and coded;
+  D and C rehearsed end to end with D's absolute screenshot paths asserted, E dry-run; prereg checks OK.
 </verification>
 
 <success_criteria>

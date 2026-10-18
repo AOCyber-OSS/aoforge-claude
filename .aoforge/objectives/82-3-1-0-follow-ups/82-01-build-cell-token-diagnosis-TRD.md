@@ -24,7 +24,7 @@ must_haves:
       provides: "the diagnosis and the Fix list 82-07 implements and 82-06 turns into mechanism checks"
   key_links:
     - from: .aoforge/objectives/82-3-1-0-follow-ups/82-DIAGNOSIS.md
-      to: 82-07 Tasks 2 and 3
+      to: 82-07 Tasks 1 and 2
       via: "Fix list rows with disposition FIX"
       pattern: "## Fix list"
     - from: scripts/eval82/lib/attribution.cjs
@@ -245,7 +245,7 @@ Run the test file to GREEN, then commit:
    - `## Fix list` table with columns `id | cause | disposition | change | pinning test | category checked by 82-09 | target count per run | expected tokens per build`.
      Ids: P-1 template hunt, P-2 commit inspect/amend tail, P-3 draft size, P-4 validation/publish calls, P-5 full
      reference reads; E-1 summary template read, E-2 tdd.md read, E-3 duplicate TRD read, E-4 guessed runtime path,
-     E-5 repeated SUMMARY write; X-n for anything else. E-4 is FIX with "done by 82-02 and 82-07 Task 1" as its change.
+     E-5 repeated SUMMARY write; X-n for anything else. E-4 is FIX with "done by 82-02 and 82-11" as its change.
      JUSTIFY rows carry the reason in the change column (a cost that buys correctness, or below 5% of the delta).
    - `## Not diagnosed here` (the quick cell's orchestrator +52% and anything outside SC-1, one line each).
 5. Publish and commit: `AOF doc put objectives/82-3-1-0-follow-ups/82-DIAGNOSIS.md --from <draft path>` then
