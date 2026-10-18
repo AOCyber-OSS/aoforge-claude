@@ -4,9 +4,9 @@
 // Scoring CLI for objective 82's batches (TRD 82-05).
 //
 //   node scripts/eval82/score.cjs --batch D|E|C --root <eval root> --out <objective dir>
-//        [--e81 <81 results/E.json>] [--home-parent <dir>] [--real-home <dir>]
+//        [--e81 <81 results/E.json>] [--c81 <81 results/C.json>] [--home-parent <dir>] [--real-home <dir>]
 //
-// Loads `scripts/eval82/score/<X>.cjs` (C arrives with TRD 82-06), reads `<root>/ledger.json` with objective 81's
+// Loads `scripts/eval82/score/<X>.cjs` (C from TRD 82-06), reads `<root>/ledger.json` with objective 81's
 // frozen loader first (results without spend are never written; a missing ledger exits 1 with nothing written), calls
 // the scorer's `score({root, outDir, now, ...})` and writes under --out:
 //   results/<X>.json  the result + `scored_at` + the spend block (objective 81's score.cjs spendBlock, so 81's
@@ -23,14 +23,14 @@ const { spendBlock } = require('../eval81/score.cjs');
 const { renderBatchTable } = require('../eval81/lib/report.cjs');
 
 const BATCHES = ['C', 'D', 'E'];
-const USAGE = 'usage: node scripts/eval82/score.cjs --batch D|E|C --root <eval root> --out <objective dir> [--e81 <E.json>] [--home-parent <dir>] [--real-home <dir>]';
+const USAGE = 'usage: node scripts/eval82/score.cjs --batch D|E|C --root <eval root> --out <objective dir> [--e81 <E.json>] [--c81 <C.json>] [--home-parent <dir>] [--real-home <dir>]';
 
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 
 class UsageError extends Error {}
 
 function parseArgs(argv) {
-  const takes = { '--batch': 'batch', '--root': 'root', '--out': 'out', '--e81': 'e81Path', '--home-parent': 'homeParent', '--real-home': 'realHome' };
+  const takes = { '--batch': 'batch', '--root': 'root', '--out': 'out', '--e81': 'e81Path', '--c81': 'c81Path', '--home-parent': 'homeParent', '--real-home': 'realHome' };
   const opts = {};
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -76,7 +76,7 @@ async function runBatch(opts, { stdout, now, scorerOpts }) {
 
   const mod = require(scorer);
   const flagOpts = {};
-  for (const k of ['e81Path', 'homeParent', 'realHome']) if (opts[k]) flagOpts[k] = k === 'e81Path' ? path.resolve(opts[k]) : opts[k];
+  for (const k of ['e81Path', 'c81Path', 'homeParent', 'realHome']) if (opts[k]) flagOpts[k] = k.endsWith('81Path') ? path.resolve(opts[k]) : opts[k];
   const result = await mod.score({ root, outDir: out, now, ...flagOpts, ...scorerOpts });
   if (!isObj(result) || result.batch !== batch) throw new Error(`scorer for batch ${batch} returned no batch ${batch} result`);
 
