@@ -63,11 +63,11 @@ Scope: everything v1.5 left open (Known Gaps and tech debt in `milestones/v1.5-M
 
 ### Model efficiency (MEF) and stack content (STK)
 
-- [ ] **MEF-01**: The model tier an agent runs on is the one the profile resolves: the objective's intent `model_profile` binds, every spawn passes a model its init emits, and the UI judge reads the project profile.
-- [ ] **MEF-02**: No spawn loads instructions or templates it cannot use: no `@` lists across the Task boundary, one template per mapper focus and research dimension.
-- [ ] **MEF-03**: Mechanical plan checks run as code (`verify trd-pre`) before the job-checker, which covers only judgment dimensions.
-- [ ] **MEF-04**: Post-TRD bookkeeping, verifier evidence, codebase facts, roadmap coverage and the security grep sweep are aof-tools commands.
-- [ ] **MEF-05**: Tiers are set per focus or dimension where the work differs; the haiku tier is re-pinned after a recorded eval; pass/fail verdicts run at Sonnet or above on every profile.
+- [x] **MEF-01**: The model tier an agent runs on is the one the profile resolves: the objective's intent `model_profile` binds, every spawn passes a model its init emits, and the UI judge reads the project profile.
+- [x] **MEF-02**: No spawn loads instructions or templates it cannot use: no `@` lists across the Task boundary, one template per mapper focus and research dimension.
+- [x] **MEF-03**: Mechanical plan checks run as code (`verify trd-pre`) before the job-checker, which covers only judgment dimensions.
+- [x] **MEF-04**: Post-TRD bookkeeping, verifier evidence, codebase facts, roadmap coverage and the security grep sweep are aof-tools commands.
+- [x] **MEF-05**: Tiers are set per focus or dimension where the work differs; the haiku tier is re-pinned after a recorded eval; pass/fail verdicts run at Sonnet or above on every profile.
 - [ ] **MEF-06**: The debugger and the UI judge start cheap and escalate on a recorded signal; orchestrators act on `ESCALATION REQUESTED`.
 - [ ] **STK-01**: Stack-specific agent procedure (Flutter, Dart, Go, web) is delivered through stack profiles or on-demand references, not resident agent prompts.
 
@@ -124,10 +124,10 @@ Scope: everything v1.5 left open (Known Gaps and tech debt in `milestones/v1.5-M
 | OPS-03 | Objective 74 | Pending |
 | EST-11 | Objective 75 | Not met: see objectives/75-prospective-estimate-retest-and-todo-sweep/75-RETEST-REPORT.md; follow-up todo est-11-follow-up-objective-75 |
 | TODO-01 | Objective 75 (sweep table: objectives/75-prospective-estimate-retest-and-todo-sweep/75-TODO-SWEEP.md) | Complete |
-| MEF-01 | Objective 76 | Pending |
-| MEF-02 | Objective 76 | Pending |
-| MEF-03 | Objective 76 | Pending |
-| MEF-04 | Objective 76 | Pending |
+| MEF-01 | Objective 76 | Complete |
+| MEF-02 | Objective 76 | Complete |
+| MEF-03 | Objective 76 | Complete |
+| MEF-04 | Objective 76 | Complete |
 | MEF-05 | Objective 76 | Complete: the Haiku eval is recorded (objectives/81-haiku-eval-and-model-efficiency-measurement/81-HAIKU-EVAL.md); the pin stays claude-haiku-5-5 |
 | MEF-06 | Objective 76 | Partial: escalation complete (quick 42); start-tier half not met, tiers unchanged (objectives/81-haiku-eval-and-model-efficiency-measurement/81-MEASUREMENT.md, 81-HAIKU-EVAL.md) |
 | STK-01 | Objective 77 | Pending |

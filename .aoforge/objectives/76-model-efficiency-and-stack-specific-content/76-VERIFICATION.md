@@ -2,7 +2,7 @@
 objective: 76-model-efficiency-and-stack-specific-content
 verified: 2026-10-17T00:00:00Z
 status: passed
-score: 7/7 must-haves verified (deferred items 76-06 Haiku eval and 76-08 measurement stay open by design, not failures)
+score: 7/7 must-haves verified at re-verification (SC6 counted on its escalation half); the deferred items were closed by objective 81 (76-06 met; 76-08 measured with SC6's start-tier half not met, MEF-06 partial)
 retroactive: true
 retroactive_note: "Objective 76 landed on main through plain PRs #132/#133/#134 on 2026-10-16, outside the AOForge flow (no TRDs, SUMMARYs or VERIFICATION carried here). Initially verified goal-backward against integrate/3.1.0 at a589d306; re-verified at 9050bd64 after quick 42 (commits cd389f39..1cb50783) closed SC1 and SC6."
 re_verification:
@@ -36,10 +36,10 @@ deferred:
       - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/E.json
       - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-STATIC-PROMPT.md
       - .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/81-HAIKU-EVAL.md
-    note: "Measurement recorded by objective 81 (10/10 runs, all passed; first-turn input -19% executor and verifier, -8% to -9% planner; reported cost -10% quick, +11% build at the median). The SC6 starting-tier half is not met: tiers unchanged. D gives the UI judge a weak endorsement at the bound (proposal P1, the user's decision); the debugger's start tier was not measured."
+    note: "Measurement recorded by objective 81 (10/10 runs, all passed; first-turn input -19% executor and verifier, -8% to -9% planner; reported cost -10% quick, +11% build at the median). The SC6 starting-tier half is not met: tiers unchanged. D gives the UI judge a weak endorsement at the bound (proposal P1, the user's decision); the debugger's start tier was not measured. The user approved P1 on 2026-10-17 as a follow-up todo; not applied."
 notes:
   - kind: requirements_traceability
-    note: "This report now marks MEF-01 and MEF-06 SATISFIED. 76-RETROACTIVE-SUMMARY.md lists only MEF-02..05 in requirements-completed, so `validate requirements --objective 76` (health W065) will flag MEF-01 and MEF-06 until they are added there. REQUIREMENTS.md still shows MEF-01..06 Pending."
+    note: "MEF-01..05 are SATISFIED and listed in 76-RETROACTIVE-SUMMARY.md requirements-completed; MEF-06 is PARTIALLY SATISFIED and not listed. REQUIREMENTS.md: MEF-01..05 Complete, MEF-06 Partial (quick 44)."
   - kind: escalation_alias
     note: "resolve-model ui-evaluator --escalate-from sonnet returns model \"inherit\" (opus tier). The skill passes the tier separately as --judge-tier, so the vision calls use the escalated rung whatever the Task alias; the agent itself runs on the parent model, consistent with how the profile table maps opus elsewhere."
 ---
@@ -61,11 +61,11 @@ notes:
 | 2 | No spawn carries `@` refs across the Task boundary; mapper/researcher load only their own templates | VERIFIED (regression) | Unchanged by quick 42; prior scan evidence stands. |
 | 3 | `verify trd-pre` runs before the job-checker; mechanical failures go straight to revision; checker covers judgment only | VERIFIED (regression) | trd-pre-check.test.cjs passes. |
 | 4 | Post-TRD bookkeeping, verifier evidence, codebase facts, roadmap coverage, security sweep are aof-tools commands agents call once | VERIFIED (regression) | mechanical-verbs, codebase-facts, security-sweep tests pass. |
-| 5 | Tiers per focus/dimension; haiku re-pinned after recorded eval; verdicts at Sonnet+ on every profile | VERIFIED (eval DEFERRED) | model-profiles.test.cjs passes; 76-06 open by design. |
-| 6 | Debugger and UI judge start cheaper and escalate on a recorded signal; ESCALATION REQUESTED re-spawns one rung up | VERIFIED (escalation); start-tier DEFERRED (76-08) | Engine: `flutter-ui-eval.cjs` adds `--judge-tier haiku|sonnet|opus` (live only; rejected otherwise, :762-770), `judgeTier()` override (:534), `judgeModel()` uses the override's pinned id, and `judgeEscalation()` (:561) records `tier_escalation {requested, trigger:'split-votes', from_tier, states}` only for a live run whose expect:pass review states had split samples (`flake: true`); credential/network/refusal reviews, labels runs and expect:fail states never request it. Rollup carries `judge_tier` and `tier_escalation` (:993, :1006). Agent: ui-evaluator.md `escalate` step (:88-92) returns `## ESCALATION REQUESTED` with `Judge tier: {from_tier}` (:113-129); a `<prior_attempt>` re-spawn re-scores with `--judge-tier` and never escalates again; design-review is excluded. Skill: ui-eval/SKILL.md:80-95 calls `resolve-model ui-evaluator --escalate-from "{Judge tier}"`, re-spawns once with the result's model and `--judge-tier {tier}`, stops at `ceiling: true`, `unknown_agent: true` or a second escalation; inline runs follow the same rule. CLI check with the Flutter pack mirrored (`AOFORGE_STACKS_DIR` scratch copy): base `sonnet`; `--escalate-from haiku` -> sonnet, `ceiling:false`; `sonnet` -> opus (`inherit`), `ceiling:false`; `opus` -> `ceiling:true`. Without the pack mirrored, resolve-model reports `unknown_agent: true`, which the skill handles. Tests E1-E4e (flutter-ui-eval.test.cjs) and J1-J6 (flutter-ui-eval-dogfood.test.cjs) pass. Debugger/executor escalation from the prior report stands. |
+| 5 | Tiers per focus/dimension; haiku re-pinned after recorded eval; verdicts at Sonnet+ on every profile | VERIFIED (76-06 eval recorded by objective 81) | model-profiles.test.cjs passes; 76-06 closed 2026-10-17 (81-HAIKU-EVAL.md); the pin stays claude-haiku-5-5. |
+| 6 | Debugger and UI judge start cheaper and escalate on a recorded signal; ESCALATION REQUESTED re-spawns one rung up | VERIFIED (escalation); start-tier half NOT MET (76-08 measured by objective 81; tiers unchanged) | Engine: `flutter-ui-eval.cjs` adds `--judge-tier haiku|sonnet|opus` (live only; rejected otherwise, :762-770), `judgeTier()` override (:534), `judgeModel()` uses the override's pinned id, and `judgeEscalation()` (:561) records `tier_escalation {requested, trigger:'split-votes', from_tier, states}` only for a live run whose expect:pass review states had split samples (`flake: true`); credential/network/refusal reviews, labels runs and expect:fail states never request it. Rollup carries `judge_tier` and `tier_escalation` (:993, :1006). Agent: ui-evaluator.md `escalate` step (:88-92) returns `## ESCALATION REQUESTED` with `Judge tier: {from_tier}` (:113-129); a `<prior_attempt>` re-spawn re-scores with `--judge-tier` and never escalates again; design-review is excluded. Skill: ui-eval/SKILL.md:80-95 calls `resolve-model ui-evaluator --escalate-from "{Judge tier}"`, re-spawns once with the result's model and `--judge-tier {tier}`, stops at `ceiling: true`, `unknown_agent: true` or a second escalation; inline runs follow the same rule. CLI check with the Flutter pack mirrored (`AOFORGE_STACKS_DIR` scratch copy): base `sonnet`; `--escalate-from haiku` -> sonnet, `ceiling:false`; `sonnet` -> opus (`inherit`), `ceiling:false`; `opus` -> `ceiling:true`. Without the pack mirrored, resolve-model reports `unknown_agent: true`, which the skill handles. Tests E1-E4e (flutter-ui-eval.test.cjs) and J1-J6 (flutter-ui-eval-dogfood.test.cjs) pass. Debugger/executor escalation from the prior report stands. |
 | 7 | Flutter/Go/Dart/web procedure is delivered via profiles/packs; non-Flutter executor/verifier/planner prompts carry none | VERIFIED (regression) | stack-neutrality.repo.test.cjs passes; quick 42's judge changes live in the Flutter pack, not core prompts. |
 
-**Score:** 7/7 truths verified (the 76-06 eval and the 76-08 starting-tier measurement remain deferred, not counted as failures)
+**Score:** 7/7 truths verified, SC6 on its escalation half. Objective 81 closed the deferred items: 76-06 met; 76-08's start-tier half not met.
 
 ### Required Artifacts
 
@@ -78,7 +78,7 @@ notes:
 | `plugins/aoforge-stack-flutter/lib/flutter-ui-eval.cjs` | judge reads profile; `--judge-tier`; `tier_escalation` | VERIFIED | |
 | `plugins/aoforge-stack-flutter/agents/ui-evaluator.md` | `## ESCALATION REQUESTED` return | VERIFIED | escalate step + output block |
 | `plugins/aoforge-stack-flutter/skills/ui-eval/SKILL.md` | one-rung re-spawn | VERIFIED | `--escalate-from`, once, ceiling/unknown_agent handled |
-| `.aoforge/objectives/76-…/76-RETROACTIVE-SUMMARY.md` | objective-level requirements record | VERIFIED | lists MEF-02..05; `validate requirements --objective 76` -> no findings at this HEAD |
+| `.aoforge/objectives/76-…/76-RETROACTIVE-SUMMARY.md` | objective-level requirements record | VERIFIED | lists MEF-01..05 (MEF-01 added in f1ae9ca9); `validate requirements --objective 76` -> no findings at this HEAD |
 
 ### Key Link Verification
 
@@ -105,7 +105,7 @@ notes:
 | MEF-05 | per-focus tiers, verdict floor, haiku re-pin after eval | SATISFIED (the 76-06 eval is recorded by objective 81, 2026-10-17; the pin stays claude-haiku-5-5) | SC5; 81-HAIKU-EVAL.md |
 | MEF-06 | debugger and UI judge start cheap and escalate; orchestrators act on ESCALATION REQUESTED | PARTIALLY SATISFIED: escalation done (quick 42); start-tier half not met, tiers unchanged (UI judge: D weakly endorses a Haiku start, approved 2026-10-17 as a follow-up todo with the escalation rate to be measured on real projects, not applied; debugger start tier not measured) | SC6; 81-MEASUREMENT.md; 81-HAIKU-EVAL.md (batch D) |
 
-76-RETROACTIVE-SUMMARY.md `requirements-completed` lists MEF-02..05 only. MEF-01 and MEF-06 must be added there, or the requirements-agreement check (W065) will flag them against this report. REQUIREMENTS.md traceability (all six still Pending) is the orchestrator's call.
+76-RETROACTIVE-SUMMARY.md requirements-completed lists MEF-01..05, the SATISFIED rows. MEF-06 is partial and not listed. REQUIREMENTS.md shows MEF-01..05 Complete and MEF-06 Partial.
 
 ### Anti-Patterns Found
 
@@ -122,11 +122,11 @@ _UI drive skipped: not a UI objective; runtime is the aof-tools CLI. No server s
 
 ### Human Verification Required
 
-None beyond the deferred measurement items (76-06 Haiku eval; 76-08 before/after `context` / `tokens trd` comparison on real runs, which is also where the debugger and UI judge starting tiers would be lowered).
+None. Objective 81 ran the deferred measurement items (81-HAIKU-EVAL.md, 81-MEASUREMENT.md). Lowering the UI judge's starting tier is the approved follow-up todo P1, outside objective 76 (objective 82, planned next, is to apply the approved tier todos); the debugger's start tier was not measured.
 
 ### Gaps Summary
 
-Both gaps from the retroactive verification are closed in code and tests. Execute-objective's gap-closure planner and autonomous checkpoint verifier now spawn with a model the workflow actually supplies. A repo test runs every `init` command named in the scanned files and fails CI on any placeholder with no source; it catches these two defects when they are put back. The UI judge now escalates one rung: the engine records a split-vote `tier_escalation`, ui-evaluator returns `## ESCALATION REQUESTED`, and `/aoforge:ui-eval` re-spawns it once with `--escalate-from` and `--judge-tier`. No regressions in the five truths that already passed. The Haiku eval (76-06) and the starting-tier measurement (76-08) stay open by design.
+Both gaps from the retroactive verification are closed in code and tests. Execute-objective's gap-closure planner and autonomous checkpoint verifier now spawn with a model the workflow actually supplies. A repo test runs every `init` command named in the scanned files and fails CI on any placeholder with no source; it catches these two defects when they are put back. The UI judge now escalates one rung: the engine records a split-vote `tier_escalation`, ui-evaluator returns `## ESCALATION REQUESTED`, and `/aoforge:ui-eval` re-spawns it once with `--escalate-from` and `--judge-tier`. No regressions in the five truths that already passed. The Haiku eval (76-06) and the starting-tier measurement (76-08) were deferred at this re-verification; objective 81 closed both (below).
 
 **Closed by objective 81 (2026-10-17).** Objective 81 ran both deferred items live in a sandbox, under a pre-registered
 decision rule and a $100 cap ($40.05 spent).
@@ -142,11 +142,13 @@ decision rule and a $100 cap ($40.05 spent).
   3.0.0 and 3.1.0 on one fixed workload. All 10 runs passed. The resident prompt is cut by about 19% for the executor
   and verifier. Reported cost is -10% on quick and +11% on build at the median.
 - **SC6's starting-tier half is not met: tiers unchanged.** D weakly endorses a Haiku start for the UI judge, exactly
-  at the 10-point bound with a 40% split rate. That is a proposal for the user's decision in TRD 81-19. The
-  debugger's start tier was not measured by that design. MEF-06 is therefore PARTIALLY SATISFIED.
+  at the 10-point bound with a 40% split rate. The user approved it on 2026-10-17 as follow-up todo P1
+  (2026-10-17-apply-objective-81-tier-proposal-ui-evaluator.md); it is not applied. The debugger's start tier was
+  not measured by that design. MEF-06 is therefore PARTIALLY SATISFIED.
 - No tier was changed by objective 81.
 
 ---
 
 _Verified: 2026-10-17 (re-verification after quick 42)_
 _Verifier: Claude (verifier)_
+_Records updated: 2026-10-17 (quick 44), wording only; no truth re-verified._

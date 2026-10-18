@@ -34,10 +34,12 @@ completed: 2026-10-16
 
 Objective 76 was built on `main` through plain PRs, not through `/aoforge:execute-objective`, so its TRDs and their
 SUMMARYs were never carried into this tree. `76-VERIFICATION.md` (commit 5fccd65d) verified the objective
-goal-backward on `integrate/3.1.0` and marks four requirements SATISFIED. The requirements-agreement check
-(`validate requirements`, health W065) requires every satisfied requirement to appear in some SUMMARY of the
-objective. This file lists exactly those four and nothing else. It is an objective-level record, deliberately keyed
-to no TRD: it ticks no ROADMAP row, and token coverage reports it as unkeyed rather than counting it.
+goal-backward on `integrate/3.1.0` and now marks five requirements SATISFIED: MEF-01 was added after the
+re-verification that followed quick 42 (cccc22d0, f1ae9ca9), and MEF-05's eval half was recorded by objective 81. The
+requirements-agreement check (`validate requirements`, health W065) requires every satisfied requirement to appear in
+some SUMMARY of the objective. This file lists exactly those five and nothing else. It is an objective-level record,
+deliberately keyed to no TRD: it ticks no ROADMAP row, and token coverage reports it as unkeyed rather than counting
+it.
 
 ## Where the work is
 
@@ -56,18 +58,18 @@ The objective was merged into this branch through `afbe19a4` (objective 79).
 
 | Requirement | 76-VERIFICATION status | Listed here |
 |---|---|---|
-| MEF-01 | PARTIAL (SC1: two unsupplied model placeholders in execute-objective.md) | no |
+| MEF-01 | SATISFIED (re-verification after quick 42) | yes |
 | MEF-02 | SATISFIED (SC2) | yes |
 | MEF-03 | SATISFIED (SC3) | yes |
 | MEF-04 | SATISFIED (SC4) | yes |
-| MEF-05 | SATISFIED except the deferred Haiku eval (76-06) | yes |
-| MEF-06 | PARTIAL (debugger done; UI judge not wired; start tiers deferred to 76-08) | no |
+| MEF-05 | SATISFIED (76-06 eval recorded by objective 81, 2026-10-17) | yes |
+| MEF-06 | PARTIALLY SATISFIED (escalation done in quick 42; start-tier half not met, 81-MEASUREMENT.md) | no |
 
-Quick 42 closes the SC1 and SC6 code gaps (MEF-01; the escalation half of MEF-06) and records its own evidence in
-`.aoforge/quick/42-close-objective-76-gaps/`. If a re-verification marks MEF-01 or MEF-06 satisfied, add it here
-(or to that run's SUMMARY in this directory) so the agreement check stays green.
+Quick 42 closed the SC1 and SC6 code gaps (MEF-01; the escalation half of MEF-06) and recorded its own evidence in
+`.aoforge/quick/42-close-objective-76-gaps/`. The re-verification that followed marked MEF-01 SATISFIED, and it is
+listed here. MEF-06 stays partial and is not listed.
 
-## Still open
+## Deferred items, closed by objective 81
 
 Objective 81 recorded both deferred items on 2026-10-17. They are closed by its records, not by this file.
 
@@ -80,11 +82,12 @@ Objective 81 recorded both deferred items on 2026-10-17. They are closed by its 
 - **76-08: measurement closed; starting tiers not met.** `../81-haiku-eval-and-model-efficiency-measurement/81-MEASUREMENT.md`
   compares 3.0.0 and 3.1.0 on one fixed workload: all 10 runs passed, and the resident prompt is about 19% smaller for
   the executor and verifier. The debugger and UI judge starting tiers are unchanged.
-  - The UI judge's Haiku start is a proposal awaiting the user's decision (TRD 81-19).
+  - The UI judge's Haiku start was approved on 2026-10-17 as follow-up todo P1 (`.aoforge/todos/pending/2026-10-17-apply-objective-81-tier-proposal-ui-evaluator.md`); it is not applied.
   - The debugger's start tier was not measured.
 
-What stays open is MEF-06's start-tier half. MEF-06 is PARTIALLY SATISFIED in 76-VERIFICATION.md and so leaves
-`requirements-completed`, which lists the SATISFIED rows only. No tier was changed by objective 81.
+The start-tier half of MEF-06 is the only unmet part. It is carried by that todo, outside objective 76; objective 82,
+planned next, is to apply the approved tier todos. MEF-06 is PARTIALLY SATISFIED in 76-VERIFICATION.md and so stays
+out of `requirements-completed`, which lists the SATISFIED rows only. No tier was changed by objective 81.
 
 ## Deviations from Plan
 
@@ -99,4 +102,4 @@ None as a TRD record: there was no AOForge plan. The work was planned and review
 
 ## Gap closure (2026-10-17)
 
-The first retroactive verification found MEF-01 (two workflow spawns named model placeholders nothing supplied) and MEF-06 (no ui-evaluator escalation) open. Quick 42 (commits cd389f39..1cb50783) closed both; the re-verification passed 7/7. 76-06 (Haiku eval) and 76-08 (measurement, including lowering starting tiers) stay open as deferred items.
+The first retroactive verification found MEF-01 (two workflow spawns named model placeholders nothing supplied) and MEF-06 (no ui-evaluator escalation) open. Quick 42 (commits cd389f39..1cb50783) closed both; the re-verification passed 7/7. 76-06 (Haiku eval) and 76-08 (measurement, including lowering starting tiers) were deferred then; objective 81 closed both on 2026-10-17 (see above).
