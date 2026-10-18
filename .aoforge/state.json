@@ -1,10 +1,10 @@
 {
   "current_objective": "82",
-  "current_job": 8,
+  "current_job": 9,
   "total_jobs": 11,
-  "progress_pct": 99,
+  "progress_pct": 100,
   "status": "executing",
-  "last_activity": "2026-10-17",
+  "last_activity": "2026-10-18",
   "metrics": {
     "jobs_completed": 0,
     "jobs_failed": 0,
@@ -2074,6 +2074,16 @@
     {
       "objective": "82",
       "summary": "82-07: the executor's SUMMARY skeleton keeps comments off value lines, because extractFrontmatter keeps an inline # comment as part of the value",
+      "rationale": null
+    },
+    {
+      "objective": "82",
+      "summary": "82-08: P1 reverted (UI judge back to opus/sonnet/sonnet; broken_missed 1 of 13, rule needs 0), P4 reverted (researcher architecture back to sonnet on budget; item HU-A01 lost), P5 kept (pitfalls recall 39/44 vs 42/44); SC-2 PASS on the 16 researcher runs",
+      "rationale": null
+    },
+    {
+      "objective": "82",
+      "summary": "Objective 82 ledger raised to $25 global and $15 for batch E on the user's word (2026-10-18: Go D, C, E at cap $25); after D and C the total is $4.037729",
       "rationale": null
     }
   ],
