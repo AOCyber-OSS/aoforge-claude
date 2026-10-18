@@ -5225,6 +5225,12 @@ STATE.md stays lean; this file grows over time.
 - [Objective 82]: 82-02: agents take <runtime> from the spawn prompt's AOForge runtime line, else init runtime_root, else echo ~/.claude/aoforge; the rationale is that a supplied absolute path removes the chance to guess a home directory, not that the Read tool fails on ~
 - [Objective 82]: 82-04: tokens trd|coverage|backfill --also-root normalise former roots in tokens-cli (calibrate's rules; calibrator helpers are unexported) and match through the one token-usage.repoMatcher
 - [Objective 82]: 82-04: v1.6 coverage is 111/113 with and without --also-root /Users/justin/dev/devflow-claude; the former root adds 367 executor transcripts and recovers 64-09 and 64-10 in the backfill dry run
+- [Objective 82]: 82-05: the guessed-path scan treats guessed_home (an absolute path under the home's parent) as the defect signal and counts ~ inputs for the record only, since the Read tool expands ~
+- [Objective 82]: 82-05: ledger82 --fit counts build 1 at 0 once b82-r1 is charged, so build 2's fit never double counts it
+- [Objective 82]: 82-05: batch D escalates only the states the engine's scoreState + split + judgeEscalation pick from the three haiku samples; the batch never opens the answer key
+- [Objective 82]: 82-05: D dry run shows per-session caps summing to ## Decisions
+
+2 against D's $4.5 batch cap; the batch cap binds and would refuse the escalation sessions (last in order) if sessions run costlier than the $3.8 estimate: show it at the 82-08 gate
 
 ## Performance Metrics
 
@@ -5485,3 +5491,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 82 P01 | 26min | 3 tasks | 4 files |
 | Objective 82 P02 | 15min | 3 tasks | 15 files |
 | Objective 82 P04 | 16min | 3 tasks | 10 files |
+| Objective 82 P05 | 92min | 3 tasks | 21 files |

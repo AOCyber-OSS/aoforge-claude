@@ -2020,6 +2020,26 @@
       "objective": "82",
       "summary": "82-04: v1.6 coverage is 111/113 with and without --also-root /Users/justin/dev/devflow-claude; the former root adds 367 executor transcripts and recovers 64-09 and 64-10 in the backfill dry run",
       "rationale": null
+    },
+    {
+      "objective": "82",
+      "summary": "82-05: the guessed-path scan treats guessed_home (an absolute path under the home's parent) as the defect signal and counts ~ inputs for the record only, since the Read tool expands ~",
+      "rationale": null
+    },
+    {
+      "objective": "82",
+      "summary": "82-05: ledger82 --fit counts build 1 at 0 once b82-r1 is charged, so build 2's fit never double counts it",
+      "rationale": null
+    },
+    {
+      "objective": "82",
+      "summary": "82-05: batch D escalates only the states the engine's scoreState + split + judgeEscalation pick from the three haiku samples; the batch never opens the answer key",
+      "rationale": null
+    },
+    {
+      "objective": "82",
+      "summary": "82-05: D dry run shows per-session caps summing to $12 against D's $4.5 batch cap; the batch cap binds and would refuse the escalation sessions (last in order) if sessions run costlier than the $3.8 estimate: show it at the 82-08 gate",
+      "rationale": null
     }
   ],
   "blockers": [

@@ -1,0 +1,12 @@
+{
+  "id": "C-res-architecture-h-2",
+  "batch": "C",
+  "status": "ok",
+  "permission_denials": [],
+  "access": {
+    "real": [],
+    "non_escape": [],
+    "impaired": false,
+    "impaired_by": []
+  }
+}
