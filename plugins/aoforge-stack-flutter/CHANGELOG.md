@@ -31,3 +31,10 @@ All notable changes to the aoforge-stack-flutter stack pack. Released with tags 
 - The ui-evaluator agent returns `## ESCALATION REQUESTED` on that signal, and `/aoforge:ui-eval` re-spawns it once,
   one rung up, from `resolve-model ui-evaluator --escalate-from <judge tier>` with `--judge-tier` set. At the ceiling
   it reports the first rollup and the split states stay on human verification. (objective 76 SC6 / MEF-06, quick 42)
+
+### Changed
+
+- The UI judge starts at haiku on balanced and budget (`models.ui-evaluator` opus/haiku/haiku, was opus/sonnet/sonnet);
+  a split vote still escalates one rung, now to sonnet. Objective 81 measured 18/20 against Sonnet's 20/20 (exactly the
+  10-point bound) with a 40% split rate, and objective 82's live check (TRD 82-08) reverts this if escalation does not
+  keep verdicts right at a cost below a Sonnet start. (objective 81 P1, TRD 82-03)

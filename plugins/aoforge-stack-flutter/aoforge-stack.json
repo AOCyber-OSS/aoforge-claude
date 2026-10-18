@@ -31,8 +31,8 @@
   "models": {
     "ui-evaluator": {
       "quality": "opus",
-      "balanced": "sonnet",
-      "budget": "sonnet"
+      "balanced": "haiku",
+      "budget": "haiku"
     }
   },
   "cli": "bin/aof-flutter.cjs",

@@ -524,3 +524,67 @@ describe('quick 35 — project model settings bind', () => {
     } finally { done(dir); }
   });
 });
+
+// Objective 82 (TRD 82-03): the five tier proposals objective 81 put to the user, approved 2026-10-17 as
+// "P3, P2-arch-only, P1, P4, P5" (81-HAIKU-EVAL.md, Decision). P1 lives in the Flutter pack manifest and is pinned in
+// flutter-ui-eval.test.cjs; P2-P5 are the `focus` block here. P2 raises the architecture mapper alone: the shared
+// agents.codebase-mapper row (tech and quality) and the quality profile's mapper tier are not part of the approval.
+// P4 and P5 lower a budget focus to the project-researcher row's own tier, so the "only raise" test above still holds.
+describe('objective 82: approved tier proposals (81 P2-P5)', () => {
+  const os = require('os');
+  const PROFILES = ['quality', 'balanced', 'budget'];
+  const dirs = [];
+  function project(profile) {
+    const dir = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'mp-8203-'));
+    dirs.push(dir);
+    fs.mkdirSync(path.join(dir, '.aoforge'));
+    fs.writeFileSync(path.join(dir, '.aoforge', 'config.json'), JSON.stringify({ model_profile: profile }));
+    return dir;
+  }
+  function run(dir, ...args) {
+    const r = spawnSync(process.execPath, [DF_TOOLS, ...args], { cwd: dir, encoding: 'utf8' });
+    assert.equal(r.status, 0, `${args.join(' ')}: ${r.stderr}`);
+    return JSON.parse(r.stdout);
+  }
+  test.after(() => { for (const d of dirs) fs.rmSync(d, { recursive: true, force: true }); });
+
+  test('init map-codebase: arch and concerns resolve to sonnet, tech and quality to haiku, on balanced and budget', () => {
+    for (const profile of ['balanced', 'budget']) {
+      const m = run(project(profile), 'init', 'map-codebase').mapper_models;
+      assert.deepEqual(m, { tech: 'haiku', arch: 'sonnet', quality: 'haiku', concerns: 'sonnet' }, profile);
+    }
+  });
+
+  test('init new-project and new-milestone: researcher architecture and pitfalls follow opus/sonnet/haiku', () => {
+    const want = { quality: 'inherit', balanced: 'sonnet', budget: 'haiku' };
+    for (const profile of PROFILES) {
+      const dir = project(profile);
+      for (const wf of ['new-project', 'new-milestone']) {
+        const r = run(dir, 'init', wf).researcher_models;
+        assert.equal(r.architecture, want[profile], `${wf} ${profile} architecture`);
+        assert.equal(r.pitfalls, want[profile], `${wf} ${profile} pitfalls`);
+      }
+    }
+  });
+
+  test('resolve-model codebase-mapper --focus arch is sonnet from the focus table on every profile', () => {
+    for (const profile of PROFILES) {
+      const r = run(project(profile), 'resolve-model', 'codebase-mapper', '--focus', 'arch');
+      assert.equal(r.tier, 'sonnet', profile);
+      assert.equal(r.tier_source, 'focus', profile);
+      assert.equal(r.focus, 'arch', profile);
+    }
+  });
+
+  test('table pins: P2 arch, P3 concerns, P4 architecture, P5 pitfalls', () => {
+    assert.deepEqual(profiles.focus['codebase-mapper'].arch, { quality: 'sonnet', balanced: 'sonnet', budget: 'sonnet' });
+    assert.deepEqual(profiles.focus['codebase-mapper'].concerns, { quality: 'sonnet', balanced: 'sonnet', budget: 'sonnet' });
+    assert.deepEqual(profiles.focus['project-researcher'].architecture, { quality: 'opus', balanced: 'sonnet', budget: 'haiku' });
+    assert.deepEqual(profiles.focus['project-researcher'].pitfalls, { quality: 'opus', balanced: 'sonnet', budget: 'haiku' });
+  });
+
+  test('the shared mapper row is untouched and tech and quality get no focus entry (P2 is arch only)', () => {
+    assert.deepEqual(profiles.agents['codebase-mapper'], { quality: 'sonnet', balanced: 'haiku', budget: 'haiku' });
+    assert.deepEqual(Object.keys(profiles.focus['codebase-mapper']).sort(), ['arch', 'concerns']);
+  });
+});

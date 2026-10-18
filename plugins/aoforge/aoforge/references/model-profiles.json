@@ -30,11 +30,12 @@
   },
   "focus": {
     "codebase-mapper": {
-      "concerns":     { "quality": "sonnet", "balanced": "sonnet",  "budget": "haiku"  }
+      "arch":         { "quality": "sonnet", "balanced": "sonnet",  "budget": "sonnet" },
+      "concerns":     { "quality": "sonnet", "balanced": "sonnet",  "budget": "sonnet" }
     },
     "project-researcher": {
-      "pitfalls":     { "quality": "opus",   "balanced": "sonnet",  "budget": "sonnet" },
-      "architecture": { "quality": "opus",   "balanced": "sonnet",  "budget": "sonnet" }
+      "pitfalls":     { "quality": "opus",   "balanced": "sonnet",  "budget": "haiku"  },
+      "architecture": { "quality": "opus",   "balanced": "sonnet",  "budget": "haiku"  }
     }
   },
   "verdict_floor": { "tier": "sonnet", "agents": ["verifier", "job-checker"] }
