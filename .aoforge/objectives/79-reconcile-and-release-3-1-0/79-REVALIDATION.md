@@ -4,9 +4,9 @@ kind: revalidation
 repeats: 79-08
 verdict: PASS
 release_hold: "CHANGELOG [Unreleased] carries 9 entries (quick 40, 41, 42) that ship in v3.1.0 code; decide before 79-09"
-validated_sha: 9a4b09971d8d80a873d13b97c7fef8a06daf1c37
-supersedes_validated_sha: 5d470e241e4c67990bdf07b310b5f9d96b7ddfb5
-date: 2026-10-17
+validated_sha: 7da7485fdb2137ae60422da82b85b5b8ef47e608
+supersedes_validated_sha: 9a4b09971d8d80a873d13b97c7fef8a06daf1c37
+date: 2026-10-18
 ---
 
 # Objective 79: re-validation of `integrate/3.1.0` before the release PR
@@ -132,3 +132,100 @@ Every check ran with HOME and TMPDIR under the session scratchpad.
 | `node scripts/ci-unit-gate.cjs`, local (Node 24.13.1) | Did not finish. `plugins/aoforge/aoforge/bin/lib/watcher-shell.test.cjs` held a `fish` child for over 9 minutes (the known W-3 hang on this machine, as above), so the run was stopped. Not a verdict. |
 | CI's two steps in node:26 Docker as the non-root `node` user (uid 1000) on a copy of the folded working tree: `npm ci`, then `node --test scripts/ci-unit-gate.test.cjs`, then `node scripts/ci-unit-gate.cjs` | node v26.11.1. The self-test passes 88/88 (exit 0). The gate resolves the patterns to 418 test files, with 1 known-failure entry. `tests: 13130 reported 13082 executed (floor 3000) failures: 0 skipped: 48`; `files: 418 selected; 418 attributed`; `runner exit: 0`, 151 s; **`[ci-unit-gate] PASS`**, gate exit 0. These are the same counts as the run above. |
 | `git status --porcelain` after the fold commit | `?? amp` only |
+
+## Re-validation after objective 82 (2026-10-18)
+
+**Every check of TRD 79-08 passes again at VALIDATED_SHA `7da7485fdb2137ae60422da82b85b5b8ef47e608` (verdict
+PASS).** It supersedes `9a4b0997`. TRD 82-10 ran the checks. Every check used HOME and TMPDIR under the session
+scratchpad. Nothing was pushed, tagged or released.
+
+### What landed since `9a4b0997`
+
+`git rev-list --count 9a4b0997..7da7485f` is 197 commits:
+
+| Line of work | Commits |
+|---|---:|
+| The changelog fold and its records (79, above) | 4 |
+| Quick 44 (objective 76 records, MEF-06 partial; eval81 prereg tests symlink-safe) | 4 |
+| Objective 81 (the Haiku eval and model-efficiency measurement: the `scripts/eval81` harness and its records) | 91 |
+| Objective 82 (3.1.0 follow-ups: runtime paths and the guard, the build-cell fixes, tier proposals P1-P5 applied, measured and partly reverted, `tokens --also-root`, the `scripts/eval82` harness, this TRD's docs and records) | 79 |
+| Wave merges | 19 |
+
+`git diff --shortstat 9a4b0997 7da7485f -- . ':!.aoforge'` reports 244 files changed, 39,802 insertions and 345 deletions.
+Nothing under `.github/` changed, and neither did `plugins/aoforge/hooks/hooks.json`, `package.json`,
+`package-lock.json` or any plugin.json of core and the stack packs. The only manifest change is
+`.claude-plugin/marketplace.json`, which gives `eden-ui-web` 1.0.2 (below).
+
+**One fix during the re-validation.** The first full pass ran at `ae88543b` and was green. Then a check of the sibling
+plugins against `v3.0.0` found `eden-ui-web` changed by TRD 82-11, in its frontend-design skill and its brand presets,
+while still at 1.0.1. The 72-18 rule (applied by 79-06 to `eden-ui-flutter`) gives a changed sibling a patch bump.
+Commit `7da7485f` sets `eden-ui-web` to 1.0.2 in its plugin.json and its marketplace entry, and adds one CHANGELOG
+clause. `eden-ui-flutter` was already at 1.0.2 (79-06) and is still unreleased, so its 82-11 change ships in 1.0.2. Every
+check below was then re-run at `7da7485f`. Counts that differ from the `ae88543b` pass are noted.
+
+### Suite and CI gate
+
+| Run | Result |
+|---|---|
+| Full suite, Node 24.13.1, over npm test's four globs | 470 files. `plugins/aoforge/aoforge/bin/lib/watcher-shell.test.cjs` was excluded (W-3, its fish hang on this machine; it runs in the node:26 run below), so 469 ran. tests 13,773 / suites 2,257 / pass 13,746 / **fail 0 / cancelled 0** / skipped 27 / 104.5 s. The `ae88543b` pass had identical counts in 106.0 s. |
+| `node --test scripts/ci-unit-gate.test.cjs` (local) | 88/88 pass |
+| node:26 in Docker as the non-root `node` user (`id -u` 1000), CI's steps after `npm ci`: the gate self-test, then `node scripts/ci-unit-gate.cjs` | node v26.11.1. `npm ci` 0. Self-test 88/88. `patterns resolve to 470 test file(s)`, `known-failure entries: 1`. `tests: 13855 reported 13806 executed (floor 3000) failures: 0 skipped: 49`. `files: 470 selected by the patterns; 470 attributed`. `runner exit: 0`, 168 s. **`[ci-unit-gate] PASS`**, gate exit 0. Identical at `ae88543b`. |
+
+Against the previous addendum this is +725 tests and +52 files: objective 81's and 82's harness tests, plus 82's
+runtime-path, build-cell and `tokens` tests. `.github/known-test-failures.json` is unchanged, with one entry (PW-9).
+No new entry was added.
+
+### Guards (each in its own `node --test` process)
+
+| Guard | tests | pass | fail |
+|---|---:|---:|---:|
+| rename-guard.repo | 25 | 25 | 0 |
+| stack-neutrality.repo | 7 | 7 | 0 |
+| reconcile-guard.repo | 30 | 30 | 0 |
+| context-budget.repo (CLAUDE.md 148 lines / 19,978 chars of 200 / 20,000) | 6 | 6 | 0 |
+| runtime-path-reads.repo (new, objective 82: seven scopes enforced) | 18 | 18 | 0 |
+| build-cell-reads.repo (new, objective 82: one pin per FIX row) | 8 | 8 | 0 |
+| hooks/pre-bash-equivalence | 60 | 60 | 0 |
+| model-placeholders.repo | 8 | 8 | 0 |
+| planning-writes.repo | 11 | 11 | 0 |
+| hooks/planning-writes.audit | 65 | 65 | 0 |
+| builtin-sweep.repo | 17 | 17 | 0 |
+| flag-spec.repo | 14 | 14 | 0 |
+| doc-refs.repo / doc-refs / doc-refs.legacy | 17 / 17 / 5 | all | 0 |
+| requirements-agreement.repo | 2 | 2 | 0 |
+| adopt-skill-contract / adopt-e2e / adopt-migrate-e2e.legacy | 19 / 6 / 21 | all | 0 |
+
+### Health, doctor, changelog
+
+| Surface | Result |
+|---|---|
+| `upgrade --check --raw` | `up to date (v3.1.0)` |
+| `validate health --raw` | `healthy`, no errors, no warnings. I001 x2: 79-09 and 79-10 have no SUMMARY because they have not started. |
+| `validate consistency --raw` | `passed` |
+| `validate requirements --raw` | agrees with VERIFICATION (71 objectives, 51 requirements) |
+| `validate docs --raw` | no documentation advisories |
+| `validate roadmap-coverage --raw` | 41/41 v1 requirements mapped. This failed at the start of 82-10 with `duplicate: MEF-06 -> objectives 76, 82`, because objective 82's Requirements line listed MEF-06. That line now reads `none mapped (...)`, as objective 81's does. MEF-06 stays objective 76's and Partial. |
+| `stack validate` | ok, no errors or warnings |
+| `doctor --json --path <repo>` (read-only, scratch HOME) | `degraded`, 16 ok / 4 warn / 0 error / 1 fixable. runtime-mirror, hooks-registry and model-profiles warn because the scratch HOME has no installed plugin. legacy-runtime-state (fixable) is the same four untracked leftover `.aoforge/` runtime files as before, left for the user's own `doctor --fix`. |
+| `changelog check 3.1.0` | `ok: true, present: true` |
+| Both prereg checks | objective 81: `OK, 86 files match` (70f92eca...); objective 82: `OK, 25 files match` (817bc181...) |
+
+### Release preconditions
+
+| Check | Result |
+|---|---|
+| Installed changelog gate (`~/.claude/plugins/cache/aocyber/aoforge/3.0.0/hooks/changelog-on-tag.js`) | `git tag -a v3.1.0` allowed (no output). The control `v9.9.9` is denied. |
+| Repo hook (`plugins/aoforge/hooks/changelog-on-tag.js`) | `v3.1.0`, `aoforge--v3.1.0`, `aoforge-stack-flutter--v1.0.0` and `aoforge-stack-web--v1.0.0` are allowed. The control `aoforge-stack-web--v9.9.9` is denied. |
+| `scripts/release-tag.cjs` offline (`planTag` + `runRelease` with a fake exec, no git push or gh call) | `v3.1.0`: kind core, alias `aoforge--v3.1.0`, latest. The notes file holds 55,343 chars (572 lines) from `## [3.1.0]`, including `### 3.1.0 follow-ups (objective 82)` and no `## [Unreleased]` or `## [3.0.0]` text. `aoforge--v3.1.0`: core-alias, no exec call. `aoforge-stack-flutter--v1.0.0`: pack, `--latest=false`, 3,161 chars, including the P1 revert and the runtime-path bullet. `aoforge-stack-web--v1.0.0`: pack, `--latest=false`, 1,104 chars (unchanged). |
+| `node --test` of `scripts/ci-unit-gate.test.cjs`, `bin/lib/stack-packs.test.cjs` and `scripts/release-tag.test.cjs` | all pass |
+| Versions | package.json, package-lock (`.version`, `packages[""]`), aoforge plugin.json, and the marketplace top level and its aoforge entry are 3.1.0. The packs aoforge-stack-flutter and aoforge-stack-web are 1.0.0 (plugin.json and marketplace), each depending on `aoforge >=3.1.0`. Each of the 8 marketplace entries equals its plugin.json; `eden-ui-flutter` and `eden-ui-web` are at 1.0.2. |
+| `git ls-files .planning` | empty |
+| Tracked conflict markers (`git grep -e '^<<<<<<< ' -e '^>>>>>>> '`) | none (exit 1) |
+| `node scripts/gen-docs-data.cjs` | Only `generatedAt` differs, so it was restored, not committed. skills 32, agents 12, hooks 24, workflows 39, references 36, templates 31, commands 84. |
+| Fleet STACK.md drafter, `AOFORGE_FLEET_ROOT=/Users/justin/dev`, read-only | 50 tests: 26 pass / 0 fail / 24 skip. The same 9 repos ran and passed. 24 were skipped, each "still uses the pre-rename planning directory", as before. |
+| `git status --porcelain` | `?? amp` only |
+
+**For 79-09:** `git diff --name-only 7da7485f <pushed head>` may list `.aoforge/` paths only. After this addendum,
+82-10's SUMMARY, the state records and objective 82's completion records land under `.aoforge/`. The org cutover freeze
+that blocked 79-09's push (STATE.md blocker; rulesets cutover-freeze-branches and cutover-freeze-tags) is outside this
+re-validation. 79-09 re-checks it before it pushes.
