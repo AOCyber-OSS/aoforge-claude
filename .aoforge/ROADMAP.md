@@ -549,7 +549,19 @@ TRDs:
   3. model-profiles.json / aoforge-stack.json carry P1-P5 exactly as approved (P2 as an arch-only focus override; tech and quality unchanged), tests pin them, docs (model-profiles.md, USER-GUIDE, CHANGELOG 3.1.0) state them with their evidence and caveats; the P1 escalation rate and P4/P5 quality are measured in a live check behind an approval gate, and the five todos are completed through `todo complete` with evidence.
   4. `tokens trd|coverage|backfill` accept `--also-root` (repeatable) with the same matcher as calibrate; tests first; coverage over v1.6 reported with and without it.
   5. Objective 77's requirement rows and Progress row agree with 77-VERIFICATION; `validate health`, `validate requirements`, `validate consistency` stay clean; the full suite passes (watcher-shell's known hang excluded).
-**TRDs**: to be planned
+**TRDs**: 10 plans (5 waves; 82-08 and 82-09 are live, behind approval gates, under a $20 ledger)
+
+TRDs:
+- [ ] 82-01-build-cell-token-diagnosis-TRD.md — (W1, TDD) transcript attribution lib; 82-DIAGNOSIS.md: planner +67% / executor +20% decomposed and attributed from 81's b30/b31 transcripts, Fix list (FIX/JUSTIFY)
+- [ ] 82-02-absolute-runtime-path-agents-and-guard-TRD.md — (W1, TDD) `runtime_root` in every init; runtime-path-reads guard; agents, references and pack agent material use `<runtime>/` with the `<runtime_paths>` block
+- [ ] 82-03-apply-tier-proposals-p1-p5-TRD.md — (W1, TDD) P1 (pack ui-evaluator opus/haiku/haiku), P2 arch-only focus, P3 concerns budget sonnet, P4/P5 budget haiku; pin tests; model-profiles.md and pack changelog with evidence and caveats
+- [ ] 82-04-tokens-also-root-TRD.md — (W1, TDD) `tokens trd|coverage|backfill --also-root` through quick 41's matcher; v1.6 coverage with and without
+- [ ] 82-05-eval82-ledger-and-e-d-batches-TRD.md — (W1, TDD) $20 ledger for the frozen 81 runner; batch E (two 3.1.0 builds) and its scorer; per-state batch D with engine-rule escalation and its scorer; dry runs
+- [ ] 82-06-eval82-c-batch-and-check-rules-TRD.md — (W2, TDD) two real-product research topics and checklists; batch C and scorer; 82-CHECK-RULES.md pre-registered and coded; fake-claude rehearsal; prereg freeze
+- [ ] 82-07-build-cell-fixes-and-spawn-runtime-paths-TRD.md — (W2, TDD) spawn prompts carry `AOForge runtime: {runtime_root}`, guard on every scope; planner and executor FIX rows pinned; offline effect in 82-DIAGNOSIS
+- [ ] 82-08-live-tier-checks-d-and-c-TRD.md — (W3, checkpoint) approve spend, then batches D and C live; 82-TIER-CHECKS.md; P1/P4/P5 kept or reverted by rule
+- [ ] 82-09-live-build-cell-rerun-TRD.md — (W4, checkpoint) approve spend, then two build runs on the fixed tree; 82-MEASUREMENT.md mechanism checks (SC-1) and guessed-path check (SC-2)
+- [ ] 82-10-docs-records-and-revalidation-TRD.md — (W5) CHANGELOG 3.1.0, guides, CLAUDE.md; objective 77 records, MEF-06 from evidence, five todos resolved; 79-08 re-validation as a 79-REVALIDATION addendum
 
 ## Progress
 
