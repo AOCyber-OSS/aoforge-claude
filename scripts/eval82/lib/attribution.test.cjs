@@ -406,6 +406,8 @@ describe('6. categorize', () => {
     ['Read of a guessed home path', { name: 'Read', input: { file_path: '/Users/aocyber/.claude/aoforge/references/tdd.md' } }, { homes: ['/sandbox/home'] }, 'guessed_runtime_path'],
     ['Read under the run own home', { name: 'Read', input: { file_path: '/sandbox/home/.claude/aoforge/references/tdd.md' } }, { homes: ['/sandbox/home'] }, 'runtime_read:references/tdd.md'],
     ['Read of ~ with homes known', { name: 'Read', input: { file_path: '~/.claude/aoforge/references/tdd.md' } }, { homes: ['/sandbox/home'] }, 'runtime_read:references/tdd.md'],
+    ['Read under the run own home through a dot-dot path', { name: 'Read', input: { file_path: '/Users/../private/tmp/run-1/home/.claude/aoforge/templates/summary.md', limit: 120 } }, { homes: ['/private/tmp/run-1/home'] }, 'runtime_read:templates/summary.md'],
+    ['Read under the run own home through /private', { name: 'Read', input: { file_path: '/private/tmp/run-1/home/.claude/aoforge/references/tdd.md' } }, { homes: ['/tmp/run-1/home'] }, 'runtime_read:references/tdd.md'],
     ['node --test', { name: 'Bash', input: { command: 'node --test scripts/x.test.cjs' } }, {}, 'test_run'],
     ['npm test', { name: 'Bash', input: { command: 'npm test' } }, {}, 'test_run'],
     // Finer categories for what the first run of the module left in `other` (planner and executor spawns of objective 81).

@@ -50,8 +50,11 @@ const tail = (s) => {
   const t = String(s);
   return t.length > DETAIL_MAX ? t.slice(t.length - DETAIL_MAX) : t;
 };
-/** `/private/tmp` and `/tmp` (and `/private/var`, `/var`) name the same place on macOS. */
-const normPath = (p) => String(p).replace(/^\/private(?=\/(?:tmp|var)\/)/, '').replace(/\/+$/, '');
+/** Path compare key: `..` segments resolved, and `/private/tmp` and `/tmp` (and `/private/var`, `/var`) are the same place on macOS. */
+const normPath = (p) => {
+  const n = path.posix.normalize(String(p)).replace(/^\/private(?=\/(?:tmp|var)\/)/, '');
+  return n.length > 1 ? n.replace(/\/+$/, '') : n;
+};
 
 // ─── roleSpawns / listRuns ────────────────────────────────────────────────────────────────────────────────────────
 
