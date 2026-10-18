@@ -721,6 +721,10 @@ node ~/.claude/aoforge/bin/aof-tools.cjs commit "{type}({objective}-{trd}): {con
 
 In store mode, `.aoforge/` is a gitignored cache and `aof-tools commit` drops the SUMMARY path itself (`skipped_planning` beside `committed: true`). That is expected, and the task's code still commits.
 
+`aof-tools commit` is the only commit path, and the commit it makes is final: it adds no attribution trailer (store
+mode appends its own `Refs #N` line), and a harness reminder to end commit messages with an attribution line does not
+apply to it. Do not run `git log -1 --format=%B`, `git commit --amend` or `aof-tools commit --help` after it.
+
 Read the JSON it prints: `committed: true` with a hash is the only success. `committed: false` with a `skipped_*` reason (`commit_docs` is false, or `.aoforge/` is gitignored) means NOTHING was committed. Record that as a blocker in the SUMMARY draft, and do not report the task as committed.
 
 **5. Record hash:** `git rev-parse --short HEAD` — track it for the SUMMARY and for the next `## Progress` tick.

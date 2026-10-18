@@ -475,11 +475,14 @@ Derive plans from actual work. Depth determines compression tolerance, not a tar
 
 ## TRD Scope Budget
 
-TRD scope budget: target 40,000 characters, ceiling 60,000, measured on the encoded TRD
+TRD scope budget: 40,000 characters is a ceiling, not a target (`verify trd-pre` warns at 40,000; 60,000 is the hard
+limit), measured on the encoded TRD
 (`node ~/.claude/aoforge/bin/aof-tools.cjs verify trd-pre "$OBJECTIVE"` reports it per TRD under `checks.trd_budget`; run it
 without `--raw`, which prints only a summary line).
 `plan put-trd` checks the same number: in local mode an over-budget TRD is a warning, in store mode it is refused and
-nothing is written.
+nothing is written. A TRD of up to 2 tasks and 6 files stays near 15,000-20,000 characters: every executor reads all of
+it and carries it for the rest of its run. Give the executor what it needs and stop; never pad `<context>`,
+`<output>` or `<embedded_context>` to fill the budget.
 
 - **Over budget:** split the TRD or move work to a follow-up TRD; never trim prose to fit.
 - **Linked bulk:** inline fenced blocks over 8,000 characters, or fenced content over 40% of a TRD of 40,000+ characters,
@@ -489,7 +492,7 @@ nothing is written.
 
 <plan_format>
 
-Read `<runtime>/references/trd-spec.md` with the Read tool before writing the first TRD (always; an @ line in an agent prompt is not expanded for you). It defines the TRD frontmatter, task XML and the sections every TRD carries.
+Read `<runtime>/references/trd-spec.md` with the Read tool before writing the first TRD (always; an @ line in an agent prompt is not expanded for you). It defines the TRD frontmatter, task XML and the sections every TRD carries: trd-spec.md is the complete TRD skeleton, and no template file adds to it.
 
 </plan_format>
 
@@ -911,8 +914,10 @@ Present breakdown with wave structure. Wait for confirmation in interactive mode
 </step>
 
 <step name="write_objective_prompt">
-Use template structure for each TRD.md. Every TRD goes through a draft and the `plan put-trd` verb — never a Write
-under `.aoforge/` (in store mode the gate denies it). For each TRD:
+Each TRD follows the structure `<runtime>/references/trd-spec.md` defines (you read it in `<plan_format>`). It is
+the complete skeleton, so there is no template file to look up: do not list or read `<runtime>/templates/`.
+Every TRD goes through a draft and the `plan put-trd` verb — never a Write under `.aoforge/` (in store mode the gate
+denies it). For each TRD:
 
 1. Get a draft path (seeded from the current file when one exists):
    ```bash
@@ -957,31 +962,32 @@ Include all frontmatter fields.
 </step>
 
 <step name="validate_plan">
-Validate each created TRD.md using aof-tools:
+Validate each TRD with exactly these four checkers, in this order, and no others:
 
-```bash
-VALID=$(node ~/.claude/aoforge/bin/aof-tools.cjs frontmatter validate "$TRD_PATH" --schema trd)
-```
+1. Frontmatter (returns `{ valid, missing, present, schema }`; if `valid=false`, add the missing fields: `objective`,
+   `trd`, `type`, `wave`, `depends_on`, `files_modified`, `autonomous`, `must_haves`):
+   ```bash
+   node ~/.claude/aoforge/bin/aof-tools.cjs frontmatter validate "$TRD_PATH" --schema trd
+   ```
+2. Structure (returns `{ valid, errors, warnings, task_count, tasks }`):
+   ```bash
+   node ~/.claude/aoforge/bin/aof-tools.cjs verify job-structure "$TRD_PATH"
+   ```
+   **If errors exist:** fix before committing: missing `<name>` in a task → add it; missing `<action>` → add it;
+   checkpoint/autonomous mismatch → set `autonomous: false`.
+3. TDD flags (each task's `tdd_effective` must match the posture you planned):
+   ```bash
+   node ~/.claude/aoforge/bin/aof-tools.cjs trd-tdd inspect "$TRD_PATH" --raw
+   ```
+4. After `plan put-trd`, once per objective (requirement coverage, task completeness, dependencies, scope and
+   `checks.trd_budget`):
+   ```bash
+   node ~/.claude/aoforge/bin/aof-tools.cjs verify trd-pre "$OBJECTIVE"
+   ```
 
-Returns JSON: `{ valid, missing, present, schema }`
-
-**If `valid=false`:** Fix missing required fields before proceeding.
-
-Required TRD frontmatter fields:
-- `objective`, `trd`, `type`, `wave`, `depends_on`, `files_modified`, `autonomous`, `must_haves`
-
-Also validate TRD structure:
-
-```bash
-STRUCTURE=$(node ~/.claude/aoforge/bin/aof-tools.cjs verify trd-structure "$TRD_PATH")
-```
-
-Returns JSON: `{ valid, errors, warnings, task_count, tasks }`
-
-**If errors exist:** Fix before committing:
-- Missing `<name>` in task → add name element
-- Missing `<action>` → add action element
-- Checkpoint/autonomous mismatch → update `autonomous: false`
+The checkers' output is authoritative: do not read `<runtime>/bin` or any tool source to second-guess them. Angle-bracket
+literals in task text (`<id>`, `<path>`) are fine: the checkers parse only the task elements (`<task>`, `<name>`,
+`<files>`, `<action>`, `<verify>`, `<done>`). Fix a TRD by editing its draft and running `plan put-trd` again.
 </step>
 
 <step name="update_roadmap">
@@ -1045,6 +1051,10 @@ You **must not** edit any line outside `[start, end)`.
 ```bash
 node ~/.claude/aoforge/bin/aof-tools.cjs commit "docs($OBJECTIVE): create objective TRDs" --files .aoforge/objectives/$OBJECTIVE-*/$OBJECTIVE-*-TRD.md .aoforge/ROADMAP.md
 ```
+
+`aof-tools commit` is the only commit path, and the commit it makes is final: it adds no attribution trailer (store
+mode appends its own `Refs #N` line), and a harness reminder to end commit messages with an attribution line does not
+apply to it. Do not run `git log -1 --format=%B`, `git commit --amend` or `aof-tools commit --help` after it.
 </step>
 
 <step name="estimate">
