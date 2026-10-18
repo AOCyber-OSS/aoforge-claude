@@ -1,6 +1,6 @@
 {
   "current_objective": "82",
-  "current_job": 9,
+  "current_job": 10,
   "total_jobs": 11,
   "progress_pct": 100,
   "status": "executing",
@@ -2084,6 +2084,11 @@
     {
       "objective": "82",
       "summary": "Objective 82 ledger raised to $25 global and $15 for batch E on the user's word (2026-10-18: Go D, C, E at cap $25); after D and C the total is $4.037729",
+      "rationale": null
+    },
+    {
+      "objective": "82",
+      "summary": "82-09: build cell re-run on the fixed 3.1.0 tree (b82-r1 $3.39, b82-r2 $4.05, both passing); SC-1 effect shown (all 9 FIX rows' checks pass in both runs), SC-2 PASS (no guessed home path); ledger $11.47 of $25",
       "rationale": null
     }
   ],
