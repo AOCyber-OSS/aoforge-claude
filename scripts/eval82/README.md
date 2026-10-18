@@ -8,7 +8,10 @@ classification, tripwire) through its documented extension points, and adds only
 - the **transcript scan for guessed paths** (`lib/guessed-paths.cjs`, SC-2);
 - **batch E**: objective 81's build cell re-run on the 3.1.0 tree (SC-1), and its scorer;
 - **batch D**: the per-state UI-judge escalation check for proposal P1 (SC-3), and its scorer;
-- batch C (researcher) and the pre-registered rules follow in TRD 82-06.
+- **batch C**: the researcher follow-up measurement for proposals P4 and P5 on two new topics (SC-3), and its scorer
+  (TRD 82-06);
+- **the pre-registered rules** as code (`check-rules.cjs`, 82-CHECK-RULES.md) and the freeze of this directory and
+  the rules by sha256 (TRD 82-06).
 
 **Never edit anything under `scripts/eval81/`.** It is pre-registered: from the repository root,
 `node scripts/eval81/prereg.cjs --check --manifest .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/prereg-manifest.json`
@@ -31,9 +34,17 @@ EVAL82_SANDBOX_ROOT=<S> node scripts/eval81/run.cjs --batch D --root <R82> --tok
 # 3. Score (writes results/<X>.json, results/<X>.md and, for E, 82-MEASUREMENT.md under --out)
 node scripts/eval82/score.cjs --batch E --root <R82> --out .aoforge/objectives/82-3-1-0-follow-ups
 node scripts/eval82/score.cjs --batch D --root <R82> --out .aoforge/objectives/82-3-1-0-follow-ups
+node scripts/eval82/score.cjs --batch C --root <R82> --out .aoforge/objectives/82-3-1-0-follow-ups [--c81 <81 C.json>]
 
-# 4. The guessed-path scan of any batch's recorded runs
+# 4. The pre-registered verdicts for P1, P4, P5 and SC-2 (researcher runs): <out>/82-TIER-CHECKS.md
+node scripts/eval82/score.cjs --rules --root <R82> --out .aoforge/objectives/82-3-1-0-follow-ups
+
+# 5. The guessed-path scan of any batch's recorded runs
 node scripts/eval82/lib/guessed-paths.cjs --root <R82> --batch D --raw
+
+# 6. Before any spend: both pre-registrations unchanged
+node scripts/eval81/prereg.cjs --check --manifest .aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/prereg-manifest.json
+node scripts/eval81/prereg.cjs --check --manifest .aoforge/objectives/82-3-1-0-follow-ups/results/prereg-manifest.json
 ```
 
 `<S>` is an opaque sandbox root such as `/private/tmp/claude-501/e82-<16 hex>` holding `trees.json` from
@@ -110,6 +121,60 @@ fires and what it costs, judging each state the way the engine's `--judge live` 
   incomplete, listed and left out of that arm's rates. Cost: Haiku start = charged haiku + escalation sessions;
   Sonnet start = charged sonnet sessions + an **estimate** of its own opus escalations (those states' sonnet session
   tokens priced at opus rates from `references/model-rates.json`). Only the scorer opens the answer key.
+
+## Batch C (`batches/C.cjs`, `score/C.cjs`)
+
+Proposals P4 and P5 move the budget profile's researcher architecture and pitfalls foci to haiku "with a follow-up
+measurement ... revert if Haiku misses findings Sonnet makes". Batch C measures that on two new topics drawn from
+real AOCyber products; objective 81's topic (notesearch) is the third, already measured, and is carried as recorded
+context only.
+
+- **Topics and answer key** (`fixtures/C/`): `topic-gateway.md` (modelgate, an LLM gateway in Go) and `topic-hub.md`
+  (devhub, a Flutter macOS hub for a local daemon), each with the three headings objective 81's topic file has;
+  `checklists-82.json` holds 11-12 architecture and 11-12 pitfalls items per topic, each with 2-4 `accept_any`
+  phrasings and a named source, written before any run. `proofs.test.cjs` holds them to that shape (and to no version
+  numbers).
+- **Researcher runs**: 16, `C82-res-<topic>-<dim>-<h|s>-<k>` (repeat 1 of every topic x dimension before repeat 2, the
+  models alternating within a pair as in 81), agent `aoforge:project-researcher`, plugin 3.1.0, caps haiku $0.3 and
+  sonnet $0.6, 25 minutes. The prompt is new-project.md's researcher `Task(prompt=...)` **from the tree under test**
+  (`trees['3.1.0'].path`), extracted and filled with objective 81's own functions.
+- **Runtime line** (`AOForge runtime: {runtime_root}`, added to spawns by TRD 82-11): with `EVAL82_SANDBOX_ROOT=<S>`
+  every `{runtime_root}` becomes the run's own `<S>/runs/C/<id>/home/.claude/aoforge` (S resolved exactly as batch D
+  resolves it); without it the line is removed and any other `{runtime_root}` becomes production's fallback
+  `~/.claude/aoforge`; a tree without the placeholder is used as it is. `fixture.runtime_line` records which
+  (`filled`, `removed`, `absent`) in every record.
+- **Grader runs**: `C82-grade-<researcher id>` for each researcher record that is ok, ran its model and collected a
+  document (planned from the next runner invocation on): sonnet, tools off, objective 81's grader prompt and schema,
+  the topic x dimension items (source shown as `basis`), cap $0.25, 5 minutes.
+- **Scorer**: per topic x dimension x model and pooled over the new topics, recall (found / items over graded runs)
+  with Wilson intervals, grader fabrications per run, the item matrix (Sonnet and Haiku found-in counts per item),
+  cost per run, and per researcher run the transcript scan (`tilde`, `guessed_home`) beside the runner's recorded
+  classes; objective 81's architecture and pitfalls rows under `recorded_81` (aggregate only: 81's C.json holds no
+  item-level verdicts).
+
+## The pre-registered rules (`check-rules.cjs`, 82-CHECK-RULES.md)
+
+`.aoforge/objectives/82-3-1-0-follow-ups/82-CHECK-RULES.md` fixes, before any spend, what every live number means:
+P1's keep/revert rule (section 1, batch D), P4 and P5 per dimension (section 2, batch C), the build-cell mechanism
+checks for SC-1 (section 3, batch E, from 82-DIAGNOSIS.md's FIX rows as applied), SC-2's guessed-path rule (section 4)
+and the spend rules (section 5). `check-rules.cjs` implements them as pure functions: `p1Verdict`,
+`researcherVerdict`, `fixListAsApplied` + `mechanismChecks` (input per run: `attributionForRun`, i.e. attribution.cjs
+`summarizeRole(..., {calls: true})` for the planner and executor), `guessedPathVerdict` and `renderTierChecks`.
+Inconclusive data is a REVERT for P1, P4 and P5 and "not shown" for SC-1 and SC-2, never a pass.
+
+## The freeze
+
+`scripts/eval82/**` (unit tests excepted, the batch C proofs kept) and 82-CHECK-RULES.md are frozen by sha256 in
+`.aoforge/objectives/82-3-1-0-follow-ups/results/prereg-manifest.json`, written from the repository root with:
+
+```
+node scripts/eval81/prereg.cjs --write --out .aoforge/objectives/82-3-1-0-follow-ups/results \
+  --include 'scripts/eval82/**' --include '.aoforge/objectives/82-3-1-0-follow-ups/82-CHECK-RULES.md' \
+  --exclude '**/*.test.cjs' --keep 'scripts/eval82/fixtures/*/proofs.test.cjs' --claude-version "<claude --version>"
+```
+
+A harness defect found during a live run is fixed test-first, re-frozen with the same command and recorded under
+"Post-hoc" in 82-CHECK-RULES.md.
 
 ## Guessed runtime paths (`lib/guessed-paths.cjs`)
 

@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "created_at": "2026-10-18T03:20:17.407Z",
+  "head": "0648a05d41bae4c8d3c4a569056e5170bfd3a317",
+  "trees": null,
+  "claude_version": "2.1.302 (Claude Code)",
+  "calibration_sha256": null,
+  "projection": null,
+  "command": "node scripts/eval81/prereg.cjs --write --out .aoforge/objectives/82-3-1-0-follow-ups/results --include 'scripts/eval82/**' --include .aoforge/objectives/82-3-1-0-follow-ups/82-CHECK-RULES.md --exclude '**/*.test.cjs' --keep 'scripts/eval82/fixtures/*/proofs.test.cjs' --claude-version '2.1.302 (Claude Code)'",
+  "argv": [
+    "--write",
+    "--out",
+    ".aoforge/objectives/82-3-1-0-follow-ups/results",
+    "--include",
+    "scripts/eval82/**",
+    "--include",
+    ".aoforge/objectives/82-3-1-0-follow-ups/82-CHECK-RULES.md",
+    "--exclude",
+    "**/*.test.cjs",
+    "--keep",
+    "scripts/eval82/fixtures/*/proofs.test.cjs",
+    "--claude-version",
+    "2.1.302 (Claude Code)"
+  ],
+  "includes": [
+    "scripts/eval82/**",
+    ".aoforge/objectives/82-3-1-0-follow-ups/82-CHECK-RULES.md"
+  ],
+  "excludes": [
+    "**/*.test.cjs"
+  ],
+  "keep": [
+    "scripts/eval82/fixtures/*/proofs.test.cjs"
+  ],
+  "extras": [],
+  "files": {
+    ".aoforge/objectives/82-3-1-0-follow-ups/82-CHECK-RULES.md": "8a28860abe3cd1240d8e49bd8be01e3ca6f9818ee28d7d88ee3c99a15ec20074",
+    "scripts/eval82/README.md": "bda5fd81ec76220ebc5ada56775e4a4531c39b14891178ba21e867cf193b5956",
+    "scripts/eval82/__fixtures__/attribution-transcripts.cjs": "6c4bec500a2321ec7115c1557112ed9182e5866d91f40ce23f55782abfa36dff",
+    "scripts/eval82/__fixtures__/records.cjs": "2031d3a5a8e5a33f59d7914462b6b1e545f83b77a4e6326f878ce9dc85d0bf9c",
+    "scripts/eval82/__fixtures__/runs-81/C-res-architecture-h-2/record.json": "9eabec4c92362deb705b18aa2d3482b8b6f420ce7acc6705914e84d19357d302",
+    "scripts/eval82/__fixtures__/runs-81/C-res-architecture-h-2/transcripts/k/93528d33-6a5f-4a9c-b694-540cf9d263f8.jsonl": "f6f9f4d322dbc9cb792963de0a29db79792788a4443185136e5c9de3cb727a91",
+    "scripts/eval82/__fixtures__/runs-81/b31-r1/record.json": "a0842709df4bd6714ed252ffa352d9dda887aa32ded33d32b934212e23e969f6",
+    "scripts/eval82/__fixtures__/runs-81/b31-r1/transcripts/k/4b158d94-e0c8-4b1f-be22-e73aa2bd1abd/subagents/agent-ac83e57273d9fe877.jsonl": "9628f31005ebe5d05604ce50758748059c3132ed7c3cfb01d1a2f8e862eddbe3",
+    "scripts/eval82/__fixtures__/runs-81/b31-r2/record.json": "020830b6b82da93e0f57e2b6c2f6848971d651fe9059f10c2b0c9b5c1084d725",
+    "scripts/eval82/__fixtures__/runs-81/b31-r2/transcripts/k/12bb646d-4413-4cd6-96d9-376068a7bf15/subagents/agent-a90723f46bd8738db.jsonl": "8c99391eeec9869890fe28013ae9cf2449eba21d41a544451fc73a86a2ce5989",
+    "scripts/eval82/batches/C.cjs": "31940fc4d0db4619e9fea9eecd5fe092c68ff446101f76a537c27a4e42e4bfa6",
+    "scripts/eval82/batches/D.cjs": "606e603f1fdd8e0bcee4e415edb47cc2c91fbec037b91d9add85a895289515e1",
+    "scripts/eval82/batches/E.cjs": "13eec0eb678a4efcd0d73790c1f3b5a09a89063fdcec19770a4d22a9fa052169",
+    "scripts/eval82/check-rules.cjs": "2d024412cb353d96665325042ffd003d422a69c2fc31c9e8cf94cdd58dfe1f9c",
+    "scripts/eval82/fixtures/C/checklists-82.json": "7dfaa1bbeae2064916544e90e3bf5546874d3cce77cfe2ec369a2b0bef29c52d",
+    "scripts/eval82/fixtures/C/proofs.test.cjs": "1db79f656f4d851918acad27a7991418b8270f98b0ef97c197331891e004268c",
+    "scripts/eval82/fixtures/C/topic-gateway.md": "8a1cc5a5dd459bd709636f0492bb37ac29546d50004ee4782d4bcf052be5c7de",
+    "scripts/eval82/fixtures/C/topic-hub.md": "ce7e395161f1d1beb01a836f1a748b9f855c1eb0f586ff137f5957f15ae122cf",
+    "scripts/eval82/ledger82.cjs": "4d2f040c7a80ecd401d5195a163689551773e5506f2d0573bc990c4d9a977b78",
+    "scripts/eval82/lib/attribution.cjs": "963eb911a3e400a5dc091e587b811fd421378087f442b0e7ba5a268802a2e58d",
+    "scripts/eval82/lib/guessed-paths.cjs": "9e28bec763aa89f1604f7b047afd48b5781be3f76b2e61b7b215f50f3b436e90",
+    "scripts/eval82/score.cjs": "25dcc3d79acf5a9c5e69f32ffc1d25e53eb91c9c9ff75b37be8f236cdbf14713",
+    "scripts/eval82/score/C.cjs": "273ee36d816ba1ae4801754f313b0c010ea034d6d2659bb345d4e05395a42e06",
+    "scripts/eval82/score/D.cjs": "1a23e1477906e1aa25f3891837f5b8998d1bf54ff3dc1d0a61d3469608a6bfff",
+    "scripts/eval82/score/E.cjs": "da01afe158841e3779fb8d281e43334fc6aba65ba5b517b8edf3936e7b68b87f"
+  }
+}
