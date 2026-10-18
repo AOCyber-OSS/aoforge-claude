@@ -59,10 +59,10 @@ function writeRunDir(root, batch, id, { record, spawns, lines, key = PROJECT_KEY
 }
 
 /** One assistant transcript row carrying the given tool_use blocks ([{id, name, input}]). */
-function toolUseRow(blocks, { agentId = null, msgId = 'msg_hand_1' } = {}) {
+function toolUseRow(blocks, { agentId = null, msgId = 'msg_hand_1', at = '2026-10-18T10:00:00.000Z' } = {}) {
   const row = {
     type: 'assistant',
-    timestamp: '2026-10-18T10:00:00.000Z',
+    timestamp: at,
     sessionId: SESSION,
     uuid: `${msgId}-row`,
     message: {
@@ -119,4 +119,124 @@ function ledgerEntry({ id, batch, role = null, status = 'ok', cap = null, charge
   };
 }
 
-module.exports = { runRecord, writeRunDir, toolUseRow, apiBlobRow, toolResultRow, ledgerEntry, SESSION, PROJECT_KEY };
+// ─── Batch E (test list 12-14): two new build runs and a minimal objective-81 E.json ───────────────────────────
+// Each spawn has one message with no fresh input and no cache read, so at objective 81's hand-built RATES
+// (scripts/eval81/__fixtures__/transcripts.cjs: opus 5m write 6.25, output 25; sonnet 2.5 and 10 per million):
+// first-turn input = cache writes = cc, total tokens = cc + out, cost = (cc x write + out x output) / 1e6, and wall
+// seconds = end - start.
+
+const OPUS = 'claude-opus-5-5';
+const SONNET = 'claude-sonnet-5-5';
+const T = (hms) => `2026-10-18T${hms}.000Z`;
+
+function buildSpawn(agent, agentType, model, cc, out, start, end, extra) {
+  const spec = {
+    agent,
+    model,
+    start: T(start),
+    end: T(end),
+    messages: [{ id: `${agent || 'main'}-${start}`, at: T(start), input: 0, cc, cr: 0, out }],
+  };
+  if (agent) spec.meta = { agentType, description: agentType };
+  if (extra) spec.extra = extra;
+  return spec;
+}
+
+//   b82-r1  orchestrator 40000/1000 1200 s $0.275 | planner 50000/2000 240 s $0.3625 | job-checker 20000/500 60 s $0.055
+//           executor 30000/3000 300 s $0.105 and 26000/2000 240 s $0.085 | verifier 18000/600 120 s $0.051
+//           total tokens 193100, priced $0.9335
+//   b82-r2  orchestrator 44000/1000 900 s $0.3 | planner 54000/2000 180 s $0.3875 | job-checker 22000/500 40 s $0.06
+//           executor 34000/3000 300 s $0.115 | verifier 20000/600 120 s $0.056; total tokens 181100, priced $0.9185
+const E82_SPAWNS = {
+  'b82-r1': [
+    buildSpawn(null, null, OPUS, 40000, 1000, '10:00:00', '10:20:00'),
+    buildSpawn('p1', 'aoforge:planner', OPUS, 50000, 2000, '10:00:10', '10:04:10'),
+    buildSpawn('j1', 'aoforge:job-checker', SONNET, 20000, 500, '10:04:20', '10:05:20'),
+    buildSpawn('x1', 'aoforge:executor', SONNET, 30000, 3000, '10:05:30', '10:10:30'),
+    buildSpawn('x2', 'aoforge:executor', SONNET, 26000, 2000, '10:10:40', '10:14:40'),
+    buildSpawn('v1', 'aoforge:verifier', SONNET, 18000, 600, '10:15:00', '10:17:00'),
+  ],
+  'b82-r2': [
+    buildSpawn(null, null, OPUS, 44000, 1000, '11:00:00', '11:15:00'),
+    buildSpawn('q1', 'aoforge:planner', OPUS, 54000, 2000, '11:00:10', '11:03:10'),
+    buildSpawn('k1', 'aoforge:job-checker', SONNET, 22000, 500, '11:03:20', '11:04:00'),
+    buildSpawn('y1', 'aoforge:executor', SONNET, 34000, 3000, '11:04:10', '11:09:10'),
+    buildSpawn('w1', 'aoforge:verifier', SONNET, 20000, 600, '11:09:20', '11:11:20'),
+  ],
+};
+
+/** A collect output (81's E collect shape). */
+function buildOutputs({ pass = true, testsPass = 27, verification = 'passed', trds = 2, summaries = 2 } = {}) {
+  return {
+    acceptance: { pass, checks: [] },
+    tests: { ok: pass, exit: pass ? 0 : 1, tests: testsPass, pass: testsPass, fail: 0, timed_out: false },
+    verification_status: verification,
+    trd_count: trds,
+    summaries,
+    git_log_subjects: ['chore: scaffold notekit with add and list', 'test: cover the store and the add and list commands', 'docs: plan the tags milestone', 'chore(aoforge): upgrade project to v3.1.0'],
+  };
+}
+
+const m = (n, median, mean) => ({ n, median, mean, min: median, max: median });
+
+/** A per-role build cell of objective 81's E.json (the fields the 82 scorer reads). */
+function roleCell({ spawns = 2, runs = 2, fti, total, cw, cost, wall }) {
+  return {
+    spawns,
+    runs,
+    unreadable: 0,
+    first_turn_input: m(spawns, fti, fti),
+    total_tokens: m(spawns, total, total),
+    cache_writes: m(spawns, cw, cw),
+    cost_usd: m(spawns, cost, cost),
+    wall_s: m(spawns, wall, wall),
+    models: [],
+  };
+}
+
+/**
+ * e81Json({runs, perRole, claudeVersion}) -> a minimal objective-81 results/E.json: `runs[]` rows and
+ * `per_role[version].build[role]` cells. Default per-role build cells (hand-picked round numbers):
+ *   3.0.0  orchestrator 38000/600000/48000/$0.6/900 s, planner 40000/1200000/60000/$0.25/150 s,
+ *          job-checker 18000/300000/20000/$0.05/50 s, executor 28000/800000/40000/$0.1/250 s,
+ *          verifier 17000/400000/20000/$0.05/100 s
+ *   3.1.0  orchestrator 37000, planner 50000, job-checker 21000, executor 29000, verifier 18000 first-turn input;
+ *          planner total 2000000, cost $0.4
+ */
+function e81Json({ runs, perRole, claudeVersion } = {}) {
+  const defaults = {
+    '3.0.0': {
+      orchestrator: roleCell({ fti: 38000, total: 600000, cw: 48000, cost: 0.6, wall: 900 }),
+      planner: roleCell({ fti: 40000, total: 1200000, cw: 60000, cost: 0.25, wall: 150 }),
+      'job-checker': roleCell({ fti: 18000, total: 300000, cw: 20000, cost: 0.05, wall: 50 }),
+      executor: roleCell({ spawns: 3, fti: 28000, total: 800000, cw: 40000, cost: 0.1, wall: 250 }),
+      verifier: roleCell({ spawns: 4, fti: 17000, total: 400000, cw: 20000, cost: 0.05, wall: 100 }),
+    },
+    '3.1.0': {
+      orchestrator: roleCell({ fti: 37000, total: 600000, cw: 47000, cost: 0.62, wall: 940 }),
+      planner: roleCell({ fti: 50000, total: 2000000, cw: 100000, cost: 0.4, wall: 300 }),
+      'job-checker': roleCell({ fti: 21000, total: 350000, cw: 22000, cost: 0.06, wall: 60 }),
+      executor: roleCell({ spawns: 3, fti: 29000, total: 900000, cw: 45000, cost: 0.12, wall: 280 }),
+      verifier: roleCell({ spawns: 3, fti: 18000, total: 420000, cw: 21000, cost: 0.055, wall: 110 }),
+    },
+  };
+  const pr = perRole || defaults;
+  const out = {
+    batch: 'E',
+    session_model: 'opus',
+    profile: 'balanced',
+    runs: runs || [
+      { id: 'b31-r1', version: '3.1.0', workflow: 'build', status: 'ok', cost_usd: 5.09, charged_usd: 5.09, first_turn_input: 37967, total_tokens: 10856720, wall_s: 1110, acceptance: true, tests_ok: true, verification_status: 'passed', trd_count: 2, summaries: 2 },
+      { id: 'b30-r1', version: '3.0.0', workflow: 'build', status: 'ok', cost_usd: 4.9, charged_usd: 4.9, first_turn_input: 39418, total_tokens: 9483357, wall_s: 957, acceptance: true, tests_ok: true, verification_status: 'passed', trd_count: 2, summaries: 2 },
+      { id: 'q31-r1', version: '3.1.0', workflow: 'quick', status: 'ok', cost_usd: 1.78, charged_usd: 1.78, first_turn_input: 33637, total_tokens: 2388584, wall_s: 345, acceptance: true, tests_ok: true, verification_status: null, trd_count: 1, summaries: 1 },
+    ],
+    per_role: Object.fromEntries(Object.entries(pr).map(([v, roles]) => [v, { quick: {}, build: roles }])),
+  };
+  if (claudeVersion !== undefined) out.claude_version = claudeVersion;
+  return out;
+}
+
+module.exports = {
+  runRecord, writeRunDir, toolUseRow, apiBlobRow, toolResultRow, ledgerEntry, SESSION, PROJECT_KEY,
+  OPUS, SONNET, T, buildSpawn, E82_SPAWNS, buildOutputs, roleCell, e81Json,
+};
