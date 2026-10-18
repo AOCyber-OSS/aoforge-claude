@@ -1,6 +1,6 @@
 {
   "current_objective": "82",
-  "current_job": 5,
+  "current_job": 6,
   "total_jobs": 11,
   "progress_pct": 99,
   "status": "executing",
@@ -2039,6 +2039,21 @@
     {
       "objective": "82",
       "summary": "82-05: D dry run shows per-session caps summing to $12 against D's $4.5 batch cap; the batch cap binds and would refuse the escalation sessions (last in order) if sessions run costlier than the $3.8 estimate: show it at the 82-08 gate",
+      "rationale": null
+    },
+    {
+      "objective": "82",
+      "summary": "SC-2 guessed-path verdict fails only on guessed absolute home paths (scanned guessed_home) and recorded real/guessed_nonexistent; tilde and tilde_denied are counted, not deciding; FAIL outranks an unscanned run (82-06)",
+      "rationale": null
+    },
+    {
+      "objective": "82",
+      "summary": "Each FIX row of 82-DIAGNOSIS.md has a pre-registered machine check (P-2 executor bound: commit_inspect <= 3, commit tool_investigation <= 1); an unmeasurable check fails; ## Fix applied decides by the first FIX/JUSTIFY word on the row's line (82-06)",
+      "rationale": null
+    },
+    {
+      "objective": "82",
+      "summary": "Objective 82 harness and 82-CHECK-RULES.md frozen before any live run: results/prereg-manifest.json sha256 817bc181..., 25 files (82-06)",
       "rationale": null
     }
   ],

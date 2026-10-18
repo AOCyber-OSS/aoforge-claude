@@ -557,7 +557,7 @@ TRDs:
 - [x] 82-03-apply-tier-proposals-p1-p5-TRD.md — (W1, TDD) P1 (pack ui-evaluator opus/haiku/haiku), P2 arch-only focus, P3 concerns budget sonnet, P4/P5 budget haiku; pin tests; model-profiles.md and pack changelog with evidence and caveats
 - [x] 82-04-tokens-also-root-TRD.md — (W1, TDD) `tokens trd|coverage|backfill --also-root` through quick 41's matcher; v1.6 coverage with and without
 - [x] 82-05-eval82-ledger-and-e-d-batches-TRD.md — (W1, TDD) $20 ledger for the frozen 81 runner with `--fit` (build-2 fit) and `--raise`; transcript scan for `~` and guessed-home reads, proven on 81's recorded runs; batch E (two 3.1.0 builds) and its scorer; per-state batch D (absolute screenshot path from `EVAL82_SANDBOX_ROOT`, engine-rule escalation) and its scorer; D dry run
-- [ ] 82-06-eval82-c-batch-and-check-rules-TRD.md — (W2, TDD) two real-product research topics and checklists; batch C and scorer (with the guessed-path scan); 82-CHECK-RULES.md pre-registered and coded (incl. SC-2's guessed-path verdict); fake-claude rehearsal of D and C, E dry run; prereg freeze
+- [x] 82-06-eval82-c-batch-and-check-rules-TRD.md — (W2, TDD) two real-product research topics and checklists; batch C and scorer (with the guessed-path scan); 82-CHECK-RULES.md pre-registered and coded (incl. SC-2's guessed-path verdict); fake-claude rehearsal of D and C, E dry run; prereg freeze
 - [ ] 82-07-build-cell-fixes-and-spawn-runtime-paths-TRD.md — (W3, TDD) planner and executor FIX rows pinned; offline effect in 82-DIAGNOSIS `## Fix applied` (the spawn runtime paths moved to 82-11)
 - [ ] 82-08-live-tier-checks-d-and-c-TRD.md — (W3, checkpoint) approve spend with the build-2 fit shown and a raise to $25 (E $15) offered, then batches D and C live; 82-TIER-CHECKS.md; P1/P4/P5 kept or reverted by rule
 - [ ] 82-09-live-build-cell-rerun-TRD.md — (W4, checkpoint) approve spend with the fit on actual D/C spend, then two build runs on the fixed tree; 82-MEASUREMENT.md mechanism checks (SC-1) and the transcript-scan guessed-path verdict (SC-2)
@@ -591,4 +591,4 @@ TRDs:
 | 79. Reconcile and release 3.1.0 | v1.6 | 8/10 | In Progress | - |
 | 80. Adopt migrates legacy projects | v1.6 | 9/9 | Complete | 2026-10-17 |
 | 81. Haiku eval and model-efficiency measurement | v1.6 | 19/19 | Complete | 2026-10-17 |
-| 82. 3.1.0 follow-ups | v1.6 | 5/11 | In Progress | - |
+| 82. 3.1.0 follow-ups | v1.6 | 6/11 | In Progress | - |

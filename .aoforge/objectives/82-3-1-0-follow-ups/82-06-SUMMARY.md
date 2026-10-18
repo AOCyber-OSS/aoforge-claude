@@ -63,8 +63,14 @@ verification:
   tdd_evidence: true
   test_pairing: true
 
-duration: 31min
+duration: 32min
 completed: 2026-10-18
+tokens_input: 42816877
+tokens_output: 219792
+tokens_cache_read: 42384873
+tokens_cache_write: 431716
+token_model: "claude-opus-5-5"
+tokens_source: "live"
 ---
 
 # Objective 82 TRD 06: eval82 batch C and the pre-registered check rules Summary
@@ -73,7 +79,7 @@ completed: 2026-10-18
 
 ## Performance
 
-- **Duration:** about 31 min
+- **Duration:** about 32 min
 - **Started:** 2026-10-18T02:50:57Z
 - **Completed:** 2026-10-18T03:22Z
 - **Tasks:** 3 of 3
@@ -82,7 +88,7 @@ completed: 2026-10-18
 ## Progress
 - [x] Task 1: Topics, checklists and their proofs — a4d6211a
 - [x] Task 2: Batch C and its scorer — 7871a378 (RED 704699cf)
-- [x] Task 3: Pre-registered rules, check-rules.cjs, rehearsal and the freeze — (this commit) (RED ac0e5dda, GREEN 71f105db, 2f2f7dba, 0648a05d)
+- [x] Task 3: Pre-registered rules, check-rules.cjs, rehearsal and the freeze — 4624a0d3 (RED ac0e5dda, GREEN 71f105db, 2f2f7dba, 0648a05d)
 
 ## Accomplishments
 
@@ -181,3 +187,9 @@ None. The commands come from the TRD.
 
 - 82-08: run `prereg.cjs --check` on both manifests, show `ledger82 --fit`, run D and C with `EVAL82_SANDBOX_ROOT`, score, then `score.cjs --rules`. Once 82-11 is merged the C prompts carry the runtime line, filled per run.
 - 82-09: `attributionForRun` + `fixListAsApplied(82-DIAGNOSIS.md)` + `mechanismChecks`, and `guessedPathVerdict` over the E scan rows.
+
+## Self-Check: PASSED
+
+- All 12 created and 2 modified files exist.
+- Commits a4d6211a, 704699cf, 7871a378, ac0e5dda, 71f105db, 2f2f7dba, 0648a05d and 4624a0d3 exist on the branch.
+- After the freeze commit, `prereg.cjs --check` on objective 82's manifest prints OK, 25 files; `rg -n '^## ' 82-CHECK-RULES.md` shows sections 1-5; `git status --porcelain` is clean; the rehearsal roots (scratch R and /private/tmp/claude-501/e82-rh-6fea12b2489ad47f) and the temporary private-checklist link are removed.

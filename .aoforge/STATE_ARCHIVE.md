@@ -5231,6 +5231,9 @@ STATE.md stays lean; this file grows over time.
 - [Objective 82]: 82-05: D dry run shows per-session caps summing to ## Decisions
 
 2 against D's $4.5 batch cap; the batch cap binds and would refuse the escalation sessions (last in order) if sessions run costlier than the $3.8 estimate: show it at the 82-08 gate
+- [Objective 82]: SC-2 guessed-path verdict fails only on guessed absolute home paths (scanned guessed_home) and recorded real/guessed_nonexistent; tilde and tilde_denied are counted, not deciding; FAIL outranks an unscanned run (82-06)
+- [Objective 82]: Each FIX row of 82-DIAGNOSIS.md has a pre-registered machine check (P-2 executor bound: commit_inspect <= 3, commit tool_investigation <= 1); an unmeasurable check fails; ## Fix applied decides by the first FIX/JUSTIFY word on the row's line (82-06)
+- [Objective 82]: Objective 82 harness and 82-CHECK-RULES.md frozen before any live run: results/prereg-manifest.json sha256 817bc181..., 25 files (82-06)
 
 ## Performance Metrics
 
@@ -5492,3 +5495,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 82 P02 | 15min | 3 tasks | 15 files |
 | Objective 82 P04 | 16min | 3 tasks | 10 files |
 | Objective 82 P05 | 92min | 3 tasks | 21 files |
+| Objective 82 P06 | 32min | 3 tasks | 14 files |
