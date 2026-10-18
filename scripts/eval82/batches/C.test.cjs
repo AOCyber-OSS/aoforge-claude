@@ -30,8 +30,8 @@ const CHECKLISTS = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'fixtur
 const GRADER_SCHEMA = JSON.parse(fs.readFileSync(path.join(C81_FIXTURES, 'grader-schema.json'), 'utf8'));
 const GRADER_TEMPLATE = fs.readFileSync(path.join(C81_FIXTURES, 'grader-prompt.md'), 'utf8');
 
-// A minimal new-project.md: the architecture Task carries 82-11's runtime line and a `{runtime_root}` path, the
-// pitfalls Task carries neither (the shape before 82-11 lands).
+// A minimal new-project.md: the architecture Task carries 82-11's runtime line and two more `{runtime_root}` paths
+// (82-11's `Use template: {runtime_root}/...` among them), the pitfalls Task carries none (the shape before 82-11).
 const ARCH_TASK = [
   'Task(prompt="<research_type>',
   'Project Research — Architecture dimension for [domain].',
@@ -51,6 +51,7 @@ const ARCH_TASK = [
   '',
   '<output>',
   'Draft path: `node {runtime_root}/bin/aof-tools.cjs planning draft research/ARCHITECTURE.md`',
+  'Use template: {runtime_root}/templates/research-project/ARCHITECTURE.md',
   '</output>',
   '", subagent_type="project-researcher", model="{researcher_models.architecture}", description="Architecture research")',
 ].join('\n');
@@ -166,6 +167,7 @@ test('3b: without EVAL82_SANDBOX_ROOT the prompt is the tree\'s template filled 
   assert.ok(!arch.includes('AOForge runtime'));
   assert.ok(!arch.includes('{runtime_root}'));
   assert.ok(arch.includes('node ~/.claude/aoforge/bin/aof-tools.cjs planning draft research/ARCHITECTURE.md'));
+  assert.ok(arch.includes('\nUse template: ~/.claude/aoforge/templates/research-project/ARCHITECTURE.md\n'));
   assert.ok(arch.includes(`Project Research — Architecture dimension for ${GATEWAY.domain}.`));
   assert.ok(arch.includes(gw.summary));
   assert.ok(arch.includes('\ngreenfield\n'));
@@ -184,6 +186,7 @@ test('3c: with EVAL82_SANDBOX_ROOT every {runtime_root} is the run\'s sandbox ru
       assert.equal(d.fixture.runtime_line, 'filled');
       assert.ok(d.prompt.includes(`\nAOForge runtime: ${runtime}\n`), d.id);
       assert.ok(d.prompt.includes(`node ${runtime}/bin/aof-tools.cjs planning draft`), d.id);
+      assert.ok(d.prompt.includes(`\nUse template: ${runtime}/templates/research-project/ARCHITECTURE.md\n`), d.id);
       assert.ok(!d.prompt.includes('{runtime_root}'), d.id);
     } else {
       assert.equal(d.fixture.runtime_line, 'absent');
