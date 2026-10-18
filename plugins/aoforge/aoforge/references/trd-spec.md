@@ -40,8 +40,8 @@ src/
 </file_tree>
 
 <execution_context>
-@~/.claude/aoforge/workflows/execute-trd.md
-@~/.claude/aoforge/templates/summary.md
+<runtime>/workflows/execute-trd.md
+<runtime>/templates/summary.md
 </execution_context>
 
 <embedded_context>

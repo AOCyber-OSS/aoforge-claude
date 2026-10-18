@@ -24,7 +24,7 @@ Soft-bundled with `defaults-table.md` per the v1.1 design — both are read by t
 
 ## Example stack profiles
 
-Go ships bundled as `aoforge/stack-profiles/go.md`, mirrored to `~/.claude/aoforge/stack-profiles/`. Other stacks' profiles ship in their stack pack (`aof-tools stack discover` lists the packs) and carry their own layer cells in their `## Testing` section. A project adopts one via `extends: <id>` in `.aoforge/STACK.md`. A user or org override goes in `~/.claude/aoforge/stacks/<id>.md` and wins over the pack's and the bundled profile of the same id.
+Go ships bundled as `aoforge/stack-profiles/go.md`, mirrored to `<runtime>/stack-profiles/`. Other stacks' profiles ship in their stack pack (`aof-tools stack discover` lists the packs) and carry their own layer cells in their `## Testing` section. A project adopts one via `extends: <id>` in `.aoforge/STACK.md`. A user or org override goes in `~/.claude/aoforge/stacks/<id>.md` and wins over the pack's and the bundled profile of the same id.
 
 | Layer | Go | Node (CLI / plugin) |
 |---|---|---|
@@ -77,14 +77,14 @@ The planner uses this routing when the resolver returns `outside_in: true` — o
 
 Covered by future objectives, not this doc:
 
-- Extending a stack pack's visual gate with a probe/conform layer (cross-stack) — see `docs/PROPOSAL-ui-oracle-loop.md` in the aoforge-claude repository (the `~/.claude/aoforge` mirror carries no `docs/`)
+- Extending a stack pack's visual gate with a probe/conform layer (cross-stack) — see `docs/PROPOSAL-ui-oracle-loop.md` in the aoforge-claude repository (the runtime mirror at `<runtime>` carries no `docs/`)
 - AI-exploratory testing patterns — no observed org adoption; revisit if/when patterns emerge
 - Property-based testing infrastructure — suppressed by default per the `no_property_based_default` resolver constraint
 - Stack-specific tooling — declare it in the project's stack profile (`.aoforge/STACK.md`)
 
 ## Versioning
 
-This doc is read at planning time by the planner agent. Changes here propagate immediately to all running planners (no rebuild needed — references are read at planning time via `@~/.claude/aoforge/references/testing-strategy.md`).
+This doc is read at planning time by the planner agent. Changes here propagate immediately to all running planners (no rebuild needed — references are read at planning time via `<runtime>/references/testing-strategy.md`).
 
 When modifying the layers, also update:
 

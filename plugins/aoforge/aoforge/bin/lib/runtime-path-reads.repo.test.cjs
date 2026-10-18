@@ -94,7 +94,18 @@ const PENDING = ['core_workflows', 'core_skills', 'core_templates', 'pack_skills
 
 // A human-facing statement of where a user file lives (never an instruction to read one). At most 12 entries; an
 // agent-read instruction is never allowlisted. TRD 82-11 fills this from the references and workflows it keeps.
-const ALLOW = [];
+const ALLOW = [
+  {
+    file: 'plugins/aoforge/aoforge/references/defaults-table.md',
+    needle: 'then edit `~/.claude/aoforge/defaults-table.md`',
+    reason: 'tells a human where to edit the org-wide defaults table (a user file); not a read instruction',
+  },
+  {
+    file: 'plugins/aoforge/aoforge/references/testing-strategy.md',
+    needle: 'override goes in `~/.claude/aoforge/stacks/<id>.md`',
+    reason: 'tells a human where a user or org stack-profile override file goes; not a read instruction',
+  },
+];
 const ALLOW_MAX = 12;
 
 // Plugin markdown outside every scope that mentions the runtime path; each is a statement for a human, not a read.

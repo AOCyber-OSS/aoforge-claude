@@ -33,7 +33,7 @@ If `DETECTED == "true"`:
 
    These are SEMANTICALLY required by the planner — the validator schema (FRONTMATTER_SCHEMAS.trd) does NOT enforce them. The planner is the gate.
 
-   Use the state-pattern catalog at `~/.claude/aoforge/stacks/flutter/references/flutter-state-patterns.md` for guidance on what `states:` values are conventionally expected per state_management library:
+   Use the state-pattern catalog at `<runtime>/stacks/flutter/references/flutter-state-patterns.md` for guidance on what `states:` values are conventionally expected per state_management library:
    - **riverpod**: `[loading, data, error, empty]` (or subset)
    - **bloc**: `[initial, loading, data, error]` (or subset; custom state names may need Phase-2 aliases)
    - **setState**: `[loading, data, error, empty]` (or subset; lower confidence in regex coverage)

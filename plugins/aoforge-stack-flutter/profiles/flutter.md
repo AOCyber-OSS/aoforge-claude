@@ -50,7 +50,7 @@ provenance:
 
 Tier-2 profile shipped by the `aoforge-stack-flutter` stack pack
 (`plugins/aoforge-stack-flutter/profiles/flutter.md`; the pack's SessionStart hook mirrors it to
-`~/.claude/aoforge/stacks/aoforge-stack-flutter/profiles/flutter.md`). It extends `dart`, so it
+`<runtime>/stacks/aoforge-stack-flutter/profiles/flutter.md`). It extends `dart`, so it
 inherits dart's commands, Avoid rules and codegen, and overrides the SDK-specific commands.
 
 **Upstream stance.** Flutter removed its monolithic `rules.md`. Its guidance now ships as skills in

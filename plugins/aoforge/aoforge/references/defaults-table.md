@@ -29,7 +29,7 @@ Machine-readable lookup table mapping every (`kind`, `work`) pair to a recommend
 
 **`cell_provenance`** — *table-tier* origin per field, regardless of overrides:
 - `project_table` — `.aoforge/defaults-table.md` supplied this cell
-- `org_table` — `~/.claude/aoforge/defaults-table.md` supplied this cell
+- `org_table` — `<runtime>/defaults-table.md` supplied this cell
 - `bundled_table` — bundled `references/defaults-table.md` supplied this cell
 - `table_explicit` — test-only path (explicit `tablePath` argument)
 - `unknown` — defensive fallback
