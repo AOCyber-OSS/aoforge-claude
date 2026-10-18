@@ -67,7 +67,7 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 **Objective complete:** 75 — Prospective estimate retest and todo sweep (completed 2026-10-10, 5/5 TRDs)
 **Objective complete:** 78 — Remove the rename shims (completed 2026-10-17, 12/12 TRDs)
 **Objective complete:** 80 — Adopt migrates legacy projects (completed 2026-10-17, 9/9 TRDs)
-**Status:** Executing objective 82 — 7/11 TRDs complete
+**Status:** Executing objective 82 — 8/11 TRDs complete
 **Progress:** [██████████] 99%
 
 ## Branch State (post-merge)
@@ -159,6 +159,6 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 
 ## Session Continuity
 
-Last session: 2026-10-18T03:22:55.593Z
+Last session: 2026-10-18T03:43:23.422Z
 Resume file: `None`
-Stopped at: Completed 82-06-eval82-c-batch-and-check-rules-TRD.md
+Stopped at: Completed 82-07-build-cell-fixes-and-spawn-runtime-paths-TRD.md

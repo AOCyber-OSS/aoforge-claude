@@ -48,8 +48,14 @@ verification:
   tdd_evidence: true
   test_pairing: true
 
-duration: DURATION_MIN
+duration: 19min
 completed: 2026-10-18
+tokens_input: 29787470
+tokens_output: 107915
+tokens_cache_read: 29506698
+tokens_cache_write: 280488
+token_model: "claude-opus-5-5"
+tokens_source: "live"
 ---
 
 # Objective 82 TRD 07: build-cell fixes Summary
@@ -58,15 +64,15 @@ completed: 2026-10-18
 
 ## Performance
 
-- **Duration:** DURATION_MIN
+- **Duration:** 19 min
 - **Started:** 2026-10-18T03:24:05Z
-- **Completed:** COMPLETED_AT
+- **Completed:** 2026-10-18T03:42:37Z
 - **Tasks:** 2 (4 TRD commits: RED and GREEN per task; plus the extra score-test fix and the docs commit)
 - **Files modified:** 9
 
 ## Progress
 - [x] Task 1: Planner-side FIX rows (P-1, P-2, P-3, P-4, X-1) — 002117b3 (RED 85ec0064)
-- [x] Task 2: Executor-side FIX rows (E-1, E-2, E-5), the offline effect and `## Fix applied` — 6e7574bf (RED f666a1e6), docs (this commit)
+- [x] Task 2: Executor-side FIX rows (E-1, E-2, E-5), the offline effect and `## Fix applied` — 6e7574bf (RED f666a1e6), docs aa897b4f
 
 ## Fix-list rows
 
@@ -111,7 +117,7 @@ E-3 was rejected in the diagnosis (cause 9): no row, no test.
 
 1. **Extra (orchestrator):** `d27390c5` test(82-07): eval81 score test reads the live P1 tier
 2. **Task 1:** RED `85ec0064` (test), GREEN `002117b3` (fix)
-3. **Task 2:** RED `f666a1e6` (test), GREEN `6e7574bf` (fix), eval82 test fix `bc46e935` (deviation 8), docs (82-DIAGNOSIS.md `## Fix applied`, the commit that ticks Task 2)
+3. **Task 2:** RED `f666a1e6` (test), GREEN `6e7574bf` (fix), eval82 test fix `bc46e935` (deviation 8), docs `aa897b4f` (82-DIAGNOSIS.md `## Fix applied`)
 
 ## TDD Evidence
 
@@ -199,3 +205,11 @@ None - no external service configuration required.
 ## Next Objective Readiness
 
 82-09 can re-run the build cell: 82-06's check rules read `## Fix applied` (verified with `fixListAsApplied`: 9 FIX, 2 JUSTIFY), and every FIX row's category has its target count. 82-08 and 82-10 were not started.
+
+## Self-Check: PASSED
+
+- Commits d27390c5, 85ec0064, 002117b3, f666a1e6, 6e7574bf, bc46e935 and aa897b4f are in `git log f9181405..HEAD`.
+- build-cell-reads.repo.test.cjs exists and passes 8/8; 82-DIAGNOSIS.md has `## Fix applied` with a line for each of the 11 Fix-list rows.
+- Full suite 13773 tests, 13746 pass, 0 fail, 0 cancelled, 27 skipped (watcher-shell.test.cjs excluded); prereg 81 OK (86 files), prereg 82 OK (25 files).
+- `git diff f9181405 HEAD -- scripts/eval81 scripts/eval82` touches only score.test.cjs and check-rules.test.cjs, neither frozen.
+- Nothing added here claims the Read tool fails on `~`; E-4's text says the guessed absolute home was the defect.
