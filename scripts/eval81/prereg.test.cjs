@@ -46,7 +46,10 @@ function write(root, rel, data) {
 
 /** A stand-in checkout, a stand-in home with a calibration file, and an eval root with trees.json. */
 function world() {
-  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'prereg-'));
+  // git rev-parse --show-toplevel returns the physical path, while os.tmpdir() may be a symlink (macOS /tmp ->
+  // /private/tmp, /var -> /private/var). prereg.cjs is frozen by the objective-81 manifest, so the stand-in world is
+  // built on the physical path instead of changing extraLabel (quick 44).
+  const base = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'prereg-')));
   const repo = path.join(base, 'repo');
   const home = path.join(base, 'home');
   const evalRoot = path.join(base, 'eval');
