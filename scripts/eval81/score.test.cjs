@@ -284,8 +284,10 @@ describe('score CLI: --report (test list 3)', () => {
     assert.equal(await load().main(['--report', '--out', out], c.deps), 0, c.err.join(''));
     assert.deepEqual([fs.readFileSync(profilesPath, 'utf8'), fs.readFileSync(packPath, 'utf8')], before);
     const md = fs.readFileSync(path.join(out, '81-HAIKU-EVAL.md'), 'utf8');
-    // The live pack starts ui-evaluator above haiku on budget and balanced, so the proposal names both.
-    assert.match(md, /start ui-evaluator at haiku on budget\/balanced/);
+    // The live pack already starts ui-evaluator at haiku on budget and balanced (objective 82, TRD 82-03 applied 81's
+    // P1), so the report notes it and makes no proposal for it.
+    assert.match(md, /ui-evaluator already starts at haiku on budget\/balanced/);
+    assert.doesNotMatch(md, /start ui-evaluator at haiku on/);
   });
 });
 
