@@ -748,14 +748,16 @@ test.describe('P1 (objective 82): the judge start tier', () => {
   const CORE_TOOLS = path.join(PACK_ROOT, '..', 'aoforge', 'aoforge', 'bin', 'aof-tools.cjs');
   const manifest = JSON.parse(fs.readFileSync(path.join(PACK_ROOT, 'aoforge-stack.json'), 'utf-8'));
 
-  test('P1-1 — the manifest carries opus/haiku/haiku and judgeTier follows it per profile', () => {
-    assert.deepStrictEqual(manifest.models['ui-evaluator'], { quality: 'opus', balanced: 'haiku', budget: 'haiku' });
+  // Reverted by TRD 82-08: P1 failed its pre-registered rule (82-CHECK-RULES.md section 1) on
+  // broken_missed(Haiku start, final) = 1 of 13, so the judge starts at sonnet again.
+  test('P1-1 — the manifest carries opus/sonnet/sonnet and judgeTier follows it per profile', () => {
+    assert.deepStrictEqual(manifest.models['ui-evaluator'], { quality: 'opus', balanced: 'sonnet', budget: 'sonnet' });
     assert.strictEqual(engine.judgeTier('quality'), 'opus');
-    assert.strictEqual(engine.judgeTier('balanced'), 'haiku');
-    assert.strictEqual(engine.judgeTier('budget'), 'haiku');
+    assert.strictEqual(engine.judgeTier('balanced'), 'sonnet');
+    assert.strictEqual(engine.judgeTier('budget'), 'sonnet');
   });
 
-  test('P1-2 — with the pack mirrored, a budget project resolves ui-evaluator to haiku and a split vote goes up to sonnet', () => {
+  test('P1-2 — with the pack mirrored, a budget project resolves ui-evaluator to sonnet and a split vote goes up to opus', () => {
     const { mirrorPack } = require(path.join(PACK_ROOT, '..', 'aoforge', 'aoforge', 'bin', 'lib', 'pack-mirror.cjs'));
     const { spawnSync } = require('node:child_process');
     const tmp = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'ui-eval-p1-'));
@@ -775,11 +777,11 @@ test.describe('P1 (objective 82): the judge start tier', () => {
         return JSON.parse(r.stdout);
       };
       const start = resolve();
-      assert.strictEqual(start.tier, 'haiku');
-      assert.strictEqual(start.model, 'haiku');
-      const up = resolve('--escalate-from', 'haiku');
-      assert.strictEqual(up.tier, 'sonnet');
-      assert.strictEqual(up.model, 'sonnet');
+      assert.strictEqual(start.tier, 'sonnet');
+      assert.strictEqual(start.model, 'sonnet');
+      const up = resolve('--escalate-from', 'sonnet');
+      assert.strictEqual(up.tier, 'opus');
+      assert.strictEqual(up.model, 'opus');
       assert.strictEqual(up.ceiling, false);
     } finally {
       fs.rmSync(tmp, { recursive: true, force: true });
