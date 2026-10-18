@@ -5219,6 +5219,9 @@ STATE.md stays lean; this file grows over time.
 - [Objective 81]: 81-18: post-hoc 4 access classes (user 'Reclassify + re-run impaired'); C complete $7.42, 0 real escapes, 1 final impaired; ledger $40.05; e81 sandbox deleted
 - [Objective 81]: Objective 81 tier proposals: user approve-selected P1 (ui-evaluator Haiku start; measure escalation rate on real projects), P2 arch-only (focus.codebase-mapper.arch at Sonnet), P3 (concerns budget to Sonnet), P4/P5 (researcher architecture/pitfalls budget to Haiku with a follow-up measurement); P2 quality half not approved; nothing applied in objective 81, five follow-up todos
 - [Objective 81]: 76 records from objective 81: 76-06 closed (MEF-05 SATISFIED); 76-08 measurement closed, start-tier half not met, so MEF-06 is PARTIALLY SATISFIED and left 76's requirements-completed
+- [Objective 82]: Attribution dedupes a call by message.id keeping the row with the largest output_tokens (objective 81's rule), so spawn totals equal roles.cjs to the token
+- [Objective 82]: Build-cell causes are priced as removal upper bounds (issuing plus carry of the cause's calls) and labelled single-run when only one run shows them
+- [Objective 82]: The planner commit-tail cost (P-2) has no plugin trigger: the harness attribution reminder is in all four planner transcripts, so the fix is one explicit sentence in planner.md and executor.md
 
 ## Performance Metrics
 
@@ -5476,3 +5479,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 81 P17 | 120min | 4 tasks | 16 files |
 | Objective 81 P18 | 85min | 3 tasks | 14 files |
 | Objective 81 P19 | 18min | 4 tasks | 10 files |
+| Objective 82 P01 | 26min | 3 tasks | 4 files |
