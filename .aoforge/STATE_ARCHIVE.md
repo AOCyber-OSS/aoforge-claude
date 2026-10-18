@@ -5219,6 +5219,12 @@ STATE.md stays lean; this file grows over time.
 - [Objective 81]: 81-18: post-hoc 4 access classes (user 'Reclassify + re-run impaired'); C complete $7.42, 0 real escapes, 1 final impaired; ledger $40.05; e81 sandbox deleted
 - [Objective 81]: Objective 81 tier proposals: user approve-selected P1 (ui-evaluator Haiku start; measure escalation rate on real projects), P2 arch-only (focus.codebase-mapper.arch at Sonnet), P3 (concerns budget to Sonnet), P4/P5 (researcher architecture/pitfalls budget to Haiku with a follow-up measurement); P2 quality half not approved; nothing applied in objective 81, five follow-up todos
 - [Objective 81]: 76 records from objective 81: 76-06 closed (MEF-05 SATISFIED); 76-08 measurement closed, start-tier half not met, so MEF-06 is PARTIALLY SATISFIED and left 76's requirements-completed
+- [Objective 82]: 82-05: the guessed-path scan treats guessed_home (an absolute path under the home's parent) as the defect signal and counts ~ inputs for the record only, since the Read tool expands ~
+- [Objective 82]: 82-05: ledger82 --fit counts build 1 at 0 once b82-r1 is charged, so build 2's fit never double counts it
+- [Objective 82]: 82-05: batch D escalates only the states the engine's scoreState + split + judgeEscalation pick from the three haiku samples; the batch never opens the answer key
+- [Objective 82]: 82-05: D dry run shows per-session caps summing to ## Decisions
+
+2 against D's $4.5 batch cap; the batch cap binds and would refuse the escalation sessions (last in order) if sessions run costlier than the $3.8 estimate: show it at the 82-08 gate
 
 ## Performance Metrics
 
@@ -5476,3 +5482,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 81 P17 | 120min | 4 tasks | 16 files |
 | Objective 81 P18 | 85min | 3 tasks | 14 files |
 | Objective 81 P19 | 18min | 4 tasks | 10 files |
+| Objective 82 P05 | 92min | 3 tasks | 21 files |

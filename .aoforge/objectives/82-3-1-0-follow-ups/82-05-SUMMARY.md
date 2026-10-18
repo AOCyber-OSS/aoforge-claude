@@ -62,6 +62,12 @@ verification:
 
 duration: 92min
 completed: 2026-10-18
+tokens_input: 27139216
+tokens_output: 162227
+tokens_cache_read: 26442716
+tokens_cache_write: 696272
+token_model: "claude-opus-5-5"
+tokens_source: "live"
 ---
 
 # Objective 82 TRD 05: eval82 ledger and E/D batches Summary
@@ -79,7 +85,7 @@ completed: 2026-10-18
 ## Progress
 - [x] Task 1: Fixture builders, ledger82 (--init, --fit, --raise) and the guessed-path scanner — 23e4e62f (RED 36bdb432)
 - [x] Task 2: Batch E and the E scorer — 91fc259e (RED aec5465d)
-- [x] Task 3: Batch D with the absolute screenshot path, the D scorer, and a D dry run — (this commit) (RED 3ebbf5a5)
+- [x] Task 3: Batch D with the absolute screenshot path, the D scorer, and a D dry run — b33b3192 (RED 3ebbf5a5)
 
 ## Accomplishments
 
@@ -196,6 +202,12 @@ None. The commands come from the TRD.
 - Auto-fix cycles used: 0
 - Must-haves verified: 7/7 (ledger init/order/caps and refusal; --fit/--raise; scanner 2 versus 0; batch E fairness and control; batch D 120 + engine escalations + absolute path + no key; D scorer metrics; test-first with zero API calls and scripts/eval81 unchanged)
 - Gate failures: None
+
+## Self-Check: PASSED
+
+- All 15 module/test files and the 6 `runs-81/` fixture files exist.
+- Commits 36bdb432, 23e4e62f, aec5465d, 91fc259e, 3ebbf5a5 and b33b3192 exist on the branch.
+- `git status --porcelain scripts/eval81` is empty; the scratch dry roots (`$SP/82-05/dry`, `/private/tmp/claude-501/e82-dry-001c0d0547536252`) and the temporary node_modules link are removed.
 
 ## Next Objective Readiness
 
