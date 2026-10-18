@@ -1,9 +1,9 @@
 {
-  "current_objective": "81",
-  "current_job": 19,
-  "total_jobs": 19,
-  "progress_pct": 100,
-  "status": "ready_for_verification",
+  "current_objective": "82",
+  "current_job": 1,
+  "total_jobs": 11,
+  "progress_pct": 98,
+  "status": "executing",
   "last_activity": "2026-10-17",
   "metrics": {
     "jobs_completed": 0,
@@ -1989,6 +1989,21 @@
     {
       "objective": "81",
       "summary": "76 records from objective 81: 76-06 closed (MEF-05 SATISFIED); 76-08 measurement closed, start-tier half not met, so MEF-06 is PARTIALLY SATISFIED and left 76's requirements-completed",
+      "rationale": null
+    },
+    {
+      "objective": "82",
+      "summary": "Attribution dedupes a call by message.id keeping the row with the largest output_tokens (objective 81's rule), so spawn totals equal roles.cjs to the token",
+      "rationale": null
+    },
+    {
+      "objective": "82",
+      "summary": "Build-cell causes are priced as removal upper bounds (issuing plus carry of the cause's calls) and labelled single-run when only one run shows them",
+      "rationale": null
+    },
+    {
+      "objective": "82",
+      "summary": "The planner commit-tail cost (P-2) has no plugin trigger: the harness attribution reminder is in all four planner transcripts, so the fix is one explicit sentence in planner.md and executor.md",
       "rationale": null
     }
   ],
