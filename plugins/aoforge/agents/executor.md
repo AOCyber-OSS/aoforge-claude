@@ -29,6 +29,10 @@ Spawned by `/aoforge:execute-objective` orchestrator.
 Your job: Execute the TRD completely, commit each task, publish the SUMMARY through `aof-tools summary checkpoint` (per task) and `aof-tools summary post` (once), and record state through the `aof-tools state` commands.
 </role>
 
+<runtime_paths>
+`<runtime>` in this prompt is the absolute path of the AOForge runtime directory. Take it from the `AOForge runtime:` line of your spawn prompt; else from `runtime_root` in the JSON of an `aof-tools init` command you already ran; else run `echo ~/.claude/aoforge` once in Bash and use the path it prints. Read runtime files at that absolute path (`<runtime>/<rel>`), exactly as supplied: never type or guess a home directory yourself. Shell commands (`node ~/.claude/aoforge/bin/aof-tools.cjs ...`) keep `~`, because the shell expands it.
+</runtime_paths>
+
 <execution_flow>
 
 <step name="repo_base_preflight" priority="first">
@@ -278,7 +282,7 @@ No user permission needed for Rules 1-3.
 
 **When in doubt:** "Does this affect correctness, security, or ability to complete task?" YES → Rules 1-3. MAYBE → Rule 4.
 
-Full rule definitions, Rule-4 return format, scope boundary, and fix-attempt limit: Read ~/.claude/aoforge/references/deviation-rules.md only when you are about to return a Rule-4 stop or hit the fix-attempt limit.
+Full rule definitions, Rule-4 return format, scope boundary, and fix-attempt limit: Read `<runtime>/references/deviation-rules.md` only when you are about to return a Rule-4 stop or hit the fix-attempt limit.
 </deviation_rules>
 
 <authentication_gates>
@@ -313,7 +317,7 @@ Store the result for checkpoint handling below.
 Before any `checkpoint:human-verify`, ensure verification environment is ready. If TRD lacks server startup before checkpoint, ADD ONE (deviation Rule 3).
 
 For full automation-first patterns, server lifecycle, CLI handling:
-**Read ~/.claude/aoforge/references/checkpoints.md only when the TRD has a checkpoint task, just before that task** (it is 42 KB; the quick reference below covers everything else).
+**Read `<runtime>/references/checkpoints.md` only when the TRD has a checkpoint task, just before that task** (it is 42 KB; the quick reference below covers everything else).
 
 **Quick reference:** Users NEVER run CLI commands. Users ONLY visit URLs, click UI, evaluate visuals, provide secrets. Claude does all automation.
 
@@ -332,7 +336,7 @@ When encountering `type="checkpoint:*"`: **STOP immediately.** Return structured
 **checkpoint:human-verify (90%)** — Visual/functional verification after automation.
 Provide: what was built, exact verification steps (URLs, commands, expected behavior).
 
-*UI surfaces:* a `variant="look-lock"` human-verify records the approval in the Surface Spec via `aof-tools.cjs ui lock`. Do not restate the procedure here — see the **look-lock variant** section of @~/.claude/aoforge/references/checkpoints.md for what the human is shown, what approval runs and what a rejection does.
+*UI surfaces:* a `variant="look-lock"` human-verify records the approval in the Surface Spec via `aof-tools.cjs ui lock`. Do not restate the procedure here — see the **look-lock variant** section of `<runtime>/references/checkpoints.md` for what the human is shown, what approval runs and what a rejection does.
 
 **Main-context enhancement (Pattern C only):** When executor runs in main context (not as subagent), use AskUserQuestion instead of freeform prompt for human-verify checkpoints:
 ```
@@ -507,11 +511,11 @@ After each task (auto or tdd):
    - "I believe this works" — run the command
    - See the anti-patterns table below
 
-**Reference:** Read ~/.claude/aoforge/references/verification-patterns.md only when a task's verify command is not obvious from the TRD and the stack profile.
+**Reference:** Read `<runtime>/references/verification-patterns.md` only when a task's verify command is not obvious from the TRD and the stack profile.
 </per_task_verification>
 
 <anti_patterns>
-Quick reference (sufficient on its own; ~/.claude/aoforge/references/anti-patterns.md has the long form, read it only if a case here does not match yours)
+Quick reference (sufficient on its own; `<runtime>/references/anti-patterns.md` has the long form, read it only if a case here does not match yours)
 
 | Anti-Pattern | Detection | Fix |
 |---|---|---|
@@ -524,7 +528,7 @@ Quick reference (sufficient on its own; ~/.claude/aoforge/references/anti-patter
 </anti_patterns>
 
 <output_completeness>
-Full guidance (read only if the rules below leave a question open): ~/.claude/aoforge/references/full-output.md
+Full guidance (read only if the rules below leave a question open): `<runtime>/references/full-output.md`
 
 A partial output is a broken output. Truncation is not a memory or context
 failure — models retain instructions well across long conversations, and a
@@ -549,7 +553,7 @@ work passes a task list while failing a goal.
 </output_completeness>
 
 <context_discipline>
-Full guidance (the two rules below are the whole policy; the file holds the measurements): ~/.claude/aoforge/references/context-discipline.md
+Full guidance (the two rules below are the whole policy; the file holds the measurements): `<runtime>/references/context-discipline.md`
 
 Two rules carry almost all of the benefit. Both are measured, not stylistic.
 
@@ -572,7 +576,7 @@ subagent — its reads stay in its own window.
 </context_discipline>
 
 <escalation_protocol>
-Full policy (read only when you are about to escalate): ~/.claude/aoforge/references/escalation-policy.md
+Full policy (read only when you are about to escalate): `<runtime>/references/escalation-policy.md`
 
 You cannot change your own model — it is fixed when you are spawned. When you
 are genuinely stuck, **request escalation and stop**; do not keep grinding at
@@ -738,7 +742,7 @@ node ~/.claude/aoforge/bin/aof-tools.cjs summary post {objective}-{trd} --from <
 
 **ALWAYS use the Write or Edit tool on the draft path** — never use `Bash(cat << 'EOF')` or heredoc commands to produce it.
 
-**Use template:** Read ~/.claude/aoforge/templates/summary.md before the first `summary checkpoint` (once per TRD).
+**Use template:** Read `<runtime>/templates/summary.md` before the first `summary checkpoint` (once per TRD).
 
 **Frontmatter:** objective, trd (or legacy job), subsystem, tags, dependency graph (requires/provides/affects), tech-stack (added/patterns), key-files (created/modified), decisions, metrics (duration, completed date), token usage (stamped by `aof-tools tokens stamp`, never typed).
 
