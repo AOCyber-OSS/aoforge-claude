@@ -1,3 +1,4 @@
+completed: 2026-10-18
 ---
 created: 2026-10-17T23:00:00.000Z
 title: "Apply objective 81 tier proposal: project-researcher:architecture"
@@ -41,3 +42,30 @@ unchanged. The user approved it on 2026-10-17. Nothing was changed in objective 
 - **Apply it with a follow-up measurement.** After the change, compare budget-profile architecture research on real
   projects with a Sonnet run of the same topic, on two or three topics. Record recall against a checklist, or a
   reviewer's verdict, and the cost. Revert if Haiku misses architecture findings Sonnet makes.
+
+## Resolution (objective 82, 2026-10-18)
+
+**Evaluated, reverted by rule: measured; not applied: item lost, hub HU-A01 (found by Sonnet in 2 of 2 runs, by Haiku
+in 0 of 2).** `focus.project-researcher.architecture` is opus / sonnet / sonnet again, objective 76's raise.
+
+- **Applied test-first** by TRD 82-03: RED `9d8333f8`, GREEN `10311e5c` (budget sonnet to haiku), docs `a1d60a9b`.
+- **Measured** by TRD 82-08 (batch C, `74e2954d`; verdicts `f98d7230`), the follow-up measurement this todo asked
+  for: two new real-product topics (gateway, hub), 2 Haiku and 2 Sonnet researcher runs per topic, each graded blind
+  against a checklist, under `82-CHECK-RULES.md` section 2 (frozen before any live run; REVERT when any condition
+  fails). From `82-TIER-CHECKS.md`:
+
+  | Condition | Numbers | Holds |
+  |---|---|---|
+  | no item found by Sonnet in both runs and by Haiku in neither, on a topic | hub HU-A01 | no |
+  | pooled Haiku recall not more than 10 points below Sonnet's | 43/46 (93.5%) vs 45/46 (97.8%), 4.3 points | yes |
+  | Haiku fabrications per graded run not more than Sonnet's + 0.5 | 0 vs 0 | yes |
+
+  Per topic: gateway Haiku 24/24 vs Sonnet 23/24; hub 19/22 vs 22/22. Cost per researcher run: Haiku $0.015-$0.073,
+  Sonnet $0.128-$0.193. No guessed home path in any of the 16 researcher runs.
+- **Reverted** test-first by TRD 82-08: RED `73b392bd`, GREEN `dd42d22a`. Pin tests, re-run on 2026-10-18:
+  `node --test --test-name-pattern 'objective 82: approved tier proposals' plugins/aoforge/aoforge/bin/lib/model-profiles.test.cjs`
+  printed `✔ init new-project and new-milestone: researcher architecture opus/sonnet/sonnet (P4 reverted), pitfalls
+  opus/sonnet/haiku (P5 kept)`, `✔ table pins: P2 arch, P3 concerns, P4 architecture (reverted by 82-08), P5
+  pitfalls`, `pass 5`, `fail 0`.
+- Caveat: n=2 runs per model per topic; one item decided it, as this todo's "revert if Haiku misses architecture
+  findings Sonnet makes" says it should.

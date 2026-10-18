@@ -541,7 +541,7 @@ TRDs:
 ### Objective 82: 3.1.0 follow-ups
 
 **Goal**: The follow-ups objectives 79-81 left are closed before 3.1.0 ships (user decision 2026-10-18: target 3.1.0 while the cutover freeze blocks the push). (1) Why 3.1.0's planner spends ~67% more tokens and its executors ~20% more on a small build than 3.0.0 (81-MEASUREMENT.md, E build cell) is found, fixed or explained, and re-measured with the objective 81 harness. (2) 3.1.0 agents stop guessing an absolute home path (objective 81 saw reads of a guessed `/Users/<guess>/.claude/...` path instead of `~` or a supplied path; the Read tool itself does expand `~`): agents get an expanded runtime path, with a guard against guessed-home and Read-`~` instructions. (3) The five approved tier proposals are applied with their caveats: P1 ui-evaluator balanced/budget -> haiku with escalation on split votes and the escalation rate measured; P2 arch-only focus override codebase-mapper.arch -> sonnet; P3 codebase-mapper concerns budget -> sonnet; P4/P5 project-researcher architecture/pitfalls budget -> haiku with a follow-up measurement. (4) `tokens` gains `--also-root` like `calibrate`. (5) Objective 77's records (STK-01, PCK-01..04, Progress row) agree with its passed verification. MEF-06 is updated from evidence. The debugger's start tier is not measured here and stays a recorded todo, so MEF-06 remains Partial by design.
-**Requirements**: MEF-06 (start-tier half: the UI judge only; the debugger's start tier stays a todo)
+**Requirements**: none mapped (MEF-06 stays objective 76's; this objective records its start-tier half from evidence, the UI judge only; the debugger's start tier stays a todo)
 **Depends on**: Objectives 76, 77, 81
 **Success Criteria** (what must be TRUE):
   1. A diagnosis names the cause of the build-cell planner (+67%) and executor (+20%) token growth with transcript evidence; a fix (or a recorded justification) lands, and a re-run of the E build cell under the objective 81 harness (live, behind a user approval gate and a spend cap) shows the effect.
@@ -586,7 +586,7 @@ TRDs:
 | 74. Operations decisions | v1.6 | 8/9 | In Progress | - |
 | 75. Prospective estimate retest and todo sweep | v1.6 | 5/5 | Complete | 2026-10-10 |
 | 76. Model efficiency and stack-specific content | v1.6 | 8/8 | Complete (MEF-06 partial; the start-tier half is objective 82's) | 2026-10-17 |
-| 77. Stack packs: contract and extraction | v1.6 | 5/5 | In Progress | - |
+| 77. Stack packs: contract and extraction | v1.6 | 5/5 | Complete (verified 2026-10-17, 77-VERIFICATION) | 2026-10-16 |
 | 78. Remove the rename shims | v1.6 | 12/12 | Complete | 2026-10-17 |
 | 79. Reconcile and release 3.1.0 | v1.6 | 8/10 | In Progress | - |
 | 80. Adopt migrates legacy projects | v1.6 | 9/9 | Complete | 2026-10-17 |

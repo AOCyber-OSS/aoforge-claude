@@ -1,3 +1,4 @@
+completed: 2026-10-18
 ---
 created: 2026-10-17T23:00:00.000Z
 title: "Apply objective 81 tier proposal: codebase-mapper:arch"
@@ -47,3 +48,23 @@ raise arch alone, through a focus override. Nothing was changed in objective 81.
 
 The quality half of P2 was not approved. Its refusal (2.00 vs 1.33 fabrications per run) rests on mechanical flags
 that are not fabrications. Quality stays on the shared row.
+
+## Resolution (objective 82, 2026-10-18)
+
+**Applied as approved (arch only).** `focus.codebase-mapper.arch` is sonnet / sonnet / sonnet; `agents.codebase-mapper`
+stays sonnet / haiku / haiku and `focus.codebase-mapper` has exactly the keys `arch` and `concerns` (no `tech`, no
+`quality`). P2 was not part of objective 82's live check (only P1, P4 and P5 were), so it stands on objective 81's
+evidence above with its caveat (the refusal rests on three misnamed files in one Haiku fleet run).
+
+- **Commits** (TRD 82-03): RED `9d8333f8` (the new focus tests failed on the old table, the key-set pin included,
+  since `arch` was missing), GREEN `10311e5c` (the JSON diff touches only the `focus` block), docs `a1d60a9b`
+  (model-profiles.md's focus table and P2's evidence and caveat). The focus key `arch` is the one `init.cjs`
+  `mapper_models` and `map-codebase.md` already use.
+- **Pin tests**, re-run on 2026-10-18: `node --test --test-name-pattern 'objective 82: approved tier proposals'
+  plugins/aoforge/aoforge/bin/lib/model-profiles.test.cjs` printed `✔ init map-codebase: arch and concerns resolve to
+  sonnet, tech and quality to haiku, on balanced and budget`, `✔ resolve-model codebase-mapper --focus arch is sonnet
+  from the focus table on every profile`, `✔ table pins: P2 arch, P3 concerns, P4 architecture (reverted by 82-08), P5
+  pitfalls`, `✔ the shared mapper row is untouched and tech and quality get no focus entry (P2 is arch only)`,
+  `pass 5`, `fail 0`.
+- Documented in CHANGELOG `## [3.1.0]` (`### 3.1.0 follow-ups (objective 82)`), model-profiles.md and USER-GUIDE
+  Model Profiles (TRD 82-10).

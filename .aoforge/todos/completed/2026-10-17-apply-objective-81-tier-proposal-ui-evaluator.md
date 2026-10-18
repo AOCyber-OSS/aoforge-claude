@@ -1,3 +1,4 @@
+completed: 2026-10-18
 ---
 created: 2026-10-17T23:00:00.000Z
 title: "Apply objective 81 tier proposal: ui-evaluator"
@@ -54,3 +55,35 @@ why it was not applied.
 
 Objective 81 did not measure the debugger's starting tier. MEF-06's start-tier half stays "not met" in
 76-VERIFICATION.md until this todo is applied.
+
+## Resolution (objective 82, 2026-10-18)
+
+**Evaluated, reverted by rule: measured; not applied: broken_missed(Haiku start, final) = 1 of 13 broken states,
+the pre-registered rule needs 0.** The judge starts at sonnet on balanced and budget again
+(`models.ui-evaluator` opus / sonnet / sonnet).
+
+- **Applied test-first** by TRD 82-03: RED `d25e474f` (P1-1, P1-2 failed: `sonnet !== haiku`), GREEN `f95f7b7a`
+  (manifest opus / haiku / haiku), docs `a1d60a9b` (model-profiles.md and the pack CHANGELOG with the 81 evidence
+  and this todo's condition).
+- **Measured** by TRD 82-08 (batch D, `74e2954d`; verdicts `f98d7230`) under `82-CHECK-RULES.md` section 1, which
+  was frozen before any live run: 20 labelled states, 3 per-state sessions per start, a Haiku start escalating a
+  split vote to Sonnet by the engine's rules against a Sonnet start (`82-TIER-CHECKS.md`, `results/D.json`):
+
+  | Condition (KEEP needs all three) | Numbers | Holds |
+  |---|---|---|
+  | broken_missed(Haiku start, final) = 0 | 1/13 (state d17) | no |
+  | accuracy(Haiku start) >= accuracy(Sonnet start) | 19/20 vs 18/20 | yes |
+  | cost(Haiku start) < cost(Sonnet start) | $0.1334 vs $1.1462 (about one ninth) | yes |
+
+  The condition this todo set: escalation rate 1/20 (5%) and split rate 2/20 (10%); the one escalated state (d02)
+  ended ok, agreeing with the Sonnet start (1/1); false fails 0/7 against Sonnet's 1/7.
+- **Reverted** test-first by TRD 82-08: RED `3732d4c5`, GREEN `22324411`. Pin tests now hold the reverted tier;
+  `node --test --test-name-pattern 'P1-' plugins/aoforge-stack-flutter/lib/flutter-ui-eval.test.cjs` on
+  2026-10-18 printed `✔ P1-1 — the manifest carries opus/sonnet/sonnet and judgeTier follows it per profile`,
+  `✔ P1-2 — with the pack mirrored, a budget project resolves ui-evaluator to sonnet and a split vote goes up to
+  opus`, `pass 2`, `fail 0`.
+- **Caveat for a later look:** all three Sonnet sessions also judged d17 ok, so the Sonnet start missed the same
+  broken state; the miss reads as a fixture or judge-prompt question rather than a tier question, and 20 states is a
+  small sample. `2026-10-18-revisit-the-ui-judge-haiku-start-p1-on-a-larger-sample.md` (pending) records that.
+- MEF-06 stays Partial: the UI judge's start tier was measured and stays at sonnet; the debugger's start tier is
+  `2026-10-18-measure-the-debugger-start-tier-mef-06-remaining-half.md` (pending).

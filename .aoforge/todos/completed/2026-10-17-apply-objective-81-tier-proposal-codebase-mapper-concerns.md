@@ -1,3 +1,4 @@
+completed: 2026-10-18
 ---
 created: 2026-10-17T23:00:00.000Z
 title: "Apply objective 81 tier proposal: codebase-mapper:concerns"
@@ -34,3 +35,19 @@ Sonnet. The user approved it on 2026-10-17. Nothing was changed in objective 81.
   fabrications, and the hand reading. It rests on recall, not fabrications.
 - Spot-check: 6 of 6 grader verdicts agree.
 - Cost on the eval: Haiku $0.05, Sonnet $0.31 for 4 concerns runs each.
+
+## Resolution (objective 82, 2026-10-18)
+
+**Applied as approved.** `focus.codebase-mapper.concerns` is sonnet / sonnet / sonnet (only `budget` changed, haiku to
+sonnet). P3 raises a tier, so it needed no live check in objective 82 and stands on objective 81's evidence above
+(recall -13.2 points; fleet concerns recall is weak for both models).
+
+- **Commits** (TRD 82-03): RED `9d8333f8` (the concerns-on-budget expectation failed on the old table), GREEN
+  `10311e5c` (the JSON diff touches only the `focus` block), docs `a1d60a9b` (model-profiles.md's focus table and P3's
+  evidence).
+- **Pin tests**, re-run on 2026-10-18: `node --test --test-name-pattern 'objective 82: approved tier proposals'
+  plugins/aoforge/aoforge/bin/lib/model-profiles.test.cjs` printed `✔ init map-codebase: arch and concerns resolve to
+  sonnet, tech and quality to haiku, on balanced and budget`, `✔ table pins: P2 arch, P3 concerns, P4 architecture
+  (reverted by 82-08), P5 pitfalls`, `pass 5`, `fail 0`.
+- Documented in CHANGELOG `## [3.1.0]` (`### 3.1.0 follow-ups (objective 82)`), model-profiles.md and USER-GUIDE
+  Model Profiles (TRD 82-10).

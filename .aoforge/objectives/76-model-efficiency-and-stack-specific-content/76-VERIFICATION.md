@@ -103,7 +103,7 @@ notes:
 | MEF-03 | trd-pre before checker | SATISFIED | SC3 |
 | MEF-04 | mechanical verbs | SATISFIED | SC4 |
 | MEF-05 | per-focus tiers, verdict floor, haiku re-pin after eval | SATISFIED (the 76-06 eval is recorded by objective 81, 2026-10-17; the pin stays claude-haiku-5-5) | SC5; 81-HAIKU-EVAL.md |
-| MEF-06 | debugger and UI judge start cheap and escalate; orchestrators act on ESCALATION REQUESTED | PARTIALLY SATISFIED: escalation done (quick 42); start-tier half not met, tiers unchanged (UI judge: D weakly endorses a Haiku start, approved 2026-10-17 as a follow-up todo with the escalation rate to be measured on real projects, not applied; debugger start tier not measured) | SC6; 81-MEASUREMENT.md; 81-HAIKU-EVAL.md (batch D) |
+| MEF-06 | debugger and UI judge start cheap and escalate; orchestrators act on ESCALATION REQUESTED | PARTIALLY SATISFIED: escalation done (quick 42); start-tier half not met. UI judge: objective 81's batch D weakly endorsed a Haiku start (P1, approved 2026-10-17); objective 82 applied it (TRD 82-03) and measured it live (TRD 82-08) and did not keep it: broken_missed(Haiku start, final) = 1 of 13 broken states and the pre-registered rule needs 0 (accuracy 19/20 vs the Sonnet start's 18/20, cost $0.13 vs $1.15, escalation rate 1/20, split rate 2/20), so the judge starts at sonnet. Debugger start tier not measured (scoped out of objective 82; todo 2026-10-18-measure-the-debugger-start-tier-mef-06-remaining-half.md) | SC6; 81-MEASUREMENT.md; 81-HAIKU-EVAL.md (batch D); objectives/82-3-1-0-follow-ups/82-TIER-CHECKS.md |
 
 76-RETROACTIVE-SUMMARY.md requirements-completed lists MEF-01..05, the SATISFIED rows. MEF-06 is partial and not listed. REQUIREMENTS.md shows MEF-01..05 Complete and MEF-06 Partial.
 

@@ -69,14 +69,14 @@ Scope: everything v1.5 left open (Known Gaps and tech debt in `milestones/v1.5-M
 - [x] **MEF-04**: Post-TRD bookkeeping, verifier evidence, codebase facts, roadmap coverage and the security grep sweep are aof-tools commands.
 - [x] **MEF-05**: Tiers are set per focus or dimension where the work differs; the haiku tier is re-pinned after a recorded eval; pass/fail verdicts run at Sonnet or above on every profile.
 - [ ] **MEF-06**: The debugger and the UI judge start cheap and escalate on a recorded signal; orchestrators act on `ESCALATION REQUESTED`.
-- [ ] **STK-01**: Stack-specific agent procedure (Flutter, Dart, Go, web) is delivered through stack profiles or on-demand references, not resident agent prompts.
+- [x] **STK-01**: Stack-specific agent procedure (Flutter, Dart, Go, web) is delivered through stack profiles or on-demand references, not resident agent prompts.
 
 ### Stack packs (PCK)
 
-- [ ] **PCK-01**: A stack pack contract: manifest schema, discovery from the mirror gated on the plugin being enabled, selection by profile/config/runtime, a pack profile tier, and `stack discover|doctor|verify --changed|--all`.
-- [ ] **PCK-02**: Agents reach stack procedure only through `stack context <agent>` (fragments and pack sub-agents).
-- [ ] **PCK-03**: Flutter/Dart and web procedure ships in `aoforge-stack-flutter` and `aoforge-stack-web`, with no core aliases; core CI fails on a pack stack named in core (neutrality guard).
-- [ ] **PCK-04**: Packs release as `<pack>--vX.Y.Z` and the changelog gate checks their CHANGELOG and manifests.
+- [x] **PCK-01**: A stack pack contract: manifest schema, discovery from the mirror gated on the plugin being enabled, selection by profile/config/runtime, a pack profile tier, and `stack discover|doctor|verify --changed|--all`.
+- [x] **PCK-02**: Agents reach stack procedure only through `stack context <agent>` (fragments and pack sub-agents).
+- [x] **PCK-03**: Flutter/Dart and web procedure ships in `aoforge-stack-flutter` and `aoforge-stack-web`, with no core aliases; core CI fails on a pack stack named in core (neutrality guard).
+- [x] **PCK-04**: Packs release as `<pack>--vX.Y.Z` and the changelog gate checks their CHANGELOG and manifests.
 
 ## Future Requirements
 
@@ -129,9 +129,9 @@ Scope: everything v1.5 left open (Known Gaps and tech debt in `milestones/v1.5-M
 | MEF-03 | Objective 76 | Complete |
 | MEF-04 | Objective 76 | Complete |
 | MEF-05 | Objective 76 | Complete: the Haiku eval is recorded (objectives/81-haiku-eval-and-model-efficiency-measurement/81-HAIKU-EVAL.md); the pin stays claude-haiku-5-5 |
-| MEF-06 | Objective 76 | Partial: escalation complete (quick 42); start-tier half not met, tiers unchanged (objectives/81-haiku-eval-and-model-efficiency-measurement/81-MEASUREMENT.md, 81-HAIKU-EVAL.md) |
-| STK-01 | Objective 77 | Pending |
-| PCK-01 | Objective 77 | Pending |
-| PCK-02 | Objective 77 | Pending |
-| PCK-03 | Objective 77 | Pending |
-| PCK-04 | Objective 77 | Pending |
+| MEF-06 | Objective 76 | Partial: escalation complete (quick 42); UI judge start tier measured by objective 82 and not applied: broken_missed(Haiku start, final) = 1 of 13 broken states, the pre-registered rule needs 0 (accuracy 19/20 vs the Sonnet start's 18/20, cost $0.13 vs $1.15, escalation rate 1/20; objectives/82-3-1-0-follow-ups/82-TIER-CHECKS.md), so the judge starts at sonnet; debugger start tier not measured (todos/pending/2026-10-18-measure-the-debugger-start-tier-mef-06-remaining-half.md) |
+| STK-01 | Objective 77 | Complete (objectives/77-stack-packs-contract-and-extraction/77-VERIFICATION.md) |
+| PCK-01 | Objective 77 | Complete (objectives/77-stack-packs-contract-and-extraction/77-VERIFICATION.md) |
+| PCK-02 | Objective 77 | Complete (objectives/77-stack-packs-contract-and-extraction/77-VERIFICATION.md) |
+| PCK-03 | Objective 77 | Complete (objectives/77-stack-packs-contract-and-extraction/77-VERIFICATION.md) |
+| PCK-04 | Objective 77 | Complete (objectives/77-stack-packs-contract-and-extraction/77-VERIFICATION.md) |
