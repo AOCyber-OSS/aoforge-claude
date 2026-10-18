@@ -591,4 +591,4 @@ TRDs:
 | 79. Reconcile and release 3.1.0 | v1.6 | 8/10 | In Progress | - |
 | 80. Adopt migrates legacy projects | v1.6 | 9/9 | Complete | 2026-10-17 |
 | 81. Haiku eval and model-efficiency measurement | v1.6 | 19/19 | Complete | 2026-10-17 |
-| 82. 3.1.0 follow-ups | v1.6 | 6/11 | In Progress | - |
+| 82. 3.1.0 follow-ups | v1.6 | 7/11 | In Progress | - |
