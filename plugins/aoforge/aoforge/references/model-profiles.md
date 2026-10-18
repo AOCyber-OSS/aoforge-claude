@@ -34,17 +34,44 @@ new-project` / `init new-milestone` emit `researcher_models`, one model per focu
 
 | Agent | Focus | `quality` | `balanced` | `budget` |
 |-------|-------|-----------|------------|----------|
-| `codebase-mapper` | `concerns` | sonnet | sonnet | haiku |
-| `project-researcher` | `architecture` | opus | sonnet | sonnet |
-| `project-researcher` | `pitfalls` | opus | sonnet | sonnet |
+| `codebase-mapper` | `arch` | sonnet | sonnet | sonnet |
+| `codebase-mapper` | `concerns` | sonnet | sonnet | sonnet |
+| `project-researcher` | `architecture` | opus | sonnet | haiku |
+| `project-researcher` | `pitfalls` | opus | sonnet | haiku |
 
-A focus entry only raises a tier where the focus is judgment work (concerns: security and debt
-calls; architecture and pitfalls: trade-offs). Lowering one waits on a recorded eval;
-`model-profiles.test.cjs` refuses a focus entry below its agent's row.
+A focus entry never sits below its agent's row (`model-profiles.test.cjs` refuses it), and a
+lower tier than a focus had before needs a recorded eval. Objective 81 recorded one
+(`81-HAIKU-EVAL.md`), and the user approved five proposals on 2026-10-17 ("P3, P2-arch-only, P1,
+P4, P5"), applied by objective 82 (TRD 82-03):
 
-`verdict_floor` keeps the pass/fail verdicts (`verifier`, `job-checker`) at `sonnet` or above on
-every profile, a project's `agent_models` included: a false pass ships, and a false fail costs two
-gap-closure cycles. `model_overrides` stays the explicit, unfloored escape.
+- **P2, `codebase-mapper` `arch` raised to sonnet on balanced and budget.** The architecture
+  mapper alone: `tech` and `quality` stay on the shared `codebase-mapper` row (sonnet / haiku /
+  haiku), and the quality profile's mapper tier is unchanged. Haiku made 3.00 fabrications per
+  run against Sonnet's 0.75 (recall 41/46 against 39/46). Caveat: the refusal rests on three
+  misnamed files in one Haiku fleet run.
+- **P3, `codebase-mapper` `concerns` raised to sonnet on budget.** Haiku's concerns recall was
+  21/38 against Sonnet's 26/38 (-13.2 points).
+- **P4 and P5, `project-researcher` `architecture` and `pitfalls` lowered to haiku on budget.**
+  This reverses 76-06's raise to sonnet and puts both back on the agent's own `budget` tier.
+  Recall was 21/22 (P4) and 22/22 (P5) on Haiku against 17/22 and 21/22 on Sonnet, with
+  fabrications 0 against 0. Caveat: n = 2 runs per model, a weak endorsement.
+
+P1 (the UI judge) lives in the stack pack that ships it, not in this table, and is described below.
+**P1, P4 and P5 stay only if they pass TRD 82-08's live measurement:** that TRD checks them against
+the rule pre-registered in `82-CHECK-RULES.md` (TRD 82-06) and reverts any that fail it.
+
+### UI judge start tier (stack pack)
+
+A stack pack sets its own agents' tiers in its manifest `models{}` (`resolve-model` reads them from
+the mirrored pack). The pack that ships the `ui-evaluator` vision judge now sets it to opus / haiku
+/ haiku (`quality` / `balanced` / `budget`), so the judge starts at haiku on balanced and budget. A
+split vote escalates one rung up (haiku to sonnet, `resolve-model ui-evaluator --escalate-from
+haiku`) through that pack's `ui-eval` skill, and opus stays the ceiling. Evidence
+(`81-HAIKU-EVAL.md`, P1): Haiku scored 18/20 against Sonnet's 20/20, exactly the 10-point bound,
+with a split rate of 8/20 against 2/20 and engine escalations on ok states 4/7 against 1/7, at
+about 1/16 of Sonnet's cost per judge session. TRD 82-08 measures whether escalation keeps verdicts
+right at a cost below a Sonnet start, and reverts P1 if it does not. `verdict_floor` is unchanged
+and does not list `ui-evaluator`.
 
 ## Tier → model id
 
