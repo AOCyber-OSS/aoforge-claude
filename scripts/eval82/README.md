@@ -84,6 +84,33 @@ input, total tokens, cache writes, cost and wall time of objective 81's recorded
 (`results/E.json` of objective 81) with the new runs, with deltas new minus each, and renders `82-MEASUREMENT.md`
 (Method, Outcomes, Per role, Per run, Guessed runtime paths, a `## Mechanism checks` heading TRD 82-09 fills, Limits).
 
+## Batch D (`batches/D.cjs`, `score/D.cjs`)
+
+Proposal P1 moves the ui-evaluator to haiku with escalation on split votes. Batch D measures how often that escalation
+fires and what it costs, judging each state the way the engine's `--judge live` does: **one state per session**.
+
+- **Start phase:** for each of objective 81's 20 shown states (`scripts/eval81/fixtures/D/states.json` order), six
+  sessions in the order h1 s1 h2 s2 h3 s3: `D-<state>-h-<k>` (haiku, cap $0.05) and `D-<state>-s-<k>` (sonnet, cap
+  $0.15), 120 in all; kind `prompt`, tools `[Read]`, plugin none, 5-minute timeout, 81's D env flags, role
+  `ui-evaluator`. Prompt: a one-state opening, the engine's own per-state text (81's `engineText`) and the screenshot
+  line; schema: 81's run schema held to one result.
+- **Escalation phase:** the runner plans `runs()` on every invocation, so once a state's three haiku records ended
+  `ok`, the engine's own rules decide, every state treated as expect:pass: `scoreState` gives the reviews,
+  `aggregateVotes().split` the flake flag, `judgeEscalation({live: true, judgeTier: 'haiku', ...})` the states.
+  Each gets `D-<state>-esc-1..3` (sonnet). No answer key and no sonnet sample feed the decision.
+- **Screenshot line:** with `EVAL82_SANDBOX_ROOT=<S>` (absolute, holding `trees.json`, resolved with
+  `fs.realpathSync` as the runner resolves `--sandbox-root`) the prompt names
+  `` `<S>/runs/D/<id>/work/<state>.png` ``; a relative value or one without `trees.json` throws. Unset, the line names
+  `<state>.png` in the working directory and every descriptor carries `fixture.screenshot_path: 'relative'`, so a live
+  run without the variable is visible in every record. `materialize` copies exactly that state's PNG and refuses a work
+  dir other than the one an absolute prompt names.
+- **Scorer:** per arm (haiku start = the P1 policy, haiku raw, sonnet start) accuracy, broken_missed, false_fail,
+  split and escalation rates (over complete states and over ok-labelled states), and the escalated-verdict agreement
+  with the Sonnet start, each with n and a Wilson 95% interval; a state with fewer than three samples in an arm is
+  incomplete, listed and left out of that arm's rates. Cost: Haiku start = charged haiku + escalation sessions;
+  Sonnet start = charged sonnet sessions + an **estimate** of its own opus escalations (those states' sonnet session
+  tokens priced at opus rates from `references/model-rates.json`). Only the scorer opens the answer key.
+
 ## Guessed runtime paths (`lib/guessed-paths.cjs`)
 
 The Read tool expands `~` (objective 81's run C-res-architecture-h-2 read both `~` files it asked for). The defect
