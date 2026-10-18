@@ -238,7 +238,89 @@ function e81Json({ runs, perRole, claudeVersion } = {}) {
   return out;
 }
 
+// ─── Batch D (test list 7, 9-11, 14): single-state judge sessions written from a hand-written vote table ─────────
+// A vote string has one letter per sample k = 1..3: `o` an ok result (is_broken false, no defects), `b` a broken one
+// (one high-severity overflow defect), `-` no sample (no record), `e` a record that ended `error` with no output.
+
+const D_USAGE = { input: 10, cache_creation: 2000, cache_read: 1000, output: 200 };
+const D_CHARGED = { h: 0.01, s: 0.04, esc: 0.03 };
+
+function dResult(state, letter) {
+  const broken = letter === 'b';
+  return {
+    state_id: state,
+    is_broken: broken,
+    matches_expected: !broken,
+    confidence: 0.9,
+    defects: broken ? [{ type: 'overflow', severity: 'high', region: 'body', rationale: 'text runs past the edge' }] : [],
+  };
+}
+
+/** dRecord(state, arm, k, letter) -> the RunRecord of `D-<state>-<arm>-<k>` (arm h | s | esc). */
+function dRecord(state, arm, k, letter) {
+  const id = `D-${state}-${arm}-${k}`;
+  const model = arm === 'h' ? 'haiku' : 'sonnet';
+  const r = runRecord({
+    id, batch: 'D', model, role: 'ui-evaluator', status: letter === 'e' ? 'error' : 'ok',
+    charged: D_CHARGED[arm], cost: D_CHARGED[arm], cap: arm === 'h' ? 0.05 : 0.15,
+    structured: letter === 'e' ? null : { results: [dResult(state, letter)] },
+  });
+  r.usage = { ...D_USAGE };
+  return r;
+}
+
+/** writeDVotes(root, {<state>: {h: 'oob', s: 'ooo', esc: 'oo-'}}) -> the run dirs written under <root>/runs/D/. */
+function writeDVotes(root, table) {
+  const dirs = [];
+  for (const [state, arms] of Object.entries(table)) {
+    for (const [arm, votes] of Object.entries(arms)) {
+      if (!votes) continue;
+      [...votes].forEach((letter, i) => {
+        if (letter === '-') return;
+        const rec = dRecord(state, arm, i + 1, letter);
+        dirs.push(writeRunDir(root, 'D', rec.id, { record: rec }));
+      });
+    }
+  }
+  return dirs;
+}
+
+/**
+ * The scorer's hand-built key and votes (test list 9-11). Hand-computed:
+ *   haiku majority   s1 b  s2 o  s3 o(split)  s4 o(split)  s5 o  s6 b(split)  s7 incomplete (2 samples, one error)
+ *   engine escalation from haiku: s3, s4 (review = split with an ok majority); s6 is a broken majority, not review
+ *   haiku start      s3 -> esc ooo = o, s4 -> esc bbo = b; accuracy 4/6, broken_missed 1/3 (s5), false_fail 1/3 (s6)
+ *   haiku raw        accuracy 3/6, broken_missed 2/3, false_fail 1/3, split 3/6, escalation 2/6, on ok-labelled 1/3
+ *   sonnet           all 7 complete and right: accuracy 7/7, split 2/7 (s5 bbo, s6 oob), escalation 1/7 (s6),
+ *                    on ok-labelled 1/4
+ *   agreement        escalated s3, s4: haiku-start final equals the sonnet majority in both, 2/2
+ *   cost             haiku start = 20 haiku records x 0.01 + 6 escalation records x 0.03 = 0.38
+ *                    sonnet start = 21 x 0.04 = 0.84 + opus estimate for s6's three sonnet sessions at RATES opus
+ *                    (10 x 5 + 2000 x 6.25 + 1000 x 0.5 + 200 x 25) / 1e6 = 0.01805 each, 0.05415 -> 0.89415
+ */
+const D_KEY = {
+  states: [
+    { id: 's1', label: 'broken', defect_type: 'overflow', severity: 'high' },
+    { id: 's2', label: 'ok', defect_type: null, severity: null },
+    { id: 's3', label: 'ok', defect_type: null, severity: null },
+    { id: 's4', label: 'broken', defect_type: 'misalignment', severity: 'medium' },
+    { id: 's5', label: 'broken', defect_type: 'overflow', severity: 'high' },
+    { id: 's6', label: 'ok', defect_type: null, severity: null },
+    { id: 's7', label: 'ok', defect_type: null, severity: null },
+  ],
+};
+const D_VOTES = {
+  s1: { h: 'bbb', s: 'bbb' },
+  s2: { h: 'ooo', s: 'ooo' },
+  s3: { h: 'oob', s: 'ooo', esc: 'ooo' },
+  s4: { h: 'oob', s: 'bbb', esc: 'bbo' },
+  s5: { h: 'ooo', s: 'bbo' },
+  s6: { h: 'bbo', s: 'oob' },
+  s7: { h: 'o-e', s: 'ooo' },
+};
+
 module.exports = {
   runRecord, writeRunDir, toolUseRow, apiBlobRow, toolResultRow, ledgerEntry, SESSION, PROJECT_KEY,
   OPUS, SONNET, T, buildSpawn, E82_SPAWNS, buildOutputs, roleCell, e81Json,
+  D_USAGE, D_CHARGED, dResult, dRecord, writeDVotes, D_KEY, D_VOTES,
 };
