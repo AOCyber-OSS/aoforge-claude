@@ -5219,6 +5219,7 @@ STATE.md stays lean; this file grows over time.
 - [Objective 81]: 81-18: post-hoc 4 access classes (user 'Reclassify + re-run impaired'); C complete $7.42, 0 real escapes, 1 final impaired; ledger $40.05; e81 sandbox deleted
 - [Objective 81]: Objective 81 tier proposals: user approve-selected P1 (ui-evaluator Haiku start; measure escalation rate on real projects), P2 arch-only (focus.codebase-mapper.arch at Sonnet), P3 (concerns budget to Sonnet), P4/P5 (researcher architecture/pitfalls budget to Haiku with a follow-up measurement); P2 quality half not approved; nothing applied in objective 81, five follow-up todos
 - [Objective 81]: 76 records from objective 81: 76-06 closed (MEF-05 SATISFIED); 76-08 measurement closed, start-tier half not met, so MEF-06 is PARTIALLY SATISFIED and left 76's requirements-completed
+- [Objective 82]: 82-02: agents take <runtime> from the spawn prompt's AOForge runtime line, else init runtime_root, else echo ~/.claude/aoforge; the rationale is that a supplied absolute path removes the chance to guess a home directory, not that the Read tool fails on ~
 
 ## Performance Metrics
 
@@ -5476,3 +5477,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 81 P17 | 120min | 4 tasks | 16 files |
 | Objective 81 P18 | 85min | 3 tasks | 14 files |
 | Objective 81 P19 | 18min | 4 tasks | 10 files |
+| Objective 82 P02 | 15min | 3 tasks | 15 files |
