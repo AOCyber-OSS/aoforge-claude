@@ -229,6 +229,78 @@ describe('57-01 executor token totals', () => {
     });
   });
 
+  // TRD 82-04: indexExecutorTranscripts takes the same `alsoRoots` and hands them to repoMatcher, so `tokens trd|coverage|
+  // backfill --also-root` see executor transcripts recorded under a former checkout root. FORMER is never created.
+  describe('82-04 the executor index takes former checkout roots', () => {
+    let FORMER;
+    let formerWorktree;
+
+    before(() => {
+      FORMER = path.join(path.dirname(repo), 'moved-from-' + path.basename(repo));
+      formerWorktree = path.join(path.dirname(FORMER), '.df-worktrees', path.basename(FORMER), '99-23');
+      assert.equal(fs.existsSync(FORMER), false, 'the former root must not exist on disk');
+    });
+
+    /**
+     * One executor of this repo (99-01, REPO_ROOT line) and three recorded under the former root: a REPO_ROOT line
+     * naming it (99-21), a cwd inside it (99-22) and a cwd in its worktree base (99-23), the last two with no REPO_ROOT.
+     */
+    function formerFixture() {
+      const r = freshRoot();
+      writeExecutor(r, { session: 'sess-1', agentId: 'a1', description: 'Execute TRD 99-01', prompt: planIdPrompt('99-01', '99-demo') });
+      fx.formerRootExecutor(r, { former: FORMER, trdId: '99-21', objectiveDir: '99-demo' });
+      const tag = (id) => fx.executorPrompt('objective_tag', { id, objectiveDir: '99-demo' });
+      fx.writeSubagentTranscript(r, {
+        projectKey: fx.projectKeyFor(FORMER), session: 'sess-former-cwd', agentId: 'former-cwd',
+        prompt: tag('99-22'), cwd: path.join(FORMER, 'plugins'), records: fx.THREE_MESSAGES,
+      });
+      fx.writeSubagentTranscript(r, {
+        projectKey: fx.projectKeyFor(formerWorktree), session: 'sess-former-wt', agentId: 'former-wt',
+        prompt: tag('99-23'), cwd: formerWorktree, records: fx.THREE_MESSAGES,
+      });
+      return r;
+    }
+
+    // Captured from the HEAD code before TRD 82-04 changed indexExecutorTranscripts (the fixture root is <ROOT>, the
+    // repo's project key <KEY>): the default index of the fixture, byte for byte.
+    const DEFAULT_INDEX_JSON = '{"entries":[{"file":"<ROOT>/<KEY>/sess-1/subagents/agent-a1.jsonl","session":"sess-1",'
+      + '"agent_id":"a1","id":"99-01","dirs":["99-demo"],"match":"repo_root"}],'
+      + '"counts":{"executor_transcripts":4,"identified":1,"unidentified":0,"ambiguous":0,"foreign":3}}';
+
+    test('q82-1: alsoRoots claims the former root\'s executors by REPO_ROOT, cwd and worktree; without it they are foreign', () => {
+      const r = formerFixture();
+      const aliased = tu.indexExecutorTranscripts({ root: r, repoRoot: repo, alsoRoots: [FORMER] });
+      assert.deepStrictEqual(Object.fromEntries(aliased.entries.map((e) => [e.id, e.match])), {
+        '99-01': 'repo_root', '99-21': 'repo_root', '99-22': 'cwd', '99-23': 'worktree',
+      });
+      assert.deepStrictEqual(aliased.counts, { ...ZERO_COUNTS, executor_transcripts: 4, identified: 4 });
+      const found = tu.tokensForTrd(aliased, { id: '99-21', dir: '99-demo', sharedNumber: false });
+      assert.equal(found.status, 'recovered');
+      assert.deepStrictEqual(found.totals, THREE_TOTALS);
+
+      const plain = tu.indexExecutorTranscripts({ root: r, repoRoot: repo });
+      assert.deepStrictEqual(plain.entries.map((e) => e.id), ['99-01']);
+      assert.deepStrictEqual(plain.counts, { ...ZERO_COUNTS, executor_transcripts: 4, identified: 1, foreign: 3 });
+      assert.equal(tu.tokensForTrd(plain, { id: '99-21', dir: '99-demo', sharedNumber: false }).reason, 'no_transcript');
+    });
+
+    test('q82-2: omitted or empty alsoRoots give the index of before, byte for byte', () => {
+      const r = formerFixture();
+      const omitted = tu.indexExecutorTranscripts({ root: r, repoRoot: repo });
+      const empty = tu.indexExecutorTranscripts({ root: r, repoRoot: repo, alsoRoots: [] });
+      assert.deepStrictEqual(empty, omitted);
+      const placeheld = JSON.stringify(omitted).split(r).join('<ROOT>').split(key).join('<KEY>');
+      assert.equal(placeheld, DEFAULT_INDEX_JSON);
+    });
+
+    test('q82-3: the library stays strict: a relative or non-array alsoRoots is a TypeError (the CLI resolves paths)', () => {
+      const r = formerFixture();
+      const typeErr = (e) => e instanceof TypeError && /alsoRoots/.test(e.message);
+      assert.throws(() => tu.indexExecutorTranscripts({ root: r, repoRoot: repo, alsoRoots: ['moved-from-repo'] }), typeErr);
+      assert.throws(() => tu.indexExecutorTranscripts({ root: r, repoRoot: repo, alsoRoots: FORMER }), typeErr);
+    });
+  });
+
   test('6: a shared objective number counts a transcript only for the directory its prompt names', () => {
     const r = freshRoot();
     const beta = writeExecutor(r, { session: 's', agentId: 'a-beta', prompt: planIdPrompt('10-01', '10-beta') });

@@ -187,6 +187,25 @@ function writeOverheadTranscript(projectsRoot, { projectKey, session, agentId, s
   });
 }
 
+/**
+ * TRD 82-04: one executor transcript recorded before the checkout moved. It lives under the FORMER root's project key,
+ * its first record's cwd is the former root, and its prompt is the current orchestrator shape naming `REPO_ROOT:
+ * <former>` and `PLAN_ID: <trdId>`. The former root need not exist on disk. Returns the jsonl path.
+ */
+function formerRootExecutor(projectsRoot, {
+  former, trdId, objectiveDir, session = `sess-former-${trdId}`, agentId = `former-${trdId}`, records = THREE_MESSAGES,
+}) {
+  return writeSubagentTranscript(projectsRoot, {
+    projectKey: projectKeyFor(former),
+    session,
+    agentId,
+    description: `Execute TRD ${trdId}`,
+    prompt: executorPrompt('plan_id', { id: trdId, objectiveDir, repoRoot: former }),
+    cwd: former,
+    records,
+  });
+}
+
 // Overhead spawns of TRD 58-02. Six minutes / four minutes of wall time; all literal.
 // PLANNER_SPAWN: tokens_input 111015 (input 15 + cache_creation 1000 + cache_read 110000), output 6000.
 const PLANNER_SPAWN = Object.freeze({
@@ -226,6 +245,7 @@ module.exports = {
   executorPrompt,
   writeSubagentTranscript,
   writeOverheadTranscript,
+  formerRootExecutor,
   THREE_MESSAGES,
   PLANNER_SPAWN,
   VERIFIER_SPAWN,
