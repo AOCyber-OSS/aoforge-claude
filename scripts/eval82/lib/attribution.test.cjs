@@ -196,6 +196,38 @@ describe('2. roleSpawns', () => {
   });
 });
 
+describe('2b. home inference and spawn pairing', () => {
+  test('2. the run home is read from the transcript User instructions attachment: a Read under it is not a guessed path', () => {
+    const { roleSpawns, summarizeSpawn } = load();
+    const dir = tmp();
+    const attach = {
+      type: 'attachment',
+      attachment: { type: 'instructions', files: [{ path: '/sandbox/run-9/home/.claude/CLAUDE.md', type: 'User', content: 'x' }] },
+    };
+    const read = (id, p) => ({ id, name: 'Read', input: { file_path: p } });
+    const rows = [
+      fx.promptRow({ agentId: 'e1' }),
+      attach,
+      ...fx.assistantCall({ id: 'm1', agentId: 'e1', usage: { input: 1, cc: 1, cr: 1, out: 1 }, tools: [read('r1', '/sandbox/run-9/home/.claude/aoforge/references/tdd.md'), read('r2', '/Users/aocyber/.claude/aoforge/references/tdd.md')] }),
+      fx.toolResult({ toolUseId: 'r1', agentId: 'e1', content: 'ok' }),
+      fx.toolResult({ toolUseId: 'r2', agentId: 'e1', content: 'denied', isError: true }),
+    ];
+    fx.writeRun(dir, { main: [fx.promptRow()], subagents: [{ agentId: 'e1', agentType: 'aoforge:executor', rows }] });
+    const s = summarizeSpawn(roleSpawns(dir).spawns.find((x) => x.role === 'executor'));
+    assert.equal(s.categories['runtime_read:references/tdd.md'].count, 1);
+    assert.equal(s.categories.guessed_runtime_path.count, 1);
+  });
+
+  test('8. pairSpawns pairs by description when every spawn has a distinct one, else by order', () => {
+    const { pairSpawns } = load();
+    const a = [{ description: 'Execute TRD 01-01', agent_id: 'a1' }, { description: 'Execute TRD 01-02', agent_id: 'a2' }];
+    const b = [{ description: 'Execute TRD 01-02', agent_id: 'b2' }, { description: 'Execute TRD 01-01', agent_id: 'b1' }];
+    assert.deepEqual(pairSpawns(a, b).map(([x, y]) => [x.agent_id, y.agent_id]), [['a1', 'b1'], ['a2', 'b2']]);
+    const c = [{ description: null, agent_id: 'c1' }, { description: null, agent_id: 'c2' }];
+    assert.deepEqual(pairSpawns(c, b).map(([x, y]) => [x.agent_id, y.agent_id]), [['c1', 'b2'], ['c2', 'b1']]);
+  });
+});
+
 describe('3. apiCalls', () => {
   test('3. a call spread over three lines counts once and its usage once; calls keep transcript order', () => {
     const { apiCalls } = load();
@@ -458,7 +490,7 @@ describe('8. compare', () => {
     assert.equal(by['runtime_read:templates/trd-prompt.md'].count_b, 1);
     assert.equal(by['runtime_read:templates/trd-prompt.md'].dissuing, 23702);
     const shares = c.categories.reduce((n, r) => n + r.share, 0);
-    assert.ok(Math.abs(shares - 1) < 1e-9, `shares sum to ${shares}`);
+    assert.ok(Math.abs(shares - 1) < 1e-5, `shares sum to ${shares} (each is reported to 6 decimals)`);
     assert.equal(c.categories.reduce((n, r) => n + r.dissuing, 0), E.decomposition.dtotal);
     assert.ok(Math.abs(c.categories[0].dissuing) >= Math.abs(c.categories[c.categories.length - 1].dissuing), 'sorted by size of the delta');
   });

@@ -13,5 +13,5 @@ requirements-completed: []
 
 ## Progress
 - [x] Task 1: Hand-built transcript builder for attribution tests — 1a46961f
-- [ ] Task 2: attribution.cjs (test list 1-9) — RED committed (this commit: 74 tests, all failing on the missing module); next step: implement scripts/eval82/lib/attribution.cjs until attribution.test.cjs is green, then commit GREEN
-- [ ] Task 3: Run the attribution on the four build runs and publish 82-DIAGNOSIS.md — next step: run summarizeSpawn on the four runs and compare with 81-MEASUREMENT.md role totals
+- [x] Task 2: attribution.cjs (test list 1-9) — RED bc27e3e0, GREEN (this commit): 76 tests pass
+- [ ] Task 3: Run the attribution on the four build runs and publish 82-DIAGNOSIS.md — next step: run summarizeSpawn on the four runs and compare with 81-MEASUREMENT.md role totals (planner 1,321,277 vs 2,205,630; executor 2,769,891 vs 3,326,048)
