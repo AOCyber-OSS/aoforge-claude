@@ -5,7 +5,7 @@
  *
  * Thin CLI front end for the forward token stamp, over lib/token-usage.cjs (TRD 57-01):
  *
- *   aof-tools tokens trd <trd-id> [--objective-dir <dir>] [--repo <path>] [--root <dir>]
+ *   aof-tools tokens trd <trd-id> [--objective-dir <dir>] [--repo <path>] [--root <dir>] [--also-root <dir>]...
  *       Read-only. The executor token totals of one TRD from Claude Code transcripts.
  *   aof-tools tokens stamp <trd-id> --draft <path> [--objective-dir <dir>] [--repo <path>] [--root <dir>]
  *       Writes tokens_input, tokens_output, tokens_cache_read, tokens_cache_write, token_model and
@@ -13,7 +13,7 @@
  *       `summary post`, so the store-aware verb publishes the fields. A draft inside .aoforge/ is refused:
  *       every planning write still goes through `summary post` (D-01).
  *
- *   aof-tools tokens backfill [--write] [--force] [--repo <path>] [--root <dir>]
+ *   aof-tools tokens backfill [--write] [--force] [--repo <path>] [--root <dir>] [--also-root <dir>]...
  *       TRD 57-06 (EST-07). Recovers executor token usage for every historical SUMMARY of the checkout from the transcripts
  *       that survive (lib/token-backfill.cjs). A DRY RUN unless --write: it prints recovered and unrecovered counts (by
  *       reason) and changes no file. --write stamps each recovered SUMMARY through `summary post` (tokens_source:
@@ -21,7 +21,7 @@
  *       the main checkout (--repo, default resolveMainRoot(cwd)); SUMMARYs are read and written in the checkout holding
  *       cwd. Unrecoverable history (retention deleted the transcript) is the normal outcome: exit 0.
  *
- *   aof-tools tokens coverage [--milestone <v> | --objective <N>] [--repo <path>] [--root <dir>]
+ *   aof-tools tokens coverage [--milestone <v> | --objective <N>] [--repo <path>] [--root <dir>] [--also-root <dir>]...
  *       TRD 66-01 (EST-09). Read-only. Forward-stamp coverage: of the TRD SUMMARYs in a scope, how many carry tokens stamped
  *       at write time (tokens_source "live"), as live / counted with an exact fraction, a decimal floored at 6 places and an
  *       integer check against the 95% target (lib/token-coverage.cjs). The scope is the current milestone of ROADMAP.md,
@@ -31,6 +31,14 @@
  *       SUMMARYs are read in the checkout holding cwd (the main checkout in store mode), transcripts for --repo (default
  *       the main checkout). It writes no file. A report exits 0 whatever the coverage; exit 1 only for a usage error, an
  *       unknown milestone, a missing ROADMAP.md or an objective with no directory.
+ *
+ *   --also-root <dir> (TRD 82-04), repeatable, relative to cwd, for trd, coverage and backfill (stamp refuses it): a
+ *       former checkout path of the repository, such as its path before a move. Executor transcripts recorded there (a
+ *       REPO_ROOT line naming it, a cwd inside it or its worktree directory, a path under its current or legacy planning
+ *       directory) count as the repository's, through the same token-usage.repoMatcher `alsoRoots` that `calibrate
+ *       --also-root` uses. Normalised by calibrate's rules (quick 41): resolved, de-duplicated and sorted by code unit; a
+ *       root equal to the repository is dropped; one that contains it is a usage error. When any remain, the JSON gains
+ *       `also_roots` and the first text line ends ` · also roots <a, b>`; without the flag every output is unchanged.
  *
  * Never blocks publication: no matching transcript (retention, an older runtime, another harness) is
  * `stamped:false` with exit 0 and the draft untouched. Only usage errors and a `.aoforge/` draft exit 1.
@@ -51,13 +59,21 @@ const { normalizeObjectiveName, objectiveDirMatches } = require('./helpers.cjs')
 const { planningRoot, planningRel } = require('./compat.cjs');
 
 const USAGE =
-  'aof-tools tokens <trd <trd-id> | stamp <trd-id> --draft <path> | backfill [--write] [--force] | coverage [--milestone <v> | --objective <N>]> [--objective-dir <dir>] [--repo <path>] [--root <dir>] [--raw]';
+  'aof-tools tokens <trd <trd-id> | stamp <trd-id> --draft <path> | backfill [--write] [--force] | coverage [--milestone <v> | --objective <N>]> [--objective-dir <dir>] [--repo <path>] [--root <dir>] [--also-root <dir>]... [--raw]';
 
 const VALUE_FLAGS = {
   trd: ['objective-dir', 'repo', 'root'],
   stamp: ['draft', 'objective-dir', 'repo', 'root'],
   backfill: ['repo', 'root'],
   coverage: ['milestone', 'objective', 'repo', 'root'],
+};
+
+/** Repeatable value flags per subcommand (TRD 82-04): every value is kept, in order. */
+const LIST_FLAGS = {
+  trd: ['also-root'],
+  stamp: [],
+  backfill: ['also-root'],
+  coverage: ['also-root'],
 };
 
 /** Boolean flags per subcommand. `--write` and `--force` exist for `backfill` only. */
@@ -79,7 +95,11 @@ function usageError(message) {
  *
  * `backfill` takes no TRD id: `id` is null there, and `--write` / `--force` arrive as `flags.write` / `flags.force` = true.
  *
- * @returns {{ok:true, sub: string, id: string|null, flags: Object<string,string|boolean>} | {ok:false, message:string}}
+ * `alsoRoots` holds every `--also-root` value in order, unresolved ([] without the flag). The flag belongs to trd,
+ * coverage and backfill; on stamp it is a usage error (the live stamp names the running checkout).
+ *
+ * @returns {{ok:true, sub: string, id: string|null, flags: Object<string,string|boolean>, alsoRoots: string[]}
+ *   | {ok:false, message:string}}
  */
 function parseArgs(argv) {
   const sub = argv[0];
@@ -90,6 +110,7 @@ function parseArgs(argv) {
   const allowed = VALUE_FLAGS[sub];
   const bools = BOOL_FLAGS[sub];
   const flags = {};
+  const alsoRoots = [];
   const positionals = [];
   for (let i = 1; i < argv.length; i++) {
     const tok = argv[i];
@@ -98,6 +119,14 @@ function parseArgs(argv) {
     const name = tok.slice(2);
     if (bools.includes(name)) { flags[name] = true; continue; }
     if (BACKFILL_ONLY.includes(name)) return usageError(`${tok} is only valid for tokens backfill`);
+    if (name === 'also-root') {
+      if (!LIST_FLAGS[sub].includes(name)) return usageError('--also-root applies to tokens trd, coverage and backfill');
+      const value = argv[i + 1];
+      if (value === undefined || value.startsWith('--')) return usageError(`${tok} needs a value`);
+      alsoRoots.push(value);
+      i++;
+      continue;
+    }
     if (!allowed.includes(name)) return usageError(`unknown flag ${tok} for tokens ${sub}`);
     const value = argv[i + 1];
     if (value === undefined || value.startsWith('--')) return usageError(`${tok} needs a value`);
@@ -108,7 +137,7 @@ function parseArgs(argv) {
     if (positionals.length > 0) {
       return usageError(`tokens backfill takes no TRD id or argument, got ${JSON.stringify(positionals[0])}; it covers every SUMMARY`);
     }
-    return { ok: true, sub, id: null, flags };
+    return { ok: true, sub, id: null, flags, alsoRoots };
   }
   if (sub === 'coverage') {
     if (positionals.length > 0) {
@@ -120,14 +149,14 @@ function parseArgs(argv) {
     if (flags.objective !== undefined && !/^\d+(?:\.\d+)?$/.test(flags.objective)) {
       return usageError(`--objective needs an objective number such as 65 or 4.1, got ${JSON.stringify(flags.objective)}`);
     }
-    return { ok: true, sub, id: null, flags };
+    return { ok: true, sub, id: null, flags, alsoRoots };
   }
   if (positionals.length === 0) return usageError(`tokens ${sub} needs a TRD id (for example 57-03)`);
   if (positionals.length > 1) return usageError(`tokens ${sub} takes one TRD id, got ${positionals.length}`);
   const id = tokenUsage.normTrdId(positionals[0]);
   if (!id) return usageError(`invalid TRD id ${JSON.stringify(positionals[0])} (expected <objective>-<NN>, for example 57-03)`);
   if (sub === 'stamp' && !flags.draft) return usageError('tokens stamp needs --draft <path> (a SUMMARY draft outside .aoforge/)');
-  return { ok: true, sub, id, flags };
+  return { ok: true, sub, id, flags, alsoRoots };
 }
 
 function realOrResolved(p) {
@@ -136,6 +165,42 @@ function realOrResolved(p) {
 
 function within(p, base) {
   return p === base || p.startsWith(base + path.sep);
+}
+
+/**
+ * The `--also-root` values as former checkout roots of `repoRoot` (TRD 82-04), by calibrate's rules (quick 41,
+ * calibrator.cjs normalizeAlsoRoots / applicableAlsoRoots, which are not exported): each resolved against `base` (cwd),
+ * de-duplicated and sorted by code unit; a root equal to the repository, as given or realpath'd, is dropped; a root that
+ * contains the repository is a usage error, because it would claim every checkout under it. Matching itself stays in
+ * token-usage.repoMatcher.
+ *
+ * @returns {{ok: true, roots: string[]} | {ok: false, message: string}}
+ */
+function resolveAlsoRoots(values, base, repoRoot) {
+  if (values.length === 0) return { ok: true, roots: [] };
+  const repoReal = realOrResolved(repoRoot);
+  const roots = [...new Set(values.map((v) => path.resolve(base, v)))].sort();
+  const kept = roots.filter((r) => r !== repoRoot && realOrResolved(r) !== repoReal);
+  for (const r of kept) {
+    if (within(repoRoot, r) || within(repoReal, realOrResolved(r))) {
+      return usageError(`--also-root ${r} contains the repository ${repoRoot}: it would claim every checkout under it`);
+    }
+  }
+  return { ok: true, roots: kept };
+}
+
+/** `text` with ` · also roots <a, b>` at the end of its first line when `roots` is non-empty, else `text` itself. */
+function withAlsoRootsText(text, roots) {
+  if (roots.length === 0) return text;
+  const suffix = ` · also roots ${roots.join(', ')}`;
+  const nl = text.indexOf('\n');
+  return nl === -1 ? `${text}${suffix}` : `${text.slice(0, nl)}${suffix}${text.slice(nl)}`;
+}
+
+/** `result` with `also_roots` added when `roots` is non-empty (the same object otherwise). */
+function withAlsoRootsResult(result, roots) {
+  if (roots.length > 0) result.also_roots = roots;
+  return result;
 }
 
 /** The path segment after the last `/objectives/`, when something follows it besides the file name itself. */
@@ -176,13 +241,16 @@ function summaryLine(totals, count) {
  *
  * @returns {{ok: true, result: object, text: string, exit: number} | {ok: false, message: string}}
  */
-function runBackfill({ flags, cwd, root }) {
+function runBackfill({ flags, alsoRoots: alsoRootValues = [], cwd, root }) {
   const base = path.resolve(cwd);
   const main = planningMode.resolveMainRoot(base);
   if (!flags.repo && !main) {
     return usageError(`no AOForge project at ${base}; run tokens backfill inside one or pass --repo <path>`);
   }
   const repoRoot = flags.repo ? realOrResolved(path.resolve(base, flags.repo)) : main;
+  const also = resolveAlsoRoots(alsoRootValues, base, repoRoot);
+  if (!also.ok) return also;
+  const alsoRoots = also.roots;
   const checkoutRoot = planningMode.resolveCheckoutRoot(base) || repoRoot;
   const transcriptRoot = flags.root ? path.resolve(base, flags.root) : (root || tokenUsage.defaultTranscriptRoot());
   const force = flags.force === true;
@@ -190,7 +258,7 @@ function runBackfill({ flags, cwd, root }) {
   let plan;
   let applied = null;
   try {
-    plan = tokenBackfill.planBackfill({ checkoutRoot, repoRoot, root: transcriptRoot, force });
+    plan = tokenBackfill.planBackfill({ checkoutRoot, repoRoot, root: transcriptRoot, force, alsoRoots });
     if (flags.write === true) applied = tokenBackfill.applyBackfill(plan, { checkoutRoot, force });
   } catch (err) {
     return { ok: false, message: `tokens backfill failed: ${err.message}` };
@@ -208,8 +276,9 @@ function runBackfill({ flags, cwd, root }) {
       .map((e) => ({ id: e.id, objective_dir: e.objective_dir, reason: e.reason })),
   };
   if (applied) result.applied = applied;
+  withAlsoRootsResult(result, alsoRoots);
   const exit = applied && applied.write_failed.length > 0 ? 1 : 0;
-  return { ok: true, result, text: tokenBackfill.formatBackfillReport(plan, applied), exit };
+  return { ok: true, result, text: withAlsoRootsText(tokenBackfill.formatBackfillReport(plan, applied), alsoRoots), exit };
 }
 
 /**
@@ -258,13 +327,16 @@ function objectiveScopeDirs(readRoot, number) {
  *
  * @returns {{ok: true, result: object, text: string, exit: number} | {ok: false, message: string}}
  */
-function runCoverage({ flags, cwd, root }) {
+function runCoverage({ flags, alsoRoots: alsoRootValues = [], cwd, root }) {
   const base = path.resolve(cwd);
   const found = planningMode.resolveMainRoot(base);
   if (!flags.repo && !found) {
     return usageError(`no AOForge project at ${base}; run tokens coverage inside one or pass --repo <path>`);
   }
   const repoRoot = flags.repo ? realOrResolved(path.resolve(base, flags.repo)) : found;
+  const also = resolveAlsoRoots(alsoRootValues, base, repoRoot);
+  if (!also.ok) return also;
+  const alsoRoots = also.roots;
   const main = found || repoRoot;
   const checkout = planningMode.resolveCheckoutRoot(base) || repoRoot;
   const readRoot = readRootFor({ mode: planningMode.planningMode(main).mode, main, checkout });
@@ -295,13 +367,13 @@ function runCoverage({ flags, cwd, root }) {
     report = tokenCoverage.buildCoverage({
       readRoot,
       scope,
-      indexFactory: () => tokenUsage.indexExecutorTranscripts({ root: transcriptRoot, repoRoot }),
+      indexFactory: () => tokenUsage.indexExecutorTranscripts({ root: transcriptRoot, repoRoot, alsoRoots }),
     });
   } catch (err) {
     return { ok: false, message: `tokens coverage failed: ${err.message}` };
   }
-  const result = { ...report, repo: repoRoot, transcripts_root: transcriptRoot };
-  return { ok: true, result, text: tokenCoverage.formatCoverage(report), exit: 0 };
+  const result = withAlsoRootsResult({ ...report, repo: repoRoot, transcripts_root: transcriptRoot }, alsoRoots);
+  return { ok: true, result, text: withAlsoRootsText(tokenCoverage.formatCoverage(report), alsoRoots), exit: 0 };
 }
 
 /**
@@ -314,13 +386,17 @@ function runTokens({ argv = [], cwd = process.cwd(), root } = {}) {
   const parsed = parseArgs(argv);
   if (!parsed.ok) return parsed;
   const { sub, id, flags } = parsed;
-  if (sub === 'backfill') return runBackfill({ flags, cwd, root });
-  if (sub === 'coverage') return runCoverage({ flags, cwd, root });
+  if (sub === 'backfill') return runBackfill({ flags, alsoRoots: parsed.alsoRoots, cwd, root });
+  if (sub === 'coverage') return runCoverage({ flags, alsoRoots: parsed.alsoRoots, cwd, root });
 
   const base = path.resolve(cwd);
   const repo = flags.repo
     ? realOrResolved(path.resolve(base, flags.repo))
     : (planningMode.resolveMainRoot(base) || realOrResolved(base));
+  // stamp never gets here with a former root: parseArgs refuses --also-root for it
+  const also = resolveAlsoRoots(parsed.alsoRoots, base, repo);
+  if (!also.ok) return also;
+  const alsoRoots = also.roots;
   const checkout = planningMode.resolveCheckoutRoot(base) || repo;
   const transcriptRoot = flags.root ? path.resolve(base, flags.root) : (root || tokenUsage.defaultTranscriptRoot());
 
@@ -351,7 +427,7 @@ function runTokens({ argv = [], cwd = process.cwd(), root } = {}) {
   if (picked.ambiguous) {
     outcome = { status: 'unrecovered', reason: 'ambiguous_objective', transcripts: [], totals: null };
   } else {
-    const index = tokenUsage.indexExecutorTranscripts({ root: transcriptRoot, repoRoot: repo });
+    const index = tokenUsage.indexExecutorTranscripts({ root: transcriptRoot, repoRoot: repo, alsoRoots });
     outcome = tokenUsage.tokensForTrd(index, { id, dir: picked.dir, sharedNumber: objectiveDirs.length > 1 });
   }
   const objectiveDir = picked.ambiguous ? null : picked.dir;
@@ -361,8 +437,9 @@ function runTokens({ argv = [], cwd = process.cwd(), root } = {}) {
     const result = { trd: id, objective_dir: objectiveDir, found: recovered, transcripts: outcome.transcripts };
     if (recovered) result.fields = fieldValues(outcome.totals, 'live');
     else result.reason = outcome.reason;
+    withAlsoRootsResult(result, alsoRoots);
     const text = recovered ? summaryLine(outcome.totals, outcome.transcripts.length) : `not found: ${outcome.reason}`;
-    return { ok: true, result, text, exit: 0 };
+    return { ok: true, result, text: withAlsoRootsText(text, alsoRoots), exit: 0 };
   }
 
   const result = { trd: id, draft, objective_dir: objectiveDir, stamped: false, fields: null, transcripts: outcome.transcripts };
