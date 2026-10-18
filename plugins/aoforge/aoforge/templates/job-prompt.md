@@ -57,10 +57,10 @@ src/
 </file_tree>
 
 <execution_context>
-@~/.claude/aoforge/workflows/execute-trd.md
-@~/.claude/aoforge/templates/summary.md
+<runtime>/workflows/execute-trd.md
+<runtime>/templates/summary.md
 [If plan contains checkpoint tasks (type="checkpoint:*"), add:]
-@~/.claude/aoforge/references/checkpoints.md
+<runtime>/references/checkpoints.md
 </execution_context>
 
 <context>
@@ -111,7 +111,7 @@ src/
   <done>[Acceptance criteria]</done>
 </task>
 
-<!-- For checkpoint task examples and patterns, see @~/.claude/aoforge/references/checkpoints.md -->
+<!-- For checkpoint task examples and patterns, see <runtime>/references/checkpoints.md -->
 <!-- Key rule: Claude starts dev server BEFORE human-verify checkpoints. User only visits URLs. -->
 
 <task type="checkpoint:decision" gate="blocking">
@@ -316,7 +316,7 @@ TDD features get dedicated jobs with `type: tdd`.
 → Yes: Create a TDD job
 → No: Standard task in standard job
 
-See `~/.claude/aoforge/references/tdd.md` for TDD job structure.
+See `<runtime>/references/tdd.md` for TDD job structure.
 
 ---
 
@@ -446,9 +446,9 @@ Output: Working dashboard component.
 </objective>
 
 <execution_context>
-@~/.claude/aoforge/workflows/execute-trd.md
-@~/.claude/aoforge/templates/summary.md
-@~/.claude/aoforge/references/checkpoints.md
+<runtime>/workflows/execute-trd.md
+<runtime>/templates/summary.md
+<runtime>/references/checkpoints.md
 </execution_context>
 
 <context>
@@ -575,7 +575,7 @@ user_setup:
 
 **Result:** Execute-plan generates `{objective}-USER-SETUP.md` with checklist for the user.
 
-See `~/.claude/aoforge/templates/user-setup.md` for full schema and examples
+See `<runtime>/templates/user-setup.md` for full schema and examples
 
 ---
 
@@ -642,4 +642,4 @@ Task completion ≠ Goal achievement. A task "create chat component" can complet
 5. Gaps found → fix plans created → execute → re-verify
 6. All must_haves pass → objective complete
 
-See `~/.claude/aoforge/workflows/verify-objective.md` for verification logic.
+See `<runtime>/workflows/verify-objective.md` for verification logic.

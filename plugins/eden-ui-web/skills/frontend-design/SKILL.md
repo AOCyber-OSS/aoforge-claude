@@ -89,7 +89,8 @@ If no brand is configured, suggest running the `brand-builder` skill first.
    diverges. If you can infer it, declare the read and proceed.
 
 2. **Detect greenfield vs redesign** — If this page already exists in any
-   form, stop and load `~/.claude/aoforge/references/design-redesign.md`. Misclassifying a
+   form, stop and load `{runtime_root}/references/design-redesign.md` (`{runtime_root}` is what
+   `RUNTIME_ROOT=$(echo ~/.claude/aoforge) && echo "$RUNTIME_ROOT"` prints). Misclassifying a
    redesign as a greenfield build is the largest single source of bad redesign
    work: it silently changes IA, slugs, nav labels and analytics identifiers.
 

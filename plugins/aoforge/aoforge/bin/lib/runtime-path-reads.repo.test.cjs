@@ -111,6 +111,11 @@ const ALLOW = [
     needle: 'override goes in `~/.claude/aoforge/stacks/<id>.md`',
     reason: 'tells a human where a user or org stack-profile override file goes; not a read instruction',
   },
+  {
+    file: 'plugins/aoforge/skills/handoff/SKILL.md',
+    needle: 'You add it to ~/.claude/aoforge/aoforge-watch-allow.json',
+    reason: 'an AskUserQuestion option telling the user which allowlist file they edit themselves; nothing reads it here',
+  },
 ];
 const ALLOW_MAX = 12;
 

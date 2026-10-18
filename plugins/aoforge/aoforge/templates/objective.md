@@ -37,7 +37,7 @@ parent_issue: #9                                     # OPTIONAL — same format 
                                                      # The repo's [Roadmap] parent issue
                                                      # (or org-level epic for cross-repo work).
 org_initiative: aoforge-internal-alpha               # OPTIONAL — filename in
-                                                     #   ~/.claude/aoforge/initiatives/<name>.md
+                                                     #   <runtime>/initiatives/<name>.md
                                                      # Read by planner for strategic context;
                                                      # NOT synced to GitHub in v1.1.
 org_project: PVT_kwDODwqLrc4BRsOP                   # OPTIONAL — overrides PROJECT.md default.
@@ -86,7 +86,7 @@ All four fields are optional and back-compat — existing OBJECTIVE.md files wit
 
 - `github_issue`: Links the objective to its GH issue. Written by `aof-tools gh sync` on first sync; a differing value you set is kept and reported. Accepts full ref (`AO-Cyber-Systems/aoforge-claude#20`) or shorthand (`#20`) resolved against PROJECT.md `github_repo`.
 - `parent_issue`: Walked by `aof-tools gh resolve` to find the repo's `[Roadmap]` issue. If absent, the resolver falls back to searching the repo for an issue titled `[Roadmap]`. Same format as `github_issue`.
-- `org_initiative`: Filename (no extension, no path) of an initiatives file in `~/.claude/aoforge/initiatives/<name>.md`. Reserved field for v1.1 — planner reads it for strategic context but does not sync it to GitHub.
+- `org_initiative`: Filename (no extension, no path) of an initiatives file in `<runtime>/initiatives/<name>.md`. Reserved field for v1.1 — planner reads it for strategic context but does not sync it to GitHub.
 - `org_project`: GitHub Project v2 ID (starts with `PVT_`). Inherited from PROJECT.md unless overridden here. Use when this objective belongs to a different org Project than the project's default.
 
 **Goal:**
@@ -106,7 +106,7 @@ When the planner runs `aof-tools intent resolve --objective <id>`, it walks this
 1. **TRD frontmatter explicit override** (`type: tdd`, `confidence: high`, etc.)
 2. **OBJECTIVE.md `overrides` block** (this file)
 3. **CLAUDE.md user playbook directives** (extracted from `~/.claude/CLAUDE.md` and `./CLAUDE.md`)
-4. **`(kind, work)` defaults table** (`~/.claude/aoforge/references/defaults-table.md`)
+4. **`(kind, work)` defaults table** (`<runtime>/references/defaults-table.md`)
 5. **Built-in fallback** (current planner behavior — preserved for backward compat)
 
 The planner prints which level supplied each field of the resolved configuration, so users can see exactly where each value came from.

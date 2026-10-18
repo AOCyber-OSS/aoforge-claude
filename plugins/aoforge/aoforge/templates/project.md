@@ -98,7 +98,7 @@ Common types: Tech stack, Timeline, Budget, Dependencies, Compatibility, Perform
 
 **`kind` (frontmatter, required):**
 - What the project IS and how it is consumed
-- Drives the project-side defaults the planner applies via the `(kind, work)` table at `~/.claude/aoforge/references/defaults-table.md`
+- Drives the project-side defaults the planner applies via the `(kind, work)` table at `<runtime>/references/defaults-table.md`
 - Set once at project creation; treat as fixed for the project's lifetime
 - If the project genuinely changes shape (e.g., a library grows a CLI wrapper), prefer splitting into separate projects over editing `kind`
 

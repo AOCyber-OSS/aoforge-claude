@@ -28,9 +28,9 @@ Replaces 4 sibling skills: new-milestone, audit-milestone, complete-milestone, p
 </objective>
 
 <execution_context>
-One workflow is loaded after routing, never all of them: `Read` the `workflow` path the route returns (expand `~`), then follow it.
-The routes are ~/.claude/aoforge/workflows/new-milestone.md (new), ~/.claude/aoforge/workflows/audit-milestone.md (audit),
-~/.claude/aoforge/workflows/complete-milestone.md (complete) and ~/.claude/aoforge/workflows/plan-milestone-gaps.md (gaps).
+One workflow is loaded after routing, never all of them: Read `{runtime_root}/workflows/<name>`, where `<name>` is the file name of the `workflow` path the route returns, then follow it. `{runtime_root}` is what `RUNTIME_ROOT=$(echo ~/.claude/aoforge) && echo "$RUNTIME_ROOT"` prints: never type a home directory yourself.
+The routes are new-milestone.md (new), audit-milestone.md (audit),
+complete-milestone.md (complete) and plan-milestone-gaps.md (gaps).
 @~/.claude/aoforge/references/built-ins.md
 </execution_context>
 
@@ -53,7 +53,7 @@ ROUTE_JSON=$(node ~/.claude/aoforge/bin/aof-tools.cjs skill-route milestone $ARG
 
 Parse the JSON. If it contains `error`, display `usage` and stop. Otherwise extract `subcommand`, `args`, and `workflow`.
 
-**2. Read the resolved workflow (the `workflow` path, `~` expanded) with the Read tool, then follow it.**
+**2. Read the resolved workflow (`{runtime_root}/workflows/<name>`, as above) with the Read tool, then follow it.**
 
 Based on `subcommand`:
 - `new` → execute new-milestone workflow with residual args (the name, if provided)
