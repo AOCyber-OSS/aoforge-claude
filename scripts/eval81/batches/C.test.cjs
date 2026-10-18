@@ -295,7 +295,7 @@ describe('batch C: runs()', () => {
       assert.ok(expected.endsWith('Return confirmation only.'));
       const mine = all.filter((d) => d.fixture.role === `codebase-mapper:${focus}`);
       assert.equal(mine.length, 8);
-      for (const d of mine) assert.equal(d.prompt, expected, d.id);
+      for (const d of mine) assert.equal(dropRuntimeLine(d.prompt), dropRuntimeLine(expected), d.id); // objective 82
     }
     const topic = topicSections();
     for (const dim of ['stack', 'features', 'architecture', 'pitfalls']) {
@@ -311,7 +311,7 @@ describe('batch C: runs()', () => {
       const mine = all.filter((d) => d.fixture.role === `project-researcher:${dim}`);
       assert.equal(mine.length, 4);
       for (const d of mine) {
-        assert.equal(d.prompt, expected, d.id);
+        assert.equal(dropRuntimeLine(d.prompt), dropRuntimeLine(expected), d.id); // objective 82
         assert.ok(!d.prompt.includes('[domain]') && !d.prompt.includes('[PROJECT.md summary'));
         assert.ok(d.prompt.includes('[target features]'), 'the unused Subsequent line stays verbatim');
         assert.ok(d.prompt.includes(`planning draft research/${dim.toUpperCase()}.md`));

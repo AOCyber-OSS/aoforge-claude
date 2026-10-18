@@ -2,7 +2,9 @@
 status: active
 ---
 <purpose>
-Interactive configuration of AOForge workflow agents (research, job_check, verifier) and model profile selection via multi-question prompt. Updates .aoforge/config.json with user preferences. Optionally saves settings as global defaults (~/.claude/aoforge/defaults.json) for future projects.
+Interactive configuration of AOForge workflow agents (research, job_check, verifier) and model profile selection via multi-question prompt. Updates .aoforge/config.json with user preferences. Optionally saves settings as global defaults (`{runtime_root}/defaults.json`) for future projects.
+
+`{runtime_root}` is `runtime_root` from an init JSON already in context, else what `RUNTIME_ROOT=$(echo ~/.claude/aoforge) && echo "$RUNTIME_ROOT"` prints.
 </purpose>
 
 <required_reading>
@@ -141,20 +143,20 @@ AskUserQuestion([
     header: "Defaults",
     multiSelect: false,
     options: [
-      { label: "Yes", description: "New projects start with these settings (saved to ~/.claude/aoforge/defaults.json)" },
+      { label: "Yes", description: "New projects start with these settings (saved to {runtime_root}/defaults.json)" },
       { label: "No", description: "Only apply to this project" }
     ]
   }
 ])
 ```
 
-If "Yes": write the same config object (minus project-specific fields like `brave_search`) to `~/.claude/aoforge/defaults.json`:
+If "Yes": write the same config object (minus project-specific fields like `brave_search`) to `{runtime_root}/defaults.json`:
 
 ```bash
 mkdir -p ~/.claude/aoforge
 ```
 
-Write `~/.claude/aoforge/defaults.json` with:
+Write `{runtime_root}/defaults.json` with:
 ```json
 {
   "mode": <current>,
@@ -207,6 +209,6 @@ Quick commands:
 - [ ] Current config read
 - [ ] User presented with 6 settings (profile + 4 workflow toggles + git branching)
 - [ ] Config updated with model_profile, workflow, and git sections
-- [ ] Save-as-defaults question asked (~/.claude/aoforge/defaults.json)
+- [ ] Save-as-defaults question asked (`{runtime_root}/defaults.json`)
 - [ ] Changes confirmed to user
 </success_criteria>

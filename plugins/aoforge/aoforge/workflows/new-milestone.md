@@ -103,7 +103,7 @@ node ~/.claude/aoforge/bin/aof-tools.cjs commit "docs: start milestone v[X.Y] [N
 INIT=$(node ~/.claude/aoforge/bin/aof-tools.cjs init new-milestone)
 ```
 
-Extract from init JSON: `researcher_models` (one model per dimension: `stack`, `features`, `architecture`, `pitfalls`), `synthesizer_model`, `roadmapper_model`, `commit_docs`, `research_enabled`, `current_milestone`, `project_exists`, `roadmap_exists`.
+Extract from init JSON: `runtime_root` (fills `{runtime_root}`), `researcher_models` (one model per dimension: `stack`, `features`, `architecture`, `pitfalls`), `synthesizer_model`, `roadmapper_model`, `commit_docs`, `research_enabled`, `current_milestone`, `project_exists`, `roadmap_exists`.
 
 ## 8. Research Decision
 
@@ -151,6 +151,8 @@ Spawn 4 parallel project-researcher agents. Each uses this template with dimensi
 **Common structure for all 4 researchers:**
 ```
 Task(prompt="
+AOForge runtime: {runtime_root}
+
 <research_type>Project Research — {DIMENSION} for [new features].</research_type>
 
 <milestone_context>
@@ -170,7 +172,7 @@ Focus ONLY on what's needed for the NEW features.
 <output>
 Draft path: `node ~/.claude/aoforge/bin/aof-tools.cjs planning draft research/{FILE}` — put the file there.
 Publish: `node ~/.claude/aoforge/bin/aof-tools.cjs doc put research/{FILE} --from "$DRAFT"` (do not commit)
-Use template: ~/.claude/aoforge/templates/research-project/{FILE}
+Use template: {runtime_root}/templates/research-project/{FILE}
 </output>
 ", subagent_type="project-researcher", model="{MODEL}", description="{DIMENSION} research")
 ```
@@ -193,11 +195,13 @@ blocks subagent report files, so the orchestrator (you) writes and commits it:
 
 ```
 Task(prompt="
+AOForge runtime: {runtime_root}
+
 Synthesize research outputs into SUMMARY.md.
 
 Read: .aoforge/research/STACK.md, FEATURES.md, ARCHITECTURE.md, PITFALLS.md
 
-Use template: ~/.claude/aoforge/templates/research-project/SUMMARY.md
+Use template: {runtime_root}/templates/research-project/SUMMARY.md
 Return the SUMMARY.md content between the BEGIN/END markers. Do not write files.
 ", subagent_type="research-synthesizer", model="{synthesizer_model}", description="Synthesize research")
 ```
@@ -345,6 +349,8 @@ node ~/.claude/aoforge/bin/aof-tools.cjs commit "docs: define milestone v[X.Y] r
 
 ```
 Task(prompt="
+AOForge runtime: {runtime_root}
+
 <planning_context>
 @.aoforge/PROJECT.md
 @.aoforge/REQUIREMENTS.md

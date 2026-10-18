@@ -35,7 +35,7 @@ function extractTemplate() {
   const open = '```markdown\n';
   const start = text.indexOf(open, at) + open.length;
   const end = text.indexOf('\n```', start);
-  return text.slice(start, end);
+  return dropRuntimeLine(text.slice(start, end)); // objective 82: ignore exactly the runtime line
 }
 
 // Objective 82 (TRD 82-11): live spawn prompts carry the line `AOForge runtime: {runtime_root}`, which hands the agent

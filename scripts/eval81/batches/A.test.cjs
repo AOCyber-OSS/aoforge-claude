@@ -33,7 +33,7 @@ function extractTemplate() {
   const start = at + 'Task(\n  prompt="'.length;
   const end = text.indexOf('",', start);
   assert.notEqual(end, -1, 'the verifier prompt closes with ",');
-  return text.slice(start, end);
+  return dropRuntimeLine(text.slice(start, end)); // objective 82: ignore exactly the runtime line
 }
 
 // Objective 82 (TRD 82-11): live spawn prompts carry the line `AOForge runtime: {runtime_root}`, which hands the agent

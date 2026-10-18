@@ -354,7 +354,7 @@ Initial user testing showed demand for shape tools.
 
 <step name="review_drafts">
 
-Review the two drafts built above, the MILESTONES entry (`$ENTRY_DRAFT`) and the PROJECT.md evolution (`$PROJECT_DRAFT`), in one plan-mode review before either is published. Follow `@~/.claude/aoforge/references/built-ins.md` section 2.
+Review the two drafts built above, the MILESTONES entry (`$ENTRY_DRAFT`) and the PROJECT.md evolution (`$PROJECT_DRAFT`), in one plan-mode review before either is published. Follow `{runtime_root}/references/built-ins.md` section 2.
 
 **Skip if:** `--auto` was passed or config `workflow.auto_advance` is true (`node ~/.claude/aoforge/bin/aof-tools.cjs config-get workflow.auto_advance`). Then publish the PROJECT.md draft now and continue to reorganize_roadmap; archive_milestone records the entry as usual:
 

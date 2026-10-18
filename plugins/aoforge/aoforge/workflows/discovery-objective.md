@@ -8,6 +8,8 @@ Produces DISCOVERY.md (for Level 2-3) that informs JOB.md creation.
 Called from plan-objective.md's mandatory_discovery step with a depth parameter.
 
 NOTE: For comprehensive ecosystem research ("how do experts build this"), use /aoforge:research-objective instead, which produces RESEARCH.md.
+
+`{runtime_root}` is `runtime_root` from an init JSON already in context, else what `RUNTIME_ROOT=$(echo ~/.claude/aoforge) && echo "$RUNTIME_ROOT"` prints.
 </purpose>
 
 <depth_levels>
@@ -31,7 +33,7 @@ Claude's training data is 6-18 months stale. Always verify.
 2. **Official docs** - When Context7 lacks coverage
 3. **WebSearch LAST** - For comparisons and trends only
 
-See ~/.claude/aoforge/templates/discovery.md `<discovery_protocol>` for full protocol.
+See {runtime_root}/templates/discovery.md `<discovery_protocol>` for full protocol.
 </source_hierarchy>
 
 <process>
@@ -110,7 +112,7 @@ For: Choosing between options, new external integration.
 
 5. **Cross-verify:** Any WebSearch finding → confirm with Context7/official docs.
 
-6. **Publish DISCOVERY.md** (draft, then `doc put` — see `create_discovery_output`) using ~/.claude/aoforge/templates/discovery.md structure:
+6. **Publish DISCOVERY.md** (draft, then `doc put` — see `create_discovery_output`) using {runtime_root}/templates/discovery.md structure:
 
    - Summary with recommendation
    - Key findings per option
@@ -129,7 +131,7 @@ For: Architectural decisions, novel problems, high-risk choices.
 
 **Process:**
 
-1. **Scope the discovery** using ~/.claude/aoforge/templates/discovery.md:
+1. **Scope the discovery** using {runtime_root}/templates/discovery.md:
 
    - Define clear scope
    - Define include/exclude boundaries
@@ -163,7 +165,7 @@ For: Architectural decisions, novel problems, high-risk choices.
 
 6. **Publish a comprehensive DISCOVERY.md** (draft, then `doc put` — see `create_discovery_output`):
 
-   - Full structure from ~/.claude/aoforge/templates/discovery.md
+   - Full structure from {runtime_root}/templates/discovery.md
    - Quality report with source attribution
    - Confidence by finding
    - If LOW confidence on any critical finding → add validation checkpoints
@@ -187,7 +189,7 @@ Ask: What do we need to learn before we can plan this objective?
   </step>
 
 <step name="create_discovery_scope">
-Use ~/.claude/aoforge/templates/discovery.md.
+Use {runtime_root}/templates/discovery.md.
 
 Include:
 

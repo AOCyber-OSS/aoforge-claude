@@ -21,9 +21,9 @@ Then verify each level against the actual codebase.
 </core_principle>
 
 <required_reading>
-Read with the Read tool, each when needed (an @ line in a Task prompt is not expanded):
-- ~/.claude/aoforge/references/verification-patterns.md — once, before the first check
-- ~/.claude/aoforge/templates/verification-report.md — before writing the report
+Read with the Read tool, each when needed (an @ line in a Task prompt is not expanded; `<runtime>` as your `<runtime_paths>` block defines it):
+- <runtime>/references/verification-patterns.md — once, before the first check
+- <runtime>/templates/verification-report.md — before writing the report
 </required_reading>
 
 <process>
@@ -220,7 +220,7 @@ node ~/.claude/aoforge/bin/aof-tools.cjs planning draft "objectives/<objective-d
 
 In the draft (Write tool, replacing any seeded content), fill the template sections: frontmatter (objective/timestamp/status/score), goal achievement, artifact table, wiring table, requirements coverage, anti-patterns, human verification, gaps summary, fix plans (if gaps_found), metadata.
 
-See ~/.claude/aoforge/templates/verification-report.md for complete template.
+See <runtime>/templates/verification-report.md for complete template.
 
 Publish once, at the end. Local mode writes `$REPORT_PATH`, the same file as before; store mode also queues the sticky `aoforge:verification` comment on the objective issue:
 

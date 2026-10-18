@@ -11,6 +11,6 @@ requirements-completed: [SC-2]
 **In progress (checkpoint).**
 
 ## Progress
-- [x] Task 1: References and pack agent material — (this commit) (RED 35400216)
-- [ ] Task 2: Workflows, their spawn lines and 81's template comparisons — next step: in runtime-path-reads.repo.test.cjs move core_workflows to ENFORCED, add the spawn-line test (18) and the runtime_root-source test (19) scoped to workflows, add the negative case to scripts/eval81/batches/A/B/C.test.cjs, run, commit RED
-- [ ] Task 3: Skills, templates and pack skills/workflows; PENDING emptied
+- [x] Task 1: References and pack agent material — ccb30f7a (RED 35400216)
+- [x] Task 2: Workflows, their spawn lines and 81's template comparisons — (this commit) (RED 21adb02a)
+- [ ] Task 3: Skills, templates and pack skills/workflows; PENDING emptied — next step: in runtime-path-reads.repo.test.cjs move core_skills, core_templates and pack_skills_workflows to ENFORCED (PENDING = []), add them to SPAWN_SCOPES, add the PENDING-empty assertion to test 11, run, commit RED

@@ -14,7 +14,7 @@ Instantly restore full project context so "Where were we?" has an immediate, com
 </purpose>
 
 <required_reading>
-@~/.claude/aoforge/references/continuation-format.md
+Read `{runtime_root}/references/continuation-format.md` once the init JSON below gives `runtime_root`.
 </required_reading>
 
 <process>
@@ -26,7 +26,7 @@ Load all context in one call:
 INIT=$(node ~/.claude/aoforge/bin/aof-tools.cjs init resume)
 ```
 
-Parse JSON for: `state_exists`, `roadmap_exists`, `project_exists`, `planning_exists`, `has_interrupted_agent`, `interrupted_agent_id`, `commit_docs`.
+Parse JSON for: `runtime_root` (fills `{runtime_root}`), `state_exists`, `roadmap_exists`, `project_exists`, `planning_exists`, `has_interrupted_agent`, `interrupted_agent_id`, `commit_docs`.
 
 **If `state_exists` is true:** Proceed to load_state
 **If `state_exists` is false but `roadmap_exists` or `project_exists` is true:** ask whether to rebuild it:
