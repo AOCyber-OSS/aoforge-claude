@@ -284,10 +284,14 @@ describe('score CLI: --report (test list 3)', () => {
     assert.equal(await load().main(['--report', '--out', out], c.deps), 0, c.err.join(''));
     assert.deepEqual([fs.readFileSync(profilesPath, 'utf8'), fs.readFileSync(packPath, 'utf8')], before);
     const md = fs.readFileSync(path.join(out, '81-HAIKU-EVAL.md'), 'utf8');
-    // The live pack already starts ui-evaluator at haiku on budget and balanced (objective 82, TRD 82-03 applied 81's
-    // P1), so the report notes it and makes no proposal for it.
-    assert.match(md, /ui-evaluator already starts at haiku on budget\/balanced/);
-    assert.doesNotMatch(md, /start ui-evaluator at haiku on/);
+    // The report follows the live pack's start tier. TRD 82-03 applied 81's P1 (haiku on budget and balanced) and TRD
+    // 82-08 reverted it after its measurement (82-TIER-CHECKS.md: one broken state ended ok), so the live pack starts
+    // ui-evaluator at sonnet on both again and the report proposes haiku for both.
+    const tiers = JSON.parse(before[1]).models['ui-evaluator'];
+    const lower = ['budget', 'balanced'].filter((p) => tiers[p] !== 'haiku');
+    assert.deepEqual(lower, ['budget', 'balanced'], 'the live pack starts ui-evaluator above haiku (P1 reverted by 82-08)');
+    assert.match(md, /start ui-evaluator at haiku on budget\/balanced, escalate on split votes/);
+    assert.doesNotMatch(md, /ui-evaluator already starts at haiku/);
   });
 });
 
