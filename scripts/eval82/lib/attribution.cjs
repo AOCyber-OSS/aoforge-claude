@@ -573,35 +573,40 @@ function classifySimple(simple, state) {
  *     node --test | npm test                     test_run
  *   anything else                                other
  * `homes` are the run's own home directories. detail: the runtime-relative path, or the command head (120 chars).
+ * `also` lists every category a compound Bash command touches (`cat a; cat b` is `runtime_read:a` with also both),
+ * the first being `category`: tokens are charged to the first, presence checks use all of them (`mentions`).
  */
 function categorize(tool, { homes = [] } = {}) {
+  const single = (category, detail) => ({ category, detail, also: [category] });
   const name = tool && tool.name;
   const input = (tool && isPlainObject(tool.input) ? tool.input : {}) || {};
   if (name === 'Read') {
     const p = String(input.file_path || input.path || '');
-    if (/-(?:TRD|JOB)\.md$/.test(p)) return { category: 'trd_read', detail: tail(p) };
+    if (/-(?:TRD|JOB)\.md$/.test(p)) return single('trd_read', tail(p));
     const m = RUNTIME_PATH.exec(p);
     if (m) {
       const own = p.startsWith('~') || p.startsWith('$HOME') || homes.length === 0 || homes.some((h) => normPath(p).startsWith(`${normPath(h)}/`));
-      return own ? { category: `runtime_read:${m[1]}`, detail: m[1] } : { category: 'guessed_runtime_path', detail: tail(p) };
+      return own ? single(`runtime_read:${m[1]}`, m[1]) : single('guessed_runtime_path', tail(p));
     }
-    return { category: 'other', detail: tail(p) };
+    return single('other', tail(p));
   }
   if (name === 'Write' || name === 'Edit' || name === 'MultiEdit' || name === 'NotebookEdit') {
     const p = String(input.file_path || input.notebook_path || '');
-    if (p.includes('aoforge-drafts')) return { category: name === 'Write' ? 'draft_write' : 'draft_edit', detail: tail(p) };
-    return { category: 'other', detail: tail(p) };
+    if (p.includes('aoforge-drafts')) return single(name === 'Write' ? 'draft_write' : 'draft_edit', tail(p));
+    return single('other', tail(p));
   }
   if (name === 'Bash') {
     const command = String(input.command || '');
     const state = { inBin: false };
+    const hits = [];
     for (const simple of splitSimple(command)) {
       const hit = classifySimple(simple, state);
-      if (hit) return hit;
+      if (hit) hits.push(hit);
     }
-    return { category: 'other', detail: head(command) };
+    if (hits.length === 0) return single('other', head(command));
+    return { category: hits[0].category, detail: hits[0].detail, also: [...new Set(hits.map((h) => h.category))] };
   }
-  return { category: 'other', detail: head(JSON.stringify(input) || '') };
+  return single('other', head(JSON.stringify(input) || ''));
 }
 
 // ─── attribute / summarize ────────────────────────────────────────────────────────────────────────────────────────
@@ -629,30 +634,38 @@ function sortedObject(map) {
 /**
  * attribute(calls, {homes}) -> {categories, by_tool}. Annotates each tool of `calls` with `category` and `detail`
  * (it mutates the tool objects), and per category gives {count, issuing, carry} as described in the module comment.
- * `by_tool` is the same table keyed by tool name (`(none)` for the calls that issued no tool).
+ * `by_tool` is the same table keyed by tool name (`(none)` for the calls that issued no tool). `mentions` counts, per
+ * category, the tool calls that touch it at all (a compound command counts once under each category it contains).
  */
 function attribute(calls, opts = {}) {
   const n = calls.length;
   const categories = new Map();
   const tools = new Map();
+  const mentions = new Map();
+  const mention = (key) => mentions.set(key, (mentions.get(key) || 0) + 1);
   calls.forEach((call, i) => {
     const later = n - 1 - i;
     if (call.tools.length === 0) {
       bump(categories, FINAL, call.total, 0);
       bump(tools, NO_TOOL, call.total, 0);
+      mention(FINAL);
       return;
     }
     const share = call.total / call.tools.length;
     for (const t of call.tools) {
-      const { category, detail } = categorize(t, opts);
+      const { category, detail, also } = categorize(t, opts);
       t.category = category;
       t.detail = detail;
+      t.also = also;
+      for (const c of also) mention(c);
       const carry = tokensOf(t.result_chars) * later;
       bump(categories, category, share, carry);
       bump(tools, t.name, share, carry);
     }
   });
-  return { categories: sortedObject(categories), by_tool: sortedObject(tools) };
+  const sortedMentions = {};
+  for (const key of [...mentions.keys()].sort()) sortedMentions[key] = mentions.get(key);
+  return { categories: sortedObject(categories), by_tool: sortedObject(tools), mentions: sortedMentions };
 }
 
 /** The per-call listing used as evidence: no tool inputs, details capped. */
@@ -662,14 +675,14 @@ function callList(calls) {
     id: c.id,
     context: c.context,
     output: c.output_tokens,
-    tools: c.tools.map((t) => ({ name: t.name, category: t.category, detail: t.detail, result_chars: t.result_chars, persisted_chars: t.persisted_chars, is_error: t.is_error })),
+    tools: c.tools.map((t) => ({ name: t.name, category: t.category, also: t.also, detail: t.detail, result_chars: t.result_chars, persisted_chars: t.persisted_chars, is_error: t.is_error })),
   }));
 }
 
 /**
  * summarizeSpawn(spawn, {calls: false, homes}) -> one spawn's summary:
  *   {role, agent_type, agent_id, description, file, calls, first_context, last_context, context_tokens,
- *    output_tokens, total_tokens, mean_context, skipped_lines, categories, by_tool [, call_list]}
+ *    output_tokens, total_tokens, mean_context, skipped_lines, categories, by_tool, mentions [, call_list]}
  * `spawn` is an entry of roleSpawns().spawns. `calls: true` adds the per-call listing.
  */
 function summarizeSpawn(spawn, { calls: withCalls = false, homes } = {}) {
@@ -703,6 +716,7 @@ function summarizeSpawn(spawn, { calls: withCalls = false, homes } = {}) {
     skipped_lines: parsed.skipped_lines,
     categories: attr.categories,
     by_tool: attr.by_tool,
+    mentions: attr.mentions,
   };
   if (withCalls) out.call_list = callList(parsed.calls);
   return out;
@@ -719,6 +733,14 @@ function mergeTable(tables) {
       merged.set(key, m);
     }
   }
+  const out = {};
+  for (const key of [...merged.keys()].sort()) out[key] = merged.get(key);
+  return out;
+}
+
+function mergeMentions(tables) {
+  const merged = new Map();
+  for (const table of tables) for (const [key, n] of Object.entries(table || {})) merged.set(key, (merged.get(key) || 0) + n);
   const out = {};
   for (const key of [...merged.keys()].sort()) out[key] = merged.get(key);
   return out;
@@ -741,6 +763,7 @@ function mergeSummaries(list) {
     skipped_lines: list.reduce((s, x) => s + (x.skipped_lines || 0), 0),
     categories: mergeTable(list.map((x) => x.categories)),
     by_tool: mergeTable(list.map((x) => x.by_tool)),
+    mentions: mergeMentions(list.map((x) => x.mentions)),
   };
 }
 
@@ -776,8 +799,19 @@ function deltaTable(a, b, dtotal) {
   return rows;
 }
 
+function mentionDeltas(a, b) {
+  const keys = [...new Set([...Object.keys(a || {}), ...Object.keys(b || {})])];
+  const rows = keys.map((category) => {
+    const x = (a && a[category]) || 0;
+    const y = (b && b[category]) || 0;
+    return { category, mentions_a: x, mentions_b: y, dmentions: y - x };
+  });
+  rows.sort((p, q) => Math.abs(q.dmentions) - Math.abs(p.dmentions) || (p.category < q.category ? -1 : 1));
+  return rows;
+}
+
 /**
- * compare(a, b) -> {decomposition, categories, tools}. a and b are summaries (a spawn's, or mergeSummaries').
+ * compare(a, b) -> {decomposition, categories, tools, mentions}. a and b are summaries (a spawn's, or mergeSummaries').
  * decomposition: dtotal = calls_term + context_term + output_term (+ residual from rounding), with
  *   calls_term = dcalls x meanContext(a), context_term = calls(b) x dMeanContext, output_term = doutput.
  * categories / tools: rows with the count, issuing and carry of each side, their deltas, and `share` = dissuing / dtotal
@@ -813,6 +847,7 @@ function compare(a, b) {
     },
     categories: deltaTable(a.categories, b.categories, dtotal),
     tools: deltaTable(a.by_tool, b.by_tool, dtotal),
+    mentions: mentionDeltas(a.mentions, b.mentions),
   };
 }
 

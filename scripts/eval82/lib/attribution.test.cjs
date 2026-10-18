@@ -442,6 +442,16 @@ describe('6. categorize', () => {
     });
   }
 
+  test('6. a compound command reports every category it touches in `also`; the first is the category', () => {
+    const { categorize } = load();
+    const command = 'cat ~/.claude/aoforge/references/goal-backward.md; echo ===; cat ~/.claude/aoforge/references/tdd.md; git commit --amend -m x';
+    const got = categorize({ name: 'Bash', input: { command } });
+    assert.equal(got.category, 'runtime_read:references/goal-backward.md');
+    assert.deepEqual(got.also, ['runtime_read:references/goal-backward.md', 'runtime_read:references/tdd.md', 'raw_commit']);
+    assert.deepEqual(categorize({ name: 'Read', input: { file_path: '/w/src/a.js' } }).also, ['other']);
+    assert.deepEqual(categorize({ name: 'Bash', input: { command: 'ls src' } }).also, ['other']);
+  });
+
   test('6. the detail is the runtime-relative path or the command head, never the full input', () => {
     const { categorize } = load();
     assert.equal(categorize({ name: 'Read', input: { file_path: '/Users/x/.claude/aoforge/references/tdd.md' } }).detail, 'references/tdd.md');
@@ -472,6 +482,36 @@ describe('7. attribute', () => {
     assert.equal(a.by_tool.Bash.count, 5);
     assert.equal(a.by_tool.Write.count, 1);
     assert.equal(a.by_tool['(none)'].count, 1);
+  });
+});
+
+describe('7b. mentions', () => {
+  test('7. mentions count the tool calls that touch a category, compound commands included', () => {
+    const { apiCalls, attribute } = load();
+    const rows = [
+      ...fx.assistantCall({
+        id: 'm1',
+        usage: { input: 1, cc: 100, cr: 0, out: 10 },
+        tools: [
+          { id: 'a', name: 'Bash', input: { command: 'cat ~/.claude/aoforge/references/goal-backward.md; cat ~/.claude/aoforge/references/tdd.md' } },
+          { id: 'b', name: 'Read', input: { file_path: '~/.claude/aoforge/references/tdd.md' } },
+        ],
+      }),
+      fx.toolResult({ toolUseId: 'a', content: 'x' }),
+      fx.toolResult({ toolUseId: 'b', content: 'y' }),
+    ];
+    const a = attribute(apiCalls(rows.map((r) => JSON.stringify(r))).calls);
+    assert.equal(a.mentions['runtime_read:references/tdd.md'], 2);
+    assert.equal(a.mentions['runtime_read:references/goal-backward.md'], 1);
+    assert.equal(a.categories['runtime_read:references/tdd.md'].count, 1, 'the category table still counts a tool call once, under its first category');
+  });
+
+  test('7. the spawn summary carries mentions, and mergeSummaries sums them', () => {
+    const { mergeSummaries } = load();
+    const s = plannerSummary(plannerRun('new'));
+    assert.equal(s.mentions['runtime_lookup'], 1);
+    assert.equal(s.mentions['(final)'], 1);
+    assert.equal(mergeSummaries([s, s]).mentions['runtime_lookup'], 2);
   });
 });
 
@@ -510,6 +550,15 @@ describe('8. compare', () => {
     assert.ok(Math.abs(shares - 1) < 1e-5, `shares sum to ${shares} (each is reported to 6 decimals)`);
     assert.equal(c.categories.reduce((n, r) => n + r.dissuing, 0), E.decomposition.dtotal);
     assert.ok(Math.abs(c.categories[0].dissuing) >= Math.abs(c.categories[c.categories.length - 1].dissuing), 'sorted by size of the delta');
+  });
+
+  test('8. compare reports the mention counts of each side and their delta', () => {
+    const { compare } = load();
+    const c = compare(plannerSummary(plannerRun('old')), plannerSummary(plannerRun('new')));
+    const row = c.mentions.find((r) => r.category === 'runtime_lookup');
+    assert.deepEqual({ a: row.mentions_a, b: row.mentions_b, d: row.dmentions }, { a: 0, b: 1, d: 1 });
+    const raw = c.mentions.find((r) => r.category === 'raw_commit');
+    assert.equal(raw.dmentions, 1);
   });
 
   test('8. mergeSummaries sums the spawns of a role and recomputes the mean context', () => {
