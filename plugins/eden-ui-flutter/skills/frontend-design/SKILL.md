@@ -82,7 +82,8 @@ When flutter-skill MCP is available, use its tools for live inspection:
    diverges.
 
 2. **Detect greenfield vs redesign** — If this screen already exists in any
-   form, stop and load `~/.claude/aoforge/references/design-redesign.md`. Misclassifying a
+   form, stop and load `{runtime_root}/references/design-redesign.md` (`{runtime_root}` is what
+   `RUNTIME_ROOT=$(echo ~/.claude/aoforge) && echo "$RUNTIME_ROOT"` prints). Misclassifying a
    redesign as a greenfield build is the largest single source of bad redesign
    work: it silently changes IA, slugs, nav labels and analytics identifiers.
 
@@ -142,7 +143,7 @@ When flutter-skill MCP is available, use its tools for live inspection:
       The look-lock checkpoint itself — what the human is shown, the approval command
       (`node ~/.claude/aoforge/bin/aof-tools.cjs ui lock <spec> --sheet-hash <sheet_hash> --by <email>`),
       and what happens on a rejection — is documented once, in the **look-lock variant** section
-      of `~/.claude/aoforge/references/checkpoints.md`. Read it there; do not restate it here.
+      of `{runtime_root}/references/checkpoints.md`. Read it there; do not restate it here.
 
    **Refusal:** Do not compose a surface whose spec reports `ok: false`, or whose `lock` is
    anything other than `held` — report the errors or the lock status and stop, rather than

@@ -96,7 +96,8 @@ Continue to `map`.
 Skip on the migrate path.
 
 Unless `steps.mapped` is already true (from `resume`), follow
-`@~/.claude/aoforge/workflows/map-codebase.md` for `$TARGET` in non-interactive mode — see that
+`{runtime_root}/workflows/map-codebase.md` (`{runtime_root}` is what
+`RUNTIME_ROOT=$(echo ~/.claude/aoforge) && echo "$RUNTIME_ROOT"` prints) for `$TARGET` in non-interactive mode — see that
 workflow's `<non_interactive_mode>` section. If the Task tool is unavailable in this run, perform
 each mapper focus (tech, arch, quality, concerns) yourself in sequence instead of spawning agents.
 

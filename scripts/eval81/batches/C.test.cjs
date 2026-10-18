@@ -68,6 +68,12 @@ const findRun = (list, role, codebase, model, repeat) => list.find((d) => isAgen
 
 // --- Independent extraction of the production prompts (test 3) ---------------------------------------------------
 
+// Objective 82 (TRD 82-11): live spawn prompts carry the line `AOForge runtime: {runtime_root}`, which hands the agent
+// its absolute runtime path. 81's prompts predate it, so test 3's comparison drops exactly that line (after trimming
+// indentation) and nothing else.
+const RUNTIME_LINE = 'AOForge runtime: {runtime_root}';
+const dropRuntimeLine = (text) => text.split('\n').filter((l) => l.trim() !== RUNTIME_LINE).join('\n');
+
 function mapperBlock(focus) {
   const lines = fs.readFileSync(path.join(WORKFLOWS, 'map-codebase.md'), 'utf8').split('\n');
   const start = lines.findIndex((l, i) => l === `Focus: ${focus}` && lines[i - 1] === '```');
@@ -289,7 +295,7 @@ describe('batch C: runs()', () => {
       assert.ok(expected.endsWith('Return confirmation only.'));
       const mine = all.filter((d) => d.fixture.role === `codebase-mapper:${focus}`);
       assert.equal(mine.length, 8);
-      for (const d of mine) assert.equal(d.prompt, expected, d.id);
+      for (const d of mine) assert.equal(dropRuntimeLine(d.prompt), dropRuntimeLine(expected), d.id); // objective 82
     }
     const topic = topicSections();
     for (const dim of ['stack', 'features', 'architecture', 'pitfalls']) {
@@ -305,11 +311,23 @@ describe('batch C: runs()', () => {
       const mine = all.filter((d) => d.fixture.role === `project-researcher:${dim}`);
       assert.equal(mine.length, 4);
       for (const d of mine) {
-        assert.equal(d.prompt, expected, d.id);
+        assert.equal(dropRuntimeLine(d.prompt), dropRuntimeLine(expected), d.id); // objective 82
         assert.ok(!d.prompt.includes('[domain]') && !d.prompt.includes('[PROJECT.md summary'));
         assert.ok(d.prompt.includes('[target features]'), 'the unused Subsequent line stays verbatim');
         assert.ok(d.prompt.includes(`planning draft research/${dim.toUpperCase()}.md`));
       }
+    }
+  });
+
+  test('3a. objective 82: the comparison ignores exactly the runtime line; any other added line still fails it', () => {
+    const mapper = 'Focus: tech\n\nAnalyze this codebase.\n\nReturn confirmation only.';
+    const researcher = '<research_type>\nProject Research — Stack dimension for [domain].\n</research_type>';
+    for (const block of [mapper, researcher]) {
+      const [first, ...rest] = block.split('\n');
+      assert.equal(dropRuntimeLine([first, RUNTIME_LINE, ...rest].join('\n')), block);
+      assert.equal(dropRuntimeLine([first, `    ${RUNTIME_LINE}`, ...rest].join('\n')), block, 'indentation is trimmed');
+      assert.notEqual(dropRuntimeLine([first, 'AOForge runtime: /abs/runtime', ...rest].join('\n')), block, 'a filled runtime line is not ignored');
+      assert.notEqual(dropRuntimeLine([first, RUNTIME_LINE, 'Read the code first.', ...rest].join('\n')), block, 'another added line fails');
     }
   });
 

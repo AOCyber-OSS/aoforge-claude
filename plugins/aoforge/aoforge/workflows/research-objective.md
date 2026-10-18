@@ -11,13 +11,15 @@ Standalone research command. For most workflows, use `/aoforge:plan-objective` w
 
 ## Step 0: Resolve Model Profile
 
-@~/.claude/aoforge/references/model-profile-resolution.md
+`{runtime_root}` is `runtime_root` from an init JSON already in context, else what `RUNTIME_ROOT=$(echo ~/.claude/aoforge) && echo "$RUNTIME_ROOT"` prints.
+
+Read `{runtime_root}/references/model-profile-resolution.md`.
 
 Step 1 resolves the researcher's model once the objective is normalized.
 
 ## Step 1: Normalize and Validate Objective
 
-@~/.claude/aoforge/references/objective-argument-parsing.md
+Read `{runtime_root}/references/objective-argument-parsing.md` and follow it.
 
 ```bash
 OBJECTIVE_INFO=$(node ~/.claude/aoforge/bin/aof-tools.cjs roadmap get-objective "${OBJECTIVE}")
@@ -72,6 +74,7 @@ node ~/.claude/aoforge/bin/aof-tools.cjs state-snapshot | jq '.decisions'
 ```
 Task(
   prompt="<objective>
+AOForge runtime: {runtime_root}
 Research implementation approach for Objective {objective}: {name}
 </objective>
 

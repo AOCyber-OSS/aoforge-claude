@@ -57,7 +57,7 @@ provenance:
 
 Tier-2 profile for pure Dart packages, CLIs and servers, shipped by the `aoforge-stack-flutter` stack
 pack (`plugins/aoforge-stack-flutter/profiles/dart.md`; the pack's SessionStart hook mirrors it to
-`~/.claude/aoforge/stacks/aoforge-stack-flutter/profiles/dart.md`). `flutter` extends it.
+`<runtime>/stacks/aoforge-stack-flutter/profiles/dart.md`). `flutter` extends it.
 
 **Upstream stance.** The Dart team ships task-oriented `SKILL.md` skills (`dart-lang/skills`) and the
 `dart mcp-server`. Packages can also ship their own skills, which `dart run skills@ get -a` installs

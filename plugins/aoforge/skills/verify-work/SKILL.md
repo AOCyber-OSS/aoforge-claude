@@ -51,7 +51,7 @@ deployment-test environment (devcluster) is installed, run it as part of
 verification and report its JSON result. When it is not, state that deployment
 was not verified rather than implying it was.
 
-See @~/.claude/aoforge/references/deployment-verification.md for detection, the commands to run
+See `{runtime_root}/references/deployment-verification.md` for detection, the commands to run
 in cost order, how to read the JSON, and what it explicitly cannot prove.
 
 </deployment_verification>

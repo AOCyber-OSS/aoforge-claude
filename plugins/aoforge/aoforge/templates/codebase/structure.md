@@ -216,7 +216,7 @@ aoforge/
 
 **New Workflow:**
 - Implementation: `aoforge/workflows/{name}.md`
-- Usage: Reference from command with `@~/.claude/aoforge/workflows/{name}.md`
+- Usage: a skill includes it with a line-start `@` include of `workflows/{name}.md`
 
 **New Reference Document:**
 - Implementation: `aoforge/references/{name}.md`

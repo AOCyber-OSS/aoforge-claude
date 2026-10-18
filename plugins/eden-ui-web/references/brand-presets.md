@@ -5,8 +5,8 @@ Built-in brand presets for eden-ui-web projects. Each preset defines a complete 
 ## Font loading
 
 Every preset below names typefaces but **not** how to load them. That is one
-mechanism, defined once here. Full rationale in
-`~/.claude/aoforge/references/design-stack-web.md` §1.
+mechanism, defined once here. Full rationale in AOForge's
+`references/design-stack-web.md` §1, which the frontend-design skill includes.
 
 ### Option A — self-host through the Hugo pipeline (preferred)
 

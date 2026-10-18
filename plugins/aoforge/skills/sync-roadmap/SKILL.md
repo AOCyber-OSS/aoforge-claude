@@ -70,7 +70,7 @@ Limitations:
 - **No auto-deletion.** Orphan TRDs surface as warnings only — user manually decides.
 - **Forward-only rollup.** Once an objective Status flips to `complete`, the reconciler doesn't auto-revert even if a TRD becomes `[ ] (failed)`. Revert it with `aof-tools objective set-status <id> reopened`; in local mode also correct the ROADMAP `**Status:**` line by hand (only the store regenerates it).
 
-Note: The skill takes effect on next session restart (sync-runtime hook mirrors it to `~/.claude/aoforge/skills/sync-roadmap/SKILL.md`).
+Note: The skill takes effect on next session restart (sync-runtime hook mirrors it to `{runtime_root}/skills/sync-roadmap/SKILL.md`). `{runtime_root}` is what `RUNTIME_ROOT=$(echo ~/.claude/aoforge) && echo "$RUNTIME_ROOT"` prints.
 
 ## Triggers
 

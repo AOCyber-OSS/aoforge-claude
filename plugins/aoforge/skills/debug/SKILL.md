@@ -39,7 +39,7 @@ ls .aoforge/debug/*.md 2>/dev/null | grep -v resolved | head -5
 INIT=$(node ~/.claude/aoforge/bin/aof-tools.cjs state load)
 ```
 
-Extract `commit_docs` from init JSON. Resolve debugger model:
+Extract `commit_docs` from init JSON; `{runtime_root}` in the spawn prompts is what `RUNTIME_ROOT=$(echo ~/.claude/aoforge) && echo "$RUNTIME_ROOT"` prints. Resolve debugger model:
 ```bash
 DEBUGGER_MODEL=$(node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model debugger --raw)
 ```
@@ -132,6 +132,7 @@ Fill prompt and spawn:
 
 ```markdown
 <objective>
+AOForge runtime: {runtime_root}
 Investigate issue: {slug}
 
 **Summary:** {trigger}
@@ -227,6 +228,7 @@ When user responds to checkpoint, spawn fresh agent:
 
 ```markdown
 <objective>
+AOForge runtime: {runtime_root}
 Continue debugging {slug}. Evidence is in the debug file.
 </objective>
 

@@ -62,7 +62,8 @@ drop-from-human-verify; a `gate: 'advisory'` pass ALWAYS stays on the human-veri
 the SKIPPED fall-through on a missing/invalid manifest (never a hard fail).
 
 For deep judgement (capture + score + evidence write + ≤300-token rollup), spawn the agent; otherwise run the
-workflow steps inline for a quick single-surface dogfood. Resolve its model first:
+workflow steps inline for a quick single-surface dogfood. Resolve its model first (`{runtime_root}` in the prompt
+is what `RUNTIME_ROOT=$(echo ~/.claude/aoforge) && echo "$RUNTIME_ROOT"` prints):
 
 ```bash
 UI_EVALUATOR_MODEL=$(node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model ui-evaluator --raw)
@@ -72,7 +73,9 @@ UI_EVALUATOR_MODEL=$(node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model ui-e
 Task(
   subagent_type="aoforge-stack-flutter:ui-evaluator",
   model="{UI_EVALUATOR_MODEL}",
-  prompt="Manifest: {resolved manifest path}. Judge: {live | labels}.",
+  prompt="Manifest: {resolved manifest path}. Judge: {live | labels}.
+  AOForge runtime: {runtime_root}
+  ",
   description="UI visual eval"
 )
 ```

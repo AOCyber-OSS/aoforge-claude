@@ -562,7 +562,7 @@ TRDs:
 - [ ] 82-08-live-tier-checks-d-and-c-TRD.md — (W3, checkpoint) approve spend with the build-2 fit shown and a raise to $25 (E $15) offered, then batches D and C live; 82-TIER-CHECKS.md; P1/P4/P5 kept or reverted by rule
 - [ ] 82-09-live-build-cell-rerun-TRD.md — (W4, checkpoint) approve spend with the fit on actual D/C spend, then two build runs on the fixed tree; 82-MEASUREMENT.md mechanism checks (SC-1) and the transcript-scan guessed-path verdict (SC-2)
 - [ ] 82-10-docs-records-and-revalidation-TRD.md — (W5) CHANGELOG 3.1.0, guides, CLAUDE.md; objective 77 records (Completed 2026-10-16, verified 2026-10-17), MEF-06 from evidence (Partial by design) and a debugger start-tier todo, five todos resolved; 79-08 re-validation as a 79-REVALIDATION addendum
-- [ ] 82-11-runtime-paths-in-references-workflows-skills-templates-TRD.md — (W2, TDD) references and pack agent material, then workflows (spawn line `AOForge runtime: {runtime_root}`, 81's A/B/C comparisons), then skills, templates and pack skills use the absolute runtime path; the guard enforces every scope
+- [x] 82-11-runtime-paths-in-references-workflows-skills-templates-TRD.md — (W2, TDD) references and pack agent material, then workflows (spawn line `AOForge runtime: {runtime_root}`, 81's A/B/C comparisons), then skills, templates and pack skills use the absolute runtime path; the guard enforces every scope
 
 ## Progress
 

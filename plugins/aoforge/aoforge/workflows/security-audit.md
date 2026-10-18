@@ -32,7 +32,7 @@ Load security audit context:
 INIT=$(node ~/.claude/aoforge/bin/aof-tools.cjs init security-audit)
 ```
 
-Extract from init JSON: `auditor_model`, `parallelization`, `output_dir`, `report_path`, `existing_report`, `stale_tmp_exists`, `tmp_dir`, `stack`, `planning_exists`.
+Extract from init JSON: `runtime_root` (fills `{runtime_root}`), `auditor_model`, `parallelization`, `output_dir`, `report_path`, `existing_report`, `stale_tmp_exists`, `tmp_dir`, `stack`, `planning_exists`.
 </step>
 
 <step name="parse_arguments">
@@ -112,6 +112,7 @@ description: "Audit secrets and code"
 Prompt:
 ```
 Run your security-audit process for the focus below.
+AOForge runtime: {runtime_root}
 
 Focus: secrets-and-code
 Stack: {stack from init}
@@ -135,6 +136,7 @@ description: "Audit auth and access"
 Prompt:
 ```
 Run your security-audit process for the focus below.
+AOForge runtime: {runtime_root}
 
 Focus: auth-and-access
 Stack: {stack from init}
@@ -158,6 +160,7 @@ description: "Audit config and deps"
 Prompt:
 ```
 Run your security-audit process for the focus below.
+AOForge runtime: {runtime_root}
 
 Focus: config-and-deps
 Stack: {stack from init}

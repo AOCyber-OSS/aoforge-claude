@@ -101,8 +101,10 @@ describe('migration 0005 claude-md-block', () => {
     assert.equal(tpl.version, '2');
     assert.ok(tpl.rules.startsWith('# Development Rules'), 'rules start at the heading');
     assert.ok(tpl.rules.includes('Objectives chain automatically'));
-    assert.ok(tpl.rules.includes('~/.claude/aoforge/references/tdd.md'));
-    assert.ok(tpl.rules.includes('~/.claude/aoforge/references/anti-patterns.md'));
+    // TRD 82-11: the rules name runtime files at `<runtime>/`, defined once as what `echo ~/.claude/aoforge` prints.
+    assert.ok(tpl.rules.includes('`<runtime>/references/tdd.md`'));
+    assert.ok(tpl.rules.includes('`echo ~/.claude/aoforge` prints'));
+    assert.ok(tpl.rules.includes('`<runtime>/references/anti-patterns.md`'));
     assert.doesNotMatch(tpl.rules, /Phases/);
     assert.doesNotMatch(tpl.rules, /\n# /, 'rules stop before the next section');
     assert.doesNotMatch(tpl.rules, /\s$/, 'trailing blank lines trimmed');

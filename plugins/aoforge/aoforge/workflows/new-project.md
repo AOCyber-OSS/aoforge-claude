@@ -52,7 +52,7 @@ The document should describe what you want to build.
 INIT=$(node ~/.claude/aoforge/bin/aof-tools.cjs init new-project)
 ```
 
-Parse JSON for: `researcher_models` (one model per dimension: `stack`, `features`, `architecture`, `pitfalls`), `synthesizer_model`, `roadmapper_model`, `commit_docs`, `project_exists`, `has_codebase_map`, `planning_exists`, `has_existing_code`, `has_package_file`, `is_brownfield`, `needs_codebase_map`, `has_git`.
+Parse JSON for: `runtime_root` (fills `{runtime_root}`), `researcher_models` (one model per dimension: `stack`, `features`, `architecture`, `pitfalls`), `synthesizer_model`, `roadmapper_model`, `commit_docs`, `project_exists`, `has_codebase_map`, `planning_exists`, `has_existing_code`, `has_package_file`, `is_brownfield`, `needs_codebase_map`, `has_git`.
 
 **If `project_exists` is true:** Error — project already initialized. Use `/aoforge:status`.
 
@@ -586,6 +586,7 @@ Spawn 4 parallel project-researcher agents with rich context:
 
 ```
 Task(prompt="<research_type>
+AOForge runtime: {runtime_root}
 Project Research — Stack dimension for [domain].
 </research_type>
 
@@ -620,11 +621,12 @@ Your STACK.md feeds into roadmap creation. Be prescriptive:
 <output>
 Draft path: `node ~/.claude/aoforge/bin/aof-tools.cjs planning draft research/STACK.md` — put the file there.
 Publish: `node ~/.claude/aoforge/bin/aof-tools.cjs doc put research/STACK.md --from "$DRAFT"` (do not commit)
-Use template: ~/.claude/aoforge/templates/research-project/STACK.md
+Use template: {runtime_root}/templates/research-project/STACK.md
 </output>
 ", subagent_type="project-researcher", model="{researcher_models.stack}", description="Stack research")
 
 Task(prompt="<research_type>
+AOForge runtime: {runtime_root}
 Project Research — Features dimension for [domain].
 </research_type>
 
@@ -659,11 +661,12 @@ Your FEATURES.md feeds into requirements definition. Categorize clearly:
 <output>
 Draft path: `node ~/.claude/aoforge/bin/aof-tools.cjs planning draft research/FEATURES.md` — put the file there.
 Publish: `node ~/.claude/aoforge/bin/aof-tools.cjs doc put research/FEATURES.md --from "$DRAFT"` (do not commit)
-Use template: ~/.claude/aoforge/templates/research-project/FEATURES.md
+Use template: {runtime_root}/templates/research-project/FEATURES.md
 </output>
 ", subagent_type="project-researcher", model="{researcher_models.features}", description="Features research")
 
 Task(prompt="<research_type>
+AOForge runtime: {runtime_root}
 Project Research — Architecture dimension for [domain].
 </research_type>
 
@@ -698,11 +701,12 @@ Your ARCHITECTURE.md informs objective structure in roadmap. Include:
 <output>
 Draft path: `node ~/.claude/aoforge/bin/aof-tools.cjs planning draft research/ARCHITECTURE.md` — put the file there.
 Publish: `node ~/.claude/aoforge/bin/aof-tools.cjs doc put research/ARCHITECTURE.md --from "$DRAFT"` (do not commit)
-Use template: ~/.claude/aoforge/templates/research-project/ARCHITECTURE.md
+Use template: {runtime_root}/templates/research-project/ARCHITECTURE.md
 </output>
 ", subagent_type="project-researcher", model="{researcher_models.architecture}", description="Architecture research")
 
 Task(prompt="<research_type>
+AOForge runtime: {runtime_root}
 Project Research — Pitfalls dimension for [domain].
 </research_type>
 
@@ -737,7 +741,7 @@ Your PITFALLS.md prevents mistakes in roadmap/planning. For each pitfall:
 <output>
 Draft path: `node ~/.claude/aoforge/bin/aof-tools.cjs planning draft research/PITFALLS.md` — put the file there.
 Publish: `node ~/.claude/aoforge/bin/aof-tools.cjs doc put research/PITFALLS.md --from "$DRAFT"` (do not commit)
-Use template: ~/.claude/aoforge/templates/research-project/PITFALLS.md
+Use template: {runtime_root}/templates/research-project/PITFALLS.md
 </output>
 ", subagent_type="project-researcher", model="{researcher_models.pitfalls}", description="Pitfalls research")
 ```
@@ -766,6 +770,8 @@ subagent report files, so the orchestrator (you) writes and commits it:
 
 ```
 Task(prompt="
+AOForge runtime: {runtime_root}
+
 <task>
 Synthesize research outputs into SUMMARY.md.
 </task>
@@ -779,7 +785,7 @@ Read these files:
 </research_files>
 
 <output>
-Use template: ~/.claude/aoforge/templates/research-project/SUMMARY.md
+Use template: {runtime_root}/templates/research-project/SUMMARY.md
 Return the SUMMARY.md content between the BEGIN/END markers. Do not write files.
 </output>
 ", subagent_type="research-synthesizer", model="{synthesizer_model}", description="Synthesize research")
@@ -1022,6 +1028,8 @@ Spawn roadmapper agent with context:
 
 ```
 Task(prompt="
+AOForge runtime: {runtime_root}
+
 <planning_context>
 
 **Project:**
@@ -1126,6 +1134,8 @@ ExitPlanMode()
 ExitPlanMode again. On approval, re-spawn the roadmapper with the revision context:
   ```
   Task(prompt="
+  AOForge runtime: {runtime_root}
+
   <revision>
   User feedback on roadmap:
   [the Requested changes]

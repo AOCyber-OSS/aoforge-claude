@@ -23,7 +23,7 @@ Schema: `schemas/stack-profile.schema.json`. Full design: `docs/PROPOSAL-stack-p
 schema: 1
 id: my-service              # this profile's id (kebab-case)
 extends: general            # parent profile: `general` (implicit), or a profile id such as `go`:
-                            # ~/.claude/aoforge/stacks/<id>.md first, then an enabled stack pack's
+                            # <runtime>/stacks/<id>.md first, then an enabled stack pack's
                             # profile of that id, then the bundled aoforge/stack-profiles/<id>.md
 languages: [go]             # informational; used for detection and telemetry
 

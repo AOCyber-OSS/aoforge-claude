@@ -18,7 +18,7 @@ No Pass/Fail buttons. No severity questions. Just: "Here's what should happen. D
 </philosophy>
 
 <template>
-@~/.claude/aoforge/templates/UAT.md
+`{runtime_root}/templates/UAT.md` (already in context when the verify-work skill includes it)
 </template>
 
 <process>
@@ -30,7 +30,7 @@ If $ARGUMENTS contains an objective number, load context:
 INIT=$(node ~/.claude/aoforge/bin/aof-tools.cjs init verify-work "${OBJECTIVE_ARG}")
 ```
 
-Parse JSON for: `planner_model`, `checker_model`, `commit_docs`, `objective_found`, `objective_dir`, `objective_number`, `objective_name`, `has_verification`.
+Parse JSON for: `runtime_root` (fills `{runtime_root}`), `planner_model`, `checker_model`, `commit_docs`, `objective_found`, `objective_dir`, `objective_number`, `objective_name`, `has_verification`.
 </step>
 
 <step name="check_active_session">
@@ -452,7 +452,7 @@ Spawning parallel debug agents to investigate each issue.
 ```
 
 - Load diagnose-issues workflow
-- Follow @~/.claude/aoforge/workflows/diagnose-issues.md
+- Read and follow `{runtime_root}/workflows/diagnose-issues.md`
 - Spawn parallel debug agents for each issue
 - Collect root causes
 - Record root causes in the UAT gaps (draft + `aof-tools doc put`, as diagnose-issues does)
@@ -485,6 +485,8 @@ Spawn planner in --gaps mode:
 ```
 Task(
   prompt="""
+AOForge runtime: {runtime_root}
+
 <planning_context>
 
 **Objective:** {objective_number}
@@ -540,6 +542,8 @@ GAP_PLANS=$(grep -l "gap_closure: true" "{objective_dir}"/*-TRD.md "{objective_d
 ```
 Task(
   prompt="""
+AOForge runtime: {runtime_root}
+
 <verification_context>
 
 **Objective:** {objective_number}
@@ -580,6 +584,8 @@ Spawn planner with revision context:
 ```
 Task(
   prompt="""
+AOForge runtime: {runtime_root}
+
 <revision_context>
 
 **Objective:** {objective_number}

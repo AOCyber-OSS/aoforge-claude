@@ -33,7 +33,7 @@ must_haves:
 # ── Stack fields (OPTIONAL — defined by an active stack pack) ──
 # Core reads `platform`: a pack's soft dependency selects another pack for these platforms.
 # `type: ui`, `stack` and any further fields, and which are required, come from the active pack's planner
-# fragment: node ~/.claude/aoforge/bin/aof-tools.cjs stack context planner
+# fragment: `node ~/.claude/aoforge/bin/aof-tools.cjs stack context planner`
 stack: <pack id>
 platform: [<platform>, ...]
 api_contract:                  # SHA pinning for referenced API contract files (api-contract.cjs)
@@ -63,12 +63,12 @@ src/
 </file_tree>
 
 <execution_context>
-@~/.claude/aoforge/workflows/execute-trd.md
-@~/.claude/aoforge/templates/summary.md
+<runtime>/workflows/execute-trd.md
+<runtime>/templates/summary.md
 [If TRD contains checkpoint tasks (type="checkpoint:*"), add:]
-@~/.claude/aoforge/references/checkpoints.md
+<runtime>/references/checkpoints.md
 [If TRD has type: tdd, add:]
-@~/.claude/aoforge/references/tdd.md
+<runtime>/references/tdd.md
 </execution_context>
 
 <embedded_context>
@@ -101,7 +101,7 @@ this TRD should follow for consistency]
 <anti_patterns>
 <!-- Task-specific anti-patterns to avoid -->
 [What NOT to do for this specific task, with reasons]
-See also: @~/.claude/aoforge/references/anti-patterns.md
+See also: <runtime>/references/anti-patterns.md
 </anti_patterns>
 
 <gotchas>

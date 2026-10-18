@@ -2055,6 +2055,11 @@
       "objective": "82",
       "summary": "Objective 82 harness and 82-CHECK-RULES.md frozen before any live run: results/prereg-manifest.json sha256 817bc181..., 25 files (82-06)",
       "rationale": null
+    },
+    {
+      "objective": "82",
+      "summary": "82-11: readers decide the runtime path form: agent-read text names <runtime>/, orchestrator text {runtime_root}/ (init JSON runtime_root, else RUNTIME_ROOT=$(echo ~/.claude/aoforge)); every AOForge spawn carries 'AOForge runtime: {runtime_root}' right after its prompt's opening line; the guard enforces all seven scopes",
+      "rationale": null
     }
   ],
   "blockers": [

@@ -21,7 +21,7 @@ defaults-table cell; `balanced`.
 
 ## Lookup Table
 
-@~/.claude/aoforge/references/model-profiles.md
+Read the table at `<runtime>/references/model-profiles.md` (`<runtime>` is the AOForge runtime directory: `runtime_root` from an `aof-tools init` JSON, else the path `echo ~/.claude/aoforge` prints).
 
 Look up the agent in the table for the resolved profile. Pass the model parameter to Task calls:
 

@@ -758,7 +758,7 @@ If matches found: evidence is missing. Go back and add it.
 
 For automation-first checkpoint patterns, server lifecycle management, CLI installation handling, and error recovery protocols, see:
 
-**@~/.claude/aoforge/references/checkpoints.md** → `<automation_reference>` section
+**`<runtime>/references/checkpoints.md`** → `<automation_reference>` section
 
 Key principles:
 - Claude sets up verification environment BEFORE presenting checkpoints

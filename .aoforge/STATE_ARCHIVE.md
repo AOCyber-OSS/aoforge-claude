@@ -5234,6 +5234,7 @@ STATE.md stays lean; this file grows over time.
 - [Objective 82]: SC-2 guessed-path verdict fails only on guessed absolute home paths (scanned guessed_home) and recorded real/guessed_nonexistent; tilde and tilde_denied are counted, not deciding; FAIL outranks an unscanned run (82-06)
 - [Objective 82]: Each FIX row of 82-DIAGNOSIS.md has a pre-registered machine check (P-2 executor bound: commit_inspect <= 3, commit tool_investigation <= 1); an unmeasurable check fails; ## Fix applied decides by the first FIX/JUSTIFY word on the row's line (82-06)
 - [Objective 82]: Objective 82 harness and 82-CHECK-RULES.md frozen before any live run: results/prereg-manifest.json sha256 817bc181..., 25 files (82-06)
+- [Objective 82]: 82-11: readers decide the runtime path form: agent-read text names <runtime>/, orchestrator text {runtime_root}/ (init JSON runtime_root, else RUNTIME_ROOT=$(echo ~/.claude/aoforge)); every AOForge spawn carries 'AOForge runtime: {runtime_root}' right after its prompt's opening line; the guard enforces all seven scopes
 
 ## Performance Metrics
 
@@ -5496,3 +5497,4 @@ STATE.md stays lean; this file grows over time.
 | Objective 82 P04 | 16min | 3 tasks | 10 files |
 | Objective 82 P05 | 92min | 3 tasks | 21 files |
 | Objective 82 P06 | 32min | 3 tasks | 14 files |
+| Objective 82 P11 | 24min | 3 tasks | 61 files |
