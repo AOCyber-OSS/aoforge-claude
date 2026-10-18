@@ -16,8 +16,8 @@ The pre-plugin `df-` agent names no longer resolve either: an `agent_models` or 
 Flutter, Dart and web procedure moved out of core into the `aoforge-stack-flutter` and `aoforge-stack-web` stack packs,
 with no forwarding shim: install the pack your project needs (`/plugin install aoforge-stack-flutter@aocyber`,
 `/plugin install aoforge-stack-web@aocyber`). The release also ships objective 72's post-release work, objectives 73 to
-80 and quick 34 to 43, among them `calibrate --also-root`, which counts the agent spawns recorded before a checkout
-moved.
+80, objective 82 (the 3.1.0 follow-ups) and quick 34 to 43, among them `calibrate --also-root` and `tokens
+--also-root`, which count the agent spawns recorded before a checkout moved.
 
 ### Removed: the one-release rename shims (objective 78) and the `df-` agent prefix (quick 40)
 
@@ -268,8 +268,8 @@ moved.
   is inside one or its worktree directory, or whose prompt names a path under its current or legacy planning
   directory. The roots are recorded in `method.also_roots` (so in `inputs_digest`, with a note); without the flag the
   file is byte-identical. With the former root the scan matches 164 (planner 49, job-checker 44, verifier 53,
-  objective-researcher 11, integration-checker 5, roadmapper 2). Matching for the project root itself is unchanged, and
-  `tokens` does not take the flag.
+  objective-researcher 11, integration-checker 5, roadmapper 2). Matching for the project root itself is unchanged.
+  `tokens` takes the same flag since objective 82 (below).
 - **Every spawn model placeholder has a source** (objective 76 SC1, quick 42). execute-objective spawned the
   gap-closure planner and the autonomous checkpoint verifier with model placeholders nothing supplied
   (`{planner_model}`, `{resolved_verifier_model}`). The planner is now resolved with `resolve-model planner
@@ -517,6 +517,67 @@ performance work and quick 34 to 39). Objective 79 joined them in one merge and 
 - **One CHANGELOG section, matching versions and fresh site data** (TRD 79-06). The two blocks above `[3.0.0]` are this
   section, the version files and the marketplace read 3.1.0, `eden-ui-flutter` gets a patch bump (1.0.2) for its one
   changed skill line, and `site/data/aoforge.json` is regenerated from the final tree.
+
+### 3.1.0 follow-ups (objective 82)
+
+Objective 82 closed what objectives 79 to 81 left before 3.1.0 ships. Its measurements ran in an isolated sandbox
+through objective 81's frozen harness, behind the user's spend approval (`82-TIER-CHECKS.md`, `82-MEASUREMENT.md`).
+
+- **Agents and spawns get the runtime directory as an absolute path** (TRDs 82-02, 82-11). Objective 81's runs saw
+  agents read a runtime file at an absolute home path they built themselves (`/Users/<guess>/.claude/aoforge/...`)
+  instead of `~` or a path they were given; the Read tool expands `~`, so the guess, not `~`, was the defect. Every
+  compound `aof-tools init` JSON now carries `runtime_root`; the 11 core agents that read runtime files name them
+  `<runtime>/<rel>` under one `<runtime_paths>` block; references, pack agent material and templates use `<runtime>/`,
+  workflows and skills `{runtime_root}/`; and all 43 AOForge and pack agent spawns hand the agent `AOForge runtime:
+  {runtime_root}`. `runtime-path-reads.repo.test.cjs` fails CI on a `~/.claude/aoforge` read instruction in any of its
+  seven scopes (core agents, references, workflows, skills and templates; pack agent material; pack skills and
+  workflows). Measured live: no
+  guessed home path in the two re-run builds (three of objective 81's four build runs had one), the 16 researcher runs
+  or the 123 UI-judge sessions.
+- **The build-cell token growth is fixed** (TRDs 82-01, 82-07, 82-09). `82-DIAGNOSIS.md` traced 3.1.0's planner
+  growth (+67% against 3.0.0 on objective 81's small build) to extra calls, and the executor growth (+20%) to larger
+  context per call. The fixes, by Fix-list id: P-1 the planner writes TRDs from `trd-spec.md`, now the complete
+  skeleton, with no template look-up; P-2 `aof-tools commit` is final, so no commit inspection or amend; P-3 40,000
+  characters is a TRD ceiling, not a target, and a TRD of up to 2 tasks and 6 files stays near 15,000-20,000; P-4 the
+  planner runs exactly four checkers and does not read the tool source; X-1 `verify trd-structure` (which does not
+  exist) became `verify job-structure`; E-1 the executor writes its SUMMARY from an inline skeleton instead of reading
+  `templates/summary.md`; E-2 `<tdd_execution>` is the whole TDD procedure, so no `references/tdd.md` read; E-4 the
+  runtime path above; E-5 the executor reads its draft before the final SUMMARY write. P-5 and X-2 were justified and
+  left. `build-cell-reads.repo.test.cjs` pins each row. Re-run live (two builds on the fixed tree, both passing
+  acceptance, tests and verification): all 18 mechanism checks pass, the planner's median total tokens fell from
+  2.21M to 1.10M and the executor's from 3.33M to 1.95M against objective 81's 3.1.0 builds, below 3.0.0's 1.32M and
+  2.77M, and the builds cost $3.39 and $4.05 against $5.09 and $4.35. Caveats: n=2 against n=2, the planner chose 1
+  and 2 TRDs so only TRD-matched pairs compare like with like, per-run cost differences sit inside objective 81's
+  run-to-run spread ($1.41 to $2.06), and the orchestrator's tokens rose 8% (not diagnosed).
+- **Model tiers from objective 81's proposals** (TRDs 82-03, 82-08). The user approved five on 2026-10-17; TRD 82-03
+  applied all five test-first, and 82-08 measured P1, P4 and P5 live against rules pre-registered in
+  `82-CHECK-RULES.md` before any run, reverting what failed:
+  - **P2 kept:** `codebase-mapper` `arch` focus at sonnet on every profile (an arch-only focus override; `tech` and
+    `quality` stay on the agent's sonnet / haiku / haiku row). Evidence: Haiku 3.00 fabrications per run against
+    Sonnet's 0.75; caveat: three misnamed files in one Haiku fleet run.
+  - **P3 kept:** `codebase-mapper` `concerns` at sonnet on budget (Haiku's recall 21/38 against 26/38).
+  - **P5 kept:** `project-researcher` `pitfalls` at haiku on budget. On two new topics no item was lost, pooled recall
+    was 39/44 against Sonnet's 42/44 (6.8 points, inside the 10-point bound) and fabrications 0 against 0. Caveat:
+    two runs per model per topic.
+  - **P4 reverted:** `project-researcher` `architecture` is opus / sonnet / sonnet again. Haiku missed one item
+    Sonnet found in both runs (hub HU-A01, 0 of 2), which the rule forbids, although pooled recall (43/46 against
+    45/46) and fabrications (0 against 0) held. n=2.
+  - **P1 reverted:** the UI judge (`ui-evaluator` in the Flutter pack) starts at sonnet on balanced and budget again,
+    escalating a split vote to opus. Over 20 labelled states, a Haiku start escalating to Sonnet scored 19/20
+    against the Sonnet start's 18/20 at about one ninth of the cost ($0.13 against $1.15), with a split rate of 10%
+    and an escalation rate of 5%, but it passed one broken state (d17) and the rule allows none. Caveat: all three
+    Sonnet sessions passed d17 too, so the miss looks like a fixture or judge-prompt question rather than a tier one;
+    a todo records a larger sample.
+- **`tokens trd|coverage|backfill --also-root <dir>`** (TRD 82-04), repeatable and relative to the current directory,
+  hands former checkout roots to the matcher `calibrate --also-root` uses, so a moved checkout's executor transcripts
+  count; `tokens stamp` refuses it, and without it every output is byte-identical. On this repository the v1.6 forward
+  stamp coverage is 111/113 with and without the former root: of the 367 executor transcripts it adds, the 65 for v1.6
+  TRDs belong to SUMMARYs already stamped live, and the two missing ones (65-02, 65-03) ran inline with no executor
+  transcript. The effect is on older history (objectives 35 to 64 gain 302 identified transcripts).
+- **Objective 77's records agree with its verification** (TRD 82-10). STK-01 and PCK-01 to PCK-04 are Complete in
+  REQUIREMENTS.md and objective 77's Progress row is Complete (landed 2026-10-16, PRs #132 to #134; verified
+  2026-10-17). MEF-06 stays Partial by design: the UI judge's start tier was measured and P1 reverted, and the
+  debugger's start tier is a recorded todo.
 
 ## [3.0.0] - 2026-10-08
 

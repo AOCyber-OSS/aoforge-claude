@@ -39,3 +39,7 @@ All notable changes to the aoforge-stack-flutter stack pack. Released with tags 
   not applied: broken_missed(Haiku start, final) = 1 of 13 broken states, and the pre-registered rule needs 0
   (accuracy 19/20 against the Sonnet start's 18/20 and cost $0.13 against $1.15 held). (objective 81 P1, TRDs 82-03
   and 82-08)
+- The pack's agent material (the executor, planner and verifier fragments and the `flutter` and `dart` profiles) names
+  runtime files `<runtime>/<rel>`, and `/aoforge-stack-flutter:ui-eval` hands the ui-evaluator spawn `AOForge runtime:
+  {runtime_root}`, so no agent builds a home directory path itself (core's `runtime-path-reads.repo.test.cjs` covers
+  the pack). (objective 82, TRD 82-11)

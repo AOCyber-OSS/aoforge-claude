@@ -77,7 +77,10 @@ escalate to sonnet; `81-HAIKU-EVAL.md`: Haiku 18/20 against Sonnet's 20/20 with 
 8/20 against 2/20) was applied by TRD 82-03, measured by 82-08 and not applied:
 broken_missed(Haiku start, final) = 1 of 13 broken states, and the pre-registered rule needs 0
 (`82-TIER-CHECKS.md`; accuracy 19/20 against the Sonnet start's 18/20 and cost $0.13 against
-$1.15 held). `verdict_floor` is unchanged and does not list `ui-evaluator`.
+$1.15 held; split rate 2/20, escalation rate 1/20). Caveat: all three Sonnet sessions also judged
+that broken state (d17) ok, so the miss looks like a fixture or judge-prompt question rather than
+a tier one, and 20 states is a small sample; revisiting P1 on a larger sample is a recorded todo.
+`verdict_floor` is unchanged and does not list `ui-evaluator`.
 
 ## Tier → model id
 
