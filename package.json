@@ -1,5 +1,5 @@
 {
-  "name": "@ao-cyber-systems/aoforge-cc",
+  "name": "@aocyberai/aoforge-cc",
   "version": "3.0.0",
   "private": true,
   "description": "A meta-prompting, context engineering and spec-driven development system for Claude Code by AO Cyber Systems.",
@@ -16,11 +16,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AO-Cyber-Systems/aoforge-claude.git"
+    "url": "git+https://github.com/AOCyber-OSS/aoforge-claude.git"
   },
-  "homepage": "https://github.com/AO-Cyber-Systems/aoforge-claude",
+  "homepage": "https://github.com/AOCyber-OSS/aoforge-claude",
   "bugs": {
-    "url": "https://github.com/AO-Cyber-Systems/aoforge-claude/issues"
+    "url": "https://github.com/AOCyberAI/aoforge-claude/issues"
   },
   "engines": {
     "node": ">=16.7.0"

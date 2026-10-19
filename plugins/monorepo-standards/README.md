@@ -14,7 +14,7 @@ Enforces AO Cyber Systems monorepo conventions across product repos (aodex, aose
 ## Install
 
 ```
-/plugin marketplace add AO-Cyber-Systems/aoforge-claude
+/plugin marketplace add AOCyber-OSS/aoforge-claude
 /plugin install monorepo-standards@aocyber
 ```
 
@@ -37,7 +37,7 @@ Or pin the plugin via the marketplace block:
 ```jsonc
 {
   "plugins": {
-    "marketplaces": ["AO-Cyber-Systems/aoforge-claude"],
+    "marketplaces": ["AOCyber-OSS/aoforge-claude"],
     "enabled": ["monorepo-standards@aocyber", "aoforge@aocyber"]
   }
 }

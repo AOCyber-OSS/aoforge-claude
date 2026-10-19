@@ -22,7 +22,7 @@ files_modified: []          # Files this job modifies.
 autonomous: true            # false if job has checkpoints requiring user interaction
 requirements: []            # REQUIRED — Requirement IDs from ROADMAP this job addresses. MUST NOT be empty.
 user_setup: []              # Human-required setup Claude cannot automate (see below)
-github_issue: AO-Cyber-Systems/aoforge-claude#52    # OPTIONAL (rare) — per-TRD override.
+github_issue: AOCyberAI/aoforge-claude#52    # OPTIONAL (rare) — per-TRD override.
                                                      # Use ONLY when a single TRD warrants its
                                                      # own GH issue (e.g., a research spike
                                                      # tracked separately). Most TRDs inherit

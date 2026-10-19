@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Repo** | `AO-Cyber-Systems/devflow-claude` (marketplace) — core `devflow` plugin + new stack-pack plugins; new companion binary `dflang` (working name) |
+| **Repo** | `AOCyberAI/aoforge-claude` (marketplace) — core `devflow` plugin + new stack-pack plugins; new companion binary `dflang` (working name) |
 | **Status** | M0 (contract) and M0.5 (extraction) implemented by objective 77, 2026-10-15, with no compatibility shim: the in-core Flutter and Playwright path is removed in 3.1.0. Packs: `aoforge-stack-flutter` (covers Dart, Q13) and `aoforge-stack-web`. M1-M4 (`dflang`) not started. Draft v0.5 — 2026-09-23 for the rest. **Decision: language-agnostic core + stack packs** (see §0). Open questions: 18 of 19 closed (§8); Q18 needs the owner. Deviations from this draft: pack fragments are delivered as Read pointers, not concatenated text; a pack also activates on `select.runtime`; Maestro runs through its CLI in the verifier fragment, so only the web drive needs a pack sub-agent; the `gopls`/`dart` MCP grants stay on core agents because a pack cannot add tools to them. |
 | **Owner** | Justin Donnaruma (CInvO) |
 | **Consumers** | DevFlow Claude (Claude Code plugin), DevFlow Native (`df`), forge CI |
@@ -34,7 +34,7 @@
 
 ## 0. Findings from devflow-claude v2.9.0 (why this spec changed)
 
-Reviewed `main` of `AO-Cyber-Systems/devflow-claude` on 2026-09-23 at `6c0e9b5`.
+Reviewed `main` of `AOCyberAI/aoforge-claude` on 2026-09-23 at `6c0e9b5`.
 
 **Core is not language-agnostic today. It is opinionated toward Flutter, with a thin, generic layer for everything else.**
 
@@ -390,7 +390,7 @@ Requirements:
 
 ### 6.6 Internal package knowledge
 
-**`dflang skills gen`** generates agent skills for every **internal** Go module and Dart package in the workspace and in dependencies that match configured internal prefixes (e.g. `github.com/ao-cyber-systems/*`, `eden_*`, `ao_*`).
+**`dflang skills gen`** generates agent skills for every **internal** Go module and Dart package in the workspace and in dependencies that match configured internal prefixes (e.g. `github.com/AOCyberAI/*`, `eden_*`, `ao_*`).
 
 Per package, the generated skill contains:
 - Purpose (from package doc comment / README)
@@ -642,7 +642,7 @@ registries:
   go:
     proxy: https://proxy.internal.aocyber.example   # sets GOPROXY
     sumdb: off | <url>                               # GOSUMDB / GONOSUMDB
-    private: github.com/ao-cyber-systems/*           # GOPRIVATE
+    private: github.com/AOCyberAI/*           # GOPRIVATE
   dart:
     hosted_url: https://pub.internal.aocyber.example # PUB_HOSTED_URL
   vuln:
@@ -745,7 +745,7 @@ A plugin `dependencies` entry can only pull in other plugins, not a binary. So:
 
 1. **Homebrew tap** (`aocyber/tap/dflang`) is the primary channel on macOS and Linux dev machines. The setup skill proposes the command and the user runs it.
 2. **GitHub Release archives** with SHA-256 checksums for CI and Linux containers. The reusable CI workflow (Q7) installs from them.
-3. `go install github.com/AO-Cyber-Systems/dflang/cmd/dflang@vX.Y.Z` works for contributors.
+3. `go install go.aocyber.ai/dflang/cmd/dflang@vX.Y.Z` works for contributors.
 
 Each pack's manifest gets `"requires_tool": { "dflang": ">=0.3.0" }`. The pack's SessionStart hook runs `dflang version --json`. If `dflang` is missing or too old, `stack verify` reports `missing` with the install hint (§5A.4). The pack never downloads or runs a binary itself.
 
@@ -780,7 +780,7 @@ Conformance: run `modelcontextprotocol/conformance` in `dflang` CI. Its last tag
 
 ### Q9 — Internal registries · Recommended
 
-**Findings.** There are no internal registries today. The only setting in use is `GOPRIVATE=github.com/aocybersystems/*,github.com/AO-Cyber-Systems/*` (plus `GOFLAGS=-mod=mod`) in CI, Dockerfiles and scripts. Dart packages use `publish_to: none` with path or git dependencies, so there's no pub server to point at. AOForge has no registry yet.
+**Findings.** There are no internal registries today. The only setting in use is `GOPRIVATE=go.aocyber.ai/*,github.com/AOCyberAI/*` (plus `GOFLAGS=-mod=mod`) in CI, Dockerfiles and scripts. Dart packages use `publish_to: none` with path or git dependencies, so there's no pub server to point at. AOForge has no registry yet.
 
 **Answer.**
 - v1 ships with `network: online` as the default and **public adapters on**. `dflang` writes the existing `GOPRIVATE` value into the registry config instead of inventing a new one.

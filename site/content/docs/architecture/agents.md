@@ -83,7 +83,7 @@ commits, handles deviations from the plan, and manages checkpoints. Runs with a
 **not** declare `isolation: worktree`: the harness resolved that isolation from the
 controller session's repo and from the default branch, which rooted spawns in the
 wrong repository and starved sequential waves
-([#86](https://github.com/AO-Cyber-Systems/aoforge-claude/issues/86)). Isolation is
+([#86](https://github.com/AOCyberAI/aoforge-claude/issues/86)). Isolation is
 provisioned explicitly instead, and the executor proves its repo and base with
 `aof-tools exec-context check` before it writes anything.
 

@@ -245,7 +245,7 @@ const data = {
   generatedAt: new Date().toISOString(),
   version: manifest.version,
   packageVersion: pkg.version,
-  repo: 'AO-Cyber-Systems/aoforge-claude',
+  repo: 'AOCyber-OSS/aoforge-claude',
   marketplace: 'aoforge@aocyber',
   counts: {
     skills: skills.length,

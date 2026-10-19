@@ -154,7 +154,7 @@ AOForge's design guidance is **derived from
 the MIT License. This is derivation, not inspiration: structure, many rules, and
 specific thresholds are adapted from that project, and the MIT license text and
 copyright notice are reproduced in
-[`NOTICE.md`](https://github.com/AO-Cyber-Systems/aoforge-claude/blob/main/NOTICE.md)
+[`NOTICE.md`](https://github.com/AOCyber-OSS/aoforge-claude/blob/main/NOTICE.md)
 as that license requires. Every derived file carries an attribution header.
 
 Nothing is copied verbatim and no taste-skill files are redistributed. The

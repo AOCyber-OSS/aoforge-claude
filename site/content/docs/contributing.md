@@ -5,12 +5,12 @@ lede: "Working on AOForge itself: layout, tests, conventions and the release gat
 ---
 
 AOForge is MIT licensed and developed in the open at
-[AO-Cyber-Systems/aoforge-claude](https://github.com/AO-Cyber-Systems/aoforge-claude).
+[AOCyber-OSS/aoforge-claude](https://github.com/AOCyber-OSS/aoforge-claude).
 
 ## Development install
 
 ```bash
-git clone https://github.com/AO-Cyber-Systems/aoforge-claude.git
+git clone https://github.com/AOCyber-OSS/aoforge-claude.git
 ```
 
 ```text
@@ -98,7 +98,7 @@ Full walkthrough: [changelog and releases](/docs/guides/releases/).
 ## Reporting problems
 
 Issues and feature requests:
-[github.com/AO-Cyber-Systems/aoforge-claude/issues](https://github.com/AO-Cyber-Systems/aoforge-claude/issues).
+[github.com/AOCyberAI/aoforge-claude/issues](https://github.com/AOCyberAI/aoforge-claude/issues).
 
 For a gate that misfires, include the output of:
 

@@ -46,7 +46,7 @@ GEM
     simpleidn (0.3.0)
 
 GEM
-  remote: https://rubygems.pkg.github.com/ao-cyber-systems/
+  remote: https://rubygems.pkg.github.com/aocyberai/
   specs:
     aosentry (2.0.0)
       http (~> 5.2)

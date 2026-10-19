@@ -754,7 +754,7 @@ Opt-in. With `github.store: true` GitHub is the system of record; with it off, A
 | `github.pr.merge_method` | `"squash"` | How `gh pr merge` merges the objective PR: `squash`, `merge` or `rebase`. A merge queue ignores it |
 | `github.app_login` | `""` | Login of the AOForge GitHub App; a scope comment it wrote counts as accepted (store mode) |
 | `github.app_id` | `""` | Numeric id of the AOForge GitHub App. When set, `gh setup` pins the two required checks to that App (`integration_id`); leave empty to accept the checks from any source. See **Enforcement and setup** |
-| `github.checks_workflow` | `""` | `owner/repo/.github/workflows/aoforge-checks.yml@ref` that the managed caller workflow runs. Empty means `AO-Cyber-Systems/aoforge-claude/.github/workflows/aoforge-checks.yml@v<installed version>`. The caller's `aoforge-ref:` input follows the same `@ref` |
+| `github.checks_workflow` | `""` | `owner/repo/.github/workflows/aoforge-checks.yml@ref` that the managed caller workflow runs. Empty means `AOCyber-OSS/aoforge-claude/.github/workflows/aoforge-checks.yml@v<installed version>`. The caller's `aoforge-ref:` input follows the same `@ref` |
 
 ### Git Branching
 
@@ -1479,7 +1479,7 @@ In store mode `aof-tools commit` refuses an unlinked branch, so the commit line 
 **Stale checks-workflow pins (W062).** `validate health` (Check 17) and `/aoforge:doctor` (check 26, `checks-workflow-pin`) warn when the managed `.github/workflows/aoforge.yml` is pinned to an AOForge release older than the installed plugin, so a fix to the reusable workflow does not wait on someone remembering to re-run setup. Both are local file reads with no `gh` or git call. What they compare, as `major.minor.patch` integers against the installed plugin version (the running one when no plugin is registered):
 
 - the `aoforge-ref:` input, always;
-- the `uses:` ref, only when its path is AOForge's own reusable workflow (`AO-Cyber-Systems/aoforge-claude/.github/workflows/aoforge-checks.yml`).
+- the `uses:` ref, only when its path is AOForge's own reusable workflow (`AOCyber-OSS/aoforge-claude/.github/workflows/aoforge-checks.yml`).
 
 What they never warn about: a branch, a tag that is not a release, a commit SHA, a fork's own ref, a workflow without the `# aoforge:managed` header (it is yours), and an absent file. A pin newer than the plugin is reported as ahead, not stale. The W062 message names the oldest stale ref and the field that pins it, and its fix is `node ~/.claude/aoforge/bin/aof-tools.cjs gh setup --apply`, then committing the written file and merging the workflow pull request as above. If `github.checks_workflow` in `.aoforge/config.json` names an `@ref`, update that first: setup re-renders the configured ref, and so would write the stale pin again. Doctor check 22 defers W062 to check 26, so the problem shows once. W062 is never repaired automatically. This needs an installed plugin carrying objective 61.
 
@@ -1725,7 +1725,7 @@ the published build comes back exactly as it was.
 3. Exercise the feature (e.g. type `/aoforge:adopt`) and check its output against what you expect.
 4. Revert to the published build:
    - `/plugin marketplace remove aocyber`
-   - `/plugin marketplace add AO-Cyber-Systems/aoforge-claude`
+   - `/plugin marketplace add AOCyber-OSS/aoforge-claude`
    - `/plugin install aoforge@aocyber`, and re-enable the plugins noted in step 0a
    - In a terminal: `rm ~/.claude/aoforge/.plugin-version`, then open a new session (this re-mirrors the published build)
    - Confirm the revert: a command unique to your checkout (e.g. `adopt --help`) now fails again.

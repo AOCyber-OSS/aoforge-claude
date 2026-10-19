@@ -2,7 +2,7 @@
 
 Reference for building and reviewing Flutter UI with the eden-ui-flutter design system. Eden-UI-Flutter is a Dart package providing 150+ widgets, 6 brand presets, light/dark themes, pre-built pages, and responsive layout utilities.
 
-**Source:** `ao-cyber-systems/eden-ui-flutter` on GitHub (private)
+**Source:** `aocyber-oss/eden-ui-flutter` on GitHub (private)
 **Local:** `../eden-ui-flutter` (sibling directory to project root)
 **Package:** `eden_ui` (import `package:eden_ui/eden_ui.dart`)
 

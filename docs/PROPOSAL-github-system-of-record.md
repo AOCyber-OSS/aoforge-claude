@@ -113,7 +113,7 @@ Decisions taken while executing objective 50 that refine, and do not change, the
 - Reusable workflow (50-10): the App token is optional (`DEVFLOW_APP_CLIENT_ID` variable,
   `DEVFLOW_APP_PRIVATE_KEY` secret), scoped to the one caller repository, with job permissions that can only
   narrow the caller's. The `uses:` target is `github.checks_workflow`, default
-  `AO-Cyber-Systems/devflow-claude/.github/workflows/devflow-checks.yml@v<version>`.
+  `AOCyberAI/aoforge-claude/.github/workflows/devflow-checks.yml@v<version>`.
 
 Open items for objective 50 (none changes the decisions table):
 

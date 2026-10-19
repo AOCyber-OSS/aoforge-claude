@@ -8,13 +8,13 @@
 
 **Solves context rot — the quality degradation that happens as Claude fills its context window.**
 
-[![GitHub Package](https://img.shields.io/github/v/release/AO-Cyber-Systems/aoforge-claude?style=for-the-badge&logo=github&logoColor=white&color=24292e)](https://github.com/AO-Cyber-Systems/aoforge-claude/packages)
+[![GitHub Package](https://img.shields.io/github/v/release/AOCyber-OSS/aoforge-claude?style=for-the-badge&logo=github&logoColor=white&color=24292e)](https://github.com/AOCyberAI/aoforge-claude/packages)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 
 <br>
 
 ```
-/plugin marketplace add AO-Cyber-Systems/aoforge-claude
+/plugin marketplace add AOCyber-OSS/aoforge-claude
 /plugin install aoforge@aocyber
 ```
 
@@ -61,11 +61,11 @@ People who want to describe what they want and have it built correctly — witho
 In Claude Code:
 
 ```
-/plugin marketplace add AO-Cyber-Systems/aoforge-claude
+/plugin marketplace add AOCyber-OSS/aoforge-claude
 /plugin install aoforge@aocyber
 ```
 
-Or install via the Claude Desktop plugin UI: open the plugins panel, add the `AO-Cyber-Systems/aoforge-claude` marketplace, then install the `aoforge` plugin.
+Or install via the Claude Desktop plugin UI: open the plugins panel, add the `AOCyber-OSS/aoforge-claude` marketplace, then install the `aoforge` plugin.
 
 The plugin auto-registers its skills, agents, hooks, and statusline. Verify with `/aoforge:help` in Claude Code.
 
@@ -103,7 +103,7 @@ The plugin keeps the runtime at `~/.claude/aoforge/` (mirrored from the plugin s
 Clone the repository and add it as a local marketplace:
 
 ```bash
-git clone https://github.com/AO-Cyber-Systems/aoforge-claude.git
+git clone https://github.com/AOCyber-OSS/aoforge-claude.git
 ```
 
 In Claude Code:

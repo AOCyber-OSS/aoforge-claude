@@ -10,9 +10,9 @@ enableRobotsTXT = true
 [params]
   description = "A meta-prompting, context engineering and spec-driven development system for Claude Code. Solves context rot."
   tagline = "Ship features, not context windows."
-  repo = "https://github.com/AO-Cyber-Systems/aoforge-claude"
-  issues = "https://github.com/AO-Cyber-Systems/aoforge-claude/issues"
-  changelog = "https://github.com/AO-Cyber-Systems/aoforge-claude/blob/main/CHANGELOG.md"
+  repo = "https://github.com/AOCyber-OSS/aoforge-claude"
+  issues = "https://github.com/AOCyberAI/aoforge-claude/issues"
+  changelog = "https://github.com/AOCyber-OSS/aoforge-claude/blob/main/CHANGELOG.md"
   org = "AO Cyber Systems"
   orgURL = "https://aocyber.ai"
   typekit = "qwz2ubp"

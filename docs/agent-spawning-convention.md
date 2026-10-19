@@ -149,4 +149,4 @@ The current convention was codified in [Phase E of the v1.2 milestone](../.plann
 
 Pre-fix session telemetry (498 sessions): 88 `general-purpose` spawns vs 200 dedicated — approximately 30% of subagent invocations bypassed specialization.
 
-Tracking issue: [#30](https://github.com/AO-Cyber-Systems/devflow-claude/issues/30). Post-fix target: ≥85% dedicated-agent ratio.
+Tracking issue: [#30](https://github.com/AOCyberAI/aoforge-claude/issues/30). Post-fix target: ≥85% dedicated-agent ratio.
