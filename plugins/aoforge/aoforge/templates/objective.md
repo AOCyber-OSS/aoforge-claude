@@ -29,7 +29,7 @@ overrides:                 # OPTIONAL — explicit per-objective overrides for t
   depth: comprehensive     #   quick | standard | comprehensive
   model_profile: quality   #   quality | balanced | budget
 
-github_issue: AO-Cyber-Systems/aoforge-claude#20    # OPTIONAL — full owner/repo#NN ref OR
+github_issue: AOCyberAI/aoforge-claude#20    # OPTIONAL — full owner/repo#NN ref OR
                                                      #   shorthand #NN (resolved against
                                                      #   PROJECT.md github_repo).
                                                      # The GH issue tracking this objective.
@@ -40,7 +40,7 @@ org_initiative: aoforge-internal-alpha               # OPTIONAL — filename in
                                                      #   ~/.claude/aoforge/initiatives/<name>.md
                                                      # Read by planner for strategic context;
                                                      # NOT synced to GitHub in v1.1.
-org_project: PVT_kwDODwqLrc4BRsOP                   # OPTIONAL — overrides PROJECT.md default.
+org_project: PVT_kwDOFEhtQc4BnqOy                   # OPTIONAL — overrides PROJECT.md default.
                                                      # Use when this objective belongs to a
                                                      # different org Project than the project's
                                                      # default.

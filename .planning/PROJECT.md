@@ -1,8 +1,8 @@
 ---
 kind: plugin
 default_work: feature
-org: AO-Cyber-Systems
-github_repo: AO-Cyber-Systems/devflow-claude
+org: AOCyberAI
+github_repo: AOCyberAI/aoforge-claude
 ---
 
 # DevFlow Claude
@@ -117,7 +117,7 @@ devflow-claude provides the *mechanics* for coordination. Adopting those mechani
 ## Org Context
 
 - Organization: `AO-Cyber-Systems`
-- Master roadmap: GitHub Project ID `PVT_kwDODwqLrc4BRsOP` ("Product Roadmap")
+- Master roadmap: GitHub Project ID `PVT_kwDOFEhtQc4BnqOy` ("Product Roadmap")
   - Custom fields: Status (Todo/In Progress/Done), Product (8 product lines), Quarter (Q1 2026 → Q4 2027)
 - Repos in the AO-Cyber-Systems org devflow-claude coordinates with:
   - `aodex` (Rails API + Go port — agent control plane, knowledge, MCP)
