@@ -31420,6 +31420,7 @@ STATE.md stays lean; this file grows over time.
 5
 - [Objective 82]: 82-10: integrate/3.1.0 re-validated PASS at VALIDATED_SHA 7da7485f (supersedes 9a4b0997); eden-ui-web 1.0.2 for 82-11's changes; objective 82's Requirements line is 'none mapped' so MEF-06 stays objective 76's and Partial; P1/P4 todos completed as evaluated and reverted by rule, P2/P3/P5 as applied; debugger start tier and P1 revisit are pending todos
 - [Objective ?]: main ruleset restored 2026-10-21 (user-approved): id 25541130 'aoforge: default branch' on AOCyberAI/aoforge-claude, replacing 24829006 lost in the org migration; ruleset-check compare matches .github/rulesets/main.json
+- [Objective 79]: OSS mirror re-fetches tag objects; repair_tags is its one forced push (2026-10-21) — A tag-triggered oss-mirror run pushed checkout's lightweight v3.1.0 to AOCyber-OSS/aoforge-claude and every later run failed on it. Template fixed in the migration repo (quick 7, da0e790e), rendered here as PR #139 (872252f7); repair run 39638256663 replaced the mirror's tag with the annotated 648fea48. The other nine mirrored repos still need the new render.
 
 ## Performance Metrics
 

@@ -2100,6 +2100,11 @@
       "objective": "?",
       "summary": "main ruleset restored 2026-10-21 (user-approved): id 25541130 'aoforge: default branch' on AOCyberAI/aoforge-claude, replacing 24829006 lost in the org migration; ruleset-check compare matches .github/rulesets/main.json",
       "rationale": null
+    },
+    {
+      "objective": "79",
+      "summary": "OSS mirror re-fetches tag objects; repair_tags is its one forced push (2026-10-21)",
+      "rationale": "A tag-triggered oss-mirror run pushed checkout's lightweight v3.1.0 to AOCyber-OSS/aoforge-claude and every later run failed on it. Template fixed in the migration repo (quick 7, da0e790e), rendered here as PR #139 (872252f7); repair run 39638256663 replaced the mirror's tag with the annotated 648fea48. The other nine mirrored repos still need the new render."
     }
   ],
   "blockers": [
