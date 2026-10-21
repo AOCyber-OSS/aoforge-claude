@@ -6,6 +6,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The Cloudflare deploy-target diagnostic reads the Pages project directly** (objective 74, OPS-03).
+  `scripts/ci-cloudflare-target.cjs` no longer lists the account's Pages projects, which Cloudflare refused with code
+  8000024 on `per_page=100`; it reads `pages/projects/<name>` and prints the project's production branch and
+  subdomain, or ABSENT on code 8000007. A token scoped to Pages alone (no Account Settings: Read) is no longer reported
+  as unable to see the configured account: run 39595433242 said so for a deploy that then succeeded. The account is now
+  called out of the token's reach only when the account read and the project read are both refused.
+
 ## [3.1.0] - 2026-10-17
 
 3.1.0 ends the rename's one-release compatibility. AOForge now reads `.aoforge/` and the AOForge names only, so a 2.x

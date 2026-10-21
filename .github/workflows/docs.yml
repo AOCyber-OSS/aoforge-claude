@@ -64,9 +64,9 @@ jobs:
       - name: Build
         run: hugo --source site --minify --baseURL "https://devflow.cloud/"
 
-      # Names the Cloudflare account and Pages projects this deploy targets, by name only:
-      # no account id and no token reach the (public) log (objective 74, OPS-03). Read-only,
-      # and it never fails the job; the deploy step below is the gate.
+      # Names the Cloudflare account and reads the one Pages project this deploy targets, by
+      # name only: no account id and no token reach the (public) log (objective 74, OPS-03).
+      # Read-only, and it never fails the job; the deploy step below is the gate.
       - name: Show the Cloudflare deploy target
         if: github.repository == 'AOCyberAI/aoforge-claude' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         env:

@@ -32,26 +32,19 @@ function accountsResponse(list) {
   return envelope(list.map(({ id, name }) => ({ id, name })));
 }
 
-/**
- * GET /accounts/{id}/pages/projects. `total` reports a `result_info.total_count` larger
- * than the list, which is how the API says a listing is partial.
- */
-function projectsResponse(names, { total } = {}) {
-  const body = envelope(
-    names.map((name) => ({
-      name,
-      subdomain: `${name}.pages.dev`,
-      domains: [],
-      production_branch: 'main',
-    }))
-  );
-  body.result_info = { page: 1, per_page: names.length, count: names.length, total_count: total ?? names.length };
-  return body;
+/** GET /accounts/{id}/pages/projects/{name}: the one Pages project, as the API describes it. */
+function projectResponse(name, { productionBranch = 'main', subdomain = `${name}.pages.dev` } = {}) {
+  return envelope({ name, subdomain, domains: [], production_branch: productionBranch });
 }
 
 /** A failed call: `success: false` and one error. */
 function errorResponse(code, message) {
   return envelope(null, { success: false, errors: [{ code, message }] });
+}
+
+/** GET /accounts/{id}/pages/projects/{name} for a name the account has no project for. */
+function projectNotFoundResponse() {
+  return errorResponse(8000007, 'Project not found. The specified project name does not match any of your existing projects.');
 }
 
 /**
@@ -61,13 +54,14 @@ function errorResponse(code, message) {
  * (any envelope above) or to an `Error`, which makes the call throw as a dead network
  * would. A path with no route answers 404 with an error envelope. A body with
  * `success: false` answers a non-2xx status. Every call is recorded on `.calls` as
- * `{ url, path, headers }` so a test can assert what was asked and with which credentials.
+ * `{ url, path, method, headers }` so a test can assert what was asked, how, and with which
+ * credentials.
  */
 function fakeFetch(routes) {
   const calls = [];
   async function fetch(url, init = {}) {
     const path = new URL(url).pathname;
-    calls.push({ url: String(url), path, headers: { ...(init.headers || {}) } });
+    calls.push({ url: String(url), path, method: init.method || 'GET', headers: { ...(init.headers || {}) } });
     const route = routes[path];
     if (route instanceof Error) throw route;
     const body = route === undefined ? errorResponse(7000, 'No route for that URI') : route;
@@ -85,7 +79,8 @@ module.exports = {
   envelope,
   accountResponse,
   accountsResponse,
-  projectsResponse,
+  projectResponse,
+  projectNotFoundResponse,
   errorResponse,
   fakeFetch,
 };
