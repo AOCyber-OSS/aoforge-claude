@@ -15,29 +15,21 @@ AOForge is a meta-prompting, context engineering, and spec-driven development sy
 
 AI workflow orchestration for Claude Code sessions — skills, hooks, MCP integration, planning state, and program-aware coordination across the AO-Cyber-Systems org.
 
-## Current Milestone: v1.6 Hardening & Release
+## Current Milestone
 
-**Goal:** Ship v1.5 to users, close everything v1.5 left open, and clear the accumulated backlog: estimate accuracy re-tested prospectively, aof-tools correctness debt, stack-drafter policy gaps, the remaining handoff and install friction, and the three long-open operational decisions.
-
-**Target features:**
-- Release: v1.5 work merged to `main` and tagged at the next plugin semver, with the installed runtime carrying the v1.5 libs and hooks
-- Estimation: executor token stamp on every new SUMMARY, minutes recalibrated by a pre-registered method, EST-08's criterion re-tested prospectively on five objectives
-- aof-tools correctness: `milestone complete` dry run and idempotence, `objective remove`/`objective complete` fixes, shared objective helpers in `milestone-scope.cjs`, stale `planning draft` protection, the small CLI defects the v1.5 audit listed, `verify-commits.js` output shape, health checks for tracked or stale skill markers
-- Stack drafter: govulncheck self-test and buf lint rules; a `stack verify --run` policy for service-backed tests and build artifacts
-- Handoff and install: the three known PTY handoff gaps and handoff-result injection; consistent slash-command naming with no legacy `df-*` remnants, and the rename to AOForge (3.0.0, Objective 72)
-- Operations: the live visual judge settled as local-only (`/aoforge:ui-eval --judge live` on the user's own credential, no Anthropic credential in GitHub), branch protection on `main`, and a working docs site deploy
+None open. v1.6 Hardening & Release completed on 2026-10-21 (`.aoforge/MILESTONES.md`); the next milestone starts with `/aoforge:milestone new`.
 
 ## Requirements
 
-Requirement IDs live in each objective's `OBJECTIVE.md`; there is no `REQUIREMENTS.md`.
+Requirement IDs live in `.aoforge/REQUIREMENTS.md` while a milestone is open, and in `milestones/vX.Y-REQUIREMENTS.md` once it completes.
 
 ### Validated
 
-The capability areas listed under `## Scope`: skills, subagents, hooks, `.aoforge/` templates and `aof-tools.cjs`; the program-aware coordination layer (v1.1+); the project lifecycle (v1.3+); self-measurement (v1.3+); GitHub as an opt-in system of record (v1.4+); and environment diagnosis and repair (v1.4+). v1.2 shipped 2026-07-22, v1.3 completed 2026-09-28, v1.4 completed 2026-10-05 (58/58 requirement IDs) and v1.5 completed 2026-10-08 (35/36; EST-08 not met, accepted). v1.5 added: the edit gate on Bash writes, objective-number correctness, state and merge plumbing, store-mode observability, Claude Code built-in adoption and the estimation engine (see `## Context`).
+The capability areas listed under `## Scope`: skills, subagents, hooks, `.aoforge/` templates and `aof-tools.cjs`; the program-aware coordination layer (v1.1+); the project lifecycle (v1.3+); self-measurement (v1.3+); GitHub as an opt-in system of record (v1.4+); and environment diagnosis and repair (v1.4+). v1.2 shipped 2026-07-22, v1.3 completed 2026-09-28, v1.4 completed 2026-10-05 (58/58 requirement IDs), v1.5 completed 2026-10-08 (35/36; EST-08 not met, accepted) and v1.6 completed 2026-10-21 (39/41; EST-11 not met and MEF-06 partial, both accepted). v1.5 added: the edit gate on Bash writes, objective-number correctness, state and merge plumbing, store-mode observability, Claude Code built-in adoption and the estimation engine. v1.6 added: the rename to AOForge (3.0.0) and the shim removal (3.1.0), stack packs (Flutter, Dart and web procedure out of core), measured model tiers and build-cell token cuts, handoff result injection, `/aoforge:adopt` for pre-rename projects, the `main` ruleset and the docs deploy (see `## Context`).
 
 ### Active
 
-v1.6 Hardening & Release: see `## Current Milestone` above and `.aoforge/REQUIREMENTS.md` for the REQ-IDs (EST-08 carried forward as EST-09..11).
+None until the next milestone is defined.
 
 ### Out of Scope
 
@@ -67,7 +59,8 @@ AOForge (repository `aoforge-claude`) owns:
 - **Environment diagnosis** (v1.4+): `aof-tools doctor` / `/aoforge:doctor`, and the codebase-aware stack drafter (`stack init|verify|report|mcp`)
 - **Estimation** (v1.5+): `aof-tools calibrate` and `aof-tools estimate` (task to milestone, run state, status-line ETA, backtest), measured out of sample against real executions
 - **Claude Code built-in integration** (v1.5+): task progress, plan mode, AskUserQuestion and the todo task list across skills and workflows, with a CI ratchet and a living inventory (`docs/built-in-integration-status.md`)
-- **Rename compatibility** (3.0.0, v1.6): the pre-rename names (`devflow@aocyber`, `/devflow:`, `df-tools`, `~/.claude/devflow/`, `DEVFLOW_*`, `.planning/`) keep working for one release through shims, in-place migrations (0012-0014, `gh rebrand`) and a final `devflow@aocyber` pointer release; all are removed in the release after 3.0.0
+- **Stack packs** (3.1.0, v1.6): stack-specific procedure ships in pack plugins (`aoforge-stack-flutter`, `aoforge-stack-web`) that a project selects through its stack profile; core names no stack
+- **Rename leftovers** (3.0.0 shims, removed in 3.1.0, v1.6): AOForge reads only AOForge names; the pre-rename layout and names are detected only to report them, and `/aoforge:adopt` moves a pre-rename project onto `.aoforge/`
 
 ## Out of Scope
 
@@ -109,10 +102,10 @@ AOForge provides the *mechanics* for coordination. Adopting those mechanics acro
 ## Distribution
 
 - Source of truth: `plugins/aoforge/` (skills, agents, hooks, runtime)
-- Marketplace: `.claude-plugin/marketplace.json` (ships `aoforge` and, until the release after 3.0.0, the final `devflow` 3.0.0 pointer plugin under `plugins/devflow/`)
-- Installation: `/plugin marketplace add AO-Cyber-Systems/aoforge-claude` then enable `aoforge@aocyber`
+- Marketplace: `.claude-plugin/marketplace.json` (ships `aoforge`, the stack packs `aoforge-stack-flutter` and `aoforge-stack-web`, and the sibling plugins; the `devflow` pointer plugin was removed in 3.1.0)
+- Installation: `/plugin marketplace add AOCyber-OSS/aoforge-claude` (the public mirror) then enable `aoforge@aocyber`. Source of truth: `AOCyberAI/aoforge-claude`; `oss-mirror.yml` pushes `main` and the tags to the mirror
 - Version sync: `package.json`, `plugins/aoforge/.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` must match on every release
-- Releases: `v*` tag triggers changelog gate; tag the merge commit on `main` (the marketplace installs from `main`, so a local or branch tag changes nothing for users)
+- Releases: a `v*` tag triggers the changelog gate and `release.yml` (the GitHub release and the `aoforge--vX.Y.Z` alias the packs resolve core from); tag the merge commit on `main` (the marketplace installs from `main`, so a local or branch tag changes nothing for users)
 - Runtime mirror: `sync-runtime` copies `plugins/aoforge/aoforge/` to `~/.claude/aoforge/` only when the plugin is newer (since quick 21). An older, still-running session can no longer downgrade it, but sessions started on a pre-2.11.0 plugin can until they are quit.
 
 ## Org Context
@@ -144,7 +137,7 @@ aoforge-claude/
 │       ├── workflows/<name>.md
 │       ├── references/<name>.md
 │       └── templates/<name>.md
-├── plugins/devflow/             # final 3.0.0 pointer release of the pre-rename plugin (removed the release after 3.0.0)
+├── plugins/aoforge-stack-*/     # stack packs (flutter, web): stack-specific procedure, selected per project
 ├── docs/                        # design proposals, implementation plans
 ├── CHANGELOG.md
 └── package.json
@@ -160,22 +153,20 @@ aoforge-claude/
 
 ## Context
 
-v1.5 Gate & Plumbing completed on 2026-10-08 with 10 objectives (55–64) and 81 TRDs. Objective 55 shipped as plugin 2.13.2. Objectives 56–64 shipped in plugin 2.14.0 (Objective 65). v1.4 (42–54, plugin 2.13.0/2.13.1) completed 2026-10-05, v1.3 (27–41, plugin 2.11.0) completed 2026-09-28, and v1.2 shipped 2026-07-22.
+v1.6 Hardening & Release completed on 2026-10-21 with 18 objectives (65–82). It shipped plugin 2.14.0 (the v1.5 work, Objective 65), 3.0.0 (the rename to AOForge, 2026-10-09, tag `v3.0.0` b4a9d870) and 3.1.0 (2026-10-21, tag `v3.1.0` on `main` f907f4fc, alias `aoforge--v3.1.0`, mirrored to `AOCyber-OSS/aoforge-claude`). v1.5 (55–64) completed 2026-10-08, v1.4 (42–54) 2026-10-05, v1.3 (27–41) 2026-09-28, and v1.2 shipped 2026-07-22.
 
-Test suite: 11,071 tests, 11,037 pass, 0 fail, 34 skipped.
+Test suite (3.1.0 re-validation): 13,773 tests, 13,746 pass, 0 fail, 27 skipped (`watcher-shell.test.cjs` runs in the node:26 CI gate; it hangs on a fish child locally).
 
-The estimation engine works, but its minute estimates run high: 1.24× actual after the recency-window fix, with only 2 of 5 objectives within ±30%. Cost estimates are close (0.80–0.86×). EST-08 is accepted as not met. Run history is now archived per objective, so the next five objectives give a genuinely prospective retest.
+The repository moved in the GitHub org cutover (2026-10-17/18) from `AO-Cyber-Systems/aoforge-claude` to `AOCyberAI/aoforge-claude`; the legacy org became `AOCyber-OSS` and holds the public mirror. The `main` ruleset was restored after the move as 25541130 (`.github/rulesets/main.json`).
 
-Open decisions carried to the next milestone, and where Objective 74 left them:
-- the live visual judge: re-scoped by the user to local-only (`/aoforge:ui-eval --judge live` on the user's own credential); the CI judge was reverted and no Anthropic credential is stored in GitHub (OPS-01);
-- `main` branch protection: done, ruleset 24829006 `aoforge: default branch` (no force-push or deletion, pull request with the unit suite green), recorded in `.github/rulesets/main.json` (OPS-02);
-- the Docs site deploy (the Cloudflare Pages project `devflow-docs` was never found; the deploy now targets `aoforge-docs`): deferred by the user. The deploy credentials reach the wrong Cloudflare account; todo `2026-10-09-create-the-aoforge-docs-pages-project-and-deploy-the-docs-from-main` holds what resuming needs (OPS-03).
+Operations decisions (Objective 74), all closed:
+- the live visual judge runs locally only on the user's own credential; no Anthropic credential in GitHub (OPS-01);
+- `main` changes only through a PR with `test (npm test, gated)` green (OPS-02);
+- the docs site deploys from `main` to the Cloudflare Pages project `aoforge-docs` in the AOCyber Systems account, which also serves devflow.cloud and www.devflow.cloud (OPS-03, met 2026-10-21).
 
-DECISION-001 (edit-gate posture) was resolved in v1.5 (Objective 60, option-a, with a measured `warn` default).
+Estimation: EST-11, the prospective retest of EST-08's criterion, was not met (75-RETEST); minutes still run high. MEF-06 is partial by design: escalation is in place and the start tiers were changed only where the pre-registered live checks kept them (objective 82).
 
-Objective 72 renamed the plugin to AOForge and released it as 3.0.0 (tag `v3.0.0` on `main` b4a9d870, 2026-10-09). This repository runs on the installed AOForge 3.0.0 with its planning tree at `.aoforge/` (TRD 72-21); the rollout finished on 2026-10-09: global CLAUDE.md block v4 (72-23), vanity PR prepared but held until git.aocyber.ai exists (72-24), 10 fleet repositories upgraded behind per-repo approvals (72-25), and the checkout moved to `~/dev/aoforge-claude` with memory and keyed state copied, the post-release commits on follow-up PR #129 (72-26). Gap closure 72-27 gave the gh client a 256 MiB read buffer so `gh rebrand` reads large repositories; a live `gh rebrand --apply` waits for the first store-mode repository. Objective 72 verified 6/6.
-
-Objective 26 (GitHub issue auto-build monitor) was killed on 2026-10-01 (resolved; GMD-04).
+DECISION-001 (edit-gate posture) was resolved in v1.5 (Objective 60, option-a, with a measured `warn` default). Objective 26 (GitHub issue auto-build monitor) was killed on 2026-10-01 (GMD-04).
 
 ---
-*Last updated: 2026-10-09 after Objective 72*
+*Last updated: 2026-10-21 after the v1.6 milestone*

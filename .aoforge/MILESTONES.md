@@ -194,3 +194,56 @@ The audit status is `gaps_found` (35/36 requirements, 10/10 objectives, integrat
   - df-tools noise: a no-op `state update-progress`, `objective-job-index` showing gap_closure as null, and `verify trd-pre 64` returning "not found".
 
 ---
+
+## v1.6 Hardening & Release (Shipped: 2026-10-21)
+
+**Objectives completed:** 18 objectives (65–82), 155 TRDs, all executed and verified.
+
+**Delivered:**
+- **Releases:** plugin 2.14.0 (the v1.5 work, 65), 3.0.0 (DevFlow becomes AOForge, 72, 2026-10-09) and 3.1.0 (the shim removal, stack packs and the 3.1.0 follow-ups, 79, 2026-10-21).
+- **AOForge:** one name everywhere, the rename shims removed one release later as promised, and `/aoforge:adopt` for a project still on the pre-rename layout.
+- **Stack packs:** Flutter, Dart and web procedure moved out of core into pack plugins a project selects; a guard keeps core stack-neutral.
+- **Model efficiency, measured:** tiers changed only where pre-registered evals and live checks held; build-cell planner and executor tokens cut below 3.0.0's.
+- **Operations:** the visual judge settled as local-only, the `main` ruleset, and the docs deploy from `main`.
+
+**Release:** `v3.1.0` (tag 648fea48) on `main` f907f4fc, alias `aoforge--v3.1.0`, mirrored to `AOCyber-OSS/aoforge-claude`.
+- **Git range:** `bb0558a6` → `667c5ca7`.
+- **Volume:** 1,087 commits, 161 of them `feat(`. 3,095 files changed (+265,127 / −26,710); plugin files: 1,135 changed (+79,051 / −22,379).
+- **Tests:** 13,773 in total, 13,746 pass, 0 fail, 27 skipped (3.1.0 re-validation; `watcher-shell.test.cjs` runs in the node:26 CI gate).
+- **Timeline:** 2026-10-08 → 2026-10-21.
+
+**Key accomplishments:**
+- **Release v1.5 (65):** the v1.5 work on `main` as 2.14.0, installed and re-mirrored.
+- **Estimation (66, 67, 75):**
+  - Every executor SUMMARY stamps its own token usage; a SubagentStop gate holds an executor that skips it.
+  - Minutes recalibrated by a method frozen before scoring (DECISION-003, `trd_level`).
+  - The prospective retest on five later objectives reported honestly: EST-11 not met.
+- **aof-tools correctness (68–70):**
+  - `milestone complete` has a dry run and is idempotent; `objective remove` and `objective complete` are fixed.
+  - Every writing command refuses an unknown flag (FLAG_SPEC over 51 commands).
+  - `planning draft` reseeds a stale draft and `doc put` refuses one; health checks catch misleading skill markers and SUMMARY records.
+  - The v1.5 audit's small CLI defects are gone and `verify-commits.js` speaks the hook output schema.
+- **Stack drafter (71):** the gate that actually scans, and a `stack verify --run` policy for service-backed tests and build outputs.
+- **Rename to AOForge (72, 78, 80):**
+  - DevFlow became AOForge everywhere it is a name; projects and the user's setup moved in place; 10 fleet repositories upgraded behind per-repo approvals.
+  - 3.1.0 reads only AOForge names; leftovers are detected only to report them.
+  - `/aoforge:adopt` moves a pre-rename project onto `.aoforge/` as one recorded change.
+- **Handoff (73):** a TTY command goes from detection to the user's shell and back into context with no paste; results are delivered to the session and agent that queued them.
+- **Operations (74):** OPS-01 local-only visual judge; OPS-02 the `main` ruleset (restored as 25541130 after the org cutover); OPS-03 the docs deploy to `aoforge-docs` in the AOCyber Systems account, which now also serves devflow.cloud.
+- **Model efficiency and stack packs (76, 77, 81, 82):**
+  - Configured tiers bind, mechanical work runs as aof-tools verbs, spawns load only what they need.
+  - The stack-pack contract and the Flutter and web packs (1.0.0).
+  - Haiku measured per role (unsafe for the job-checker); tier proposals kept or reverted by pre-registered live checks.
+  - Every agent spawn names an absolute runtime path, pinned by a repo guard.
+- **Reconcile and release 3.1.0 (79):** four lines joined through two merge commits, re-validated after the org cutover, released through PR #138 behind per-action approvals; the public mirror's lightweight `v3.1.0` repaired through `oss-mirror`'s new `repair_tags`.
+
+### Known Gaps
+
+Requirements 39/41; no audit was run for v1.6, because both gaps already carry their verdicts.
+
+- **EST-11 (Objective 75), not met, accepted.** EST-08's criterion re-tested prospectively on five objectives after the recalibration still missed its band on minutes (`objectives/75-prospective-estimate-retest-and-todo-sweep/75-RETEST.md`).
+- **MEF-06 (Objective 76), partial by design.** Escalation is in place; the debugger's starting tier was not lowered (a todo), and the UI judge's start tier change (P1) was reverted by its live check (`82-TIER-CHECKS.md`).
+- **Not in this repository's scope:** the other nine public mirrors still carry the old `oss-mirror` template; the GitHub enterprise migration project rolls out the fix (its quick 7).
+- **Carried forward:** the installed 3.0.0 plugin's session hook downgraded a newer project stamp (fixed by updating to 3.1.0; an unguarded downgrade in older plugins is worth a todo); the first `v3.1.0` tag push started no workflow run (re-pushing the identical tag did); the remaining deferred items in CLAUDE.md "Where we left off".
+
+---
