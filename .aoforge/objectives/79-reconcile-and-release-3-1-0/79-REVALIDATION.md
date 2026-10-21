@@ -4,9 +4,9 @@ kind: revalidation
 repeats: 79-08
 verdict: PASS
 release_hold: "CHANGELOG [Unreleased] carries 9 entries (quick 40, 41, 42) that ship in v3.1.0 code; decide before 79-09"
-validated_sha: 7da7485fdb2137ae60422da82b85b5b8ef47e608
-supersedes_validated_sha: 9a4b09971d8d80a873d13b97c7fef8a06daf1c37
-date: 2026-10-18
+validated_sha: 4f242c599af1f865cf7fe57d2e0ae09ad31eb967
+supersedes_validated_sha: 7da7485fdb2137ae60422da82b85b5b8ef47e608
+date: 2026-10-21
 ---
 
 # Objective 79: re-validation of `integrate/3.1.0` before the release PR
@@ -229,3 +229,50 @@ No new entry was added.
 82-10's SUMMARY, the state records and objective 82's completion records land under `.aoforge/`. The org cutover freeze
 that blocked 79-09's push (STATE.md blocker; rulesets cutover-freeze-branches and cutover-freeze-tags) is outside this
 re-validation. 79-09 re-checks it before it pushes.
+
+## Re-validation after the post-cutover merge (2026-10-21)
+
+**Every check of TRD 79-08 passes again at VALIDATED_SHA `4f242c59` (verdict PASS).** It supersedes `7da7485f`.
+Nothing was pushed, tagged or released. HOME and TMPDIR were under the session scratchpad.
+
+### What landed since `7da7485f`
+
+- `67d327e3`, a merge of `origin/main` (`9bb6983a`), which had moved on during the org cutover: #136 (the recreated
+  Projects v2, `PVT_kwDOFEhtQc4BnqOy`), #137 (legacy-org references pointed at the destination), the OSS mirror workflow
+  (`.github/workflows/oss-mirror.yml`), and the CODEOWNERS and workflow-ref repoints. Outside `.aoforge/`, 46 files
+  changed, every change an org or slug rewrite except the new workflow.
+- Seven conflicts were resolved by keeping 3.1.0's content with main's names: `.aoforge/PROJECT.md` (main's), both
+  migration guides (main's slug plus 3.1.0's "For 3.0.x" line), `docs/PROPOSAL-stack-packs.md` (main's repo row, 3.1.0's
+  status row), `package.json` and `package-lock.json` (main's `@aocyberai/aoforge-cc`, version 3.1.0), `CLAUDE.md`
+  (3.1.0's Publishing text with main's `AOCyber-OSS/aoforge-claude` marketplace slug).
+- In the merge, two leftovers main's sweep could not see because 3.1.0 added them: `docs.yml`'s deploy guard
+  (`github.repository == 'AOCyberAI/aoforge-claude'`; with the old name the deploy job never runs) and PROJECT.md's Org
+  Context line. `scripts/__fixtures__/ruleset-fixtures.cjs` keeps the old org: it is test data, like main's fixtures.
+- `4f242c59` regenerates `site/data/aoforge.json`: main changed the generator's slug but not the generated file.
+
+### Results
+
+| Check | Result |
+|---|---|
+| Full suite, Node 24.13.1, npm test's four globs | 470 files; `watcher-shell.test.cjs` excluded locally (W-3 fish hang, which recurred on the first attempt); 469 run. tests 13,773 / pass 13,746 / **fail 0 / cancelled 0** / skipped 27, the same counts as at `7da7485f` |
+| node:26 in Docker as the non-root `node` user, on a clone of `4f242c59` | node v26.11.1; `npm ci` 0; gate self-test 88/88; `node scripts/ci-unit-gate.cjs` exit 0, `PASS — every failure is a declared, reasoned known failure` (watcher-shell included). An earlier attempt on a `git archive` export failed only because the export has no `.git`: not a verdict |
+| Guards, each in its own process | rename-guard 25, stack-neutrality 7, reconcile-guard 30, context-budget 6, runtime-path-reads 18, build-cell-reads 8, pre-bash-equivalence 60, model-placeholders 8, planning-writes.repo 11, planning-writes.audit 65, builtin-sweep 17, flag-spec 14, doc-refs 17/17/5, requirements-agreement 2, adopt suites, hook-inventory 5, dispatch-completeness 7: all pass, 0 fail |
+| Release tests | changelog-on-tag 34/34, release-tag 28/28, ci-unit-gate 88/88, stack-packs 46/46, changelog 7/7 |
+| `upgrade --check`, `validate health`, `consistency`, `requirements`, `docs`, `roadmap-coverage`, `stack validate`, `changelog check 3.1.0` | up to date (v3.1.0); healthy (I001 x2: 79-09, 79-10); passed; agrees (72 objectives, 51 requirements); no advisories; 41/41; ok; ok |
+| Versions | package.json, package-lock (both), aoforge plugin.json, marketplace: 3.1.0; all 8 marketplace entries equal their plugin.json |
+| Tracked conflict markers; `git ls-files .planning` | none; empty |
+| `gen-docs-data` | after `4f242c59`, only `generatedAt` differs |
+
+### Changes to the release TRDs and state
+
+- 79-09 and 79-10 named `AO-Cyber-Systems/aoforge-claude` in every `gh --repo` command. That name now redirects to
+  `AOCyber-OSS/aoforge-claude`, the public mirror, so the PR would have opened there. Both TRDs now name
+  `AOCyberAI/aoforge-claude`.
+- The cutover freeze is over: neither freeze ruleset exists. STATE.md's freeze, G5 (fixed by 73-09) and
+  `feature/v1.1-coordination` concerns are resolved; the nine `feature/v1.1*` remote branches were deleted (tips recorded
+  in the session).
+- **New concern for 79-10:** `main` has no branch protection. Repo ruleset 24829006 (PR with `test (npm test, gated)`
+  green) did not carry over to `AOCyberAI`; only the org's visibility, delete and transfer rules apply. Restoring it from
+  `.github/rulesets/main.json` is a live change that needs its own approval.
+
+**For 79-09:** `git diff --name-only 4f242c59 <pushed head>` must list `.aoforge/` paths only.

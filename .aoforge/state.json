@@ -2098,9 +2098,8 @@
     }
   ],
   "blockers": [
-    "G5 (73-08): the aoforge-watch home ~/.aoforge/ makes HOME resolve as an AOForge project root (compat.findProjectRoot walks up unbounded); every repo under HOME without its own .aoforge/ is treated as ambient AOForge by gate-edits, gate-commits, route-intent, classify-session and others; 4 classify-session tests fail on this machine. Fix before the release (move the daemon home or bound the walk).",
-    "79-09 blocked by the org cutover freeze (rulesets cutover-freeze-branches 25294524 and cutover-freeze-tags 25294526, active since 2026-10-17 02:45): the push of integrate/3.1.0 (local 3627c4a9, origin a589d306) was rejected. Resume 79-09 after the freeze lifts; re-check the remote URL and rulesets first.",
-    "81-11: private/fleet-checklists.json (untracked, sha256 86f909f5...) does not travel with the 81-06 merge; copy it into the main checkout after merge from the 81-06 worktree or scratchpad/eval81/fleet/fleet-checklists.json"
+    "81-11: private/fleet-checklists.json (untracked, sha256 86f909f5...) does not travel with the 81-06 merge; copy it into the main checkout after merge from the 81-06 worktree or scratchpad/eval81/fleet/fleet-checklists.json",
+    "main has no branch protection after the org migration: repo ruleset 24829006 (PR + green test (npm test, gated)) did not carry over to AOCyberAI; only the org Private Repos ruleset applies. Restore it from .github/rulesets/main.json (live change, needs approval) before 79-10's merge."
   ],
   "session_log": []
 }

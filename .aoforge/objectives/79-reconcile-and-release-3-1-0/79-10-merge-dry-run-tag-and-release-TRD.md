@@ -82,14 +82,14 @@ Facts (planning time; re-check):
 <embedded_context>
 
 <codebase_examples>
-72-20's merge shape: `gh pr merge <N> --repo AO-Cyber-Systems/aoforge-claude --merge --subject "Merge #<N>: ..." --body "..."`.
-Finding a run: `gh run list --repo AO-Cyber-Systems/aoforge-claude --workflow <file> --event <push|workflow_dispatch> --limit 3 --json databaseId,headSha,status,conclusion,displayTitle`
-then `gh run watch <id> --repo AO-Cyber-Systems/aoforge-claude --exit-status`.
+72-20's merge shape: `gh pr merge <N> --repo AOCyberAI/aoforge-claude --merge --subject "Merge #<N>: ..." --body "..."`.
+Finding a run: `gh run list --repo AOCyberAI/aoforge-claude --workflow <file> --event <push|workflow_dispatch> --limit 3 --json databaseId,headSha,status,conclusion,displayTitle`
+then `gh run watch <id> --repo AOCyberAI/aoforge-claude --exit-status`.
 Changelog gate dry run (no output = allowed):
 ```
 printf '%s' '{"tool_name":"Bash","tool_input":{"command":"git tag -a v3.1.0 -m x <MERGE_SHA>"},"cwd":"/Users/justin/dev/aoforge-claude"}' | node ~/.claude/plugins/cache/aocyber/aoforge/<version>/hooks/changelog-on-tag.js
 ```
-Main's marketplace through the API: `gh api 'repos/AO-Cyber-Systems/aoforge-claude/contents/.claude-plugin/marketplace.json?ref=main' -q .content`,
+Main's marketplace through the API: `gh api 'repos/AOCyberAI/aoforge-claude/contents/.claude-plugin/marketplace.json?ref=main' -q .content`,
 decoded with `node -e` (base64), printing each plugin's name and version.
 </codebase_examples>
 
@@ -107,7 +107,7 @@ decoded with `node -e` (base64), printing each plugin's name and version.
   blocked (an update needs a new validation and a new push approval).
 - `gh workflow run` says the workflow has no workflow_dispatch trigger: main lacks the merged release.yml (check
   `git show origin/main:.github/workflows/release.yml`); return blocked with the output.
-- The dry run fails: `gh run view <id> --repo AO-Cyber-Systems/aoforge-claude --log-failed`; a dry-run tag left on origin
+- The dry run fails: `gh run view <id> --repo AOCyberAI/aoforge-claude --log-failed`; a dry-run tag left on origin
   is deleted only through a separate approval (`git push origin --delete refs/tags/<tag>` or the command the log names);
   return failed; no tag is created.
 - Tag already on origin: `git ls-remote --tags origin 'refs/tags/v3.1.0^{}'`; peels to MERGE_SHA -> `already done`;
@@ -125,12 +125,12 @@ decoded with `node -e` (base64), printing each plugin's name and version.
   <files>(none: live GitHub operation)</files>
   <action>
 Read N and PUSHED_SHA from the 79-09 SUMMARY. Pre-checks:
-`gh pr view <N> --repo AO-Cyber-Systems/aoforge-claude --json state,baseRefName,headRefName,headRefOid,mergeable,mergeStateStatus,statusCheckRollup,mergeCommit`
+`gh pr view <N> --repo AOCyberAI/aoforge-claude --json state,baseRefName,headRefName,headRefOid,mergeable,mergeStateStatus,statusCheckRollup,mergeCommit`
 (OPEN or MERGED; base main; head integrate/3.1.0 at PUSHED_SHA; MERGEABLE; `test (npm test, gated)` SUCCESS);
 `git -C /Users/justin/dev/aoforge-claude fetch origin`; `git -C ... rev-parse origin/main` = MAIN_BEFORE.
 Idempotency: MERGED -> `already done`, MERGE_SHA from mergeCommit.
 
-STOP and present: "Approve merging PR #<N> into main? Command: `gh pr merge <N> --repo AO-Cyber-Systems/aoforge-claude
+STOP and present: "Approve merging PR #<N> into main? Command: `gh pr merge <N> --repo AOCyberAI/aoforge-claude
 --merge --subject "Merge #<N>: release 3.1.0" --body "Release 3.1.0: main, #129 and the shim removal in one tree
 (objective 79)"`. Effects: (1) main holds 3.1.0: the rename shims are gone, stack procedure lives in the
 aoforge-stack-flutter and aoforge-stack-web packs; (2) `aocyber` marketplace users get aoforge 3.1.0 and the two packs on
@@ -144,7 +144,7 @@ After the merge: `git -C ... fetch origin`; watch the test.yml push run for MERG
   <verification>PR MERGED; origin/main == MERGE_SHA with parents MAIN_BEFORE and PUSHED_SHA; main run green.</verification>
   <resume-signal>Reply "approved" (I merge), "done" (you merged), or anything else to hold.</resume-signal>
   <verify>
-- `gh pr view <N> --repo AO-Cyber-Systems/aoforge-claude --json state,mergeCommit -q '.state + " " + .mergeCommit.oid'` prints `MERGED <MERGE_SHA>`
+- `gh pr view <N> --repo AOCyberAI/aoforge-claude --json state,mergeCommit -q '.state + " " + .mergeCommit.oid'` prints `MERGED <MERGE_SHA>`
 - `git -C /Users/justin/dev/aoforge-claude rev-parse origin/main` == MERGE_SHA; `rev-parse <MERGE_SHA>^1` == MAIN_BEFORE; `rev-parse <MERGE_SHA>^2` == PUSHED_SHA
 - `git -C ... diff --quiet <PUSHED_SHA> <MERGE_SHA>` exits 0
 - the test.yml push run on MERGE_SHA concluded success (if not: record and return failed; no dispatch, no tag)
@@ -162,11 +162,11 @@ Pre-checks (read-only):
 `node /Users/justin/dev/aoforge-claude/scripts/tag-rules.cjs aoforge--v0.0.0-dryrun-1 aoforge--v3.1.0 v3.1.0` (record
 every ruleset it lists, or none);
 `git -C ... ls-remote --tags origin 'refs/tags/aoforge--v0.0.0-dryrun-*'` (expect nothing; a leftover is reported, not deleted);
-`gh release list --repo AO-Cyber-Systems/aoforge-claude --limit 3` (record).
+`gh release list --repo AOCyberAI/aoforge-claude --limit 3` (record).
 Idempotency: a successful `workflow_dispatch` run of release.yml on MERGE_SHA already exists -> `already done`.
 
 STOP and present: "Approve the release dry run? Command: `gh workflow run release.yml --repo
-AO-Cyber-Systems/aoforge-claude --ref main -f dry_run=true`. Effects: on main (<MERGE_SHA>) the workflow pushes a
+AOCyberAI/aoforge-claude --ref main -f dry_run=true`. Effects: on main (<MERGE_SHA>) the workflow pushes a
 throwaway lightweight tag `aoforge--v0.0.0-dryrun-<run id>` with its GITHUB_TOKEN, checks origin shows it, deletes it and
 creates no release; tag rulesets found: <list or none>. It proves the token can push the `aoforge--v3.1.0` alias the real
 release pushes. Reply `approved`, `done`, or anything else to hold."
@@ -180,7 +180,7 @@ headSha and conclusion.
   <verify>
 - the run's conclusion is `success` and its headSha == MERGE_SHA
 - `git -C /Users/justin/dev/aoforge-claude ls-remote --tags origin 'refs/tags/aoforge--v0.0.0-dryrun-*'` prints nothing
-- `gh release list --repo AO-Cyber-Systems/aoforge-claude --limit 3` is unchanged from the pre-check
+- `gh release list --repo AOCyberAI/aoforge-claude --limit 3` is unchanged from the pre-check
   </verify>
   <done>Reply recorded; dry run passed (run id recorded), or `held at dry run`, or `failed` with the log tail.</done>
 </task>
@@ -218,14 +218,14 @@ core dependency resolves. Reply `approved`, `done`, or anything else to hold."
   <files>(none: read-only)</files>
   <action>
 One per Bash call: the release.yml `push` run for v3.1.0 (codebase_examples), watched to completion;
-`gh release view v3.1.0 --repo AO-Cyber-Systems/aoforge-claude --json name,tagName,isDraft,isPrerelease,url,body`
+`gh release view v3.1.0 --repo AOCyberAI/aoforge-claude --json name,tagName,isDraft,isPrerelease,url,body`
 (name = the tag subject; not draft; body equals `releaseNotes` of `git show <MERGE_SHA>:CHANGELOG.md` for 3.1.0 from
 `scripts/release-tag.cjs`, whitespace-trimmed, compared with `node -e`);
-`gh api repos/AO-Cyber-Systems/aoforge-claude/releases/latest -q .tag_name` (v3.1.0);
+`gh api repos/AOCyberAI/aoforge-claude/releases/latest -q .tag_name` (v3.1.0);
 `git -C /Users/justin/dev/aoforge-claude ls-remote --tags origin aoforge--v3.1.0 'aoforge--v3.1.0^{}'` (MERGE_SHA);
 main's marketplace through the API (aoforge 3.1.0, aoforge-stack-flutter 1.0.0, aoforge-stack-web 1.0.0, no pre-rename
 pointer entry);
-`gh run list --repo AO-Cyber-Systems/aoforge-claude --workflow docs.yml --limit 1 --json conclusion,headSha` (record; a
+`gh run list --repo AOCyberAI/aoforge-claude --workflow docs.yml --limit 1 --json conclusion,headSha` (record; a
 failure for the missing Pages project is expected until OPS-03);
 `git -C ... ls-remote --tags origin 'aoforge-stack-*--v*'` (record presence; never push them here);
 `git -C ... rev-list --count <PUSHED_SHA>..integrate/3.1.0` and `git -C ... diff --name-only <PUSHED_SHA> integrate/3.1.0`
@@ -234,7 +234,7 @@ record, do nothing).
 End the SUMMARY with Follow-ups: pack tags (if the user wants pack releases), the planning-records follow-up PR, OPS-03,
 PR #130 untouched.
   </action>
-  <verify>`gh release view v3.1.0 --repo AO-Cyber-Systems/aoforge-claude --json isDraft,tagName -q '.tagName + " " + (.isDraft|tostring)'` prints `v3.1.0 false`, and the alias tag resolves to MERGE_SHA</verify>
+  <verify>`gh release view v3.1.0 --repo AOCyberAI/aoforge-claude --json isDraft,tagName -q '.tagName + " " + (.isDraft|tostring)'` prints `v3.1.0 false`, and the alias tag resolves to MERGE_SHA</verify>
   <done>3.1.0 is released from the CHANGELOG section, the alias tag exists, main's marketplace serves aoforge 3.1.0 and both packs, and every remaining step is listed for the user.</done>
   <recovery>If release.yml failed or the alias is missing, return failed with the log tail (a gap TRD fixes it; the tag is never moved).</recovery>
 </task>

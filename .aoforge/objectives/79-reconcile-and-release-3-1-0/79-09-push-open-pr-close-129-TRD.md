@@ -66,7 +66,7 @@ Hard rules: never `git push --force`/`--force-with-lease`/`--tags`; name refs ex
 call; never port 8080; never touch PR #130 (it stays open until OPS-03 resumes); never delete a branch.
 PR body attribution line (last line): `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
 
-Facts (planning time): origin is `https://github.com/AO-Cyber-Systems/aoforge-claude.git`; `integrate/3.1.0` does not
+Facts (planning time): origin is `https://github.com/AOCyberAI/aoforge-claude.git`; `integrate/3.1.0` does not
 exist on origin yet; origin/main is ee93e66f (Merge #134); #129 is OPEN, head `feat/stack-profile-loader` (origin has
 abc18a9f; its 179 newer local commits reach main through the new PR, so that branch is not pushed); `main` ruleset
 24829006 requires a PR with `test (npm test, gated)` green (merge, squash and rebase allowed; this objective uses merge).
@@ -93,7 +93,7 @@ test numbers, the attribution line. Draft the body with the Write tool into a `m
 - Push rejected (auth): an auth gate; ask the user to unlock their agent, re-present the same checkpoint.
 - Push rejected non-fast-forward (someone created the branch): never force; `git fetch origin`, show both heads, return blocked.
 - A PR for this head already exists: adopt it (number, URL); do not change its title or body without approval.
-- The required check fails: `gh run view <id> --repo AO-Cyber-Systems/aoforge-claude --log-failed`, record the failing
+- The required check fails: `gh run view <id> --repo AOCyberAI/aoforge-claude --log-failed`, record the failing
   tests, return `failed` (the fix is a gap TRD, a new 79-08-style validation and a new push approval); #129 stays open.
 - A non-required check fails for the missing Pages project (OPS-03): record it as expected, continue.
 </error_recovery>
@@ -119,7 +119,7 @@ HEAD_NOW, `git merge-base --is-ancestor`);
 Idempotency: origin already at HEAD_NOW -> `already done`.
 
 STOP and present: "Approve pushing the 3.1.0 integration branch? Command: `git -C /Users/justin/dev/aoforge-claude push
-origin integrate/3.1.0`. This creates `integrate/3.1.0` on AO-Cyber-Systems/aoforge-claude at <HEAD_NOW> (validated head
+origin integrate/3.1.0`. This creates `integrate/3.1.0` on AOCyberAI/aoforge-claude at <HEAD_NOW> (validated head
 <VALIDATED_SHA>, later commits only under .aoforge/), carrying N commits main does not have (objectives 72 post-release,
 73-75, 78, quick 34-39 and the reconcile merge). No PR, merge or tag yet. Reply `approved`, `done`, or anything else to
 hold."
@@ -146,20 +146,20 @@ Flutter/Dart/web projects install their stack pack; an un-rebranded repository r
 `## After merge` (release dry-run dispatch and the v3.1.0 tag, each behind its own approval), and the attribution line.
 Every claim must come from the CHANGELOG or a 79-0N SUMMARY.
 
-Pre-check: `gh pr list --repo AO-Cyber-Systems/aoforge-claude --head integrate/3.1.0 --base main --state open --json number,url`
+Pre-check: `gh pr list --repo AOCyberAI/aoforge-claude --head integrate/3.1.0 --base main --state open --json number,url`
 (adopt an existing PR).
 
-STOP and present: "Approve opening the 3.1.0 PR? Command: `gh pr create --repo AO-Cyber-Systems/aoforge-claude --base
+STOP and present: "Approve opening the 3.1.0 PR? Command: `gh pr create --repo AOCyberAI/aoforge-claude --base
 main --head integrate/3.1.0 --title "Release 3.1.0: main, #129 and the shim removal in one tree" --body-file <path>`.
 It opens a PR into main (nothing merged) and starts CI on it. Reply `approved`, `done`, or anything else to hold."
 
-After creation: `gh pr checks <N> --repo AO-Cyber-Systems/aoforge-claude --watch` (re-run on a Bash timeout). Record
+After creation: `gh pr checks <N> --repo AOCyberAI/aoforge-claude --watch` (re-run on a Bash timeout). Record
 every check's name and conclusion.
   </action>
   <instructions>The PR is the only path to main (ruleset 24829006); it must be green before 79-10's merge gate.</instructions>
   <verification>PR open, base main, head PUSHED_SHA, `test (npm test, gated)` SUCCESS.</verification>
   <resume-signal>Reply "approved" (I open it), "done" (you opened it), or anything else to hold.</resume-signal>
-  <verify>`gh pr view <N> --repo AO-Cyber-Systems/aoforge-claude --json state,baseRefName,headRefOid,statusCheckRollup` shows OPEN, base main, headRefOid == PUSHED_SHA, the required check SUCCESS, and any other non-green check explained (OPS-03 docs only)</verify>
+  <verify>`gh pr view <N> --repo AOCyberAI/aoforge-claude --json state,baseRefName,headRefOid,statusCheckRollup` shows OPEN, base main, headRefOid == PUSHED_SHA, the required check SUCCESS, and any other non-green check explained (OPS-03 docs only)</verify>
   <done>Reply recorded; PR N open and green (number, URL, checks in the SUMMARY), or `held at PR`, or `failed` with the failing tests.</done>
 </task>
 
@@ -168,10 +168,10 @@ every check's name and conclusion.
   <files>(none: live GitHub PR state)</files>
   <action>
 Runs only when Task 2 completed with PR N open. Pre-check:
-`gh pr view 129 --repo AO-Cyber-Systems/aoforge-claude --json state,headRefName,title,url` (OPEN, head
+`gh pr view 129 --repo AOCyberAI/aoforge-claude --json state,headRefName,title,url` (OPEN, head
 `feat/stack-profile-loader`; if already CLOSED, `already done`: verify the link comment exists).
 
-STOP and present: "Approve closing #129 as superseded? Command: `gh pr close 129 --repo AO-Cyber-Systems/aoforge-claude
+STOP and present: "Approve closing #129 as superseded? Command: `gh pr close 129 --repo AOCyberAI/aoforge-claude
 --comment "Superseded by #<N> (<url>), which carries this branch's commits together with objective 78 and main's 3.1.0
 line through one merge commit (objective 79)."`. Effects: #129 is closed without merging; its branch
 `feat/stack-profile-loader` stays (not deleted); every commit it carried reaches main through #<N>; #130 is untouched.
@@ -180,7 +180,7 @@ Reply `approved`, `done`, or anything else to hold."
   <instructions>#129 is superseded by the new PR; closing it leaves one open path for 3.1.0.</instructions>
   <verification>#129 CLOSED (not MERGED) with the link comment; branch still on origin.</verification>
   <resume-signal>Reply "approved" (I close it), "done" (you closed it), or anything else to hold.</resume-signal>
-  <verify>`gh pr view 129 --repo AO-Cyber-Systems/aoforge-claude --json state,comments -q '.state'` prints CLOSED and the last comment contains `#<N>`; `git -C /Users/justin/dev/aoforge-claude ls-remote origin refs/heads/feat/stack-profile-loader` still prints a sha</verify>
+  <verify>`gh pr view 129 --repo AOCyberAI/aoforge-claude --json state,comments -q '.state'` prints CLOSED and the last comment contains `#<N>`; `git -C /Users/justin/dev/aoforge-claude ls-remote origin refs/heads/feat/stack-profile-loader` still prints a sha</verify>
   <done>Reply recorded; #129 closed with the link, or `held at close`.</done>
 </task>
 

@@ -96,9 +96,8 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 
 ## Blockers / Concerns
 
-- **`feature/v1.1-coordination` is duplicative** — same content as `feature/v1.1`. Should be deleted to avoid confusion. Its worktree at `/Users/markemerson/Source/devflow-claude-v11` can be removed.
-- G5 (73-08): the aoforge-watch home ~/.aoforge/ makes HOME resolve as an AOForge project root (compat.findProjectRoot walks up unbounded); every repo under HOME without its own .aoforge/ is treated as ambient AOForge by gate-edits, gate-commits, route-intent, classify-session and others; 4 classify-session tests fail on this machine. Fix before the release (move the daemon home or bound the walk).
-- 79-09 blocked by the org cutover freeze (rulesets cutover-freeze-branches 25294524 and cutover-freeze-tags 25294526, active since 2026-10-17 02:45): the push of integrate/3.1.0 (local 3627c4a9, origin a589d306) was rejected. Resume 79-09 after the freeze lifts; re-check the remote URL and rulesets first.
+
+- main has no branch protection after the org migration: repo ruleset 24829006 (PR + green test (npm test, gated)) did not carry over to AOCyberAI; only the org Private Repos ruleset applies. Restore it from .github/rulesets/main.json (live change, needs approval) before 79-10's merge.
 
 ### Quick Tasks Completed
 
@@ -160,6 +159,6 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 
 ## Session Continuity
 
-Last session: 2026-10-18T12:49:11.327Z
+Last session: 2026-10-21T10:47:59.491Z
 Resume file: `None`
-Stopped at: Completed 82-10-docs-records-and-revalidation-TRD.md; objective 82 complete; integrate/3.1.0 VALIDATED_SHA 7da7485f, 79-09 next (cutover freeze)
+Stopped at: Merged origin/main (post-cutover) into integrate/3.1.0; re-validated PASS at 4f242c59; 79-09 next (push, needs approval); restore main's ruleset before 79-10
