@@ -9,12 +9,12 @@ lede: "AOForge ships as a Claude Code plugin. Two lines, no build step, works on
 In Claude Code, add the marketplace and install the plugin:
 
 ```text
-/plugin marketplace add AO-Cyber-Systems/aoforge-claude
+/plugin marketplace add AOCyber-OSS/aoforge-claude
 /plugin install aoforge@aocyber
 ```
 
 You can do the same thing through the Claude Desktop plugin UI: open the plugins
-panel, add the `AO-Cyber-Systems/aoforge-claude` marketplace, then install
+panel, add the `AOCyber-OSS/aoforge-claude` marketplace, then install
 `aoforge`.
 
 Verify it took:
@@ -142,7 +142,7 @@ Leave `~/.claude/aoforge/` alone — it gets refreshed by the runtime mirror.
 To work on AOForge itself, clone the repo and add it as a local marketplace:
 
 ```bash
-git clone https://github.com/AO-Cyber-Systems/aoforge-claude.git
+git clone https://github.com/AOCyber-OSS/aoforge-claude.git
 ```
 
 ```text

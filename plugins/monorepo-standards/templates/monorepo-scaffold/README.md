@@ -18,7 +18,7 @@ This is a polyglot monorepo. See [CLAUDE.md](./CLAUDE.md) for the canonical Layo
 ## Getting started
 
 ```bash
-git clone https://github.com/AO-Cyber-Systems/{{PRODUCT_SLUG}}.git
+git clone https://github.com/AOCyberAI/{{PRODUCT_SLUG}}.git
 cd {{PRODUCT_SLUG}}
 
 # Install per-area deps
@@ -36,7 +36,7 @@ Per-area Makefiles / package scripts. See each area's `CLAUDE.md` for the canoni
 
 ## Standards
 
-- **No binaries in git.** Enforced by the [`monorepo-standards`](https://github.com/AO-Cyber-Systems/aoforge-claude) plugin.
+- **No binaries in git.** Enforced by the [`monorepo-standards`](https://github.com/AOCyber-OSS/aoforge-claude) plugin.
 - **Path-filtered CI.** Each area has its own workflow under `.github/workflows/`.
 - **Conventional commits, scoped by area** — `feat(go): ...`, `fix(flutter): ...`.
 

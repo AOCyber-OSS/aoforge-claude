@@ -68,7 +68,7 @@ jobs:
       # no account id and no token reach the (public) log (objective 74, OPS-03). Read-only,
       # and it never fails the job; the deploy step below is the gate.
       - name: Show the Cloudflare deploy target
-        if: github.repository == 'AO-Cyber-Systems/aoforge-claude' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        if: github.repository == 'AOCyberAI/aoforge-claude' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -81,7 +81,7 @@ jobs:
       # Accepts either a scoped API token (preferred) or the account's Global
       # API Key; wrangler picks whichever pair of variables is populated.
       - name: Deploy to Cloudflare Pages
-        if: github.event_name != 'pull_request' && github.repository == 'AO-Cyber-Systems/aoforge-claude'
+        if: github.event_name != 'pull_request' && github.repository == 'AOCyberAI/aoforge-claude'
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

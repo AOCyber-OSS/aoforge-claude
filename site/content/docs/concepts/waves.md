@@ -37,7 +37,7 @@ repo from the *controller session's* cwd (a dispatch into one repository could l
 in another) and the base from the *default branch* (so wave 2 started without wave
 1's commits). Each executor now runs `aof-tools exec-context check --repo ... --base ...`
 first and stops loudly on either mismatch
-([#86](https://github.com/AO-Cyber-Systems/aoforge-claude/issues/86)).
+([#86](https://github.com/AOCyberAI/aoforge-claude/issues/86)).
 
 {{< callout title="The worktree guard is not an AOForge hook" type="warn" >}}
 Claude Code's harness has its own worktree-isolation guard that refuses compound

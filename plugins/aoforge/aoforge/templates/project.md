@@ -19,12 +19,12 @@ default_work: feature      # OPTIONAL — default `work` value inherited by obje
                            # objectives are the same work type (e.g., a Rails→Go port
                            # with 10+ sequential `port` objectives). Omit if work types
                            # vary objective-to-objective.
-github_repo: AO-Cyber-Systems/aoforge-claude   # OPTIONAL — owner/name. Used as
+github_repo: AOCyberAI/aoforge-claude   # OPTIONAL — owner/name. Used as
                                                 # default repo context when objectives
                                                 # use shorthand refs like `parent_issue: #9`.
                                                 # Falls back to `git config remote.origin.url`
                                                 # if absent.
-org_project: PVT_kwDODwqLrc4BRsOP              # OPTIONAL — GitHub Project v2 ID for the
+org_project: PVT_kwDOFEhtQc4BnqOy              # OPTIONAL — GitHub Project v2 ID for the
                                                 # org-level coordination project. Defaults to
                                                 # AO-Cyber-Systems "Product Roadmap" project (#3).
                                                 # Inherited by all objectives unless overridden.

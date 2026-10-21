@@ -1,8 +1,8 @@
 ---
 kind: plugin
 default_work: feature
-org: AO-Cyber-Systems
-github_repo: AO-Cyber-Systems/aoforge-claude
+org: AOCyberAI
+github_repo: AOCyberAI/aoforge-claude
 ---
 
 # AOForge
@@ -117,8 +117,8 @@ AOForge provides the *mechanics* for coordination. Adopting those mechanics acro
 
 ## Org Context
 
-- Organization: `AO-Cyber-Systems`
-- Master roadmap: GitHub Project ID `PVT_kwDODwqLrc4BRsOP` ("Product Roadmap")
+- Organization: `AOCyberAI`
+- Master roadmap: GitHub Project ID `PVT_kwDOFEhtQc4BnqOy` ("Product Roadmap")
   - Custom fields: Status (Todo/In Progress/Done), Product (8 product lines), Quarter (Q1 2026 → Q4 2027)
 - Repos in the AO-Cyber-Systems org AOForge coordinates with:
   - `aodex` (Rails API + Go port — agent control plane, knowledge, MCP)

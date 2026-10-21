@@ -88,7 +88,7 @@ directories by `aof-tools`.
 and every plugin it ships. Users add it by repo slug:
 
 ```text
-/plugin marketplace add AO-Cyber-Systems/aoforge-claude
+/plugin marketplace add AOCyber-OSS/aoforge-claude
 ```
 
 ## Conventions

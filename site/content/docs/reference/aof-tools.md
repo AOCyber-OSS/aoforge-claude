@@ -26,12 +26,12 @@ aof-tools commit --help      # usage for one command
 subcommand, so no subcommand can receive a help flag *addressed to aof-tools* as
 data. This used to be false in the worst possible place: `aof-tools commit --help`
 took `--help` as the commit message, found no `--files`, and committed whatever
-was dirty ([#87](https://github.com/AO-Cyber-Systems/aoforge-claude/issues/87)).
+was dirty ([#87](https://github.com/AOCyberAI/aoforge-claude/issues/87)).
 `config-set`, `milestone complete`, `handoff create`, `micro start`,
 `changelog update` and `project-decline` all wrote something too.
 
 Three boundaries make that guarantee exact
-([#100](https://github.com/AO-Cyber-Systems/aoforge-claude/issues/100)):
+([#100](https://github.com/AOCyberAI/aoforge-claude/issues/100)):
 
 - **A handful of commands print their own, richer help** — `awareness`,
   `org-awareness`, `dup-detect`, `defaults-table init`, `gh resolve` (and, in the
@@ -79,7 +79,7 @@ aof-tools commit "..." --amend
 This is what `gate-commits` redirects raw `git commit` to. It preserves objective
 scope and task IDs and updates `STATE.md`.
 
-Two safety rules, both from [#87](https://github.com/AO-Cyber-Systems/aoforge-claude/issues/87):
+Two safety rules, both from [#87](https://github.com/AOCyberAI/aoforge-claude/issues/87):
 
 - **A message starting with `--` is refused.** It is far likelier a mistyped flag
   than an intended subject line.
@@ -90,7 +90,7 @@ Two safety rules, both from [#87](https://github.com/AO-Cyber-Systems/aoforge-cl
   says what you meant.
 
 A commit that did **not** happen now exits non-zero and says why
-([#100](https://github.com/AO-Cyber-Systems/aoforge-claude/issues/100)). The
+([#100](https://github.com/AOCyberAI/aoforge-claude/issues/100)). The
 pathspec form above is a *partial commit*, and git refuses one while a merge is
 in progress — which surfaced as `{"reason": "nothing_to_commit"}` and `rc=0`, the
 one wording that makes you stop looking. Resolving a merge now reports

@@ -92,7 +92,7 @@ describe('reusable workflow .github/workflows/aoforge-checks.yml', () => {
     assert.match(ref, /^\s+required:\s*true\s*$/m, 'aoforge-ref is required');
 
     const repo = blockUnder(inputs, 'aoforge-repo', 6).join('\n');
-    assert.match(repo, /default:\s*['"]?AO-Cyber-Systems\/aoforge-claude['"]?\s*$/m, 'aoforge-repo defaults to the AOForge repo');
+    assert.match(repo, /default:\s*['"]?AOCyberAI\/aoforge-claude['"]?\s*$/m, 'aoforge-repo defaults to the AOForge repo');
 
     const secrets = blockUnder(call, 'secrets', 4);
     assert.ok(secrets, 'workflow_call.secrets');

@@ -25,7 +25,7 @@ The rename changes no behaviour. If something works differently after the move, 
 | What | Before (2.x) | After (3.0.0) |
 |---|---|---|
 | Product | DevFlow | AOForge |
-| Repository | `AO-Cyber-Systems/devflow-claude` | `AO-Cyber-Systems/aoforge-claude` |
+| Repository | `AO-Cyber-Systems/devflow-claude` | `AOCyber-OSS/aoforge-claude` |
 | Plugin | `devflow@aocyber` | `aoforge@aocyber` |
 | Slash commands | `/devflow:<skill>` | `/aoforge:<skill>` |
 | Pre-plugin command forms | `/df:<skill>`, `/df-<skill>` | `/aoforge:<skill>` |
@@ -299,8 +299,8 @@ In this order. `aof-tools` below is short for `node ~/.claude/aoforge/bin/aof-to
    /plugin install aoforge@aocyber
    ```
 
-   The repository was renamed to `AO-Cyber-Systems/aoforge-claude`, and GitHub redirects the old name. If the update
-   fails, remove the `aocyber` marketplace and add it again with `/plugin marketplace add AO-Cyber-Systems/aoforge-claude`.
+   The repository was renamed to `AOCyber-OSS/aoforge-claude`, and GitHub redirects the old name. If the update
+   fails, remove the `aocyber` marketplace and add it again with `/plugin marketplace add AOCyber-OSS/aoforge-claude`.
    For 3.0.x specifically, use the `v3.0.0` checkout from Option B.
 
 2. **Restart Claude Code.** The first session mirrors the runtime and does everything under "On the first AOForge
