@@ -2,8 +2,8 @@
 objective: 74-operations-decisions
 trd: "06"
 subsystem: ci
-tags: [cloudflare, pages, docs-deploy, OPS-03, diagnostic, deferred]
-status: deferred
+tags: [cloudflare, pages, docs-deploy, OPS-03, diagnostic, resolved-by-cutover]
+status: complete
 
 requires:
   - objective: 74
@@ -16,7 +16,7 @@ key-files:
   created: []
   modified: []
 
-requirements-completed: []
+requirements-completed: [OPS-03]
 
 completed: deferred
 tokens_input: 2249881
@@ -144,3 +144,15 @@ TRD is complete.
 - FOUND: the pending todo `.aoforge/todos/pending/2026-10-09-create-the-aoforge-docs-pages-project-and-deploy-the-docs-from-main.md`, one file, updated in place.
 - The deferral is stated plainly: `status: deferred`, `completed: deferred`, `requirements-completed: []`, OPS-03 Pending.
 - Nothing was pushed; no workflow was dispatched; no Cloudflare or GitHub state changed; no secret value was read or printed.
+
+## Resolution (2026-10-21): met by the org cutover
+
+The deferred steps were overtaken by the GitHub org cutover (2026-10-17/18): the repository moved to AOCyberAI, whose organization secrets name the AOCyber Systems account, and the Pages project `aoforge-docs` was created there on 2026-10-14. No AOForge step set a secret or created the project.
+
+- **Account and project** (read-only, the user's AOCyber Systems global key, 2026-10-21): account "AOCyber Systems" (b2de90d0...) has Pages project `aoforge-docs`, created 2026-10-14T13:04:55Z, production branch `main`, domain `aoforge-docs.pages.dev`.
+- **A push to `main` deploys green:** docs.yml run 39595433242 (push, f907f4fc, the 3.1.0 merge #138) succeeded at every step; the project's newest production deployment is d1fb2fa4 from commit f907f4fc (2026-10-21T11:55:05Z), the one before b993c402 from 9bb6983a (2026-10-20).
+- **Still open, not part of OPS-03:**
+  - `scripts/ci-cloudflare-target.cjs` cannot name the account under the new token (`code 9109 Unauthorized`: no Account Settings / Read) and still lists projects with the rejected `per_page=100` (8000024). The deploy does not depend on it.
+  - devflow.cloud and www.devflow.cloud are still on `devflow-docs`; moving them to `aoforge-docs` is the user's decision (74-08's domain-move checkpoint).
+  - PR #130 (`ops/74-ci-operations`) is left as it is.
+

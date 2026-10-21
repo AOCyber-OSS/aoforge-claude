@@ -55,7 +55,7 @@ Scope: everything v1.5 left open (Known Gaps and tech debt in `milestones/v1.5-M
 
 - [x] **OPS-01**: The live visual judge runs locally only (`/aoforge:ui-eval --judge live`), on the user's own credential; no Anthropic credential is stored in GitHub and no CI judge runs on `main`. Re-scoped by the user on 2026-10-09 (was: the CI `ANTHROPIC` secret configured by the user and the live visual judge running in CI on `main`, objectives 32/33).
 - [x] **OPS-02**: Branch protection on `main` is set (required checks, no force-push), applied only after the user approves the exact ruleset.
-- [ ] **OPS-03**: The docs site deploys from `main`. The Cloudflare Pages project `aoforge-docs` exists, or the workflow's account and token are corrected, and a push to `main` deploys green. Deferred by the user on 2026-10-10 (TRD 74-06): the deploy credentials reach an account other than AOCyber Systems, and todo `2026-10-09-create-the-aoforge-docs-pages-project-and-deploy-the-docs-from-main` holds what resuming needs.
+- [x] **OPS-03**: The docs site deploys from `main`. The Cloudflare Pages project `aoforge-docs` exists, or the workflow's account and token are corrected, and a push to `main` deploys green. Met 2026-10-21 by the org cutover: the AOCyberAI org secrets reach the AOCyber Systems account, which has `aoforge-docs` (created 2026-10-14); the push of the 3.1.0 merge deployed green (docs.yml run 39595433242, production deployment d1fb2fa4). Recorded in 74-06-SUMMARY.md.
 
 ### Todo hygiene (TODO)
 
@@ -121,7 +121,7 @@ Scope: everything v1.5 left open (Known Gaps and tech debt in `milestones/v1.5-M
 | HND-03 | Objective 73 | Complete |
 | OPS-01 | Objective 74 | Complete |
 | OPS-02 | Objective 74 | Complete |
-| OPS-03 | Objective 74 | Pending |
+| OPS-03 | Objective 74 | Complete |
 | EST-11 | Objective 75 | Not met: see objectives/75-prospective-estimate-retest-and-todo-sweep/75-RETEST-REPORT.md; follow-up todo est-11-follow-up-objective-75 |
 | TODO-01 | Objective 75 (sweep table: objectives/75-prospective-estimate-retest-and-todo-sweep/75-TODO-SWEEP.md) | Complete |
 | MEF-01 | Objective 76 | Complete |

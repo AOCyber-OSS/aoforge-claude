@@ -1,3 +1,4 @@
+completed: 2026-10-21
 ---
 title: create the aoforge-docs Pages project and deploy the docs from main
 area: docs-deploy

@@ -125,7 +125,7 @@ Sequencing: 65 releases v1.5 first, so the installed runtime carries the v1.5 co
 - [x] **Objective 71: Stack drafter and verify policy** - govulncheck gate preference, buf lint drafting, `stack verify --run` policy for services and artifacts (completed 2026-10-08)
 - [x] **Objective 72: Rename to AOForge and naming cleanup** - DevFlow becomes AOForge with one-release shims and in-place migrations, ships as 3.0.0, the user's setup and fleet move over, and no legacy `df-*` remains (completed 2026-10-09)
 - [x] **Objective 73: Handoff gaps and result injection** - Three PTY gaps closed, handoff results injected, a live TTY end-to-end demonstration (completed 2026-10-10)
-- [ ] **Objective 74: Operations decisions** - CI `ANTHROPIC` secret and live visual judge, branch protection on `main`, docs site deploy
+- [x] **Objective 74: Operations decisions** - CI `ANTHROPIC` secret and live visual judge, branch protection on `main`, docs site deploy (completed 2026-10-21)
 - [x] **Objective 75: Prospective estimate retest and todo sweep** - EST-08's criterion re-tested on 68-72; every pending todo completed or re-scoped (completed 2026-10-10)
 - [x] **Objective 76: Model efficiency and stack-specific content** - The configured tier is the tier that runs, mechanical work runs as aof-tools code, spawns load only what they need (landed on `main` 2026-10-16, ships in 3.1.0; 76-06 and 76-08 closed by objective 81; MEF-06 partial; the start-tier half is objective 82's: starting tiers not lowered, follow-up todo P1) (completed 2026-10-17)
 - [x] **Objective 77: Stack packs: contract and extraction** - Core names no stack; Flutter, Dart and web procedure ships in the `aoforge-stack-flutter` and `aoforge-stack-web` packs (landed on `main` 2026-10-16, ships in 3.1.0)
@@ -357,7 +357,7 @@ TRDs:
 - [x] 74-03-main-ruleset-record-TRD.md — (W1) `.github/rulesets/main.json` (no force-push, PR + unit suite required) and `scripts/ruleset-check.cjs` compare/checks (TDD); live read-only inventory
 - [x] 74-04-ops-branch-and-pr-TRD.md — (W2) `ops/74-ci-operations` off origin/main with only the 74-01/02 commits; checkpoints: push, open PR
 - [x] 74-05-anthropic-secret-and-live-judge-run-TRD.md — (W3) checkpoints: user sets the ANTHROPIC secret (existence checked by name only); approved re-run of the live judge on the PR
-- [ ] 74-06-cloudflare-credentials-and-pages-project-TRD.md — (W4) diagnostic read; checkpoints: user corrects credentials if needed and creates `aoforge-docs`; approved preview deploy
+- [x] 74-06-cloudflare-credentials-and-pages-project-TRD.md — (W4) diagnostic read; checkpoints: user corrects credentials if needed and creates `aoforge-docs`; approved preview deploy
 - [x] 74-07-apply-main-ruleset-TRD.md — (W5) checkpoint: user approves the exact ruleset text, one POST; read-back compare
 - [x] 74-08-merge-and-verify-on-main-TRD.md — (W6) checkpoint: merge through the ruleset; verify judge, deploy and ruleset on main; checkpoint: devflow.cloud domain move decision
 - [x] 74-09-docs-and-close-out-TRD.md — (W7) CHANGELOG, site guides, workflow comments, CLAUDE.md, REQUIREMENTS ticks, Pages todo complete
@@ -583,7 +583,7 @@ TRDs:
 | 71. Stack drafter and verify policy | v1.6 | 5/5 | Complete | 2026-10-08 |
 | 72. Install and naming cleanup | v1.6 | 27/27 | Complete | 2026-10-09 |
 | 73. Handoff gaps and result injection | v1.6 | 14/14 | Complete | 2026-10-10 |
-| 74. Operations decisions | v1.6 | 8/9 | In Progress | - |
+| 74. Operations decisions | v1.6 | 9/9 | Complete | 2026-10-21 |
 | 75. Prospective estimate retest and todo sweep | v1.6 | 5/5 | Complete | 2026-10-10 |
 | 76. Model efficiency and stack-specific content | v1.6 | 8/8 | Complete (MEF-06 partial; the start-tier half is objective 82's) | 2026-10-17 |
 | 77. Stack packs: contract and extraction | v1.6 | 5/5 | Complete (verified 2026-10-17, 77-VERIFICATION) | 2026-10-16 |
