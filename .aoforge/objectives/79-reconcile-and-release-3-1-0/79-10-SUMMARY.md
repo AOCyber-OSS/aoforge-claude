@@ -59,10 +59,18 @@ metrics:
 - main's marketplace: aoforge 3.1.0, aoforge-stack-flutter 1.0.0, aoforge-stack-web 1.0.0; core plugin.json 3.1.0.
 - oss-mirror run 39622971783 (push, v3.1.0): success. The public mirror AOCyber-OSS/aoforge-claude has v3.1.0 at f907f4fc but not aoforge--v3.1.0: the alias was pushed with the release run's GITHUB_TOKEN, which starts no mirror run, and the tag-triggered mirror run did not carry it.
 
+## Mirror repair (after the release, 2026-10-21)
+
+- The tag-triggered oss-mirror run had pushed checkout's **lightweight** v3.1.0 (actions/checkout writes the triggering tag as a lightweight ref) and not the alias. A dispatch (39623483428, user 'approved') pushed aoforge--v3.1.0 but failed on `v3.1.0 (already exists)`, as every later run would.
+- Fix in the migration repo's template (quick 7 there, merged locally as da0e790e, user 'merge'): re-fetch every tag object with the run's own token before the push; a `repair_tags` dispatch input, the only forced push, for a tag naming the same commit at both ends. Mirror tests 105/105, full suite 2,476/0.
+- Rendered into this repo as PR #139 (user 'pr'), checks green, merged as 872252f7 (user 'approved'). Its mirror run 39637718424 failed only on v3.1.0, as expected.
+- Repair run 39638256663 with `repair_tags=v3.1.0` (user 'approved'): success; `f907f4fc...648fea48 v3.1.0 (forced update)`, then `Everything up-to-date`. Mirror now: main 872252f7, v3.1.0 648fea48 -> f907f4fc, aoforge--v3.1.0 f907f4fc.
+- The stamp downgrade stopped once the installed plugin was updated to 3.1.0 (4cadf3e8 restamped 3.1.0; net of 8c00db5c only `upgraded_at` changed), so no revert is needed.
+
 ## Follow-ups
 
-- **Mirror the alias.** Marketplace users add `AOCyber-OSS/aoforge-claude`, so the packs' `aoforge >=3.1.0` resolves from the mirror. A `workflow_dispatch` of oss-mirror (or the next push to main) pushes aoforge--v3.1.0 there; it needs its own approval.
-- **Planning-records PR.** Local commits after PUSHED_SHA on integrate/3.1.0 (cd623b3c, 5004641f, f0f28d45, 496bcb08, f7ee1731, 8c175a86, this SUMMARY) need a follow-up PR; its push and PR each need approval. 8c00db5c (the installed 3.0.0 plugin's SessionStart hook stamping config.json back to 3.0.0) must be reverted in that PR, not carried.
+- **Mirror fix for the other nine mirrored repositories** (done for aoforge-claude, below): install the new oss-mirror render with the migration repo's install tool; each needs approval.
+- **Planning-records PR.** Local commits after PUSHED_SHA on integrate/3.1.0 (cd623b3c, 5004641f, f0f28d45, 496bcb08, f7ee1731, 8c175a86, this SUMMARY) need a follow-up PR; its push and PR each need approval. 8c00db5c and 4cadf3e8 (the stamp down to 3.0.0 and back to 3.1.0) cancel out and can ride along.
 - **Stamp downgrade.** The 3.0.0 upgrade-project hook downgrades a newer project stamp and now commits it. Updating the installed plugin to 3.1.0 stops it here; an unguarded downgrade is a bug worth a todo.
 - **Pack tags.** aoforge-stack-flutter--v1.0.0 and aoforge-stack-web--v1.0.0 only if the user wants separate pack releases.
 - **OPS-03.** The docs deploy succeeded on the merge commit; the todo looks done and can be closed after a check of the live site.

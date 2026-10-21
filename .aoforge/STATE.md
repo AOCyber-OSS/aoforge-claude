@@ -6,13 +6,13 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 
 **Building:** AOForge (formerly DevFlow Claude) — meta-prompting plugin for Claude Code, evolving into program-aware coordination layer for AO-Cyber-Systems org
 **Core Value:** AI workflow orchestration + cross-repo program awareness for AI-assisted development
-**Current focus:** Objective 79: Reconcile and release 3.1.0 (79-01..79-08 done; 79-09 and 79-10, the live release steps, await per-action approval after re-validation)
+**Current focus:** 3.1.0 released 2026-10-21 (objective 79 complete). Open in v1.6: objective 74 (OPS-03) and objective 82's verification; the planning-records PR for integrate/3.1.0's local commits
 **Ecosystem:** AODex (Rails+Go API) + AOSentry (LLM Gateway) + Flutter (macOS Hub) + DevFlow (local platform CLI/daemon) + AOForge (this — Claude Code plugin, formerly DevFlow Claude)
 
 ## Current Position
 
-**Milestone:** v1.6 Hardening & Release — started 2026-10-08; Objectives 65-79, 41 requirements mapped; Objectives 65-73, 75, 76, 77 and 78 complete (76 with MEF-06 partial; the start-tier half is objective 82's: escalation done, starting tiers not lowered; 76-06 and 76-08 closed by objective 81); 74 in progress (OPS-03 deferred by the user); 79 in progress (reconcile and release 3.1.0: 79-01..79-08 done; 79-09 and 79-10 await approval after re-validation); 80 (adopt migrates legacy projects) complete and verified 5/5 2026-10-17; 81 (Haiku eval and model-efficiency measurement) complete and verified 5/5 2026-10-17. AOForge 3.0.0 released: tag `v3.0.0` on `main` b4a9d870, 2026-10-09. v1.5 complete 2026-10-08 (archived to .aoforge/milestones/v1.5-*; EST-08 not met, accepted).
-**Branch:** `integrate/3.1.0` (objective 79: `feat/remove-rename-shims` plus `fix/post-77-verification` through merge afbe19a4); local and unpushed until 79-09, whose PR supersedes #129 (`feat/stack-profile-loader`)
+**Milestone:** v1.6 Hardening & Release — started 2026-10-08; Objectives 65-79, 41 requirements mapped; Objectives 65-73, 75, 76, 77, 78 and 79 complete (76 with MEF-06 partial; the start-tier half is objective 82's: escalation done, starting tiers not lowered; 76-06 and 76-08 closed by objective 81); 74 in progress (OPS-03 deferred by the user); 80 (adopt migrates legacy projects) complete and verified 5/5 2026-10-17; 81 (Haiku eval and model-efficiency measurement) complete and verified 5/5 2026-10-17; 82 executed, awaiting verification. AOForge 3.1.0 released: tag `v3.1.0` (648fea48) on `main` f907f4fc, 2026-10-21, alias `aoforge--v3.1.0`, mirrored to AOCyber-OSS/aoforge-claude. AOForge 3.0.0: `v3.0.0` b4a9d870, 2026-10-09. v1.5 complete 2026-10-08 (archived to .aoforge/milestones/v1.5-*; EST-08 not met, accepted).
+**Branch:** `integrate/3.1.0`: merged to main as #138 (f907f4fc); carries local `.aoforge/` records after 518cff9c that need a planning-records PR
 **Objective complete:** 0 — Refine (kind, work) defaults table from codebase evidence (verified 2026-05-04, 443/443 tests, all 10 SC met)
 **Objective complete:** 1 — GitHub coordination layer (verified 2026-05-04, 563/563 tests, all 6 TRDs done, SC-9 + SC-10 met)
 **Objective complete:** 2 — Cross-repo awareness layer (verified 2026-05-04, 731/731 tests with integration flags, all 10 SC met, 7 TRDs done)
@@ -68,7 +68,8 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 **Objective complete:** 78 — Remove the rename shims (completed 2026-10-17, 12/12 TRDs)
 **Objective complete:** 80 — Adopt migrates legacy projects (completed 2026-10-17, 9/9 TRDs)
 **Objective complete:** 82 — 3.1.0 follow-ups (completed 2026-10-18, 11/11 TRDs)
-**Status:** Objective 82 executed — 11/11 TRDs complete, ready for verification
+**Objective complete:** 79 — Reconcile and release 3.1.0 (completed 2026-10-21, 10/10 TRDs)
+**Status:** Objective 79 complete and verified 5/5 (3.1.0 released); objective 82 ready for verification
 **Progress:** [██████████] 100%
 
 ## Branch State (post-merge)
@@ -159,6 +160,6 @@ None
 
 ## Session Continuity
 
-Last session: 2026-10-21T12:57:09.090Z
+Last session: 2026-10-21T18:07:17.661Z
 Resume file: `None`
-Stopped at: 79-10 task 2 done: release dry run 39603698540 on f907f4fc success (user 'approved'), no dryrun tag left, no release; task 3 (v3.1.0 tag) awaits approval
+Stopped at: Objective 79 closed: 79-VERIFICATION 5/5, 79-10 SUMMARY amended with the mirror repair, ROADMAP and STATE updated; next: the planning-records PR (needs approval)

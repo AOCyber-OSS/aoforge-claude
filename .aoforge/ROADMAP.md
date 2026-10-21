@@ -130,7 +130,7 @@ Sequencing: 65 releases v1.5 first, so the installed runtime carries the v1.5 co
 - [x] **Objective 76: Model efficiency and stack-specific content** - The configured tier is the tier that runs, mechanical work runs as aof-tools code, spawns load only what they need (landed on `main` 2026-10-16, ships in 3.1.0; 76-06 and 76-08 closed by objective 81; MEF-06 partial; the start-tier half is objective 82's: starting tiers not lowered, follow-up todo P1) (completed 2026-10-17)
 - [x] **Objective 77: Stack packs: contract and extraction** - Core names no stack; Flutter, Dart and web procedure ships in the `aoforge-stack-flutter` and `aoforge-stack-web` packs (landed on `main` 2026-10-16, ships in 3.1.0)
 - [x] **Objective 78: Remove the rename shims** - The one-release rename shims, migrations 0012/0013, the dual-namespace GitHub readers and the devflow pointer plugin go in 3.1.0, as promised for the release after 3.0.0 (completed 2026-10-17)
-- [ ] **Objective 79: Reconcile and release 3.1.0** - The fix branch (main + quick 34-39), PR #129 and objective 78 meet in one integration branch, the merged tree passes every guard, and 3.1.0 ships through one PR after per-step approval
+- [x] **Objective 79: Reconcile and release 3.1.0** - The fix branch (main + quick 34-39), PR #129 and objective 78 meet in one integration branch, the merged tree passes every guard, and 3.1.0 ships through one PR after per-step approval (completed 2026-10-21)
 - [x] **Objective 80: Adopt migrates legacy projects** - 3.1.0's `/aoforge:adopt` moves a pre-rename `.planning/` project to `.aoforge/` as one recorded change, and adopt runs end to end on fresh, brownfield and legacy repos (completed 2026-10-17)
 - [x] **Objective 81: Haiku eval and model-efficiency measurement** - 76-06's Haiku 5.5 eval (verifier, job-checker, mapper, researcher, UI judge vs Sonnet on seeded fixtures) and 76-08's 3.0.0 vs 3.1.0 token measurement, run headless in a sandbox under a $100 cap; tier changes only by proposal (completed 2026-10-17)
 - [x] **Objective 82: 3.1.0 follow-ups** - Planner and executor token growth on builds found and fixed, agents get an absolute runtime path instead of guessing a home path, the five approved tier changes applied with their measurements, `tokens --also-root`, objective 77's records closed (completed 2026-10-18)
@@ -477,8 +477,8 @@ TRDs:
 - [x] 79-06-changelog-versions-and-site-data-TRD.md — (W3) one `## [3.1.0] - 2026-10-16` section for both lines plus the reconcile entry, versions and marketplace, sibling bump, plugin validation, site data
 - [x] 79-07-claude-md-and-guides-TRD.md — (W3) CLAUDE.md within main's 200-line / 20,000-char budget on 3.1 facts, detail moved to the reference docs, guides without current-tense shim claims
 - [x] 79-08-full-validation-TRD.md — (W4) upgrade to 3.1.0 (migration 0015), health and doctor, full suite (watcher-shell excluded and named), CI gate and node:26 Docker run, named gates, fleet test, VALIDATED_SHA
-- [ ] 79-09-push-open-pr-close-129-TRD.md — (W5, checkpoints) push integrate/3.1.0, open the 3.1.0 PR and wait for green CI, close #129 with a link (three approvals)
-- [ ] 79-10-merge-dry-run-tag-and-release-TRD.md — (W6, checkpoints) merge through the ruleset, release dry-run dispatch on main, tag v3.1.0 on the merge commit (three approvals), verify the release, the aoforge--v3.1.0 alias and main's marketplace
+- [x] 79-09-push-open-pr-close-129-TRD.md — (W5, checkpoints) push integrate/3.1.0, open the 3.1.0 PR and wait for green CI, close #129 with a link (three approvals)
+- [x] 79-10-merge-dry-run-tag-and-release-TRD.md — (W6, checkpoints) merge through the ruleset, release dry-run dispatch on main, tag v3.1.0 on the merge commit (three approvals), verify the release, the aoforge--v3.1.0 alias and main's marketplace
 
 ### Objective 80: Adopt migrates legacy projects
 
@@ -588,7 +588,7 @@ TRDs:
 | 76. Model efficiency and stack-specific content | v1.6 | 8/8 | Complete (MEF-06 partial; the start-tier half is objective 82's) | 2026-10-17 |
 | 77. Stack packs: contract and extraction | v1.6 | 5/5 | Complete (verified 2026-10-17, 77-VERIFICATION) | 2026-10-16 |
 | 78. Remove the rename shims | v1.6 | 12/12 | Complete | 2026-10-17 |
-| 79. Reconcile and release 3.1.0 | v1.6 | 8/10 | In Progress | - |
+| 79. Reconcile and release 3.1.0 | v1.6 | 10/10 | Complete | 2026-10-21 |
 | 80. Adopt migrates legacy projects | v1.6 | 9/9 | Complete | 2026-10-17 |
 | 81. Haiku eval and model-efficiency measurement | v1.6 | 19/19 | Complete | 2026-10-17 |
 | 82. 3.1.0 follow-ups | v1.6 | 11/11 | Complete | 2026-10-18 |
