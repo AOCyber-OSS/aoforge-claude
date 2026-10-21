@@ -97,7 +97,7 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 ## Blockers / Concerns
 
 
-- main has no branch protection after the org migration: repo ruleset 24829006 (PR + green test (npm test, gated)) did not carry over to AOCyberAI; only the org Private Repos ruleset applies. Restore it from .github/rulesets/main.json (live change, needs approval) before 79-10's merge.
+None
 
 ### Quick Tasks Completed
 
