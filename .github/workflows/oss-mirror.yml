@@ -10,9 +10,15 @@
 #   - vars.OSS_MIRROR_OWNER names the org that holds the public copy: the legacy org's name until the rename, the
 #     renamed org after it. The same file therefore serves the canary and the real run.
 #   - It pushes the default branch to the same branch name and the tags, by explicit refspec, so a pull-request ref
-#     or a branch that exists only at the public copy is never pushed or deleted, and nothing is forced.
+#     or a branch that exists only at the public copy is never pushed or deleted, and that push forces nothing.
+#   - First it fetches this repository's tags again with the run's own read-only token: checkout writes the tag that
+#     triggered the run as a lightweight tag, and once the public copy holds that, every later run fails on it.
+#   - repair_tags (a manual run) is the only forced push: each named tag must be at the public copy already and name
+#     the same commit at both ends, so it can swap a lightweight tag for the annotated one but never change the commit
+#     a tag names. One name that fails the checks fails the run, naming both commits, before anything is pushed.
 #   - The guard below keeps the job from running inside the public copy: this file is mirrored with everything else.
-# The token stays in the step environment: the credential helper reads it when git calls it (never argv, never the URL).
+# The tokens stay in the step environment: the credential helper reads TOKEN when git calls it (never argv, never the
+# URL), and the fetch sets it to the run's own token for that one command. The input reaches the script through env.
 # fetch-depth 0 is the safe value: a shallow checkout holds no other tags or remote-tracking branches, so it is only
 # valid for a repository the canary-style test has shown to work with it.
 name: oss-mirror
@@ -22,6 +28,12 @@ on:
     branches: [main]
     tags: ['*']
   workflow_dispatch:
+    inputs:
+      repair_tags:
+        description: 'Tags to re-push forced (space or comma separated); each must name the same commit at both ends'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -50,12 +62,75 @@ jobs:
       - name: push the default branch and the tags
         env:
           TOKEN: ${{ steps.app.outputs.token }}
+          SRC_TOKEN: ${{ github.token }}
           OWNER: ${{ vars.OSS_MIRROR_OWNER }}
+          REPAIR_TAGS: ${{ inputs.repair_tags }}
           # a literal, not expanded here: git runs it as a shell function and its shell expands $1 and $TOKEN
           HELPER: '!f() { test "$1" = get || exit 0; while IFS= read -r l && test -n "$l"; do :; done; echo username=x-access-token; echo "password=$TOKEN"; }; f'
         run: |
           git config --local --replace-all credential.helper ''
           git config --local --add credential.helper "$HELPER"
+          # checkout left the tag that triggered the run lightweight: take every tag object from this repository again
+          TOKEN="$SRC_TOKEN" git fetch --force origin 'refs/tags/*:refs/tags/*'
+          # repair_tags: every name is checked first; only a tag at the same commit at both ends is pushed, forced
+          if [ -n "$REPAIR_TAGS" ]; then
+            mirror="${{ github.server_url }}/$OWNER/aoforge-claude.git"
+            re='^[A-Za-z0-9][A-Za-z0-9._/-]*$'
+            n=0
+            set -f
+            set --
+            for t in ${REPAIR_TAGS//,/ }; do
+              n=$((n + 1))
+              if ! [[ $t =~ $re ]] || ! git check-ref-format "refs/tags/$t"; then
+                echo "ERROR: repair_tags: [$t] is not a tag name this workflow repairs" >&2
+                exit 1
+              fi
+              if ! here_obj="$(git rev-parse --verify --quiet "refs/tags/$t")"; then
+                echo "ERROR: repair_tags: there is no tag $t here" >&2
+                exit 1
+              fi
+              if ! here_commit="$(git rev-parse --verify --quiet "refs/tags/$t^{commit}")"; then
+                echo "ERROR: repair_tags: $t does not name a commit here" >&2
+                exit 1
+              fi
+              if ! listing="$(git ls-remote "$mirror" "refs/tags/$t" "refs/tags/$t^{}")"; then
+                echo "ERROR: repair_tags: cannot read $t at the public copy" >&2
+                exit 1
+              fi
+              mirror_obj=''
+              mirror_commit=''
+              while read -r sha ref; do
+                case "$ref" in
+                  "refs/tags/$t") mirror_obj="$sha" ;;
+                  "refs/tags/$t^{}") mirror_commit="$sha" ;;
+                esac
+              done <<< "$listing"
+              if [ -z "$mirror_obj" ]; then
+                echo "ERROR: repair_tags: the public copy has no tag $t (a normal run pushes a missing tag)" >&2
+                exit 1
+              fi
+              # an annotated tag lists its commit on the ^{} line; a lightweight tag's own value is the commit
+              [ -n "$mirror_commit" ] || mirror_commit="$mirror_obj"
+              if [ "$mirror_commit" != "$here_commit" ]; then
+                echo "ERROR: repair_tags: $t names commit $here_commit here and $mirror_commit at the public copy; not repaired" >&2
+                exit 1
+              fi
+              if [ "$mirror_obj" = "$here_obj" ]; then
+                echo "repair_tags: $t is already the same at the public copy"
+              else
+                echo "repair_tags: $t (commit $here_commit): $mirror_obj at the public copy becomes $here_obj"
+                set -- "$@" "+refs/tags/$t:refs/tags/$t"
+              fi
+            done
+            set +f
+            if [ "$n" -eq 0 ]; then
+              echo "ERROR: repair_tags names no tag" >&2
+              exit 1
+            fi
+            if [ "$#" -gt 0 ]; then
+              git push "$mirror" "$@"
+            fi
+          fi
           # the default branch comes from its remote-tracking ref: a tag-triggered run checks out the tag, not the branch
           git push "${{ github.server_url }}/$OWNER/aoforge-claude.git" \
             "refs/remotes/origin/main:refs/heads/main" 'refs/tags/*:refs/tags/*'
