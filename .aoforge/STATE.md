@@ -159,6 +159,6 @@ None
 
 ## Session Continuity
 
-Last session: 2026-10-21T11:48:12.667Z
+Last session: 2026-10-21T12:08:42.947Z
 Resume file: `None`
-Stopped at: 79-09 complete (PR #138 green, #129 closed); 79-10 next: merge #138, dry run, v3.1.0 tag, each needs approval
+Stopped at: 79-10 task 1 done: #138 merged (user 'approved'), MERGE_SHA f907f4fc (parents 9bb6983a, 518cff9c, tree == PUSHED_SHA); main runs green: Unit suite, CodeQL, oss-mirror, Docs site (deployed to Cloudflare Pages, not the expected OPS-03 failure); task 2 (dry run) awaits approval
