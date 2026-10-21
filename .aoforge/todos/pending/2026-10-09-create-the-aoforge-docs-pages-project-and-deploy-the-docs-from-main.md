@@ -41,6 +41,17 @@ cloudflare target: Pages projects could not be listed: code 8000024 Invalid list
 
 TRD 74-06 was deferred by the user ("Skip this for now - we aren't doing this right now."). OPS-03 stays Pending. PR #130 stays open and unmerged until this resumes (it now carries only OPS-03 content). Nothing was pushed and no Cloudflare or GitHub state changed. The remaining steps are 74-06 Task 2 (steps 1 and 2 below) and Task 3 (one preview deploy from `ops/74-ci-operations`, which needs the diagnostic fix above first), each behind its own approval. The production deploy in step 3 happens at the merge in TRD 74-08.
 
+## Status after the org cutover (2026-10-21)
+
+The docs deploy now succeeds on `main`, but which Cloudflare account it reaches is still unconfirmed, so OPS-03 stays Pending.
+
+- Docs run 39595433242 (push to `main`, f907f4fc, the 3.1.0 merge): every step green. wrangler 4.86.0 `pages deploy --project-name=aoforge-docs --branch=main`: "Uploaded 50 files (9 already uploaded)", "Deployment complete!", https://d1fb2fa4.aoforge-docs.pages.dev. So a Pages project `aoforge-docs` now exists in the account `CLOUDFLARE_ACCOUNT_ID` names, and the token can deploy to it.
+- The diagnostic in the same run: `account: could not be read: code 9109 Unauthorized to access requested resource`, `other accounts the token can see: 0`, `the token cannot see the configured account`, and the known `per_page` bug (8000024). The token deploys Pages but lacks Account Settings / Read, so it cannot name the account.
+- The secrets are the new org's (AOCyberAI, after the 2026-10-17/18 cutover), not the ones the 2026-10-10 diagnosis read in AO-Cyber-Systems.
+- Not "Dont Panic Consulting, Co." this time: the user's local Cloudflare login sees that account and "Donnaruma Family", and neither has a Pages project named `aoforge-docs` (read-only, 2026-10-21). The local login cannot see AOCyber Systems, so the account is most likely AOCyber Systems but is not verified.
+
+**To close OPS-03:** confirm in the AOCyber Systems dashboard (Workers & Pages) that `aoforge-docs` is there with the 2026-10-21 deployment, or add Account Settings / Read to the CI token so the diagnostic names the account. Then step 4 (move devflow.cloud to aoforge-docs) and the diagnostic's `per_page` fix remain. PR #130 still carries the 74 work and stays open.
+
 ## Solution
 
 1. Set repository-level secrets `CLOUDFLARE_API_TOKEN` (Account / Cloudflare Pages / Edit, plus Account Settings / Read so the diagnostic can name the account) and `CLOUDFLARE_ACCOUNT_ID` for the AOCyber Systems account. A repository secret overrides the org secret of the same name for this repository only, so other repositories keep the org values. The user sets the secrets (GitHub Settings, or `gh secret set <NAME> --repo AO-Cyber-Systems/aoforge-claude`); AOForge never enters a token.
