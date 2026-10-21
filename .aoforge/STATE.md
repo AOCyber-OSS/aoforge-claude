@@ -159,6 +159,6 @@ See: .aoforge/PROJECT.md (updated 2026-10-09 in TRD 72-22, AOForge wording)
 
 ## Session Continuity
 
-Last session: 2026-10-21T10:47:59.491Z
+Last session: 2026-10-21T10:51:51.162Z
 Resume file: `None`
-Stopped at: Merged origin/main (post-cutover) into integrate/3.1.0; re-validated PASS at 4f242c59; 79-09 next (push, needs approval); restore main's ruleset before 79-10
+Stopped at: 79-09 task 1 done: integrate/3.1.0 pushed (PUSHED_SHA 518cff9c, user approved 2026-10-21 'do it'); task 2 (open the PR) awaits approval
