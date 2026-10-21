@@ -159,20 +159,25 @@
  * Estimation data:
  *   tokens trd <trd-id>                Executor token totals of one TRD from transcripts
  *     [--objective-dir d] [--repo p] [--root dir]   (read-only; exit 0 even when none is found)
+ *     [--also-root dir]...
  *   tokens stamp <trd-id> --draft <path>  Write tokens_input/tokens_output/... into a SUMMARY draft
  *     [--objective-dir d] [--repo p] [--root dir]   (a draft inside .aoforge/ is refused; run before summary post)
  *   tokens backfill [--write] [--force]  Recover token usage for historical SUMMARYs from surviving transcripts
  *     [--repo p] [--root dir]            (dry run unless --write: counts recovered/unrecovered by reason, changes no file;
- *                                         --write stamps through summary post; --force restamps already stamped SUMMARYs)
+ *     [--also-root dir]...                --write stamps through summary post; --force restamps already stamped SUMMARYs)
  *   tokens coverage [--milestone v | --objective N]  Forward-stamp coverage (live/counted) of TRD SUMMARYs; read-only
  *     [--repo p] [--root dir]            (default scope: the current milestone; exit 0 for every report)
+ *     [--also-root dir]...               --also-root dir (repeatable; trd, coverage and backfill, never stamp): a former
+ *                                         checkout path whose executor transcripts also count (TRD 82-04)
  *   calibrate [--paths a,b] [--out f]  Build per-task-class medians/P90s (minutes, tokens, dollars) into calibration.json
- *     [--rates f] [--root dir | --no-overhead] [--window <N|all>]
+ *     [--rates f] [--root dir | --no-overhead] [--also-root dir]... [--window <N|all>]
  *     [--minutes <task_sum|trd_level>] [--through <N>] [--dry-run]
  *                                      (default out: AOFORGE_CALIBRATION_PATH or ~/.claude/aoforge/calibration.json;
  *                                       default paths: the checkout holding cwd or AOFORGE_CALIBRATE_PATHS;
  *                                       --root: transcripts for agent overhead, default ~/.claude/projects;
  *                                       --no-overhead skips that scan;
+ *                                       --also-root dir (repeatable): a former checkout path whose overhead spawns
+ *                                       still count, recorded in method.also_roots;
  *                                       --window <N|all>: keep only the N most recent objectives with samples per project;
  *                                       default: the most recent 10 objectives, --window all keeps all history;
  *                                       --minutes <task_sum|trd_level>: how an estimate builds a TRD's minutes (default trd_level);
@@ -224,16 +229,14 @@
 
 // ─── Module Imports ───────────────────────────────────────────────────────────
 
-// Objective 72: the legacy environment prefix keeps working for one release (the new prefix
-// wins when both are set). First, so no module below reads the environment before it runs.
-require('./lib/compat.cjs').aliasLegacyEnv();
-
 // ─── Lazy module loading ──────────────────────────────────────────────────────
 // aof-tools runs 50-100 times per workflow, and most of a run is node startup. Loading every lib module up front
 // cost ~70 ms of a ~125 ms call (444 require calls, 1.4 MB of source) for commands that use one of them. `lazy`
 // returns forwarders that require the module on first call; `lazyModule` is a proxy for a module used as an
-// object (`intent.x(...)`). Modules every call needs (helpers, help, cwd-flag, flag-guard, flag-spec, compat) stay
-// eager. Every destructured name is a function (checked when this block was generated); a constant must stay eager.
+// object (`intent.x(...)`). Modules every call needs (helpers, help, cwd-flag, flag-guard, flag-spec) stay eager;
+// compat is not among them: since 3.1 nothing calls into it at startup, and the one place that needs it in this file
+// (`planning sibling-trd-scan`, reading config.json) requires it where it runs. Every destructured name is a function
+// (checked when this block was generated); a constant must stay eager.
 const lazyCache = new Map();
 function loadLazy(mod) {
   let m = lazyCache.get(mod);
@@ -305,6 +308,7 @@ const {
 const { extractCwdFlag } = require('./lib/cwd-flag.cjs');
 const { checkFlags, formatUnknownFlag } = require('./lib/flag-guard.cjs');
 const { FLAG_SPEC } = require('./lib/flag-spec.cjs');
+const { legacyLayoutGuard } = require('./lib/legacy-layout-guard.cjs');
 
 // ─── CLI Router ───────────────────────────────────────────────────────────────
 
@@ -366,6 +370,10 @@ async function main() {
     const unknownFlag = checkFlags(args, FLAG_SPEC);
     if (unknownFlag) error(formatUnknownFlag(unknownFlag));
   }
+
+  // ── A legacy-only project gets the one message, never a second planning tree (TRD 78-07) ──
+  const legacy = legacyLayoutGuard({ command, args, cwd, commands: HELP_TABLE });
+  if (legacy) error(legacy.message);
 
   switch (command) {
     case 'state': {
@@ -928,7 +936,8 @@ async function main() {
     }
 
     case 'tokens': {
-      // aof-tools tokens <trd|stamp|backfill> ... — TRD 57-03, backfill TRD 57-06
+      // aof-tools tokens <trd|stamp|backfill|coverage> ... [--also-root dir]... — TRD 57-03, backfill TRD 57-06,
+      // coverage TRD 66-01, --also-root (trd, coverage, backfill) TRD 82-04
       const { output: outputTokens } = require('./lib/helpers.cjs');
       const { runTokens } = require('./lib/tokens-cli.cjs');
       const r = runTokens({ argv: args.slice(1), cwd });
@@ -938,7 +947,7 @@ async function main() {
     }
 
     case 'calibrate': {
-      // aof-tools calibrate [--paths a,b] [--out file] [--rates file] [--root dir | --no-overhead] [--window <N|all>] [--minutes <task_sum|trd_level>] [--through <N>] [--dry-run] — TRD 57-06, 58-03, 64-08, 67-02
+      // aof-tools calibrate [--paths a,b] [--out file] [--rates file] [--root dir | --no-overhead] [--also-root dir]... [--window <N|all>] [--minutes <task_sum|trd_level>] [--through <N>] [--dry-run] — TRD 57-06, 58-03, 64-08, 67-02, quick-41
       const { output: outputCalibrate } = require('./lib/helpers.cjs');
       const { runCalibrate } = require('./lib/calibrate-cli.cjs');
       const r = runCalibrate({ argv: args.slice(1), cwd, env: process.env });

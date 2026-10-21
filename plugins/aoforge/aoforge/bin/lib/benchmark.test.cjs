@@ -310,3 +310,51 @@ describe('runBenchmarkSession', () => {
     assert.ok(Math.abs(r.cost - 15.0) < 0.001, `expected ~$15.00 opus default, got $${r.cost}`);
   });
 });
+
+// quick 42: executor_calls compared the agent type with a pre-rename literal, so it never matched an AOForge
+// transcript and stayed 0. benchmark reads history (--since), so it counts today's executor and, in old transcripts,
+// the pre-rename and install-prefixed ones (agent-overhead.cjs, TRD 72-10). Names come from legacy-names.cjs.
+describe('executor spawns are counted (quick 42)', () => {
+  const { NAMES, LEGACY } = require('./legacy-names.cjs');
+
+  function writeAgent(dir, name, agentType, usage) {
+    const lines = [
+      { type: 'user', message: { content: 'Execute TRD 76-01' } },
+      { type: 'assistant', requestId: 'r1', message: { id: 'r1', usage } },
+    ];
+    fs.writeFileSync(path.join(dir, `${name}.jsonl`), lines.map((o) => JSON.stringify(o)).join('\n') + '\n');
+    fs.writeFileSync(path.join(dir, `${name}.meta.json`), JSON.stringify({ agentType, description: '' }));
+  }
+
+  test('B1 — buildPerObjective counts one executor spawn beside a verifier spawn', async (t) => {
+    const root = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'bench-q42-'));
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    const projectDir = path.join(root, 'project');
+    const subagents = path.join(projectDir, 'sess-1', 'subagents');
+    fs.mkdirSync(subagents, { recursive: true });
+    const repo = path.join(root, 'repo');
+    fs.mkdirSync(repo);
+    const usageA = { input_tokens: 100, cache_creation_input_tokens: 0, cache_read_input_tokens: 0, output_tokens: 10 };
+    const usageB = { input_tokens: 300, cache_creation_input_tokens: 0, cache_read_input_tokens: 0, output_tokens: 30 };
+    writeAgent(subagents, 'a', `${NAMES.agentNs}executor`, usageA);
+    writeAgent(subagents, 'b', `${NAMES.agentNs}verifier`, usageB);
+
+    const byObj = await bm.buildPerObjective({ projectDir, repo, since: null, model: 'opus' });
+    const o = byObj['obj-76'];
+    assert.ok(o, `obj-76 missing; keys: ${Object.keys(byObj).join(', ')}`);
+    assert.strictEqual(o.agent_calls, 2);
+    assert.strictEqual(o.executor_calls, 1);
+    const costA = bm.dollars({ uncached: 100, cache_create: 0, cache_read: 0, output: 10 }, 'opus');
+    assert.ok(Math.abs(o.executor_cost - costA) < 1e-12, `executor_cost ${o.executor_cost} != record a's ${costA}`);
+    assert.deepStrictEqual(o.by_agent, { [`${NAMES.agentNs}executor`]: 1, [`${NAMES.agentNs}verifier`]: 1 });
+  });
+
+  test('B2 — isExecutorType: the three executor names, and nothing else', () => {
+    for (const t of [`${NAMES.agentNs}executor`, `${LEGACY.agentNs}executor`, `${LEGACY.installPrefix}executor`]) {
+      assert.strictEqual(bm.isExecutorType(t), true, t);
+    }
+    for (const t of [`${NAMES.agentNs}executor-x`, `${NAMES.agentNs}verifier`, 'executor', 'general-purpose', undefined, '']) {
+      assert.strictEqual(bm.isExecutorType(t), false, String(t));
+    }
+  });
+});

@@ -14,9 +14,37 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { spawn, execFileSync } = require('child_process');
+const { spawn, spawnSync, execFileSync } = require('child_process');
+const { watchStateDir, runtimeHome } = require('./lib/compat.cjs');
+const fxDaemon = require('./lib/__fixtures__/daemon-polish-fixtures.cjs');
 
 const CLI = path.join(__dirname, 'aoforge-watch.cjs');
+
+// The daemon keeps its pid file and log in the watch state directory (TRD 73-12), and nowhere else (TRD 78-05).
+const PID_NAME = 'aoforge-watch.pid';
+const LOG_NAME = 'aoforge-watch.log';
+function watchPidFile(home) { return path.join(watchStateDir(home), PID_NAME); }
+function watchLogFile(home) { return path.join(watchStateDir(home), LOG_NAME); }
+// Where AOForge 3.0.0 kept them. Never read as the daemon's files since TRD 78-05: a live 3.0.0 daemon is only named.
+function interimFile(home, name) { return path.join(home, '.aoforge', name); }
+
+/** The CLI with stdout, stderr and the exit code captured whatever the exit code (execFileSync drops stderr on 0). */
+function runCliFull(args, env = {}) {
+  const r = spawnSync(process.execPath, [CLI, ...args], {
+    encoding: 'utf-8',
+    env: { ...process.env, ...env },
+    timeout: 10000,
+  });
+  return { code: r.status, stdout: r.stdout || '', stderr: r.stderr || '' };
+}
+
+function writePidRecord(file, record) {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify({
+    version: '0.0.0', shell: 'bash', watching: [], started_at: new Date().toISOString(), ...record,
+  }));
+  return file;
+}
 
 function mkTmp() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'dfw-cli-'));
@@ -53,7 +81,7 @@ async function spawnForegroundDaemon(home, projectRoot) {
   });
   // Wait for PID file to record THIS child's pid (not a stale pid that was
   // already in the file when we started).
-  const pidFile = path.join(home, '.aoforge', 'aoforge-watch.pid');
+  const pidFile = watchPidFile(home);
   const start = Date.now();
   while (Date.now() - start < 3000) {
     try {
@@ -65,6 +93,55 @@ async function spawnForegroundDaemon(home, projectRoot) {
     await new Promise(r => setTimeout(r, 25));
   }
   return { child, pidFile };
+}
+
+/** Write `count` lines `<prefix>-1` .. `<prefix>-<count>` to a log file. */
+function writeLogLines(file, prefix, count) {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, Array.from({ length: count }, (_, i) => `${prefix}-${i + 1}`).join('\n') + '\n');
+  return file;
+}
+
+/**
+ * The CLI without blocking this process's event loop, so a child of this process that the CLI signals is reaped
+ * (a zombie still answers kill(pid, 0), which would read as a live daemon).
+ */
+function runCliAsync(args, env = {}) {
+  return new Promise((resolve) => {
+    const child = spawn(process.execPath, [CLI, ...args], {
+      env: { ...process.env, ...env },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.setEncoding('utf8');
+    child.stderr.setEncoding('utf8');
+    child.stdout.on('data', (c) => { stdout += c; });
+    child.stderr.on('data', (c) => { stderr += c; });
+    const timer = setTimeout(() => { try { child.kill('SIGKILL'); } catch { /* gone */ } }, 15000);
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      resolve({ ok: code === 0, code, stdout, stderr });
+    });
+  });
+}
+
+/** Wait for a child to exit; true when it did within `ms`. */
+function waitForChildExit(child, ms) {
+  if (child.exitCode !== null || child.signalCode !== null) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const t = setTimeout(() => resolve(false), ms);
+    child.once('exit', () => { clearTimeout(t); resolve(true); });
+  });
+}
+
+/** SIGTERM a daemon this test spawned, SIGKILL it if it outlives the stop budget. Never leaks it. */
+async function endDaemon(child) {
+  try { child.kill('SIGTERM'); } catch { /* gone */ }
+  if (!(await waitForChildExit(child, 6000))) {
+    try { child.kill('SIGKILL'); } catch { /* gone */ }
+    await waitForChildExit(child, 2000);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -86,12 +163,7 @@ describe('aoforge-watch status', () => {
   });
 
   test('reports running:false + stale_pid_file when PID file points to dead pid', () => {
-    const pidDir = path.join(home, '.aoforge');
-    fs.mkdirSync(pidDir, { recursive: true });
-    fs.writeFileSync(
-      path.join(pidDir, 'aoforge-watch.pid'),
-      JSON.stringify({ pid: 999999, version: '0.0.0', watching: [], started_at: new Date().toISOString() }),
-    );
+    writePidRecord(watchPidFile(home), { pid: 999999 });
     const r = runCli(['status'], { HOME: home });
     assert.ok(r.ok);
     const out = JSON.parse(r.stdout);
@@ -116,16 +188,11 @@ describe('aoforge-watch stop', () => {
   });
 
   test('cleans up stale PID file', () => {
-    const pidDir = path.join(home, '.aoforge');
-    fs.mkdirSync(pidDir, { recursive: true });
-    fs.writeFileSync(
-      path.join(pidDir, 'aoforge-watch.pid'),
-      JSON.stringify({ pid: 999999, version: '0.0.0', watching: [], started_at: new Date().toISOString() }),
-    );
+    const pidFile = writePidRecord(watchPidFile(home), { pid: 999999 });
     const r = runCli(['stop'], { HOME: home });
     assert.ok(r.ok);
     assert.match(r.stdout, /stale/);
-    assert.ok(!fs.existsSync(path.join(pidDir, 'aoforge-watch.pid')));
+    assert.ok(!fs.existsSync(pidFile));
   });
 });
 
@@ -190,12 +257,7 @@ describe('aoforge-watch start (foreground) + stop', () => {
 
   test('start cleans up stale PID file and starts fresh', async () => {
     // Pre-write a stale PID file pointing at a dead pid
-    const pidDir = path.join(home, '.aoforge');
-    fs.mkdirSync(pidDir, { recursive: true });
-    fs.writeFileSync(
-      path.join(pidDir, 'aoforge-watch.pid'),
-      JSON.stringify({ pid: 999999, version: '0.0.0', watching: [], started_at: new Date().toISOString() }),
-    );
+    writePidRecord(watchPidFile(home), { pid: 999999 });
 
     const { child, pidFile } = await spawnForegroundDaemon(home, project);
     try {
@@ -225,16 +287,162 @@ describe('aoforge-watch logs', () => {
   });
 
   test('--tail N returns the last N lines', () => {
-    const logDir = path.join(home, '.aoforge');
-    fs.mkdirSync(logDir, { recursive: true });
-    const lines = Array.from({ length: 20 }, (_, i) => `line-${i + 1}`).join('\n');
-    fs.writeFileSync(path.join(logDir, 'aoforge-watch.log'), lines + '\n');
+    writeLogLines(watchLogFile(home), 'line', 20);
     const r = runCli(['logs', '--tail', '5'], { HOME: home });
     assert.ok(r.ok);
     const out = r.stdout.split('\n').filter(Boolean);
     assert.equal(out.length, 5);
     assert.equal(out[0], 'line-16');
     assert.equal(out[4], 'line-20');
+  });
+});
+
+// ===========================================================================
+// TRD 73-12 — the daemon's files live in the watch state directory
+// TRD 78-05 — and only there
+//
+// The daemon writes its pid file and log under compat.watchStateDir(home) and
+// never creates <home>/.aoforge (73-12 item 1). A daemon AOForge 3.0.0 started
+// keeps its pid file at <home>/.aoforge/aoforge-watch.pid. Since 78-05 that file
+// is never the daemon record: `start` refuses (exit 2) while its pid is alive and
+// names it, `status` warns about it, and stop/add-project/logs ignore it
+// (78-05 test list 1-3). A stale one changes nothing.
+// ===========================================================================
+
+describe('aoforge-watch files in the watch state directory (TRD 73-12)', () => {
+  let home, project;
+  beforeEach(() => {
+    home = mkTmp();
+    project = mkTmp();
+    fs.mkdirSync(path.join(project, '.aoforge-handoff', 'pending'), { recursive: true });
+  });
+  afterEach(() => { rmTmp(home); rmTmp(project); });
+
+  test('1. start --foreground keeps its pid file and log in the watch state directory and never creates <home>/.aoforge', async () => {
+    const { child } = await spawnForegroundDaemon(home, project);
+    try {
+      assert.ok(fs.existsSync(watchPidFile(home)), 'the pid file is in the watch state directory while running');
+      assert.equal(JSON.parse(fs.readFileSync(watchPidFile(home), 'utf8')).pid, child.pid);
+      assert.ok(fs.existsSync(watchLogFile(home)), 'the log is in the watch state directory');
+
+      // Signal only once the daemon handles SIGTERM: it prints its (un)attended line just before it installs the
+      // handler, and a SIGTERM before that ends it without removing its pid file.
+      let out = '';
+      child.stdout.setEncoding('utf8');
+      child.stdout.on('data', (c) => { out += c; });
+      const readySince = Date.now();
+      while (!/attended:/.test(out) && Date.now() - readySince < 5000) await new Promise((r) => setTimeout(r, 20));
+      assert.match(out, /attended:/, 'the daemon reached its signal handlers');
+
+      child.kill('SIGTERM');
+      assert.ok(await waitForChildExit(child, 8000), 'the daemon exits on SIGTERM');
+      assert.equal(fs.existsSync(watchPidFile(home)), false, 'the daemon removes its pid file on exit');
+      assert.equal(fs.existsSync(path.join(home, '.aoforge')), false, 'no <home>/.aoforge is ever created');
+    } finally {
+      try { child.kill('SIGKILL'); } catch { /* gone */ }
+    }
+  });
+
+  test('2. [78-05 case 3] logs prints only the watch-state log: a 3.0.0 log alone is not read', () => {
+    writeLogLines(interimFile(home, LOG_NAME), 'old', 12);
+    const onlyOld = runCli(['logs', '--tail', '3'], { HOME: home });
+    assert.ok(onlyOld.ok, onlyOld.stderr);
+    assert.match(onlyOld.stdout, /no log file yet/);
+    assert.doesNotMatch(onlyOld.stdout, /old-/, 'nothing from the 3.0.0 log');
+
+    writeLogLines(watchLogFile(home), 'new', 8);
+    const both = runCli(['logs', '--tail', '3'], { HOME: home });
+    assert.ok(both.ok, both.stderr);
+    assert.deepEqual(both.stdout.split('\n').filter(Boolean), ['new-6', 'new-7', 'new-8'], 'the watch-state log');
+  });
+
+  describe('a live daemon AOForge 3.0.0 started (TRD 78-05 cases 1-2)', () => {
+    let seeded;
+    beforeEach(() => { seeded = fxDaemon.seedInterimPid(home, { live: true, watching: [project] }); });
+    afterEach(() => { seeded.stop(); });
+
+    test('1. start refuses with exit 2, names the pid, `kill <pid>` and install-service, and writes no pid file', () => {
+      const before = fs.readFileSync(seeded.file, 'utf8');
+      const start = runCliFull(['start', '--project', project, '--foreground'], { HOME: home });
+      assert.equal(start.code, 2, `start should refuse: ${start.stdout}${start.stderr}`);
+      assert.match(start.stderr, /AOForge 3\.0\.0/);
+      assert.match(start.stderr, new RegExp(`pid ${seeded.pid}\\b`));
+      assert.ok(start.stderr.includes(seeded.file), 'the 3.0.0 pid file is named');
+      assert.ok(start.stderr.includes(`\`kill ${seeded.pid}\``), 'the kill command is named');
+      assert.match(start.stderr, /aoforge-watch install-service --project/);
+      assert.match(start.stderr, /aoforge-watch start/);
+      assert.doesNotMatch(start.stderr, /already running/, 'not the ordinary already-running refusal');
+      assert.equal(fs.existsSync(watchPidFile(home)), false, 'the refused start wrote no pid file');
+      assert.equal(fs.existsSync(watchLogFile(home)), false, 'nor a log');
+      assert.equal(fs.readFileSync(seeded.file, 'utf8'), before, 'the 3.0.0 pid file is left as it was');
+
+      const detached = runCliFull(['start', '--project', project], { HOME: home });
+      assert.equal(detached.code, 2, 'the detached start refuses too, before it spawns anything');
+      assert.match(detached.stderr, new RegExp(`\`kill ${seeded.pid}\``));
+      assert.equal(fs.existsSync(watchPidFile(home)), false);
+    });
+
+    test('2. status prints the 3.0.0-daemon warning on stderr; its JSON reports no AOForge daemon running', () => {
+      const status = runCliFull(['status'], { HOME: home });
+      assert.equal(status.code, 0, status.stderr);
+      assert.match(status.stderr, /warning:/);
+      assert.match(status.stderr, /AOForge 3\.0\.0/);
+      assert.ok(status.stderr.includes(`\`kill ${seeded.pid}\``));
+      const json = JSON.parse(status.stdout);
+      assert.equal(json.running, false, 'the 3.0.0 record is not this daemon');
+      assert.equal(json.pid, null);
+      assert.deepEqual(json.projects, []);
+    });
+
+    test('stop, add-project and remove-project do not touch it: no signal, no rewrite', async () => {
+      const before = fs.readFileSync(seeded.file, 'utf8');
+      const stop = await runCliAsync(['stop'], { HOME: home });
+      assert.ok(stop.ok, `${stop.stdout}${stop.stderr}`);
+      assert.match(stop.stdout, /not running/);
+      assert.doesNotThrow(() => process.kill(seeded.pid, 0), 'the 3.0.0 daemon was not signalled');
+
+      const other = mkTmp();
+      try {
+        const add = runCliFull(['add-project', other], { HOME: home });
+        assert.equal(add.code, 2, 'no AOForge daemon to add to');
+        assert.match(add.stderr, /not running/);
+        const remove = runCliFull(['remove-project', project], { HOME: home });
+        assert.equal(remove.code, 0);
+        assert.match(remove.stdout, /not running/);
+      } finally {
+        rmTmp(other);
+      }
+      assert.equal(fs.readFileSync(seeded.file, 'utf8'), before, 'never rewritten or removed');
+      assert.equal(fs.existsSync(watchPidFile(home)), false);
+    });
+  });
+
+  test('1b. [78-05 case 1] a stale 3.0.0 pid file: start proceeds normally and leaves that file alone', async () => {
+    const stale = fxDaemon.seedInterimPid(home, { live: false });
+    const before = fs.readFileSync(stale.file, 'utf8');
+
+    const status = runCliFull(['status'], { HOME: home });
+    assert.equal(status.code, 0);
+    assert.equal(status.stderr, '', 'a stale 3.0.0 pid file is not warned about');
+
+    const { child } = await spawnForegroundDaemon(home, project);
+    try {
+      assert.ok(fs.existsSync(watchPidFile(home)), 'start writes its own pid file in the watch state directory');
+      assert.equal(JSON.parse(fs.readFileSync(watchPidFile(home), 'utf8')).pid, child.pid);
+      assert.equal(fs.readFileSync(stale.file, 'utf8'), before, 'the 3.0.0 file is left for doctor check 17');
+    } finally {
+      await endDaemon(child);
+    }
+  });
+
+  test('2b. [78-05 case 2] status in a clean home: no warning, the JSON unchanged', () => {
+    const status = runCliFull(['status'], { HOME: home });
+    assert.equal(status.code, 0);
+    assert.equal(status.stderr, '');
+    const json = JSON.parse(status.stdout);
+    assert.equal(json.running, false);
+    assert.equal(json.pid, null);
+    assert.equal('stale_pid_file' in json, false);
   });
 });
 
@@ -352,12 +560,13 @@ describe('aoforge-watch multi-project CLI (TRD 20-03)', () => {
 
   test('C-2 start --project /p (single) writes watching:[/p] (back-compat)', async () => {
     const project = mkTmp();
+    let child = null;
     try {
-      const child = spawn('node', [CLI, 'start', '--project', project, '--foreground', '--shell', 'bash'], {
+      child = spawn('node', [CLI, 'start', '--project', project, '--foreground', '--shell', 'bash'], {
         env: { ...process.env, HOME: home },
         stdio: ['ignore', 'pipe', 'pipe'],
       });
-      const pidFile = path.join(home, '.aoforge', 'aoforge-watch.pid');
+      const pidFile = watchPidFile(home);
       const start = Date.now();
       while (Date.now() - start < 3000) {
         try {
@@ -373,6 +582,8 @@ describe('aoforge-watch multi-project CLI (TRD 20-03)', () => {
       try { child.kill('SIGTERM'); } catch {}
       await new Promise(r => setTimeout(r, 200));
     } finally {
+      // A failed assertion above must not leak the daemon: its pipes would keep this test file alive.
+      if (child) await endDaemon(child);
       rmTmp(project);
     }
   });
@@ -380,12 +591,13 @@ describe('aoforge-watch multi-project CLI (TRD 20-03)', () => {
   test('C-1 start --project /p1,/p2 writes watching:[/p1, /p2]', async () => {
     const p1 = mkTmp();
     const p2 = mkTmp();
+    let child = null;
     try {
-      const child = spawn('node', [CLI, 'start', '--project', `${p1},${p2}`, '--foreground', '--shell', 'bash'], {
+      child = spawn('node', [CLI, 'start', '--project', `${p1},${p2}`, '--foreground', '--shell', 'bash'], {
         env: { ...process.env, HOME: home },
         stdio: ['ignore', 'pipe', 'pipe'],
       });
-      const pidFile = path.join(home, '.aoforge', 'aoforge-watch.pid');
+      const pidFile = watchPidFile(home);
       const start = Date.now();
       while (Date.now() - start < 3000) {
         try {
@@ -403,6 +615,7 @@ describe('aoforge-watch multi-project CLI (TRD 20-03)', () => {
       try { child.kill('SIGTERM'); } catch {}
       await new Promise(r => setTimeout(r, 200));
     } finally {
+      if (child) await endDaemon(child);
       rmTmp(p1);
       rmTmp(p2);
     }
@@ -423,7 +636,7 @@ describe('aoforge-watch multi-project CLI (TRD 20-03)', () => {
 
   test('C-7 status JSON contains projects:[...] (plural) AND project (singular)', async () => {
     // Pre-write a PID file simulating a dead daemon with multi-project
-    const pidDir = path.join(home, '.aoforge');
+    const pidDir = watchStateDir(home);
     fs.mkdirSync(pidDir, { recursive: true });
     const p1 = mkTmp();
     const p2 = mkTmp();
@@ -445,7 +658,7 @@ describe('aoforge-watch multi-project CLI (TRD 20-03)', () => {
   });
 
   test('C-8 status JSON contains pending_counts per-project map', async () => {
-    const pidDir = path.join(home, '.aoforge');
+    const pidDir = watchStateDir(home);
     fs.mkdirSync(pidDir, { recursive: true });
     const p1 = mkTmp();
     const p2 = mkTmp();
@@ -469,7 +682,7 @@ describe('aoforge-watch multi-project CLI (TRD 20-03)', () => {
   });
 
   test('C-9 status JSON contains pending_count (sum) for back-compat', async () => {
-    const pidDir = path.join(home, '.aoforge');
+    const pidDir = watchStateDir(home);
     fs.mkdirSync(pidDir, { recursive: true });
     const p1 = mkTmp();
     try {
@@ -494,5 +707,255 @@ describe('aoforge-watch multi-project CLI (TRD 20-03)', () => {
     assert.equal(r.ok, false);
     assert.match(r.stderr, /add-project/);
     assert.match(r.stderr, /remove-project/);
+  });
+});
+
+// ===========================================================================
+// TRD 73-05 — the attended foreground terminal (HND-03)
+//
+// `aoforge-watch start --foreground` in a real terminal mirrors a queued
+// command's live output to that terminal and forwards the keys typed there to
+// the command, so the USER answers the prompt. The tests below play the user:
+// they run the daemon under a node-pty terminal, read what the daemon prints
+// there, and type into it. AOForge injects nothing (no inputs.secrets).
+//
+// Each daemon is torn down by signalling its process group and then PROVING the
+// pid is gone (the same discipline as handoff-e2e.test.cjs stopDaemon, issue
+// #93): a leaked daemon is a hung test file, which is worse than a red one.
+// ===========================================================================
+
+const ATTEND_PTY_AVAILABLE = (() => { try { require('node-pty'); return true; } catch { return false; } })();
+const attendPtySkip = ATTEND_PTY_AVAILABLE ? undefined : { skip: 'node-pty unavailable' };
+// One options object: node:test takes (name, options, fn), so skip and timeout travel together.
+const attendOpts = { ...(attendPtySkip || {}), timeout: 60000 };
+
+const ATTEND_ALLOW_JSON = JSON.stringify({
+  commands: [{ pattern: '^bash\\s+-c\\s+', label: 'test:bash-c' }],
+});
+
+// The user allowlist lives in the runtime home (TRD 73-11).
+function writeAttendAllowFile(home) {
+  const dir = runtimeHome(home);
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'aoforge-watch-allow.json'), ATTEND_ALLOW_JSON);
+}
+
+function writeAttendPending(projectRoot, id, cmd) {
+  const dir = path.join(projectRoot, '.aoforge-handoff', 'pending');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, `${id}.json`), JSON.stringify({
+    id,
+    cmd,
+    cwd: projectRoot,
+    status: 'pending',
+    source: 'hook',
+    created_at: new Date().toISOString(),
+  }, null, 2) + '\n');
+}
+
+async function waitForAttendDone(projectRoot, id, timeoutMs = 20000) {
+  const file = path.join(projectRoot, '.aoforge-handoff', 'done', `${id}.json`);
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    if (fs.existsSync(file)) {
+      try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { /* half-written */ }
+    }
+    await new Promise((r) => setTimeout(r, 40));
+  }
+  throw new Error(`done record ${id} did not appear within ${timeoutMs}ms`);
+}
+
+/** Poll a function until it returns something matching rx; report the tail on failure. */
+async function waitForScreen(read, rx, timeoutMs, what) {
+  const start = Date.now();
+  let last = '';
+  while (Date.now() - start < timeoutMs) {
+    last = read();
+    if (rx.test(last)) return last;
+    await new Promise((r) => setTimeout(r, 25));
+  }
+  throw new Error(`${what} within ${timeoutMs}ms (terminal tail: ${JSON.stringify(last.slice(-600))})`);
+}
+
+/**
+ * Run `aoforge-watch start --foreground` under a pseudo-terminal, as a user's
+ * shell would. `screen()` is everything the daemon has printed there.
+ */
+function spawnDaemonInTerminal({ home, project, args = [], env = {} }) {
+  const pty = require('node-pty');
+  const childEnv = { ...process.env, HOME: home, ...env };
+  if (!('AOFORGE_WATCH_UNATTENDED' in env)) delete childEnv.AOFORGE_WATCH_UNATTENDED;
+  const term = pty.spawn(process.execPath, [
+    CLI, 'start', '--foreground', '--project', project, '--shell', 'bash', ...args,
+  ], { name: 'xterm-256color', cols: 120, rows: 30, cwd: project, env: childEnv });
+  const d = { term, exited: false, text: '' };
+  term.onData((chunk) => { d.text += chunk; });
+  term.onExit(() => { d.exited = true; });
+  d.screen = () => d.text;
+  // What the daemon printed for the command that is running NOW: everything after
+  // the second line of the dispatch frame. The frame's own start line quotes the
+  // command text, so a prompt must be looked for after it, never before.
+  d.afterFrame = () => {
+    const i = d.text.lastIndexOf('Ctrl+C interrupts the command');
+    return i < 0 ? '' : d.text.slice(i);
+  };
+  return d;
+}
+
+/** Signal the daemon's group, escalate, and PROVE the pid is gone. Returns a message or null. */
+async function stopTerminalDaemon(d) {
+  const pid = d.term.pid;
+  const signal = (sig) => {
+    try { process.kill(-pid, sig); } catch { /* group already gone */ }
+    try { process.kill(pid, sig); } catch { /* process already gone */ }
+  };
+  const settle = async (ms) => {
+    const start = Date.now();
+    while (!d.exited && Date.now() - start < ms) await new Promise((r) => setTimeout(r, 50));
+  };
+  if (!d.exited) {
+    signal('SIGTERM');
+    await settle(5000);
+    if (!d.exited) { signal('SIGKILL'); await settle(5000); }
+  }
+  try { d.term.destroy(); } catch { /* already closed */ }
+  if (!d.exited) return `daemon pid ${pid} survived SIGTERM and SIGKILL`;
+  try {
+    process.kill(pid, 0);
+    return `daemon pid ${pid} reported exit but is still addressable`;
+  } catch (e) {
+    return e.code === 'EPERM' ? `daemon pid ${pid} still exists and is not ours to signal` : null;
+  }
+}
+
+async function withTerminalDaemon(opts, fn) {
+  const d = spawnDaemonInTerminal(opts);
+  let primary = null;
+  try {
+    await fn(d);
+  } catch (e) {
+    primary = e;
+  }
+  const leak = await stopTerminalDaemon(d);
+  if (primary) throw primary;
+  if (leak) throw new Error(`${leak}\n--- daemon terminal (tail) ---\n${d.screen().slice(-2000)}`);
+}
+
+describe('aoforge-watch attended terminal (TRD 73-05)', () => {
+  let home, project;
+  beforeEach(() => {
+    home = mkTmp();
+    project = mkTmp();
+    fs.mkdirSync(path.join(project, '.aoforge-handoff', 'pending'), { recursive: true });
+    writeAttendAllowFile(home);
+  });
+  afterEach(() => { rmTmp(home); rmTmp(project); });
+
+  // Test list items 1 and 2.
+  test('AT-E2E-1: the user answers the prompt in the daemon terminal and the answer reaches the command', attendOpts, async () => {
+    await withTerminalDaemon({ home, project }, async (d) => {
+      await waitForScreen(d.screen, /aoforge-watch: attended:/, 15000, 'the attended startup line');
+      assert.match(d.screen(), /aoforge-watch: started \(pid \d+, projects /, 'the started line is unchanged');
+
+      writeAttendPending(project, 'att-1', `bash -c 'printf "Your name: " > /dev/tty; read N; echo "hello $N"'`);
+      await waitForScreen(d.afterFrame, /Your name:/, 20000, 'the command prompt mirrored into the daemon terminal');
+
+      d.term.write('ada\r'); // the user types
+
+      const done = await waitForAttendDone(project, 'att-1');
+      assert.equal(done.status, 'done');
+      assert.equal(done.exit_code, 0);
+      assert.match(done.stdout, /hello ada/);
+
+      const screen = await waitForScreen(d.screen, /att-1 finished: done \(exit 0\)/, 5000, 'the end line');
+      assert.match(screen, /att-1/, 'the start line names the handoff id');
+      assert.ok(screen.includes('\x07'), 'the start line rings the terminal bell');
+
+      // Item 2: the log keeps its dispatch and completion lines and never the keys.
+      const log = fs.readFileSync(watchLogFile(home), 'utf8');
+      assert.match(log, /dispatching att-1:/);
+      assert.match(log, /completed att-1 status=done exit=0/);
+      assert.ok(!/\bada\b/.test(log), `the log must not hold the typed keys:\n${log}`);
+    });
+  });
+
+  // Test list item 3.
+  test('AT-E2E-2: Ctrl+C during a dispatch interrupts the command (exit 130) and the daemon keeps serving', attendOpts, async () => {
+    await withTerminalDaemon({ home, project }, async (d) => {
+      await waitForScreen(d.screen, /aoforge-watch: attended:/, 15000, 'the attended startup line');
+
+      writeAttendPending(project, 'att-2', `bash -c 'echo started-73; exec sleep 30'`);
+      await waitForScreen(d.afterFrame, /started-73/, 20000, 'the command output mirrored into the daemon terminal');
+
+      const typedAt = Date.now();
+      d.term.write('\x03');
+      const done = await waitForAttendDone(project, 'att-2', 5000);
+      assert.equal(done.exit_code, 130);
+      assert.ok(Date.now() - typedAt < 5000, 'the interrupt ends the dispatch promptly');
+
+      assert.equal(d.exited, false, 'the daemon is still running');
+      assert.doesNotThrow(() => process.kill(d.term.pid, 0), 'the daemon pid is alive');
+
+      writeAttendPending(project, 'att-3', `bash -c 'echo again-73'`);
+      const again = await waitForAttendDone(project, 'att-3');
+      assert.equal(again.status, 'done');
+      assert.match(again.stdout, /again-73/);
+    });
+  });
+
+  // Test list item 5.
+  test('AT-CLI-3: --no-attend under a terminal runs unattended and the dispatch is not framed', attendOpts, async () => {
+    await withTerminalDaemon({ home, project, args: ['--no-attend'] }, async (d) => {
+      await waitForScreen(d.screen, /aoforge-watch: unattended:/, 15000, 'the unattended startup line');
+      assert.ok(!/aoforge-watch: attended:/.test(d.screen()));
+
+      writeAttendPending(project, 'unatt-1', `bash -c 'echo plain-73'`);
+      const done = await waitForAttendDone(project, 'unatt-1');
+      assert.equal(done.status, 'done');
+      assert.match(done.stdout, /plain-73/);
+      assert.ok(!/finished:/.test(d.screen()), 'an unattended daemon prints no dispatch frame');
+      assert.ok(!d.screen().includes('\x07'), 'and rings no bell');
+    });
+  });
+
+  test('AT-CLI-4: AOFORGE_WATCH_UNATTENDED=1 under a terminal runs unattended', attendOpts, async () => {
+    await withTerminalDaemon({ home, project, env: { AOFORGE_WATCH_UNATTENDED: '1' } }, async (d) => {
+      await waitForScreen(d.screen, /aoforge-watch: unattended:/, 15000, 'the unattended startup line');
+      assert.ok(!/aoforge-watch: attended:/.test(d.screen()));
+    });
+  });
+
+  // Test list item 4: no terminal at all (the detached start, launchd, systemd, CI).
+  test('AT-CLI-1: start --foreground with piped stdio is unattended, and the started line is unchanged', async () => {
+    const child = spawn(process.execPath, [CLI, 'start', '--foreground', '--project', project, '--shell', 'bash'], {
+      env: { ...process.env, HOME: home, AOFORGE_WATCH_UNATTENDED: '' },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let out = '';
+    child.stdout.setEncoding('utf8');
+    child.stdout.on('data', (c) => { out += c; });
+    child.stderr.resume();
+    let exited = false;
+    child.on('exit', () => { exited = true; });
+    try {
+      await waitForScreen(() => out, /unattended/, 15000, 'the unattended startup line');
+      const lines = out.split('\n').filter(Boolean);
+      assert.match(lines[0], /^aoforge-watch: started \(pid \d+, projects .+\)$/);
+      assert.match(lines[1], /^aoforge-watch: unattended: /);
+      assert.ok(!/aoforge-watch: attended:/.test(out));
+    } finally {
+      try { child.kill('SIGTERM'); } catch { /* gone */ }
+      const start = Date.now();
+      while (!exited && Date.now() - start < 5000) await new Promise((r) => setTimeout(r, 50));
+      if (!exited) { try { child.kill('SIGKILL'); } catch { /* gone */ } }
+      for (const s of [child.stdout, child.stderr]) { try { s.destroy(); } catch { /* closed */ } }
+    }
+  });
+
+  test('AT-CLI-2: the start usage in the header documents --no-attend', () => {
+    const src = fs.readFileSync(CLI, 'utf8');
+    const header = src.slice(0, src.indexOf('const fs = require')); // the usage comment block
+    const startEntry = header.slice(header.indexOf(' *   start ['), header.indexOf(' *   stop'));
+    assert.match(startEntry, /--no-attend/, 'documented under the start entry');
   });
 });

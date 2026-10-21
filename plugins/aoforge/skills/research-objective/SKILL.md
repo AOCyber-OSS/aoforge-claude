@@ -41,7 +41,7 @@ Normalize objective input in step 1 before any directory lookups.
 INIT=$(node ~/.claude/aoforge/bin/aof-tools.cjs init objective-op "$ARGUMENTS")
 ```
 
-Extract from init JSON: `objective_dir`, `objective_number`, `objective_name`, `objective_found`, `commit_docs`, `has_research`.
+Extract from init JSON: `runtime_root` (fills `{runtime_root}`), `objective_dir`, `objective_number`, `objective_name`, `objective_found`, `commit_docs`, `has_research`.
 
 Resolve researcher model:
 ```bash
@@ -178,6 +178,7 @@ Research modes: ecosystem (default), feasibility, implementation, comparison.
 
 ```markdown
 <research_type>
+AOForge runtime: {runtime_root}
 Objective Research — investigating HOW to implement a specific objective well.
 </research_type>
 
@@ -296,6 +297,7 @@ AskUserQuestion([
 
 ```markdown
 <objective>
+AOForge runtime: {runtime_root}
 Continue research for Objective {objective_number}: {objective_name}
 </objective>
 

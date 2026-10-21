@@ -132,8 +132,9 @@ node ~/.claude/aoforge/bin/aof-tools.cjs decision-queue resolve DECISION-001 opt
 Resolved decisions move to `.aoforge/decisions/resolved/DECISION-NNN.md`.
 
 For full checkpoint semantics in autonomous mode see
-`@~/.claude/aoforge/references/checkpoints.md` — the `autonomous` section documents
-the exact verifier delegation protocol.
+`<runtime>/references/checkpoints.md` — the `autonomous` section documents
+the exact verifier delegation protocol. (`<runtime>` is the AOForge runtime directory: `runtime_root` from an
+`aof-tools init` JSON, else the path `echo ~/.claude/aoforge` prints.)
 
 ---
 

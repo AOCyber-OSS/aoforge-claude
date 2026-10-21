@@ -1,0 +1,1815 @@
+{
+  "batch": "C",
+  "objective": 82,
+  "topics": [
+    "gateway",
+    "hub"
+  ],
+  "dimensions": [
+    "architecture",
+    "pitfalls"
+  ],
+  "models": [
+    "haiku",
+    "sonnet"
+  ],
+  "planned": {
+    "researcher": 16,
+    "per_cell": 2
+  },
+  "cells": {
+    "gateway": {
+      "architecture": {
+        "haiku": {
+          "planned": 2,
+          "graded_runs": 2,
+          "recall": {
+            "k": 24,
+            "n": 24,
+            "rate": 1,
+            "low": 0.8620194241710247,
+            "high": 1
+          },
+          "fabrications_total": 0,
+          "fabrications_per_run": 0,
+          "runs": [
+            "C82-res-gateway-architecture-h-1",
+            "C82-res-gateway-architecture-h-2"
+          ]
+        },
+        "sonnet": {
+          "planned": 2,
+          "graded_runs": 2,
+          "recall": {
+            "k": 23,
+            "n": 24,
+            "rate": 0.9583333333333334,
+            "low": 0.7975777375115778,
+            "high": 0.992606734645195
+          },
+          "fabrications_total": 0,
+          "fabrications_per_run": 0,
+          "runs": [
+            "C82-res-gateway-architecture-s-1",
+            "C82-res-gateway-architecture-s-2"
+          ]
+        }
+      },
+      "pitfalls": {
+        "haiku": {
+          "planned": 2,
+          "graded_runs": 2,
+          "recall": {
+            "k": 21,
+            "n": 22,
+            "rate": 0.9545454545454546,
+            "low": 0.7820151050048196,
+            "high": 0.9919307806988522
+          },
+          "fabrications_total": 0,
+          "fabrications_per_run": 0,
+          "runs": [
+            "C82-res-gateway-pitfalls-h-1",
+            "C82-res-gateway-pitfalls-h-2"
+          ]
+        },
+        "sonnet": {
+          "planned": 2,
+          "graded_runs": 2,
+          "recall": {
+            "k": 22,
+            "n": 22,
+            "rate": 1,
+            "low": 0.8513404742740388,
+            "high": 1
+          },
+          "fabrications_total": 0,
+          "fabrications_per_run": 0,
+          "runs": [
+            "C82-res-gateway-pitfalls-s-1",
+            "C82-res-gateway-pitfalls-s-2"
+          ]
+        }
+      }
+    },
+    "hub": {
+      "architecture": {
+        "haiku": {
+          "planned": 2,
+          "graded_runs": 2,
+          "recall": {
+            "k": 19,
+            "n": 22,
+            "rate": 0.8636363636363636,
+            "low": 0.6666458812053,
+            "high": 0.9525108273576373
+          },
+          "fabrications_total": 0,
+          "fabrications_per_run": 0,
+          "runs": [
+            "C82-res-hub-architecture-h-1",
+            "C82-res-hub-architecture-h-2"
+          ]
+        },
+        "sonnet": {
+          "planned": 2,
+          "graded_runs": 2,
+          "recall": {
+            "k": 22,
+            "n": 22,
+            "rate": 1,
+            "low": 0.8513404742740388,
+            "high": 1
+          },
+          "fabrications_total": 0,
+          "fabrications_per_run": 0,
+          "runs": [
+            "C82-res-hub-architecture-s-1",
+            "C82-res-hub-architecture-s-2"
+          ]
+        }
+      },
+      "pitfalls": {
+        "haiku": {
+          "planned": 2,
+          "graded_runs": 2,
+          "recall": {
+            "k": 18,
+            "n": 22,
+            "rate": 0.8181818181818182,
+            "low": 0.6148297802336213,
+            "high": 0.9269323397589488
+          },
+          "fabrications_total": 0,
+          "fabrications_per_run": 0,
+          "runs": [
+            "C82-res-hub-pitfalls-h-1",
+            "C82-res-hub-pitfalls-h-2"
+          ]
+        },
+        "sonnet": {
+          "planned": 2,
+          "graded_runs": 2,
+          "recall": {
+            "k": 20,
+            "n": 22,
+            "rate": 0.9090909090909091,
+            "low": 0.7218461934161421,
+            "high": 0.9747051037171622
+          },
+          "fabrications_total": 0,
+          "fabrications_per_run": 0,
+          "runs": [
+            "C82-res-hub-pitfalls-s-1",
+            "C82-res-hub-pitfalls-s-2"
+          ]
+        }
+      }
+    }
+  },
+  "pooled": {
+    "architecture": {
+      "haiku": {
+        "planned": 4,
+        "graded_runs": 4,
+        "recall": {
+          "k": 43,
+          "n": 46,
+          "rate": 0.9347826086956522,
+          "low": 0.8249699089621865,
+          "high": 0.9775725455336564
+        },
+        "fabrications_total": 0,
+        "fabrications_per_run": 0,
+        "runs": [
+          "C82-res-gateway-architecture-h-1",
+          "C82-res-hub-architecture-h-1",
+          "C82-res-gateway-architecture-h-2",
+          "C82-res-hub-architecture-h-2"
+        ]
+      },
+      "sonnet": {
+        "planned": 4,
+        "graded_runs": 4,
+        "recall": {
+          "k": 45,
+          "n": 46,
+          "rate": 0.9782608695652174,
+          "low": 0.8866444550566697,
+          "high": 0.9961522448887572
+        },
+        "fabrications_total": 0,
+        "fabrications_per_run": 0,
+        "runs": [
+          "C82-res-gateway-architecture-s-1",
+          "C82-res-hub-architecture-s-1",
+          "C82-res-gateway-architecture-s-2",
+          "C82-res-hub-architecture-s-2"
+        ]
+      }
+    },
+    "pitfalls": {
+      "haiku": {
+        "planned": 4,
+        "graded_runs": 4,
+        "recall": {
+          "k": 39,
+          "n": 44,
+          "rate": 0.8863636363636364,
+          "low": 0.7602056485186641,
+          "high": 0.950472924104325
+        },
+        "fabrications_total": 0,
+        "fabrications_per_run": 0,
+        "runs": [
+          "C82-res-gateway-pitfalls-h-1",
+          "C82-res-hub-pitfalls-h-1",
+          "C82-res-gateway-pitfalls-h-2",
+          "C82-res-hub-pitfalls-h-2"
+        ]
+      },
+      "sonnet": {
+        "planned": 4,
+        "graded_runs": 4,
+        "recall": {
+          "k": 42,
+          "n": 44,
+          "rate": 0.9545454545454546,
+          "low": 0.8486472847469684,
+          "high": 0.9874451536330189
+        },
+        "fabrications_total": 0,
+        "fabrications_per_run": 0,
+        "runs": [
+          "C82-res-gateway-pitfalls-s-1",
+          "C82-res-hub-pitfalls-s-1",
+          "C82-res-gateway-pitfalls-s-2",
+          "C82-res-hub-pitfalls-s-2"
+        ]
+      }
+    }
+  },
+  "item_matrix": {
+    "gateway": {
+      "architecture": [
+        {
+          "id": "GA-A01",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-A02",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-A03",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-A04",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-A05",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-A06",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-A07",
+          "sonnet_found": 1,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-A08",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-A09",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-A10",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-A11",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-A12",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        }
+      ],
+      "pitfalls": [
+        {
+          "id": "GA-P01",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-P02",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-P03",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-P04",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-P05",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-P06",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-P07",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-P08",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-P09",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 1,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-P10",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "GA-P11",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        }
+      ]
+    },
+    "hub": {
+      "architecture": [
+        {
+          "id": "HU-A01",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 0,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-A02",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-A03",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-A04",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-A05",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-A06",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-A07",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-A08",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 1,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-A09",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-A10",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-A11",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        }
+      ],
+      "pitfalls": [
+        {
+          "id": "HU-P01",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-P02",
+          "sonnet_found": 0,
+          "sonnet_graded": 2,
+          "haiku_found": 1,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-P03",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 1,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-P04",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-P05",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 1,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-P06",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-P07",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-P08",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-P09",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-P10",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 2,
+          "haiku_graded": 2
+        },
+        {
+          "id": "HU-P11",
+          "sonnet_found": 2,
+          "sonnet_graded": 2,
+          "haiku_found": 1,
+          "haiku_graded": 2
+        }
+      ]
+    }
+  },
+  "runs": [
+    {
+      "id": "C82-res-gateway-architecture-s-1",
+      "topic": "gateway",
+      "dimension": "architecture",
+      "model": "sonnet",
+      "repeat": 1,
+      "status": "ok",
+      "verdict": "graded",
+      "reason": null,
+      "found": 12,
+      "wrong": 0,
+      "missing": 0,
+      "items": 12,
+      "fabrications": 0,
+      "grader_id": "C82-grade-C82-res-gateway-architecture-s-1",
+      "grader_status": "ok",
+      "cost_usd": 0.166415,
+      "charged_usd": 0.166415,
+      "grader_cost_usd": 0.075717,
+      "grader_charged_usd": 0.075717
+    },
+    {
+      "id": "C82-res-gateway-architecture-h-1",
+      "topic": "gateway",
+      "dimension": "architecture",
+      "model": "haiku",
+      "repeat": 1,
+      "status": "ok",
+      "verdict": "graded",
+      "reason": null,
+      "found": 12,
+      "wrong": 0,
+      "missing": 0,
+      "items": 12,
+      "fabrications": 0,
+      "grader_id": "C82-grade-C82-res-gateway-architecture-h-1",
+      "grader_status": "ok",
+      "cost_usd": 0.023548,
+      "charged_usd": 0.023548,
+      "grader_cost_usd": 0.075659,
+      "grader_charged_usd": 0.075659
+    },
+    {
+      "id": "C82-res-gateway-pitfalls-h-1",
+      "topic": "gateway",
+      "dimension": "pitfalls",
+      "model": "haiku",
+      "repeat": 1,
+      "status": "ok",
+      "verdict": "graded",
+      "reason": null,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "fabrications": 0,
+      "grader_id": "C82-grade-C82-res-gateway-pitfalls-h-1",
+      "grader_status": "ok",
+      "cost_usd": 0.036767,
+      "charged_usd": 0.036767,
+      "grader_cost_usd": 0.081286,
+      "grader_charged_usd": 0.081286
+    },
+    {
+      "id": "C82-res-gateway-pitfalls-s-1",
+      "topic": "gateway",
+      "dimension": "pitfalls",
+      "model": "sonnet",
+      "repeat": 1,
+      "status": "ok",
+      "verdict": "graded",
+      "reason": null,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "fabrications": 0,
+      "grader_id": "C82-grade-C82-res-gateway-pitfalls-s-1",
+      "grader_status": "ok",
+      "cost_usd": 0.184955,
+      "charged_usd": 0.184955,
+      "grader_cost_usd": 0.076104,
+      "grader_charged_usd": 0.076104
+    },
+    {
+      "id": "C82-res-hub-architecture-s-1",
+      "topic": "hub",
+      "dimension": "architecture",
+      "model": "sonnet",
+      "repeat": 1,
+      "status": "ok",
+      "verdict": "graded",
+      "reason": null,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "fabrications": 0,
+      "grader_id": "C82-grade-C82-res-hub-architecture-s-1",
+      "grader_status": "ok",
+      "cost_usd": 0.128363,
+      "charged_usd": 0.128363,
+      "grader_cost_usd": 0.058587,
+      "grader_charged_usd": 0.058587
+    },
+    {
+      "id": "C82-res-hub-architecture-h-1",
+      "topic": "hub",
+      "dimension": "architecture",
+      "model": "haiku",
+      "repeat": 1,
+      "status": "ok",
+      "verdict": "graded",
+      "reason": null,
+      "found": 10,
+      "wrong": 0,
+      "missing": 1,
+      "items": 11,
+      "fabrications": 0,
+      "grader_id": "C82-grade-C82-res-hub-architecture-h-1",
+      "grader_status": "ok",
+      "cost_usd": 0.073214,
+      "charged_usd": 0.073214,
+      "grader_cost_usd": 0.071752,
+      "grader_charged_usd": 0.071752
+    },
+    {
+      "id": "C82-res-hub-pitfalls-h-1",
+      "topic": "hub",
+      "dimension": "pitfalls",
+      "model": "haiku",
+      "repeat": 1,
+      "status": "ok",
+      "verdict": "graded",
+      "reason": null,
+      "found": 8,
+      "wrong": 0,
+      "missing": 3,
+      "items": 11,
+      "fabrications": 0,
+      "grader_id": "C82-grade-C82-res-hub-pitfalls-h-1",
+      "grader_status": "ok",
+      "cost_usd": 0.046934,
+      "charged_usd": 0.046934,
+      "grader_cost_usd": 0.066882,
+      "grader_charged_usd": 0.066882
+    },
+    {
+      "id": "C82-res-hub-pitfalls-s-1",
+      "topic": "hub",
+      "dimension": "pitfalls",
+      "model": "sonnet",
+      "repeat": 1,
+      "status": "ok",
+      "verdict": "graded",
+      "reason": null,
+      "found": 10,
+      "wrong": 0,
+      "missing": 1,
+      "items": 11,
+      "fabrications": 0,
+      "grader_id": "C82-grade-C82-res-hub-pitfalls-s-1",
+      "grader_status": "ok",
+      "cost_usd": 0.188626,
+      "charged_usd": 0.188626,
+      "grader_cost_usd": 0.08021,
+      "grader_charged_usd": 0.08021
+    },
+    {
+      "id": "C82-res-gateway-architecture-h-2",
+      "topic": "gateway",
+      "dimension": "architecture",
+      "model": "haiku",
+      "repeat": 2,
+      "status": "ok",
+      "verdict": "graded",
+      "reason": null,
+      "found": 12,
+      "wrong": 0,
+      "missing": 0,
+      "items": 12,
+      "fabrications": 0,
+      "grader_id": "C82-grade-C82-res-gateway-architecture-h-2",
+      "grader_status": "ok",
+      "cost_usd": 0.021254,
+      "charged_usd": 0.021254,
+      "grader_cost_usd": 0.069928,
+      "grader_charged_usd": 0.069928
+    },
+    {
+      "id": "C82-res-gateway-architecture-s-2",
+      "topic": "gateway",
+      "dimension": "architecture",
+      "model": "sonnet",
+      "repeat": 2,
+      "status": "ok",
+      "verdict": "graded",
+      "reason": null,
+      "found": 11,
+      "wrong": 0,
+      "missing": 1,
+      "items": 12,
+      "fabrications": 0,
+      "grader_id": "C82-grade-C82-res-gateway-architecture-s-2",
+      "grader_status": "ok",
+      "cost_usd": 0.12966,
+      "charged_usd": 0.12966,
+      "grader_cost_usd": 0.061313,
+      "grader_charged_usd": 0.061313
+    },
+    {
+      "id": "C82-res-gateway-pitfalls-s-2",
+      "topic": "gateway",
+      "dimension": "pitfalls",
+      "model": "sonnet",
+      "repeat": 2,
+      "status": "ok",
+      "verdict": "graded",
+      "reason": null,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "fabrications": 0,
+      "grader_id": "C82-grade-C82-res-gateway-pitfalls-s-2",
+      "grader_status": "ok",
+      "cost_usd": 0.193064,
+      "charged_usd": 0.193064,
+      "grader_cost_usd": 0.07943,
+      "grader_charged_usd": 0.07943
+    },
+    {
+      "id": "C82-res-gateway-pitfalls-h-2",
+      "topic": "gateway",
+      "dimension": "pitfalls",
+      "model": "haiku",
+      "repeat": 2,
+      "status": "ok",
+      "verdict": "graded",
+      "reason": null,
+      "found": 10,
+      "wrong": 0,
+      "missing": 1,
+      "items": 11,
+      "fabrications": 0,
+      "grader_id": "C82-grade-C82-res-gateway-pitfalls-h-2",
+      "grader_status": "ok",
+      "cost_usd": 0.047798,
+      "charged_usd": 0.047798,
+      "grader_cost_usd": 0.085519,
+      "grader_charged_usd": 0.085519
+    },
+    {
+      "id": "C82-res-hub-architecture-h-2",
+      "topic": "hub",
+      "dimension": "architecture",
+      "model": "haiku",
+      "repeat": 2,
+      "status": "ok",
+      "verdict": "graded",
+      "reason": null,
+      "found": 9,
+      "wrong": 0,
+      "missing": 2,
+      "items": 11,
+      "fabrications": 0,
+      "grader_id": "C82-grade-C82-res-hub-architecture-h-2",
+      "grader_status": "ok",
+      "cost_usd": 0.046907,
+      "charged_usd": 0.046907,
+      "grader_cost_usd": 0.057624,
+      "grader_charged_usd": 0.057624
+    },
+    {
+      "id": "C82-res-hub-architecture-s-2",
+      "topic": "hub",
+      "dimension": "architecture",
+      "model": "sonnet",
+      "repeat": 2,
+      "status": "ok",
+      "verdict": "graded",
+      "reason": null,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "fabrications": 0,
+      "grader_id": "C82-grade-C82-res-hub-architecture-s-2",
+      "grader_status": "ok",
+      "cost_usd": 0.128409,
+      "charged_usd": 0.128409,
+      "grader_cost_usd": 0.059726,
+      "grader_charged_usd": 0.059726
+    },
+    {
+      "id": "C82-res-hub-pitfalls-s-2",
+      "topic": "hub",
+      "dimension": "pitfalls",
+      "model": "sonnet",
+      "repeat": 2,
+      "status": "ok",
+      "verdict": "graded",
+      "reason": null,
+      "found": 10,
+      "wrong": 0,
+      "missing": 1,
+      "items": 11,
+      "fabrications": 0,
+      "grader_id": "C82-grade-C82-res-hub-pitfalls-s-2",
+      "grader_status": "ok",
+      "cost_usd": 0.172204,
+      "charged_usd": 0.172204,
+      "grader_cost_usd": 0.073113,
+      "grader_charged_usd": 0.073113
+    },
+    {
+      "id": "C82-res-hub-pitfalls-h-2",
+      "topic": "hub",
+      "dimension": "pitfalls",
+      "model": "haiku",
+      "repeat": 2,
+      "status": "ok",
+      "verdict": "graded",
+      "reason": null,
+      "found": 10,
+      "wrong": 0,
+      "missing": 1,
+      "items": 11,
+      "fabrications": 0,
+      "grader_id": "C82-grade-C82-res-hub-pitfalls-h-2",
+      "grader_status": "ok",
+      "cost_usd": 0.014999,
+      "charged_usd": 0.014999,
+      "grader_cost_usd": 0.08219,
+      "grader_charged_usd": 0.08219
+    }
+  ],
+  "cost": {
+    "researcher_charged_usd": {
+      "haiku": 0.311421,
+      "sonnet": 1.291696
+    },
+    "grader_charged_usd": 1.15504,
+    "total_charged_usd": 2.758157
+  },
+  "guessed_paths": {
+    "runs": [
+      {
+        "id": "C82-res-gateway-architecture-s-1",
+        "status": "ok",
+        "files_scanned": 1,
+        "tool_uses_scanned": 4,
+        "scanned": true,
+        "tilde": 0,
+        "guessed_home": 0,
+        "recorded": {
+          "real": 0,
+          "guessed_nonexistent": 0,
+          "tilde_denied": 0
+        },
+        "entries": [],
+        "recorded_entries": []
+      },
+      {
+        "id": "C82-res-gateway-architecture-h-1",
+        "status": "ok",
+        "files_scanned": 1,
+        "tool_uses_scanned": 6,
+        "scanned": true,
+        "tilde": 0,
+        "guessed_home": 0,
+        "recorded": {
+          "real": 0,
+          "guessed_nonexistent": 0,
+          "tilde_denied": 0
+        },
+        "entries": [],
+        "recorded_entries": []
+      },
+      {
+        "id": "C82-res-gateway-pitfalls-h-1",
+        "status": "ok",
+        "files_scanned": 1,
+        "tool_uses_scanned": 7,
+        "scanned": true,
+        "tilde": 0,
+        "guessed_home": 0,
+        "recorded": {
+          "real": 0,
+          "guessed_nonexistent": 0,
+          "tilde_denied": 0
+        },
+        "entries": [],
+        "recorded_entries": []
+      },
+      {
+        "id": "C82-res-gateway-pitfalls-s-1",
+        "status": "ok",
+        "files_scanned": 1,
+        "tool_uses_scanned": 4,
+        "scanned": true,
+        "tilde": 0,
+        "guessed_home": 0,
+        "recorded": {
+          "real": 0,
+          "guessed_nonexistent": 0,
+          "tilde_denied": 0
+        },
+        "entries": [],
+        "recorded_entries": []
+      },
+      {
+        "id": "C82-res-hub-architecture-s-1",
+        "status": "ok",
+        "files_scanned": 1,
+        "tool_uses_scanned": 4,
+        "scanned": true,
+        "tilde": 0,
+        "guessed_home": 0,
+        "recorded": {
+          "real": 0,
+          "guessed_nonexistent": 0,
+          "tilde_denied": 0
+        },
+        "entries": [],
+        "recorded_entries": []
+      },
+      {
+        "id": "C82-res-hub-architecture-h-1",
+        "status": "ok",
+        "files_scanned": 1,
+        "tool_uses_scanned": 10,
+        "scanned": true,
+        "tilde": 0,
+        "guessed_home": 0,
+        "recorded": {
+          "real": 0,
+          "guessed_nonexistent": 0,
+          "tilde_denied": 0
+        },
+        "entries": [],
+        "recorded_entries": []
+      },
+      {
+        "id": "C82-res-hub-pitfalls-h-1",
+        "status": "ok",
+        "files_scanned": 1,
+        "tool_uses_scanned": 8,
+        "scanned": true,
+        "tilde": 0,
+        "guessed_home": 0,
+        "recorded": {
+          "real": 0,
+          "guessed_nonexistent": 0,
+          "tilde_denied": 0
+        },
+        "entries": [],
+        "recorded_entries": []
+      },
+      {
+        "id": "C82-res-hub-pitfalls-s-1",
+        "status": "ok",
+        "files_scanned": 1,
+        "tool_uses_scanned": 4,
+        "scanned": true,
+        "tilde": 0,
+        "guessed_home": 0,
+        "recorded": {
+          "real": 0,
+          "guessed_nonexistent": 0,
+          "tilde_denied": 0
+        },
+        "entries": [],
+        "recorded_entries": []
+      },
+      {
+        "id": "C82-res-gateway-architecture-h-2",
+        "status": "ok",
+        "files_scanned": 1,
+        "tool_uses_scanned": 6,
+        "scanned": true,
+        "tilde": 0,
+        "guessed_home": 0,
+        "recorded": {
+          "real": 0,
+          "guessed_nonexistent": 0,
+          "tilde_denied": 0
+        },
+        "entries": [],
+        "recorded_entries": []
+      },
+      {
+        "id": "C82-res-gateway-architecture-s-2",
+        "status": "ok",
+        "files_scanned": 1,
+        "tool_uses_scanned": 4,
+        "scanned": true,
+        "tilde": 0,
+        "guessed_home": 0,
+        "recorded": {
+          "real": 0,
+          "guessed_nonexistent": 0,
+          "tilde_denied": 0
+        },
+        "entries": [],
+        "recorded_entries": []
+      },
+      {
+        "id": "C82-res-gateway-pitfalls-s-2",
+        "status": "ok",
+        "files_scanned": 1,
+        "tool_uses_scanned": 4,
+        "scanned": true,
+        "tilde": 0,
+        "guessed_home": 0,
+        "recorded": {
+          "real": 0,
+          "guessed_nonexistent": 0,
+          "tilde_denied": 0
+        },
+        "entries": [],
+        "recorded_entries": []
+      },
+      {
+        "id": "C82-res-gateway-pitfalls-h-2",
+        "status": "ok",
+        "files_scanned": 1,
+        "tool_uses_scanned": 7,
+        "scanned": true,
+        "tilde": 0,
+        "guessed_home": 0,
+        "recorded": {
+          "real": 0,
+          "guessed_nonexistent": 0,
+          "tilde_denied": 0
+        },
+        "entries": [],
+        "recorded_entries": []
+      },
+      {
+        "id": "C82-res-hub-architecture-h-2",
+        "status": "ok",
+        "files_scanned": 1,
+        "tool_uses_scanned": 8,
+        "scanned": true,
+        "tilde": 0,
+        "guessed_home": 0,
+        "recorded": {
+          "real": 0,
+          "guessed_nonexistent": 0,
+          "tilde_denied": 0
+        },
+        "entries": [],
+        "recorded_entries": []
+      },
+      {
+        "id": "C82-res-hub-architecture-s-2",
+        "status": "ok",
+        "files_scanned": 1,
+        "tool_uses_scanned": 4,
+        "scanned": true,
+        "tilde": 0,
+        "guessed_home": 0,
+        "recorded": {
+          "real": 0,
+          "guessed_nonexistent": 0,
+          "tilde_denied": 0
+        },
+        "entries": [],
+        "recorded_entries": []
+      },
+      {
+        "id": "C82-res-hub-pitfalls-s-2",
+        "status": "ok",
+        "files_scanned": 1,
+        "tool_uses_scanned": 4,
+        "scanned": true,
+        "tilde": 0,
+        "guessed_home": 0,
+        "recorded": {
+          "real": 0,
+          "guessed_nonexistent": 0,
+          "tilde_denied": 0
+        },
+        "entries": [],
+        "recorded_entries": []
+      },
+      {
+        "id": "C82-res-hub-pitfalls-h-2",
+        "status": "ok",
+        "files_scanned": 1,
+        "tool_uses_scanned": 5,
+        "scanned": true,
+        "tilde": 0,
+        "guessed_home": 0,
+        "recorded": {
+          "real": 0,
+          "guessed_nonexistent": 0,
+          "tilde_denied": 0
+        },
+        "entries": [],
+        "recorded_entries": []
+      }
+    ],
+    "totals": {
+      "runs": 16,
+      "scanned": 16,
+      "unscanned": 0,
+      "tilde": 0,
+      "guessed_home": 0,
+      "real": 0,
+      "guessed_nonexistent": 0,
+      "tilde_denied": 0,
+      "not_recorded": 0
+    },
+    "home_parent": "/Users"
+  },
+  "recorded_81": {
+    "source": ".aoforge/objectives/81-haiku-eval-and-model-efficiency-measurement/results/C.json",
+    "item_level": false,
+    "roles": {
+      "architecture": {
+        "haiku": {
+          "n_scored": 2,
+          "recall": {
+            "k": 21,
+            "n": 22
+          },
+          "fabrications": {
+            "total": 0,
+            "runs": 2
+          },
+          "cost_usd": 0.080452,
+          "grader_cost_usd": 0.134143
+        },
+        "sonnet": {
+          "n_scored": 2,
+          "recall": {
+            "k": 17,
+            "n": 22
+          },
+          "fabrications": {
+            "total": 0,
+            "runs": 2
+          },
+          "cost_usd": 0.265399,
+          "grader_cost_usd": 0.1172
+        }
+      },
+      "pitfalls": {
+        "haiku": {
+          "n_scored": 2,
+          "recall": {
+            "k": 22,
+            "n": 22
+          },
+          "fabrications": {
+            "total": 0,
+            "runs": 2
+          },
+          "cost_usd": 0.089259,
+          "grader_cost_usd": 0.184633
+        },
+        "sonnet": {
+          "n_scored": 2,
+          "recall": {
+            "k": 21,
+            "n": 22
+          },
+          "fabrications": {
+            "total": 0,
+            "runs": 2
+          },
+          "cost_usd": 0.368855,
+          "grader_cost_usd": 0.140952
+        }
+      }
+    },
+    "runs": [
+      {
+        "id": "C-res-architecture-s-1",
+        "model": "sonnet",
+        "dimension": "architecture",
+        "verdict": "graded",
+        "found": 8,
+        "wrong": 0,
+        "missing": 3,
+        "items": 11,
+        "grader_fabrications": 0
+      },
+      {
+        "id": "C-res-architecture-h-1",
+        "model": "haiku",
+        "dimension": "architecture",
+        "verdict": "graded",
+        "found": 11,
+        "wrong": 0,
+        "missing": 0,
+        "items": 11,
+        "grader_fabrications": 0
+      },
+      {
+        "id": "C-res-pitfalls-h-1",
+        "model": "haiku",
+        "dimension": "pitfalls",
+        "verdict": "graded",
+        "found": 11,
+        "wrong": 0,
+        "missing": 0,
+        "items": 11,
+        "grader_fabrications": 0
+      },
+      {
+        "id": "C-res-pitfalls-s-1",
+        "model": "sonnet",
+        "dimension": "pitfalls",
+        "verdict": "graded",
+        "found": 11,
+        "wrong": 0,
+        "missing": 0,
+        "items": 11,
+        "grader_fabrications": 0
+      },
+      {
+        "id": "C-res-architecture-h-2",
+        "model": "haiku",
+        "dimension": "architecture",
+        "verdict": "graded",
+        "found": 10,
+        "wrong": 0,
+        "missing": 1,
+        "items": 11,
+        "grader_fabrications": 0
+      },
+      {
+        "id": "C-res-architecture-s-2",
+        "model": "sonnet",
+        "dimension": "architecture",
+        "verdict": "graded",
+        "found": 9,
+        "wrong": 0,
+        "missing": 2,
+        "items": 11,
+        "grader_fabrications": 0
+      },
+      {
+        "id": "C-res-pitfalls-s-2",
+        "model": "sonnet",
+        "dimension": "pitfalls",
+        "verdict": "graded",
+        "found": 10,
+        "wrong": 0,
+        "missing": 1,
+        "items": 11,
+        "grader_fabrications": 0
+      },
+      {
+        "id": "C-res-pitfalls-h-2",
+        "model": "haiku",
+        "dimension": "pitfalls",
+        "verdict": "graded",
+        "found": 11,
+        "wrong": 0,
+        "missing": 0,
+        "items": 11,
+        "grader_fabrications": 0
+      }
+    ],
+    "note": "objective 81's topic: recorded context, not voting; its C.json holds no item-level verdicts, so it is aggregate only (recall, fabrications, cost)"
+  },
+  "notes": [
+    "Graded runs only enter recall and fabrications; a run excluded or not run is listed with its reason.",
+    "Guessed paths are scanned from each researcher run's transcripts; `tilde` is counted for the record (the Read tool expands `~`), `guessed_home` is the defect signal, and the runner's recorded classes stand beside them.",
+    "Objective 81's topic is recorded context, not voting (82-CHECK-RULES.md section 2)."
+  ],
+  "scored_at": "2026-10-18T11:44:10.116Z",
+  "spend": {
+    "ledger_version": 1,
+    "batch": "C",
+    "status": "complete",
+    "spent_usd": 2.758157,
+    "ledger_total_usd": 4.037729,
+    "entries": [
+      {
+        "id": "C82-res-gateway-architecture-s-1",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.6,
+        "reserve_usd": 0.75,
+        "reported_usd": 0.1664148,
+        "transcript_usd": 0.166415,
+        "charged_usd": 0.166415,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:20:37.617Z"
+      },
+      {
+        "id": "C82-res-gateway-architecture-h-1",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.3,
+        "reserve_usd": 0.375,
+        "reported_usd": 0.02354795,
+        "transcript_usd": 0.011801,
+        "charged_usd": 0.023548,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:21:46.537Z"
+      },
+      {
+        "id": "C82-res-gateway-pitfalls-h-1",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.3,
+        "reserve_usd": 0.375,
+        "reported_usd": 0.03676698,
+        "transcript_usd": 0.013089,
+        "charged_usd": 0.036767,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:23:09.537Z"
+      },
+      {
+        "id": "C82-res-gateway-pitfalls-s-1",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.6,
+        "reserve_usd": 0.75,
+        "reported_usd": 0.184955,
+        "transcript_usd": 0.184955,
+        "charged_usd": 0.184955,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:24:41.797Z"
+      },
+      {
+        "id": "C82-res-hub-architecture-s-1",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.6,
+        "reserve_usd": 0.75,
+        "reported_usd": 0.12836319999999998,
+        "transcript_usd": 0.128363,
+        "charged_usd": 0.128363,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:25:41.886Z"
+      },
+      {
+        "id": "C82-res-hub-architecture-h-1",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.3,
+        "reserve_usd": 0.375,
+        "reported_usd": 0.07321429,
+        "transcript_usd": 0.013637,
+        "charged_usd": 0.073214,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:27:09.440Z"
+      },
+      {
+        "id": "C82-res-hub-pitfalls-h-1",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.3,
+        "reserve_usd": 0.375,
+        "reported_usd": 0.046933609999999994,
+        "transcript_usd": 0.011414,
+        "charged_usd": 0.046934,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:28:17.092Z"
+      },
+      {
+        "id": "C82-res-hub-pitfalls-s-1",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.6,
+        "reserve_usd": 0.75,
+        "reported_usd": 0.18862589999999999,
+        "transcript_usd": 0.188626,
+        "charged_usd": 0.188626,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:29:51.782Z"
+      },
+      {
+        "id": "C82-res-gateway-architecture-h-2",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.3,
+        "reserve_usd": 0.375,
+        "reported_usd": 0.021253539999999994,
+        "transcript_usd": 0.009539,
+        "charged_usd": 0.021254,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:30:49.880Z"
+      },
+      {
+        "id": "C82-res-gateway-architecture-s-2",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.6,
+        "reserve_usd": 0.75,
+        "reported_usd": 0.1296595,
+        "transcript_usd": 0.129659,
+        "charged_usd": 0.12966,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:31:47.327Z"
+      },
+      {
+        "id": "C82-res-gateway-pitfalls-s-2",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.6,
+        "reserve_usd": 0.75,
+        "reported_usd": 0.1930635,
+        "transcript_usd": 0.193064,
+        "charged_usd": 0.193064,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:33:23.974Z"
+      },
+      {
+        "id": "C82-res-gateway-pitfalls-h-2",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.3,
+        "reserve_usd": 0.375,
+        "reported_usd": 0.047798110000000005,
+        "transcript_usd": 0.013099,
+        "charged_usd": 0.047798,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:34:49.058Z"
+      },
+      {
+        "id": "C82-res-hub-architecture-h-2",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.3,
+        "reserve_usd": 0.375,
+        "reported_usd": 0.04690653000000001,
+        "transcript_usd": 0.011543,
+        "charged_usd": 0.046907,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:35:57.449Z"
+      },
+      {
+        "id": "C82-res-hub-architecture-s-2",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.6,
+        "reserve_usd": 0.75,
+        "reported_usd": 0.1284089,
+        "transcript_usd": 0.128409,
+        "charged_usd": 0.128409,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:36:53.290Z"
+      },
+      {
+        "id": "C82-res-hub-pitfalls-s-2",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.6,
+        "reserve_usd": 0.75,
+        "reported_usd": 0.1722038,
+        "transcript_usd": 0.172204,
+        "charged_usd": 0.172204,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:38:17.833Z"
+      },
+      {
+        "id": "C82-res-hub-pitfalls-h-2",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.3,
+        "reserve_usd": 0.375,
+        "reported_usd": 0.014998679999999999,
+        "transcript_usd": 0.014999,
+        "charged_usd": 0.014999,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:39:54.030Z"
+      },
+      {
+        "id": "C82-grade-C82-res-gateway-architecture-s-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.25,
+        "reserve_usd": 0.3125,
+        "reported_usd": 0.0757169,
+        "transcript_usd": 0.075717,
+        "charged_usd": 0.075717,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:40:56.901Z"
+      },
+      {
+        "id": "C82-grade-C82-res-gateway-architecture-h-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.25,
+        "reserve_usd": 0.3125,
+        "reported_usd": 0.07565859999999999,
+        "transcript_usd": 0.075659,
+        "charged_usd": 0.075659,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:41:05.460Z"
+      },
+      {
+        "id": "C82-grade-C82-res-gateway-pitfalls-h-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.25,
+        "reserve_usd": 0.3125,
+        "reported_usd": 0.08128610000000001,
+        "transcript_usd": 0.081286,
+        "charged_usd": 0.081286,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:41:14.505Z"
+      },
+      {
+        "id": "C82-grade-C82-res-gateway-pitfalls-s-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.25,
+        "reserve_usd": 0.3125,
+        "reported_usd": 0.0761036,
+        "transcript_usd": 0.076104,
+        "charged_usd": 0.076104,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:41:23.223Z"
+      },
+      {
+        "id": "C82-grade-C82-res-hub-architecture-s-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.25,
+        "reserve_usd": 0.3125,
+        "reported_usd": 0.058587,
+        "transcript_usd": 0.058587,
+        "charged_usd": 0.058587,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:41:31.169Z"
+      },
+      {
+        "id": "C82-grade-C82-res-hub-architecture-h-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.25,
+        "reserve_usd": 0.3125,
+        "reported_usd": 0.0717516,
+        "transcript_usd": 0.071752,
+        "charged_usd": 0.071752,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:41:39.124Z"
+      },
+      {
+        "id": "C82-grade-C82-res-hub-pitfalls-h-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.25,
+        "reserve_usd": 0.3125,
+        "reported_usd": 0.0668821,
+        "transcript_usd": 0.066882,
+        "charged_usd": 0.066882,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:41:47.143Z"
+      },
+      {
+        "id": "C82-grade-C82-res-hub-pitfalls-s-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.25,
+        "reserve_usd": 0.3125,
+        "reported_usd": 0.0802097,
+        "transcript_usd": 0.08021,
+        "charged_usd": 0.08021,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:41:56.873Z"
+      },
+      {
+        "id": "C82-grade-C82-res-gateway-architecture-h-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.25,
+        "reserve_usd": 0.3125,
+        "reported_usd": 0.0699281,
+        "transcript_usd": 0.069928,
+        "charged_usd": 0.069928,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:42:05.288Z"
+      },
+      {
+        "id": "C82-grade-C82-res-gateway-architecture-s-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.25,
+        "reserve_usd": 0.3125,
+        "reported_usd": 0.0613128,
+        "transcript_usd": 0.061313,
+        "charged_usd": 0.061313,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:42:13.363Z"
+      },
+      {
+        "id": "C82-grade-C82-res-gateway-pitfalls-s-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.25,
+        "reserve_usd": 0.3125,
+        "reported_usd": 0.07942969999999999,
+        "transcript_usd": 0.07943,
+        "charged_usd": 0.07943,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:42:22.271Z"
+      },
+      {
+        "id": "C82-grade-C82-res-gateway-pitfalls-h-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.25,
+        "reserve_usd": 0.3125,
+        "reported_usd": 0.0855192,
+        "transcript_usd": 0.085519,
+        "charged_usd": 0.085519,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:42:32.411Z"
+      },
+      {
+        "id": "C82-grade-C82-res-hub-architecture-h-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.25,
+        "reserve_usd": 0.3125,
+        "reported_usd": 0.0576235,
+        "transcript_usd": 0.057624,
+        "charged_usd": 0.057624,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:42:37.759Z"
+      },
+      {
+        "id": "C82-grade-C82-res-hub-architecture-s-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.25,
+        "reserve_usd": 0.3125,
+        "reported_usd": 0.0597256,
+        "transcript_usd": 0.059726,
+        "charged_usd": 0.059726,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:42:46.194Z"
+      },
+      {
+        "id": "C82-grade-C82-res-hub-pitfalls-s-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.25,
+        "reserve_usd": 0.3125,
+        "reported_usd": 0.0731133,
+        "transcript_usd": 0.073113,
+        "charged_usd": 0.073113,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:42:55.191Z"
+      },
+      {
+        "id": "C82-grade-C82-res-hub-pitfalls-h-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.25,
+        "reserve_usd": 0.3125,
+        "reported_usd": 0.0821895,
+        "transcript_usd": 0.08219,
+        "charged_usd": 0.08219,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-18T11:43:00.456Z"
+      }
+    ]
+  }
+}

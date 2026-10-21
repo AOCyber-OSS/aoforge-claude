@@ -10,9 +10,9 @@ allowed-tools:
 ---
 
 <objective>
-Three modes (parsed from $ARGUMENTS):
+Three modes (parsed from $ARGUMENTS). `{runtime_root}` is what `RUNTIME_ROOT=$(echo ~/.claude/aoforge) && echo "$RUNTIME_ROOT"` prints.
 
-- `sync` — refresh `~/.claude/aoforge/initiatives/<slug>.md` from the org Product Roadmap project. Walks GitHub via obj 1's resolveChain + obj 2's walkProject; hard-fails on missing gh auth. Optional `--initiative <slug>` syncs ONE; `--force` bypasses stale-file confirmation prompts.
+- `sync` — refresh `{runtime_root}/initiatives/<slug>.md` from the org Product Roadmap project. Walks GitHub via obj 1's resolveChain + obj 2's walkProject; hard-fails on missing gh auth. Optional `--initiative <slug>` syncs ONE; `--force` bypasses stale-file confirmation prompts.
 - `list` — read-only enumeration of cached initiatives. Emits JSON array of {slug, github_issue, key_repos, updated_at}.
 - `show <slug>` — read-only detail. Emits the rendered initiative body (Why, Open Questions, Linked Sub-issues).
 
@@ -35,7 +35,7 @@ The CLI:
 1. Parses subcommand + flags.
 2. For `sync`: calls `requireGhAuth(['project', 'read:project', 'repo'])`. On failure, emits structured JSON to stderr + exit 1 with `gh auth refresh -h github.com -s ...` remediation.
 3. Walks the org Product Roadmap project; qualifies items per CONTEXT.md decision #5 (sub_issues > 0 OR `[Epic]` title prefix OR draft+In Progress).
-4. Writes one file per qualifying item to `~/.claude/aoforge/initiatives/<slug>.md` (atomic tmp + rename).
+4. Writes one file per qualifying item to `{runtime_root}/initiatives/<slug>.md` (atomic tmp + rename).
 5. Detects stale files (issue CLOSED + not in fresh items); without `--force`, prompts per stale file via TTY readline; with `--force`, deletes unconditionally. Non-TTY environments skip with warning.
 
 For `list` / `show`: file-only, never calls gh, never blocks.
@@ -44,7 +44,7 @@ For `list` / `show`: file-only, never calls gh, never blocks.
 </process>
 
 <context>
-The initiatives home is `~/.claude/aoforge/initiatives/<slug>.md` — global, not per-repo. Single source of truth for every aoforge session. Edit by hand if needed; the next `sync` will overwrite (one-way disk → GitHub deferred to v1.2).
+The initiatives home is `{runtime_root}/initiatives/<slug>.md` — global, not per-repo. Single source of truth for every aoforge session. Edit by hand if needed; the next `sync` will overwrite (one-way disk → GitHub deferred to v1.2).
 
 Subcommand reference:
 
@@ -58,7 +58,7 @@ Flags:
 - `--initiative <slug>` — sync mode only; restrict to one initiative; skips stale-deletion.
 - `--project-id <id>` — override default org Product Roadmap project ID.
 - `--force` — sync mode only; bypass confirmation for stale-file deletion.
-- `--home <path>` — override default `~/.claude/aoforge/initiatives/`. Useful for testing or alternate org configurations.
+- `--home <path>` — override default `{runtime_root}/initiatives/`. Useful for testing or alternate org configurations.
 - `--raw` — sync/list/show: emit raw JSON to stdout instead of formatted output.
 
 The planner (/aoforge:plan-objective) consumes initiative context automatically at plan time. No user invocation needed for plan-time integration — but `sync` should be re-run periodically (weekly cadence recommended) to keep the projection fresh.

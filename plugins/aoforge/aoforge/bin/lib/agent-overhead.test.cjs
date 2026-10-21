@@ -260,3 +260,66 @@ describe('58-02 overhead spawns of a repository', () => {
     assert.throws(() => ao.collectOverhead(), /root is required/);
   });
 });
+
+// quick 41: spawns recorded before a checkout move name the former path. A project's `alsoRoots` lets the overhead
+// scan claim them for the project; without it they stay foreign. OLD is never created on disk.
+describe('quick-41 overhead spawns under a former checkout root', () => {
+  let root;   // stands in for ~/.claude/projects
+  let R;      // the project, at its current path
+  let OLD;    // its former path (not on disk)
+
+  const CHECKER_SPAWN = {
+    agentType: 'aoforge:job-checker',
+    description: 'Verify Objective 80 plans',
+    start: '2026-10-01T10:20:00.000Z',
+    messages: [
+      { id: 'msg_C1', model: 'claude-sonnet-5-5', input: 2, cacheWrite: 300, cacheRead: 10000, output: 800, blocks: 1, at: '2026-10-01T10:22:00.000Z' },
+    ],
+  };
+
+  before(() => {
+    root = fx.makeProjectsRoot();
+    R = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'df-overhead-q41-')));
+    OLD = path.join(path.dirname(R), 'former-' + path.basename(R));
+    assert.equal(fs.existsSync(OLD), false, 'the former root must not exist on disk');
+    const oldWorktree = path.join(path.dirname(OLD), '.df-worktrees', path.basename(OLD), '42-12');
+    fx.writeOverheadTranscript(root, { projectKey: fx.projectKeyFor(OLD), session: 's1', agentId: 'p-old', spawn: fx.PLANNER_SPAWN, cwd: OLD });
+    fx.writeOverheadTranscript(root, {
+      projectKey: fx.projectKeyFor(oldWorktree), session: 's2', agentId: 'c-old', spawn: CHECKER_SPAWN, cwd: oldWorktree,
+    });
+  });
+
+  after(() => {
+    for (const d of [root, R]) fs.rmSync(d, { recursive: true, force: true });
+  });
+
+  const brief = (e) => ({ agent: e.agent, project: e.project, session: e.session, agent_id: e.agent_id });
+  const partitioned = (c) => c.spawns === c.matched + c.foreign + c.quick + c.unreadable;
+
+  test('q41-6: alsoRoots claims a former root\'s spawns (cwd and worktree) for the project; without it they are foreign', () => {
+    const aliased = ao.indexOverheadTranscripts({ root, projects: [{ root: R, label: 'repo-r', alsoRoots: [OLD] }] });
+    assert.deepEqual(aliased.counts, {
+      spawns: 2, matched: 2, foreign: 0, quick: 0, unreadable: 0, by_agent: { 'job-checker': 1, planner: 1 },
+    });
+    assert.deepEqual(aliased.entries.map(brief).sort((a, b) => a.agent_id.localeCompare(b.agent_id)), [
+      { agent: 'job-checker', project: 'repo-r', session: 's2', agent_id: 'c-old' },
+      { agent: 'planner', project: 'repo-r', session: 's1', agent_id: 'p-old' },
+    ]);
+    assert.ok(partitioned(aliased.counts));
+
+    const plain = ao.indexOverheadTranscripts({ root, projects: [{ root: R, label: 'repo-r' }] });
+    assert.deepEqual(plain.counts, { spawns: 2, matched: 0, foreign: 2, quick: 0, unreadable: 0, by_agent: {} });
+    assert.deepEqual(plain.entries, []);
+    assert.ok(partitioned(plain.counts));
+  });
+
+  test('q41-7: collectOverhead with alsoRoots is deterministic', () => {
+    const projects = [{ root: R, label: 'repo-r', alsoRoots: [OLD] }];
+    const first = ao.collectOverhead({ root, projects });
+    const second = ao.collectOverhead({ root, projects });
+    assert.deepEqual(first, second);
+    assert.deepEqual(first.samples.map((s) => `${s.agent}/${s.project}/${s.agent_id}`), [
+      'job-checker/repo-r/c-old', 'planner/repo-r/p-old',
+    ]);
+  });
+});

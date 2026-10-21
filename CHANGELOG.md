@@ -1,10 +1,429 @@
 # Changelog
 
-All notable changes to DevFlow will be documented in this file.
+All notable changes to AOForge will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
+
+## [3.1.0] - 2026-10-17
+
+3.1.0 ends the rename's one-release compatibility. AOForge now reads `.aoforge/` and the AOForge names only, so a 2.x
+project moves with `/aoforge:adopt` (or through 3.0.x, or by hand; [migration guide](docs/MIGRATING-TO-AOFORGE.md)), and
+a GitHub repository that still carries the pre-rename labels, markers or PR template needs `aof-tools gh rebrand --apply` before 3.1 writes to it.
+The pre-plugin `df-` agent names no longer resolve either: an `agent_models` or `model_overrides` key spelled
+`df-<agent>` must use the bare agent name.
+Flutter, Dart and web procedure moved out of core into the `aoforge-stack-flutter` and `aoforge-stack-web` stack packs,
+with no forwarding shim: install the pack your project needs (`/plugin install aoforge-stack-flutter@aocyber`,
+`/plugin install aoforge-stack-web@aocyber`). The release also ships objective 72's post-release work, objectives 73 to
+80, objective 82 (the 3.1.0 follow-ups) and quick 34 to 43, among them `calibrate --also-root` and `tokens
+--also-root`, which count the agent spawns recorded before a checkout moved.
+
+### Removed: the one-release rename shims (objective 78) and the `df-` agent prefix (quick 40)
+
+- **The one-release rename shims** (objective 78, for 3.1.0, as `SHIM_REMOVAL` and the 3.0.0 migration guide promised).
+  3.1 reads AOForge names only; "Upgrading from 2.x" in `docs/MIGRATING-TO-AOFORGE.md` gives the 3.0.x path and the
+  manual steps. Removed:
+  - the pre-rename environment-variable alias (`compat.aliasLegacyEnv`) and every call to it in the CLI, the watch
+    daemon and the hooks (TRDs 78-10, 78-12);
+  - the pre-rename planning-directory fallback, the pre-rename agent namespace in the gates, and the `~/.aoforge/` and
+    pre-rename dot-directory fallbacks for user files (`isLegacyPlanning`, `bothPlanningDirs`, `legacyRuntimeHome` and
+    `resolveUserFile` left `compat.cjs`; TRD 78-11);
+  - migrations 0012 (planning-dir move), 0013 (config-key rename) and 0014 (CLAUDE.md rebrand), whose ids stay reserved
+    (TRDs 78-07, 78-08);
+  - the global upgrade's move of a pre-rename block and its proposed rewrite of hand-written text outside the block
+    (`outside_diff`) (TRD 78-08);
+  - `NAMESPACE_RENAMES` and the doc-refs reading of the pre-rename command forms; migration 0007 no longer rewrites them
+    (TRD 78-02);
+  - the pointer plugin (the final pre-rename 3.0.0 release, its 45 files), its marketplace entry, its generator
+    `scripts/gen-pointer-skills.cjs` and the rename guard's four ALLOW entries for it (TRD 78-02);
+  - the first-session runtime-state migration in `sync-runtime.js` (`lib/runtime-state-migrate.cjs`) and the
+    `doctor --global --fix` fixes of checks 15 and 16 (TRD 78-06);
+  - the dual-namespace GitHub readers (pre-rename markers, label twins: `labelForms`, `unionByNumber`) and the second,
+    pre-rename status context the checks posted (TRDs 78-03, 78-09);
+  - the 3.0.0 watch daemon's pid and log readers in `~/.aoforge/` and `ELEGACYDAEMON` (TRD 78-05);
+  - the pre-rename adopt branch and marker, the pre-rename `.mcp.json` owner key and todo metadata key, and migration
+    0010's pre-rename block slug (TRD 78-04).
+
+  Kept on purpose, each reading an old name only to report or convert it: `gh rebrand` and `lib/legacy-rewrite.cjs`,
+  the detectors (`planning-layout`, `coexistence`, `gh-legacy-labels`, checks-pin, doctor checks 15, 16, 17 and 27),
+  the history readers, `PRESERVE`, and the first-generation `<!-- df:state -->` sticky-comment reader, which predates
+  the rename and rewrites its own input on the next sync (TRD 78-12). They go in a later release once no repository
+  needs them.
+- **`resolve-model` and the compound `init` commands no longer read the pre-plugin `df-` agent prefix** (quick 40). A
+  prefixed name such as `df-planner` is an unknown agent (stderr warning, `sonnet` fallback), and an `agent_models` or
+  `model_overrides` key spelled `df-<agent>` no longer binds. Use the bare agent name.
+
+### Added: adopt migrates pre-rename projects (objective 80)
+
+- **`/aoforge:adopt` moves a project that still has the pre-rename layout** (TRDs 80-01 to 80-03, 80-05), where 3.1
+  first refused it. A project whose planning directory, config stamp key or CLAUDE.md block markers date from before the
+  rename takes a migrate route, on the same `aoforge/adopt` branch and as the same one recorded change. Every planning
+  tree in the repository, the root one and nested ones such as `api/`, moves with `git mv`, so history follows (an
+  untracked tree is renamed). The stamp key becomes `aoforge` in each `config.json`; the CLAUDE.md block markers and the
+  old names inside the block are renamed, and nothing outside the block is touched; `.gitignore` lines are rewritten
+  and `.git/info/exclude` gains the matching lines. Planning content is otherwise left as it was: nothing is mapped,
+  inferred or scaffolded and no upgrade migration runs. `aof-tools upgrade --check` is the next step, and the next
+  session start applies the automatic migrations. A repository that has `.aoforge/` but still carries the old stamp
+  key, block markers or ignore lines takes the same route.
+- **One commit, a followable history, and a report that lists every change** (TRD 80-03). `adopt report` writes
+  `.aoforge/ADOPT-REPORT.md` with a Migration table (moved trees, converted stamps, blocks and ignore lines, what was not
+  moved), the needs-review rows, per-root health and the pending upgrades, and returns a compact `commit_files` (a
+  directory entry per moved tree, so a 1,169-file move is a short list) and a `commit_message`. A spawned `aof-tools
+  commit` over them records the move as 100% renames, `git log --follow` reaches the earlier history, and a backup of
+  each planning root goes under `~/.claude/aoforge/backups/` first. The report refuses to hand over a commit
+  (`commit_blocked`) while a legacy code remains or `commit_docs` is false.
+- **Refusals and resume** (TRDs 80-02, 80-05). It refuses, and writes nothing, when one directory holds both planning
+  directories (`both-planning-dirs`) or a CLAUDE.md holds a pre-rename block adopt cannot convert
+  (`legacy-block-malformed`), besides the earlier refusals (dirty tree, an operation in progress, a detached HEAD). A
+  move, a scaffold or a report that stopped part-way resumes on the next run; the marker records the plan before
+  anything moves.
+- **The CLI guard lets `adopt` run in a pre-rename project** (TRD 80-02, `lib/legacy-layout-guard.cjs`), and
+  `workflows/adopt.md` and the adopt skill describe the migrate path.
+- **Every legacy-layout message names `/aoforge:adopt`** (TRD 80-04): W066 (the CLI refusal, `validate health`, the
+  SessionStart notice and doctor check 27), W067, the project W069 (the global one does not) and `upgrade --apply --only
+  0012|0013|0014`, ahead of AOForge 3.0.x and the manual steps. The migration guide (and its site page) lead with adopt
+  as Option A and quote the current message.
+- **Proof** (TRDs 80-06 to 80-08). An end-to-end test drives the workflow's commands over a fresh, a brownfield and a
+  fleet-shaped pre-rename repository with a `check --mode migrate` checker, plus the re-run and resume matrix. The skill
+  text was then followed on read-only copies of two real fleet repositories (aodex: three planning roots and a stamp
+  key, 1,169 moved files; smartWellness: a pre-v1 CLAUDE.md block, 106 moved files): one commit each, a clean tree,
+  `validate health` codes equal to a hand migration at every root, and the sources untouched. A fresh repository still
+  routes to `new-project` and a brownfield one still ends in one commit with the 13-check checker green.
+- **Known limit** (described in the user guide). A stop between the conversion of the stamp keys, block markers and
+  ignore lines and the write of the adopt marker leaves those files converted but unlisted in the Migration table.
+
+### Added
+
+- **The `main` ruleset as a file, with a read-back checker** (objective 74, OPS-02). `.github/rulesets/main.json` is
+  the approved text of the ruleset `aoforge: default branch`. `scripts/ruleset-check.cjs compare` reads the live ruleset
+  back by name and compares it with the file (lists as sets, bypass actors by role and mode, server defaults named
+  rather than counted), and `checks` proves from recent pull requests that the required check really reports. Both are
+  read-only.
+- **A Cloudflare deploy-target diagnostic for the docs deploy** (objective 74, OPS-03, deferred).
+  `scripts/ci-cloudflare-target.cjs` names the account the deploy credentials reach and the Pages projects it can see,
+  without printing ids, and `docs.yml` runs it before the deploy; a dispatch from a branch other than `main` now deploys
+  a Pages preview (`--branch="$DEPLOY_BRANCH"`), not production. Its first CI run (PR #130, run 38020394881) found that
+  the credentials reach an account other than AOCyber Systems, which explains every `Project not found [8000007]` docs
+  run on `main` since 2026-09-27. The same run showed that Cloudflare refuses its project listing (code 8000024 on
+  `per_page=100`); that is not fixed yet. OPS-03 is deferred by the user: PR #130 (the diagnostic's first CI run) was
+  not merged when this was written (2026-10-10), and the docs deploy still fails until the Pages project is set up.
+- **Answer a queued command's prompt in the aoforge-watch terminal** (objective 73, HND-03). `aoforge-watch start
+  --foreground` run in a terminal is now attended: a queued command's live output appears there and the keys typed
+  there go to the command, so you answer a passphrase or token prompt yourself, and the daemon never types, logs or
+  stores them. Each command is framed by a start line with the terminal bell and an end line with its status. Ctrl+C
+  during a command ends it with exit 130 and the daemon keeps serving. `--no-attend`, `AOFORGE_WATCH_UNATTENDED=1` or
+  piped stdio run unattended, as before. Shown live in TRD 73-07: a passphrase prompt answered in the attended terminal
+  and the result in Claude's context with nothing typed in Claude Code.
+- **Handoff results arrive without a prompt** (objective 73, HND-02). `inject-handoff-results.js` is registered on
+  PostToolUse (`*`) and Stop: a finished handoff reaches Claude after its next tool call, or blocks the end of the turn
+  with the result, waiting up to 120 s (`AOFORGE_HANDOFF_STOP_WAIT_MS`, `0` disables) for a command the user is still
+  answering. A result goes only to the session and agent that queued it, and `route-results.js` stays the catch-all on
+  the next prompt. Escapes: `AOFORGE_SKIP_HANDOFF_INJECT=1`, `AOFORGE_SKIP_HANDOFF_RESULTS=1`.
+- **Doctor check 17 `user-dot-dir`** (objective 73 gap closure, HND-03, TRD 73-13). `aof-tools doctor --global` reports
+  a leftover `~/.aoforge/`, and `--fix` moves what AOForge 3.0.0 wrote there to `~/.claude/aoforge/` (the watch daemon's
+  files to `state/watch/`), or into `backups/aoforge-dot-dir-<timestamp>/` when a newer copy exists or the pid file is
+  stale. It never deletes or overwrites a file, and it only reports while a daemon there is live, an installed service
+  still logs there or the directory holds planning files. Files it does not know, such as a `.DS_Store`, are listed and
+  left in place, so the directory stays.
+- **`model-placeholders.repo.test.cjs` fails CI on a spawn `model` placeholder nothing supplies** (quick 42): one that
+  is not a key its file's own `init <cmd>` prints (run in a fixture project), a `NAME=$(… resolve-model …)` assignment
+  in the file, or a `<!-- model-source: NAME from SRC -->` annotation whose source is itself supplied. It scans core
+  workflows, core skills and every stack pack's skills, workflows and fragments.
+
+### Changed
+
+- **A project still on the pre-rename layout gets one clear message instead of silent breakage** (objective 78, TRDs
+  78-01, 78-07, 78-11; SC-4). AOForge 3.1 reads `.aoforge/` only. A project holding only the pre-rename planning
+  directory gets one line from `planning-layout.legacyLayoutMessage` naming AOForge 3.0.x, the manual `git mv` and
+  "Upgrading from 2.x" in `docs/MIGRATING-TO-AOFORGE.md`: `validate health` returns it as the one broken W066 (Check 0,
+  nothing else runs and nothing is written, `--repair` included), `doctor` resolves no project and prints it as a note,
+  `aof-tools` refuses every command that writes the planning tree and `init` (`lib/legacy-layout-guard.cjs`; doctor,
+  validate and runtime-home commands are exempt, each with its reason), and the `upgrade-project` SessionStart hook
+  queues it once as a global notice and runs nothing. No hook treats such a directory as a project, and nothing creates
+  `.aoforge/` there. `old-layout.legacy.test.cjs` walks one such project through every surface (TRD 78-12).
+- **W066, W067 and the new W069** (objective 78, TRD 78-01). W066 is broken for a legacy-only project and stays a
+  warning when both directories exist; W067 also fires when the pre-rename stamp key sits beside `aoforge{}` (fix:
+  delete it); W069 `legacy-claude-md-block` (validate Check 23, doctor check 27) reports a project CLAUDE.md block under
+  the pre-rename markers. None names `--only 0012/0013` any more. W069 was picked because `main` already uses W068
+  (`decision-log-oversized`); the reconcile (objective 79) confirmed that both codes are defined once and do not collide.
+- **Retired migrations answer by name** (objective 78, TRDs 78-07, 78-08). `upgrade --apply --only 0012|0013|0014`
+  exits 1 with one line naming the retired migration, AOForge 3.0.x and the guide, never "unknown migration id"
+  (`upgrade.RETIRED_MIGRATIONS`). The stamp is read from `aoforge{}` only and the writer never touches the pre-rename
+  key.
+- **A pre-rename CLAUDE.md block is reported, not converted** (objective 78, TRD 78-08). `managed-block` refuses a
+  block under the pre-rename markers (`ELEGACYBLOCK`, the W069 text); migrations 0005 and 0007 skip such a file with
+  that reason; the global upgrade leaves `~/.claude/CLAUDE.md` untouched with one notice when it holds a pre-rename
+  block or routing heading.
+- **One SessionStart notice for every global leftover** (objective 78, TRD 78-06). `coexistence-guard` and
+  `lib/coexistence.cjs` now report the pre-rename plugin still enabled, pre-rename environment variables (each with its
+  `AOFORGE_*` name), a pre-rename runtime home that 3.0.x never migrated, and files 3.0.0 left in `~/.aoforge/`, as one
+  notice per session. Doctor checks 15 and 16 are report-only; check 17 keeps its fix.
+- **An un-rebranded GitHub repository is refused, not duplicated** (objective 78, TRD 78-09). Every lookup by a
+  default label (`gh sync`, `gh pull`, `gh orphans`, the outbox flush, the planning-consistency check) first checks
+  once per process whether the repository still has the label's pre-rename twin (`lib/gh-legacy-labels.cjs`) and, if
+  so, refuses with one error naming `aof-tools gh rebrand --apply`; the flush halts with class `legacy-namespace`.
+  `gh setup` refuses a PR template holding the pre-rename block with the same fix (TRD 78-03). `gh rebrand` is kept
+  and is now required for such a repository.
+- **A stale `.mcp.json` owner is reported** (objective 78, TRD 78-04). `stack mcp` manages an entry only through
+  `AOFORGE_MANAGED`; an entry owned through the pre-rename key alone is listed in the result's new `warnings` array
+  (always present) and never rewritten or removed.
+- **A running 3.0.0 watch daemon is refused, not adopted** (objective 78, TRD 78-05). `aoforge-watch start` refuses
+  while a daemon AOForge 3.0.0 started from `~/.aoforge/` is alive, naming `kill <pid>` or the service reinstall, and
+  `aoforge-watch status` prints the same warning on stderr; the 3.0.0 pid and log readers and `ELEGACYDAEMON` are gone.
+- **History readers, narrowed** (objective 78, TRD 78-11). `session-audit` and `agent-overhead` still count
+  transcripts recorded under the pre-rename agent and skill names; the benchmark and token readers count `.aoforge/`
+  paths only, so history recorded under the pre-rename planning directory before objective 72 no longer counts there.
+- **`legacy-names.cjs` trimmed** (objective 78, TRD 78-12). `SHIM_REMOVAL` is `3.1.0`, `SHIM_RELEASE` (`3.0.x`) is the
+  path every legacy message names, `LEGACY.commandDash` is gone, and `legacy-names.legacy.test.cjs` fails on a `LEGACY`
+  key nothing reads. `compat.cjs` requires nothing from it. The full suite for objective 78 runs with
+  `watcher-shell.test.cjs` excluded (its W-3 fish-shell test hangs on the development machine).
+- **`main` takes changes only through a pull request** (objective 74, OPS-02). The ruleset `aoforge: default branch`
+  (id 24829006) was applied on 2026-10-09 after the user approved the exact text of `.github/rulesets/main.json`: `main`
+  cannot be deleted or force-pushed, a direct push to it is rejected, and a change reaches it only through a pull
+  request (no approvals required) with the check `test (npm test, gated)` from GitHub Actions green (not strict). The
+  repository-admin role may bypass only inside a pull request (`gh pr merge --admin`), never by a push. Tags are not
+  covered. On 2026-10-10 `ruleset-check compare` matched the live ruleset to the file.
+- **The live visual judge runs locally only** (objective 74, OPS-01, re-scoped by the user). The CI judge built in TRD
+  74-01 (`visual-judge.yml`, `scripts/ci-visual-judge.cjs` and its screenshot fixtures) was reverted before it reached
+  `main`, and no Anthropic credential is stored in GitHub. The binding judge is `/aoforge:ui-eval --judge live`, run on
+  your own credential (`ANTHROPIC_API_KEY`, or `ANTHROPIC_AUTH_TOKEN` with `ANTHROPIC_BASE_URL`).
+- **PTY results carry stderr in stdout** (objective 73, HND-01). On a bash or zsh daemon a queued command runs with the
+  terminal on both stdout and stderr, so its stderr text arrives in the result's stdout and the stderr field is empty.
+  Pipe mode and fish and PowerShell daemons keep separate streams.
+- **gate-interactive records who asked and says where the command waits** (objective 73, HND-02). Each pending record
+  carries the `session_id` and `agent_id` of the Bash call that queued it, and the done record keeps them. With the
+  daemon live, the deny reason tells Claude to say in one line that the command waits in the user's aoforge-watch
+  terminal, and that the result returns after the next tool call or at the end of the turn. The wording without a
+  daemon (`! cmd`) is unchanged.
+- **The watch daemon's files and the user's files live in the runtime home** (objective 73 gap closure, HND-03, TRDs
+  73-11 to 73-13). `defaults.json`, the Brave API key and the watch allowlist are read from `~/.claude/aoforge/` first,
+  and the daemon's pid file and log and the launchd and systemd service logs are in `~/.claude/aoforge/state/watch/`.
+  Nothing creates `~/.aoforge/` any more. Objective 78 then removed the read of `~/.aoforge/` that this change first
+  kept for one release (the user files after the runtime home, a 3.0.0 daemon's pid file and log; see Removed above and
+  "A running 3.0.0 watch daemon is refused, not adopted" under Changed). A service installed by 3.0.0 keeps logging there until it is reinstalled; doctor
+  check 17 names the command.
+- **The watch daemon's built-in allowlist is gate-interactive's per-invocation matcher** (objective 73 gap closure,
+  HND-03, TRD 73-12). It accepts exactly what the hook hands off and now refuses quoted mentions, heredoc data and
+  read-only key forms it used to accept. User allowlist entries still match the whole command.
+- **A key read with `-y` and no `-P` is handed off even when the command passes `-N`** (objective 73 gap closure, HND-02,
+  TRD 73-10). A `-N` anywhere in the command used to exempt it.
+- **The rename guard fails on a `df-<agent>` or `df-<skill>` name** (quick 40). `rename-guard.repo.test.cjs` checks
+  agents, skills, workflows, references, templates, live docs and the docs site. `.df-worktrees`, `df/ws-` and
+  `df/exec-` stay allowed.
+
+### Fixed
+
+- **Migration 0012 survives 0002 in the same upgrade run** (objective 75, TODO-01). It stages the removals an earlier
+  migration of the run made (0002's renamed `*-JOB.md` files) before `git mv`, so a repository with both pending no
+  longer stops half-applied with `bad source`. A deletion the user made still defers the move.
+- **Migration 0008 covers the dup-detect log** (objective 75, TODO-01). `.dup-detect-log.jsonl` is gitignored and
+  untracked like the other runtime-state files, and a modified tracked copy no longer defers 0012. The dotfile audit
+  added three more written-at-runtime files to the same list: `.check-todos-cache.json`, `.deprecation-log.jsonl` and
+  `.override-log.jsonl`, so the gitignore block grows from two lines to six.
+- **A mid-TRD progress checkpoint is not a completed SUMMARY** (objective 75, TODO-01). A SUMMARY whose `## Progress`
+  lists an unticked task and that has no `## Self-Check` is no longer ticked by `sync-roadmap` or counted by
+  `roadmap`, `objective complete` or `state advance-job` / `update-progress`. A mid-TRD commit no longer makes the
+  reconcile end-to-end test report drift.
+- **A deferred or checkpoint SUMMARY is not a completed TRD** (found in objective 74). A SUMMARY whose frontmatter
+  `status:` is `deferred` or `checkpoint` no longer counts as a completed TRD anywhere completion is derived from
+  SUMMARY files: `sync-roadmap` and `roadmap update-job-progress` leave or put its line back to `[ ]` (new change kind
+  `trd_summary_not_complete`), and it is left out of the Plans count, Jobs line and Complete status, `roadmap analyze`'s
+  disk status, `objective complete`'s count, and `state advance-job --objective` and `state update-progress`.
+- **Three PTY gaps in aoforge-watch are closed** (objective 73, HND-01). On bash and zsh a queued command now sees a
+  terminal on stdout and stderr (`doctl` no longer fails with `unknown terminal`), and a command that reads input can no
+  longer swallow the daemon's wrapper lines, because each dispatch is one line sourcing a 0600 script in a private 0700
+  directory. On every shell the prompt detector reads only the running command's live output, so error text replayed
+  after a command exits is never answered with a secret or a Ctrl+C. Ctrl+C ends a command with exit 130 instead of a
+  10-minute timeout, and the daemon's shell keeps no history. fish and PowerShell daemons keep the old wrapper, so the
+  first two gaps remain there.
+- **A dead daemon shell is replaced** (objective 73, HND-03). When the daemon's shell dies (a command that exits it, or
+  a timeout), the next queued command gets a new shell instead of failing; the log says `respawned shell`, and the
+  prompt detector follows the new shell.
+- **Handoff results are delivered once** (objective 73, HND-02). Two hook processes over one result no longer both emit
+  it (an O_EXCL claim file decides), a record written by `aof-tools handoff complete` shows its output instead of `(no
+  output captured)`, and the result block stays under 9,000 characters, a record cut to share the space ending with a
+  `handoff get <id>` pointer.
+- **Repositories under $HOME are no longer AOForge projects after a watcher run** (objective 73 gap closure, HND-03,
+  TRD 73-09). AOForge 3.0.0's aoforge-watch created `~/.aoforge/`, and project detection read it as a planning
+  directory, so the hooks and the CLI treated every repository below the home directory as an AOForge project.
+  `findProjectRoot` and the planning-mode lookups now never return `$HOME` and never search above it.
+- **gate-interactive gates invocations, not mentions** (objective 73 gap closure, HND-02, TRD 73-10). Each simple
+  command is matched on its own words: quoted arguments and heredoc bodies are data, so a grep, an echo or a commit
+  message that mentions a gated command is no longer intercepted, while a heredoc fed to a shell is read as commands.
+  Flags are read per call, the reason names the call of a compound command that matched, and `ssh-keygen`'s read-only
+  forms (`-l`, `-F`, `-R`) run directly.
+- **The watch daemon no longer rejects a command gate-interactive handed off** (objective 73 gap closure, HND-03, TRD
+  73-12), such as a compound command whose skip flag sits in another call, or a key read with `-y` and `-N` but no
+  `-P`.
+- **`gh rebrand` reads large repositories** (objective 72, INST-04). Every `gh` call now gets a 256 MiB output buffer
+  (Node's default is 1 MiB) and a paginated read gets 5 minutes instead of 30 seconds, so a dry run no longer fails
+  with `spawnSync gh ENOBUFS` on a repository whose issue list is larger than 1 MiB. A read that still overflows or
+  times out says so (`ENOBUFS` or `ETIMEDOUT`) after the read and the repository it was for.
+- **`calibrate`'s agent-overhead scan counts the spawns recorded before the checkout moved** (quick 41). It lost them
+  (TRD 72-26). Those transcripts name the former path, so the scan counted them as foreign: on this repository it
+  matched 22 spawns (planner 8, job-checker 7, verifier 7) against 127 on 2026-10-08, and objective-researcher,
+  integration-checker and roadmapper had no samples. `calibrate --also-root <dir>` (repeatable, relative to cwd) names
+  former checkout roots of the one project, and the scan also claims a spawn whose REPO_ROOT line names one, whose cwd
+  is inside one or its worktree directory, or whose prompt names a path under its current or legacy planning
+  directory. The roots are recorded in `method.also_roots` (so in `inputs_digest`, with a note); without the flag the
+  file is byte-identical. With the former root the scan matches 164 (planner 49, job-checker 44, verifier 53,
+  objective-researcher 11, integration-checker 5, roadmapper 2). Matching for the project root itself is unchanged.
+  `tokens` takes the same flag since objective 82 (below).
+- **Every spawn model placeholder has a source** (objective 76 SC1, quick 42). execute-objective spawned the
+  gap-closure planner and the autonomous checkpoint verifier with model placeholders nothing supplied
+  (`{planner_model}`, `{resolved_verifier_model}`). The planner is now resolved with `resolve-model planner
+  --objective`, the verifier uses init's `verifier_model`, and the per-plan executor model is declared where step 3
+  picks it. build, new-milestone and research-objective name their model sources too.
+- **`aof-tools benchmark per-objective` counts executor spawns** (quick 42). `executor_calls` was always 0 because the
+  check compared a pre-rename agent name. It now counts `aoforge:executor` and, in older transcripts, the pre-rename
+  and install-prefixed executors.
+- **A migrated project whose planning tree git ignores routes to `upgrade` after adopt** (quick 43). `adopt preflight`
+  and `adopt begin` routed it to `resume` after the adopt commit, because the report never reaches `HEAD`. A migrate
+  adopt with an ignored report now counts as finished once the report step ran and `HEAD`'s history holds the adopt
+  commit, or the `aoforge/adopt` branch's commit is reachable from `HEAD`. Such a project routes to `upgrade`, also
+  after the merge.
+- **Migration 0005 no longer deletes the sections after the rules it inserts** (quick 43). It ended the `# Development
+  Rules` section only at the next `# ` heading. In a block whose other sections are `##` headings, the inserted rules
+  ran to the end of the block: `upgrade --check` reported drift after the first apply, and a second `upgrade --apply`
+  deleted those sections. The section now ends at the next heading of any level, so one apply converges and nothing
+  after the rules is removed.
+- **`adopt begin` names the right next step** (quick 43). It returned a `next` naming `adopt begin` itself. It now names
+  `adopt scaffold`.
+
+### Release tooling and security sweep (quick 34)
+
+- **Core is 3.1.0.** package.json, package-lock.json, the aoforge plugin.json and marketplace.json (top level and the
+  `aoforge` entry) say 3.1.0, which satisfies the stack packs' `aoforge >=3.1.0`; at 3.0.0 Claude Code disabled both
+  packs (`dependency-version-unsatisfied`). A repo test in stack-packs.test.cjs keeps the release files, every pack's
+  range and this heading in step. An `extends: flutter` or `extends: dart` that cannot be resolved now names the pack
+  and its install command (`lib/stack-pack-hints.cjs`). The pre-rename pointer plugin stayed at its
+  final 3.0.0 release and is removed in this release (see Removed above).
+- **Prefixed release tags.** release.yml runs on `v*` and `*--v*` tags through `scripts/release-tag.cjs`: a `vX.Y.Z`
+  release first pushes `aoforge--vX.Y.Z` at the same commit (the tag the packs resolve core from), a
+  `<pack>--vX.Y.Z` tag creates that pack's release from `plugins/<pack>/CHANGELOG.md` with `--latest=false`, and an
+  `aoforge--v*` push creates nothing. The changelog gate's hint for `aoforge--vX.Y.Z` now runs `changelog update
+  --version vX.Y.Z` (it wrote `## [aoforge--vX.Y.Z]`), and `changelog update` takes the previous release from `v*`
+  tags only, so a pack tag between releases no longer shortens the range.
+- **`security sweep` no longer copies secrets into a transcript.** Hit text is redacted fail-closed: a token is
+  replaced whole (prefix and body; `sk_live_…`, `xoxb-…` and others kept their body before), and after a
+  secret-looking key and its operator (`=`, `:=`, `:`, `==`, `||`, `or`, `,`, `(` and more) the rest of the line is
+  replaced, so `f"…"`, `?token=…`, `os.getenv(…) or "…"` and `password == "…"` no longer leak. Go `password :=`,
+  `sk-ant-…` and `github_pat_…` are now leads. Each line is matched in its first 4096 characters (`line_truncated`,
+  `lines_capped`), and the sql-injection and debug-defaults rows no longer backtrack catastrophically: a 200 KB
+  single-line file that stalled the sweep past 30 s now takes milliseconds. A `--root` that is missing or not a
+  directory exits 1 instead of reporting a clean sweep.
+
+### Fixes (quick 35)
+
+- **Project `agent_models` and `model_overrides` bind.** Both were silently ignored (`loadConfig` dropped them, and
+  `resolve-model` never read `model_overrides`). `resolve-model` and every `init` command now resolve through one
+  function, `resolveAgentModel`, and report the winning layer in `tier_source`. Precedence, highest first:
+  `--escalate-from`, then `model_overrides` (unfloored), then `agent_models`, then the focus tier, then the package
+  table; the verdict floor applies to the last three.
+- **The no-progress guard covers every tool again.** Its PreToolUse matcher was a list of exact names, and under
+  Claude Code's matcher rule `mcp__` matched no MCP tool while BashOutput, Monitor, ToolSearch and SendMessage got no
+  guard at all. The matcher is now `^(?!Bash$).*`: every tool except exactly `Bash`, MCP tools included. Bash stays
+  covered once, through the PreToolUse(Bash) dispatcher. pre-bash.test.js and hook-coexistence.test.js model the rule
+  with one shared helper (`hooks/__fixtures__/claude-matcher.js`).
+- **Rotated decisions reach the branch.** `state advance-job` reports `files_changed` (the planning files the run
+  wrote) and `archive_updated`, and seeds STATE_ARCHIVE.md whenever it writes STATE.md. The commits that follow it in
+  execute-trd.md and execute-objective.md now name `.aoforge/STATE_ARCHIVE.md`, so in a worktree the decision and
+  metric rows it moved are committed. A repo test (`state-archive-commit.repo.test.cjs`) fails on any prompt that
+  commits STATE.md after an archive-writing command without the archive.
+- **`stack verify --task` stays in the verify directory.** `--task ../../escaped` wrote `<project>/escaped.json`, and a
+  bare `--task` was silently treated as no task. A task id is now letters, digits, `.`, `_` and `-` with no `..`; any
+  other value, a missing one or a flag exits 1 before a pack command runs or a file is written, and the record writer
+  refuses any path outside `<planning dir>/verify/`.
+- **A selected pack that cannot run blocks.** A pack named in config `stacks.enabled` (and not in `stacks.disabled`)
+  that is not mirrored, has a broken manifest or has its plugin disabled made `stack verify` print `pass` and
+  `stack doctor` print `No active stack packs.`, both with exit 0. `stack verify` now reports it as `missing` (or
+  `error` for a broken manifest) and exits 2, and `stack doctor` lists it as not ready and exits 1
+  (`unavailableSelectedPacks` in `lib/stack-packs.cjs`).
+
+### Fixes (quick 36)
+
+- **`validate roadmap-coverage` reads ROADMAP ids with the shared parser.** It kept its own label and id regexes, so it
+  disagreed with `verify trd-pre` and `objective complete`: `- **Requirements**: API-01` and a label followed by bullet
+  lines were false orphans, and `none (tech debt; AUTH-03 deferred)` counted AUTH-03 as mapped. Each objective section
+  now goes through `roadmapRequirementIds`, and a section ends at the next heading of its own level or higher, so a
+  Requirements line under a later `## Progress` is credited to no objective. A REQUIREMENTS.md section is out of v1
+  only when its heading starts with `v2` (or later), `Out of Scope`, `Traceability`, `Future`, `Deferred` or `Later`,
+  so `## Integrations (OAuth v2)` stays in v1. A REQUIREMENTS.md with no v1 definitions exits 1 with a reason instead of
+  `0/0 ✓`. Requirement ids may carry one lowercase suffix (`AUTH-01a`) on both sides, and raw success output ends in a
+  newline.
+- **A checkpoint SUMMARY is not a finished TRD.** `verify objective-evidence` counted a mid-run SUMMARY (`## Progress`,
+  no `## Self-Check`) as done and reported "2/2 TRDs have a SUMMARY", and `verify objective-completeness` called the
+  objective complete. Evidence now flags `checkpoint` per SUMMARY, counts final SUMMARYs only, lists `checkpoints` and
+  `no_self_check`, and its raw output ends in a newline. Completeness needs a final SUMMARY per plan, lists
+  `checkpoint_summaries` and adds the error `Plans with only a checkpoint SUMMARY`.
+- **`trd finalize` is a safe retry.** A re-run appended every decision and the metrics row to STATE_ARCHIVE.md again.
+  `state record-metric` now replaces the row for the same objective and job (and, in store mode, its `metrics_log`
+  entry), and an identical `state add-decision` is a no-op that exits 0 with `duplicate: true`. A table that ends the
+  archive no longer gains a blank line on every write. Decisions keep their rationale: `Cookie sessions: simpler than
+  JWT here` passes `--summary` and `--rationale`, and `Use https://example.com docs` stays whole. `--duration=99min`
+  is read, and `--duration` with no value (or followed by a flag) exits 1 before anything runs. A checkpoint SUMMARY is
+  refused, and `01-1` or `1-1` resolves to TRD 01-01.
+- **Planning verbs write the checkout that runs them in local mode.** Every verb resolved the main checkout whenever it
+  had a planning directory, so `quick put` run from a worktree whose tree used the legacy planning directory wrote the
+  main checkout's `.aoforge/quick/...` and printed `wrote .aoforge/quick/...`, and `summary checkpoint` could not find
+  a TRD that only the worktree had. One resolver, `planning-mode.resolveVerbRoot`, now decides the root for every
+  planning verb (plan, objective, summary, verification, doc, todo, debug, quick, decision, milestone and `planning
+  draft`): in local mode the checkout holding the caller when it has its own planning directory, else the main
+  checkout. Store mode still reads and writes the main checkout (D-14), and drafts stay keyed on the main checkout.
+  `todo-sync` keeps passing the main checkout explicitly.
+
+### Pricing and release workflow (quick 37)
+
+- **Sonnet 5.5 cache hits cost $0.10 per million.** model-rates.json had $0.20, the 0.1x rule. The pricing page prices
+  cache hits on Opus 5.5 and Sonnet 5.5 at 0.05x input. Every entry was re-read on 2026-10-16, and a test pins the
+  page's multipliers (cache hits 0.05x for Opus 5.5 and Sonnet 5.5, 0.025x for Fable 5.1 and 0.1x otherwise; writes
+  1.25x and 2x). calibration.json keeps the rates it was built with, so re-run `aof-tools calibrate` to reprice. On the
+  same inputs (objectives 57 to 66, `--minutes trd_level --window 10 --through 66`) the TRD-level cost falls from
+  $3.02 to $2.14 at p50 and from $5.39 to $4.04 at p90.
+- **Release dry run.** release.yml grants `contents: write` at the top level and in its job. A `workflow_dispatch` with
+  `dry_run` pushes `aoforge--v0.0.0-dryrun-<run id>` at HEAD with GITHUB_TOKEN, checks that origin shows it, deletes
+  it and creates no release; a failed delete names the cleanup command. A tag pushed with GITHUB_TOKEN starts no
+  workflow, and no release path relies on one: the alias needs no run, pack tags are pushed by a person, and no other
+  workflow triggers on tags.
+- **`scripts/tag-rules.cjs`** lists the tag rulesets, including inherited ones, that match a tag, read-only. GitHub has
+  no rules-for-a-tag endpoint, so it reads the tag-target rulesets and matches their ref_name patterns locally.
+- **Release dates.** 3.1.0 and the stack packs' 1.0.0 are dated 2026-10-17.
+
+### Stack packs: Flutter web selects the web pack; web executor self-check (quick 38)
+
+- **Soft dependencies.** A pack manifest can declare `soft_depends: [{ pack, platforms }]`. When the declaring pack is
+  active and the resolved `verification.runtime`, or any `platform` / `must_haves.platform` of a TRD under the
+  objectives tree, includes a listed platform, the named pack is selected too. `stacks.disabled` wins, and the rule is
+  not transitive. The Flutter pack declares web for platform `web`, so a Flutter project with web TRDs now gets the web
+  verifier fragment and web-ui-verifier. Before, only the Flutter pack was active and Flutter web coverage fell
+  silently to human verification.
+- **`stack doctor` warns on an absent soft dependency.** Its result gains `warnings` (`pack`, `wants`, `platform`,
+  `reason`, `install_hint`) for a soft dependency that is not installed, not enabled or broken, and `--raw` prints a
+  `warn:` line for each. It never fails on them: `ok` and the exit code ignore warnings.
+- **The executor holds five read-only browser tools again** (navigate, wait_for, console_messages, snapshot, close),
+  which 1cce9f50 had removed, for the web pack's new executor self-check: load up to three routes, count console
+  errors, take one accessibility snapshot and record a `## Browser self-check` table that the web verifier fragment
+  passes to web-ui-verifier. No click, fill or type tool is granted. `stack-neutrality.repo.test.cjs` exempts exactly
+  those tokens on that one frontmatter line (`GRANT_ALLOW`), so a sixth grant fails CI.
+
+### Stack packs: the rest of the web and Flutter procedure leaves core (quick 39)
+
+- **verify-work, `checkpoints.md` and `verification-patterns.md` no longer instruct browser tool calls.** verify-work
+  had told the orchestrator to call tools its skill no longer grants. UI pre-verification now reuses the evidence the
+  active packs recorded (VERIFICATION.md runtime rows, SUMMARY self-check tables), or spawns the agent
+  `stack context verifier --raw` lists under `packs.subagents`; with neither, a UI test is presented without a
+  Pre-verified block. A checkpoint's pre-check comes from the active pack's executor fragment.
+- **The TRD template's Flutter UI fields, the UAT template's auto-generated section and the Flutter cells of
+  `testing-strategy.md` moved to the Flutter pack** (planner fragment, verifier fragment Step 9, profile `## Testing`).
+  Core now documents only the pack-defined `stack` and `platform` fields and its own `api_contract`.
+- **Neutral wording** in `defaults-table.md` (the app cells name UI flow drivers, not tools), `model-profiles`
+  (a stack pack's vision judge reads `models{}`) and the STACK.md template (profile lookup is user, then an enabled
+  pack's, then bundled).
+- **`stack-neutrality.repo.test.cjs` now scans all of core** (`.claude-plugin`, agents, skills, hooks and all of
+  `aoforge/`: templates, references, schemas and stack-profiles included) and matches `browser_*` tool names from any
+  MCP server. The executor's five-token exemption is unchanged. ALLOW gains seven data and design-set entries, with
+  `design-stack-flutter.md` marked as known debt.
 
 ### Model efficiency (objective 76) and stack-pack leftovers (objective 77)
 
@@ -57,12 +476,109 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   ask, every reason kept; a throwing hook is skipped). Each dispatched hook carries `DISPATCHED-BY: pre-bash.js`,
   which doctor check 12, the hook inventory and the docs generator read. guard-no-progress keeps its own
   registration for the other tools. Five processes per Bash call became one.
-- **CLAUDE.md** is 146 lines / 15K chars (was 225 / 40K): the command catalog moved to `docs/AOF-TOOLS-REFERENCE.md`
-  and the per-hook detail to `docs/HOOKS-REFERENCE.md`. `context-budget.repo.test.cjs` caps CLAUDE.md, every
-  skill's resolved footprint and every agent body, and rejects a whole-planning-file inline in a skill.
+- **CLAUDE.md** is kept under 200 lines / 20,000 chars (the performance work measured 146 lines / 15K chars, down from
+  225 / 40K): the command catalog moved to `docs/AOF-TOOLS-REFERENCE.md` and the per-hook detail to
+  `docs/HOOKS-REFERENCE.md`. `context-budget.repo.test.cjs` caps CLAUDE.md,
+  every skill's resolved footprint and every agent body, and rejects a whole-planning-file inline in a skill.
 - **Models**: `claude-haiku-5-5` is priced in `model-rates.json` and is the `haiku` tier pin (was the superseded
   `claude-haiku-4-5`, which doctor check 13 and W063 could not flag without the rate row).
 
+### Reconcile (objective 79)
+
+Two lines grew from 3.0.0: the rename follow-ups (objectives 72 to 75 and 78) and `main` (objectives 76 and 77, the
+performance work and quick 34 to 39). Objective 79 joined them in one merge and made the result one tree.
+
+- **`main`'s planning records live in `.aoforge/`.** The records of objectives 76 and 77 and of quick 34 to 39 (18
+  files) moved with `git mv` from the pre-rename planning directory, and the pre-rename ignore lines left `.gitignore`
+  with the rename guard's ALLOW entry and the awareness test's twin of it (TRD 79-01).
+- **The PreToolUse(Bash) dispatcher no longer calls the removed environment alias.** `hooks/pre-bash.js` dropped
+  `aliasLegacyEnv`, and `aof-tools.cjs` keeps `main`'s lazy module loading without it (TRD 79-01).
+- **`reconcile-guard.repo.test.cjs` fails CI on a stale `compat` reference** (TRD 79-02). It resolves every reference to
+  `compat` in the tracked source (destructured, member, bound and stack-pack loader forms) against `compat.cjs`'s real
+  exports, forbids the five removed names, and rejects a tracked pre-rename planning path. A mutation in a scratch
+  repository proves each check bites.
+- **An equivalence corpus holds the one-process dispatcher to the five hooks it replaced** (TRD 79-03).
+  `hooks/__fixtures__/bash-corpus.js` has 51 hand-written Bash commands and two repeat sequences, and `pre-bash.js`
+  must match the five separately spawned hooks merged by its own `merge()` on exit code, decision, reasons, context,
+  stderr, queued handoff records, progress-guard count and override-marker consumption. A copy of the dispatcher without
+  `gate-interactive` fails on exactly the six gated interactive cases.
+- **Quick 36's worktree tests prove the contract on the `.aoforge/` layout** (TRD 79-04). Cases 25 to 29 and s1 of
+  `planning-verbs-worktree.test.cjs` use a worktree on the supported layout, and the new
+  `planning-verbs-worktree.legacy.test.cjs` proves that a worktree on the pre-rename directory is refused with the
+  legacy-layout message and every byte left unchanged. Quick 35, quick 36, objective 76 and objective 78 pass their own
+  suites together on the merged tree (400 tests). No source changed.
+- **The EST-11 record says what the retest found** (TRD 79-05). `75-VERIFICATION.md` marks EST-11 NOT SATISFIED, as
+  `REQUIREMENTS.md` and `75-RETEST-REPORT.md` already did, so the `requirements-agreement` and `validate-requirements`
+  repo tests that failed on it pass with no code change.
+- **STACK.md and the pack profiles describe this tree** (TRD 79-05). `.aoforge/STACK.md` is `aoforge-claude` with the
+  current layout and test globs, and the Flutter and Dart profiles name the `aoforge-stack-flutter` pack, with its
+  mirror path, as their home. Comments in `gh-check.cjs`, `gh-rebrand.cjs`, `pack-mirror.cjs` and the packs'
+  `sync-pack.cjs` that still promised a "one release" shim, or named a test file that does not exist, were corrected.
+- **One CHANGELOG section, matching versions and fresh site data** (TRD 79-06). The two blocks above `[3.0.0]` are this
+  section, the version files and the marketplace read 3.1.0, `eden-ui-flutter` gets a patch bump (1.0.2) for its one
+  changed skill line, and `site/data/aoforge.json` is regenerated from the final tree. `eden-ui-web` gets 1.0.2 too, for
+  objective 82's runtime-path wording in its skill and brand presets (TRD 82-10).
+
+### 3.1.0 follow-ups (objective 82)
+
+Objective 82 closed what objectives 79 to 81 left before 3.1.0 ships. Its measurements ran in an isolated sandbox
+through objective 81's frozen harness, behind the user's spend approval (`82-TIER-CHECKS.md`, `82-MEASUREMENT.md`).
+
+- **Agents and spawns get the runtime directory as an absolute path** (TRDs 82-02, 82-11). Objective 81's runs saw
+  agents read a runtime file at an absolute home path they built themselves (`/Users/<guess>/.claude/aoforge/...`)
+  instead of `~` or a path they were given; the Read tool expands `~`, so the guess, not `~`, was the defect. Every
+  compound `aof-tools init` JSON now carries `runtime_root`; the 11 core agents that read runtime files name them
+  `<runtime>/<rel>` under one `<runtime_paths>` block; references, pack agent material and templates use `<runtime>/`,
+  workflows and skills `{runtime_root}/`; and all 43 AOForge and pack agent spawns hand the agent `AOForge runtime:
+  {runtime_root}`. `runtime-path-reads.repo.test.cjs` fails CI on a `~/.claude/aoforge` read instruction in any of its
+  seven scopes (core agents, references, workflows, skills and templates; pack agent material; pack skills and
+  workflows). Measured live: no
+  guessed home path in the two re-run builds (three of objective 81's four build runs had one), the 16 researcher runs
+  or the 123 UI-judge sessions.
+- **The build-cell token growth is fixed** (TRDs 82-01, 82-07, 82-09). `82-DIAGNOSIS.md` traced 3.1.0's planner
+  growth (+67% against 3.0.0 on objective 81's small build) to extra calls, and the executor growth (+20%) to larger
+  context per call. The fixes, by Fix-list id: P-1 the planner writes TRDs from `trd-spec.md`, now the complete
+  skeleton, with no template look-up; P-2 `aof-tools commit` is final, so no commit inspection or amend; P-3 40,000
+  characters is a TRD ceiling, not a target, and a TRD of up to 2 tasks and 6 files stays near 15,000-20,000; P-4 the
+  planner runs exactly four checkers and does not read the tool source; X-1 `verify trd-structure` (which does not
+  exist) became `verify job-structure`; E-1 the executor writes its SUMMARY from an inline skeleton instead of reading
+  `templates/summary.md`; E-2 `<tdd_execution>` is the whole TDD procedure, so no `references/tdd.md` read; E-4 the
+  runtime path above; E-5 the executor reads its draft before the final SUMMARY write. P-5 and X-2 were justified and
+  left. `build-cell-reads.repo.test.cjs` pins each row. Re-run live (two builds on the fixed tree, both passing
+  acceptance, tests and verification): all 18 mechanism checks pass, the planner's median total tokens fell from
+  2.21M to 1.10M and the executor's from 3.33M to 1.95M against objective 81's 3.1.0 builds, below 3.0.0's 1.32M and
+  2.77M, and the builds cost $3.39 and $4.05 against $5.09 and $4.35. Caveats: n=2 against n=2, the planner chose 1
+  and 2 TRDs so only TRD-matched pairs compare like with like, per-run cost differences sit inside objective 81's
+  run-to-run spread ($1.41 to $2.06), and the orchestrator's tokens rose 8% (not diagnosed).
+- **Model tiers from objective 81's proposals** (TRDs 82-03, 82-08). The user approved five on 2026-10-17; TRD 82-03
+  applied all five test-first, and 82-08 measured P1, P4 and P5 live against rules pre-registered in
+  `82-CHECK-RULES.md` before any run, reverting what failed:
+  - **P2 kept:** `codebase-mapper` `arch` focus at sonnet on every profile (an arch-only focus override; `tech` and
+    `quality` stay on the agent's sonnet / haiku / haiku row). Evidence: Haiku 3.00 fabrications per run against
+    Sonnet's 0.75; caveat: three misnamed files in one Haiku fleet run.
+  - **P3 kept:** `codebase-mapper` `concerns` at sonnet on budget (Haiku's recall 21/38 against 26/38).
+  - **P5 kept:** `project-researcher` `pitfalls` at haiku on budget. On two new topics no item was lost, pooled recall
+    was 39/44 against Sonnet's 42/44 (6.8 points, inside the 10-point bound) and fabrications 0 against 0. Caveat:
+    two runs per model per topic.
+  - **P4 reverted:** `project-researcher` `architecture` is opus / sonnet / sonnet again. Haiku missed one item
+    Sonnet found in both runs (hub HU-A01, 0 of 2), which the rule forbids, although pooled recall (43/46 against
+    45/46) and fabrications (0 against 0) held. n=2.
+  - **P1 reverted:** the UI judge (`ui-evaluator` in the Flutter pack) starts at sonnet on balanced and budget again,
+    escalating a split vote to opus. Over 20 labelled states, a Haiku start escalating to Sonnet scored 19/20
+    against the Sonnet start's 18/20 at about one ninth of the cost ($0.13 against $1.15), with a split rate of 10%
+    and an escalation rate of 5%, but it passed one broken state (d17) and the rule allows none. Caveat: all three
+    Sonnet sessions passed d17 too, so the miss looks like a fixture or judge-prompt question rather than a tier one;
+    a todo records a larger sample.
+- **`tokens trd|coverage|backfill --also-root <dir>`** (TRD 82-04), repeatable and relative to the current directory,
+  hands former checkout roots to the matcher `calibrate --also-root` uses, so a moved checkout's executor transcripts
+  count; `tokens stamp` refuses it, and without it every output is byte-identical. On this repository the v1.6 forward
+  stamp coverage is 111/113 with and without the former root: of the 367 executor transcripts it adds, the 65 for v1.6
+  TRDs belong to SUMMARYs already stamped live, and the two missing ones (65-02, 65-03) ran inline with no executor
+  transcript. The effect is on older history (objectives 35 to 64 gain 302 identified transcripts).
+- **Objective 77's records agree with its verification** (TRD 82-10). STK-01 and PCK-01 to PCK-04 are Complete in
+  REQUIREMENTS.md and objective 77's Progress row is Complete (landed 2026-10-16, PRs #132 to #134; verified
+  2026-10-17). MEF-06 stays Partial by design: the UI judge's start tier was measured and P1 reverted, and the
+  debugger's start tier is a recorded todo.
 
 ## [3.0.0] - 2026-10-08
 

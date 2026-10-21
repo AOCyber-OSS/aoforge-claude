@@ -61,8 +61,39 @@ Preserve the verdict→action mapping (fail→gaps, review/unjudged→notes, `ga
 drop-from-human-verify; a `gate: 'advisory'` pass ALWAYS stays on the human-verification list) and
 the SKIPPED fall-through on a missing/invalid manifest (never a hard fail).
 
-For deep judgement (capture + score + evidence write + ≤300-token rollup), spawn the `aoforge-stack-flutter:ui-evaluator`
-agent via the Task tool with the resolved manifest path and
-`model` set to `node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model ui-evaluator --raw`; otherwise run the workflow steps inline for a
-quick single-surface dogfood.
+For deep judgement (capture + score + evidence write + ≤300-token rollup), spawn the agent; otherwise run the
+workflow steps inline for a quick single-surface dogfood. Resolve its model first (`{runtime_root}` in the prompt
+is what `RUNTIME_ROOT=$(echo ~/.claude/aoforge) && echo "$RUNTIME_ROOT"` prints):
+
+```bash
+UI_EVALUATOR_MODEL=$(node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model ui-evaluator --raw)
+```
+
+```
+Task(
+  subagent_type="aoforge-stack-flutter:ui-evaluator",
+  model="{UI_EVALUATOR_MODEL}",
+  prompt="Manifest: {resolved manifest path}. Judge: {live | labels}.
+  AOForge runtime: {runtime_root}
+  ",
+  description="UI visual eval"
+)
+```
+
+**If the agent returns `## ESCALATION REQUESTED`** (split live votes; objective 76 MEF-06, quick 42): run
+
+```bash
+node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model ui-evaluator --escalate-from "{Judge tier from the block}"
+```
+
+and read the full JSON. `--escalate-from` takes the judge's tier (`sonnet`), not the Task model alias.
+- `ceiling: false` and this run has not escalated yet: re-spawn once with `model="{model from the escalation result}"`,
+  add `--judge-tier {tier from the escalation result}` to the prompt next to `Judge: live`, put the block verbatim
+  in `<prior_attempt>`, and log `Escalated: ui-evaluator {from} → {tier} (split-votes)`.
+- `ceiling: true`, `unknown_agent: true` (the pack's models are not mirrored; point to `/aoforge:doctor`), or the
+  run already escalated once: report the first rollup as final, keep the split states on human verification,
+  and show the block's last section.
+
+Inline runs (no spawn) follow the same rule on the score step's `tier_escalation`: when `requested` is true,
+resolve the next rung the same way and re-run the score step once with `--judge live --judge-tier {tier}`.
 </process>

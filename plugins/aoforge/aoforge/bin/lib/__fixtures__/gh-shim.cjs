@@ -13,8 +13,12 @@
  *   - writes the entry's stdout/stderr and exits with its `code`,
  *   - for an unmatched argv prints `[gh-shim] no match: <argv>` to stderr and exits with
  *     `defaultCode` (1), so an unanticipated call fails loudly instead of reaching GitHub.
+ *     The one exception: an unmatched `api repos/<o>/<r>/labels/<name>` answers 404 (TRD 78-09: the
+ *     pre-rename label twin is absent unless a table entry says otherwise).
  *
- * Table entries look like `{ code: 0, stdout: '{"number":7}', stderr: '' }`.
+ * Table entries look like `{ code: 0, stdout: '{"number":7}', stderr: '' }`. `delay_ms` (optional)
+ * waits that long before answering, so a test can drive a timeout (TRD 72-27); only a positive
+ * integer waits.
  *
  * Use `shim.env()` as the child's environment: it puts the shim first on PATH (so a real `gh`
  * on the machine is never reached) and points HOME and AOFORGE_GH_CACHE_DIR at temp dirs
@@ -56,10 +60,23 @@ function shimMain(defaultCode) {
     }
   }
 
+  // One label GET (gh-legacy-labels' "is this repository rebranded" check, TRD 78-09) that the table does not
+  // answer is a 404, as GitHub answers for a label the repository lacks; a table entry still wins.
+  if (entry === undefined && argv.length === 2 && argv[0] === 'api' && /^repos\/[^/]+\/[^/]+\/labels\/[^/]+$/.test(argv[1])) {
+    process.stdout.write('{"message":"Not Found","status":"404"}');
+    process.stderr.write('gh: Not Found (HTTP 404)\n');
+    process.exitCode = 1;
+    return;
+  }
+
   if (entry === undefined) {
     process.stderr.write('[gh-shim] no match: ' + key + '\n');
     process.exitCode = defaultCode;
     return;
+  }
+  // Wait before writing anything, so a caller's timeout kills the shim with nothing read (TRD 72-27).
+  if (Number.isInteger(entry.delay_ms) && entry.delay_ms > 0) {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, entry.delay_ms);
   }
   if (entry.stdout) process.stdout.write(String(entry.stdout));
   if (entry.stderr) process.stderr.write(String(entry.stderr));
@@ -71,7 +88,7 @@ function shimSource(defaultCode) {
 }
 
 /**
- * @param {{dir?: string, table?: Record<string, {code?: number, stdout?: string, stderr?: string}>, defaultCode?: number}} [opts]
+ * @param {{dir?: string, table?: Record<string, {code?: number, stdout?: string, stderr?: string, delay_ms?: number}>, defaultCode?: number}} [opts]
  * @returns {{dir:string, binDir:string, callsFile:string, tableFile:string,
  *            readCalls:()=>string[][], setTable:(t:object)=>void,
  *            env:(extra?:object)=>object, cleanup:()=>void}}

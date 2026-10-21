@@ -1,0 +1,320 @@
+{
+  "codebase": "synthetic",
+  "module": "example.com/linkcheck",
+  "builder": "scripts/eval81/fixtures/C/synthetic.cjs",
+  "written": "2026-10-17, by hand from the builder's source, before any run",
+  "scoring": "Each focus checklist is scored against the concatenation of that focus's documents. The statement is the criterion; accept_any lists phrasings that count as stating it when used about the same thing.",
+  "pattern_syntax": "evidence.pattern is a JavaScript RegExp source applied with the m flag to the file at evidence.path (relative to the build root); when evidence.path is a directory it is applied to the directory's entry names; evidence.absent true means the pattern must not match.",
+  "focus_documents": {
+    "tech": ["STACK.md", "INTEGRATIONS.md"],
+    "arch": ["ARCHITECTURE.md", "STRUCTURE.md"],
+    "quality": ["CONVENTIONS.md", "TESTING.md", "PATTERNS.md"],
+    "concerns": ["CONCERNS.md"]
+  },
+  "checklists": {
+    "tech": [
+      {
+        "id": "tech-01",
+        "focus": "tech",
+        "statement": "The service is written in Go; go.mod declares module example.com/linkcheck with the go 1.23 directive.",
+        "evidence": { "path": "go.mod", "pattern": "^go 1\\.23$" },
+        "accept_any": ["go 1.23", "Go 1.23"]
+      },
+      {
+        "id": "tech-02",
+        "focus": "tech",
+        "statement": "There are no third-party dependencies: go.mod has no require directive and every import is from the standard library or the module itself.",
+        "evidence": { "path": "go.mod", "pattern": "^require", "absent": true },
+        "accept_any": ["standard library only", "stdlib only", "no third-party", "no external dependencies", "no dependencies"]
+      },
+      {
+        "id": "tech-03",
+        "focus": "tech",
+        "statement": "The listen address comes from the LINKCHECK_ADDR environment variable, default :9090.",
+        "evidence": { "path": "internal/config/config.go", "pattern": "getenv\\(\"LINKCHECK_ADDR\", \":9090\"\\)" },
+        "accept_any": ["LINKCHECK_ADDR"]
+      },
+      {
+        "id": "tech-04",
+        "focus": "tech",
+        "statement": "The data directory comes from the LINKCHECK_DATA environment variable, default data.",
+        "evidence": { "path": "internal/config/config.go", "pattern": "getenv\\(\"LINKCHECK_DATA\", \"data\"\\)" },
+        "accept_any": ["LINKCHECK_DATA"]
+      },
+      {
+        "id": "tech-05",
+        "focus": "tech",
+        "statement": "HTTP is served by the standard library net/http ServeMux with Go 1.22 method-and-path patterns; there is no router framework.",
+        "evidence": { "path": "internal/api/handler.go", "pattern": "mux\\.HandleFunc\\(\"POST /checks\", s\\.createCheck\\)" },
+        "accept_any": ["net/http", "ServeMux", "http.NewServeMux"]
+      },
+      {
+        "id": "tech-06",
+        "focus": "tech",
+        "statement": "Logging uses log/slog with a JSON handler writing to stdout; a -debug flag lowers the level to debug.",
+        "evidence": { "path": "cmd/linkcheck/main.go", "pattern": "slog\\.NewJSONHandler\\(os\\.Stdout" },
+        "accept_any": ["log/slog", "slog"]
+      },
+      {
+        "id": "tech-07",
+        "focus": "tech",
+        "statement": "Persistence is JSON files on local disk, one <id>.json file per check in the data directory; there is no database.",
+        "evidence": { "path": "internal/store/file.go", "pattern": "id\\+\"\\.json\"" },
+        "accept_any": ["JSON file", "one file per check", "file store", "no database"]
+      },
+      {
+        "id": "tech-08",
+        "focus": "tech",
+        "statement": "The only outbound integration is an HTTP GET to each URL a client submits; the service calls no other external API or service.",
+        "evidence": { "path": "internal/check/check.go", "pattern": "http\\.Get\\(c\\.URL\\)" },
+        "accept_any": ["http.Get", "outbound HTTP", "GET request", "no external services"]
+      },
+      {
+        "id": "tech-09",
+        "focus": "tech",
+        "statement": "A Makefile provides build (go build -o bin/linkcheck ./cmd/linkcheck), test (go test ./...) and lint (go vet ./...) targets.",
+        "evidence": { "path": "Makefile", "pattern": "^lint:\\n\\tgo vet \\./\\.\\.\\.$" },
+        "accept_any": ["Makefile", "make build", "make test", "make lint"]
+      },
+      {
+        "id": "tech-10",
+        "focus": "tech",
+        "statement": "CI is a GitHub Actions workflow that sets up Go from go.mod with actions/setup-go and runs go vet ./... and go test ./... .",
+        "evidence": { "path": ".github/workflows/ci.yml", "pattern": "go-version-file: go\\.mod" },
+        "accept_any": ["GitHub Actions", "setup-go", "ci.yml"]
+      },
+      {
+        "id": "tech-11",
+        "focus": "tech",
+        "statement": "The container image comes from a multi-stage Dockerfile: golang:1.23 builds a static binary with CGO_ENABLED=0 and the final stage is gcr.io/distroless/static-debian12, exposing port 9090.",
+        "evidence": { "path": "Dockerfile", "pattern": "^FROM gcr\\.io/distroless/static-debian12$" },
+        "accept_any": ["distroless", "multi-stage", "CGO_ENABLED=0"]
+      }
+    ],
+    "arch": [
+      {
+        "id": "arch-01",
+        "focus": "arch",
+        "statement": "The single binary's entry point is cmd/linkcheck/main.go: it parses flags, loads the config, opens the store, starts the worker pool and runs the HTTP server.",
+        "evidence": { "path": "cmd/linkcheck/main.go", "pattern": "pool\\.Start\\(ctx\\)" },
+        "accept_any": ["cmd/linkcheck/main.go", "cmd/linkcheck"]
+      },
+      {
+        "id": "arch-02",
+        "focus": "arch",
+        "statement": "The code is laid out as cmd/linkcheck plus four internal packages: internal/config, internal/api, internal/check and internal/store.",
+        "evidence": {
+          "path": "cmd/linkcheck/main.go",
+          "pattern": "internal/api\"\\s+\"example\\.com/linkcheck/internal/check\"\\s+\"example\\.com/linkcheck/internal/config\"\\s+\"example\\.com/linkcheck/internal/store\""
+        },
+        "accept_any": ["internal/api", "internal/check", "internal/config", "internal/store"]
+      },
+      {
+        "id": "arch-03",
+        "focus": "arch",
+        "statement": "The HTTP API has three routes, registered in internal/api/handler.go: POST /checks, GET /checks/{id} and GET /healthz.",
+        "evidence": { "path": "internal/api/handler.go", "pattern": "\"GET /checks/\\{id\\}\"" },
+        "accept_any": ["POST /checks", "GET /checks/{id}", "/healthz"]
+      },
+      {
+        "id": "arch-04",
+        "focus": "arch",
+        "statement": "Checks run asynchronously: POST /checks validates the URL, saves a pending check, queues its id and answers 202 Accepted; a worker fetches the URL later and GET /checks/{id} reads the result.",
+        "evidence": { "path": "internal/api/handler.go", "pattern": "s\\.writeJSON\\(w, http\\.StatusAccepted, c\\)" },
+        "accept_any": ["202", "asynchronous", "in the background", "queued"]
+      },
+      {
+        "id": "arch-05",
+        "focus": "arch",
+        "statement": "A fixed pool of 4 worker goroutines (const Workers = 4) reads check ids from a buffered channel of capacity 100.",
+        "evidence": { "path": "internal/check/worker.go", "pattern": "^const Workers = 4$" },
+        "accept_any": ["4 workers", "four workers", "Workers = 4", "worker pool"]
+      },
+      {
+        "id": "arch-06",
+        "focus": "arch",
+        "statement": "Pool.Submit is a non-blocking send: when the queue is full it returns false and the API answers 503 Service Unavailable.",
+        "evidence": { "path": "internal/api/handler.go", "pattern": "http\\.StatusServiceUnavailable, \"queue full" },
+        "accept_any": ["503", "queue full", "non-blocking"]
+      },
+      {
+        "id": "arch-07",
+        "focus": "arch",
+        "statement": "The check package defines a Store interface (Load, Save) that the pool depends on; store.FileStore implements it, so store imports check and not the reverse.",
+        "evidence": { "path": "internal/check/worker.go", "pattern": "^type Store interface \\{$" },
+        "accept_any": ["Store interface", "interface"]
+      },
+      {
+        "id": "arch-08",
+        "focus": "arch",
+        "statement": "A check's status is pending, done or failed; a transport error or a response code of 400 or above marks it failed, and the code is recorded.",
+        "evidence": { "path": "internal/check/check.go", "pattern": "resp\\.StatusCode >= 400" },
+        "accept_any": ["pending", "failed", ">= 400", "400 or above"]
+      },
+      {
+        "id": "arch-09",
+        "focus": "arch",
+        "statement": "Check ids are random 16-character hex strings generated with crypto/rand.",
+        "evidence": { "path": "internal/check/check.go", "pattern": "\"crypto/rand\"" },
+        "accept_any": ["crypto/rand", "random", "hex"]
+      },
+      {
+        "id": "arch-10",
+        "focus": "arch",
+        "statement": "Shutdown is graceful: signal.NotifyContext cancels on SIGINT or SIGTERM, the server shuts down with a 10 second timeout, the workers stop on the context and main waits for them.",
+        "evidence": { "path": "cmd/linkcheck/main.go", "pattern": "signal\\.NotifyContext\\(context\\.Background\\(\\), os\\.Interrupt, syscall\\.SIGTERM\\)" },
+        "accept_any": ["graceful", "SIGTERM", "Shutdown"]
+      },
+      {
+        "id": "arch-11",
+        "focus": "arch",
+        "statement": "Dependencies are wired by hand in main (store, then pool, then the API handler) with no global state and no dependency injection framework.",
+        "evidence": { "path": "cmd/linkcheck/main.go", "pattern": "Handler:\\s+api\\.New\\(st, pool, logger\\)" },
+        "accept_any": ["wired in main", "constructor", "dependency injection", "passed in"]
+      }
+    ],
+    "quality": [
+      {
+        "id": "quality-01",
+        "focus": "quality",
+        "statement": "Errors are wrapped with context using fmt.Errorf and %w (for example \"read check %s: %w\").",
+        "evidence": { "path": "internal/store/file.go", "pattern": "fmt\\.Errorf\\(\"read check %s: %w\", id, err\\)" },
+        "accept_any": ["%w", "fmt.Errorf", "wrapped"]
+      },
+      {
+        "id": "quality-02",
+        "focus": "quality",
+        "statement": "Wrapped errors are tested with errors.Is; the API maps fs.ErrNotExist from the store to 404 Not Found.",
+        "evidence": { "path": "internal/api/handler.go", "pattern": "errors\\.Is\\(err, fs\\.ErrNotExist\\)" },
+        "accept_any": ["errors.Is", "ErrNotExist", "404"]
+      },
+      {
+        "id": "quality-03",
+        "focus": "quality",
+        "statement": "Logging is structured key-value slog through an injected *slog.Logger (for example Error(\"load check\", \"id\", id, \"err\", err)), not the log package or a global logger.",
+        "evidence": { "path": "internal/check/worker.go", "pattern": "p\\.log\\.Error\\(\"load check\", \"id\", id, \"err\", err\\)" },
+        "accept_any": ["slog", "structured", "key-value", "key/value"]
+      },
+      {
+        "id": "quality-04",
+        "focus": "quality",
+        "statement": "The tests in internal/check are table-driven: a slice of cases, each run with t.Run.",
+        "evidence": { "path": "internal/check/check_test.go", "pattern": "t\\.Run\\(tc\\.name" },
+        "accept_any": ["table-driven", "t.Run"]
+      },
+      {
+        "id": "quality-05",
+        "focus": "quality",
+        "statement": "HTTP behaviour is tested against a local httptest.NewServer, not the network.",
+        "evidence": { "path": "internal/check/check_test.go", "pattern": "httptest\\.NewServer" },
+        "accept_any": ["httptest"]
+      },
+      {
+        "id": "quality-06",
+        "focus": "quality",
+        "statement": "The store tests use t.TempDir() for an isolated data directory.",
+        "evidence": { "path": "internal/store/file_test.go", "pattern": "New\\(t\\.TempDir\\(\\)\\)" },
+        "accept_any": ["t.TempDir", "temp dir", "temporary directory"]
+      },
+      {
+        "id": "quality-07",
+        "focus": "quality",
+        "statement": "Tests use only the standard testing package with t.Fatalf and t.Errorf; there is no assertion or mocking library.",
+        "evidence": { "path": "internal/check/check_test.go", "pattern": "t\\.Fatalf\\(\"Run: %v\", err\\)" },
+        "accept_any": ["testing package", "no assertion library", "standard library testing", "t.Errorf", "t.Fatalf"]
+      },
+      {
+        "id": "quality-08",
+        "focus": "quality",
+        "statement": "Tests sit beside the code in the same package (package check, package store), and only internal/check and internal/store have tests.",
+        "evidence": { "path": "internal/store/file_test.go", "pattern": "^package store$" },
+        "accept_any": ["same package", "check_test.go", "file_test.go"]
+      },
+      {
+        "id": "quality-09",
+        "focus": "quality",
+        "statement": "Tests run with go test ./... (make test and CI); go vet ./... is the only linter (make lint), and there is no golangci-lint configuration.",
+        "evidence": { "path": "Makefile", "pattern": "^test:\\n\\tgo test \\./\\.\\.\\.$" },
+        "accept_any": ["go test ./...", "go vet", "make test"]
+      },
+      {
+        "id": "quality-10",
+        "focus": "quality",
+        "statement": "HTTP handlers are methods on a Server struct that holds the dependencies, and every response goes through a writeJSON helper that sets Content-Type application/json.",
+        "evidence": { "path": "internal/api/handler.go", "pattern": "func \\(s \\*Server\\) writeJSON\\(" },
+        "accept_any": ["writeJSON", "Server struct", "methods on Server"]
+      },
+      {
+        "id": "quality-11",
+        "focus": "quality",
+        "statement": "Input is validated at the HTTP boundary: request bodies are capped with http.MaxBytesReader at 1 MiB and URLs must parse with url.ParseRequestURI as http or https.",
+        "evidence": { "path": "internal/api/handler.go", "pattern": "http\\.MaxBytesReader\\(w, r\\.Body, maxBody\\)" },
+        "accept_any": ["MaxBytesReader", "ParseRequestURI", "validates"]
+      }
+    ],
+    "concerns": [
+      {
+        "id": "concerns-01",
+        "focus": "concerns",
+        "seeded": true,
+        "statement": "check.Run uses http.Get with the default client, which has no timeout: a slow or hanging URL can hold one of only four workers indefinitely.",
+        "evidence": { "path": "internal/check/check.go", "pattern": "http\\.Get\\(c\\.URL\\)" },
+        "accept_any": ["no timeout", "default client", "DefaultClient", "http.Get"]
+      },
+      {
+        "id": "concerns-02",
+        "focus": "concerns",
+        "seeded": true,
+        "statement": "The store builds the file path from the id in GET /checks/{id} with filepath.Join and no validation, so an encoded ../ id can read .json files outside the data directory (path traversal).",
+        "evidence": { "path": "internal/store/file.go", "pattern": "filepath\\.Join\\(s\\.dir, id\\+\"\\.json\"\\)" },
+        "accept_any": ["path traversal", "directory traversal", "not validated", "sanitiz", "../"]
+      },
+      {
+        "id": "concerns-03",
+        "focus": "concerns",
+        "seeded": true,
+        "statement": "Workers increment Pool.completed with no mutex or atomic while other workers and the /healthz handler read it: a data race.",
+        "evidence": { "path": "internal/check/worker.go", "pattern": "p\\.completed\\+\\+" },
+        "accept_any": ["data race", "race condition", "atomic", "mutex", "unsynchronized"]
+      },
+      {
+        "id": "concerns-04",
+        "focus": "concerns",
+        "seeded": true,
+        "statement": "FileStore.Save defers f.Close() on a file it has written and ignores the returned error, so a failed final write can go unreported.",
+        "evidence": { "path": "internal/store/file.go", "pattern": "^\\tdefer f\\.Close\\(\\)$" },
+        "accept_any": ["Close error", "ignored Close", "defer f.Close", "close error"]
+      },
+      {
+        "id": "concerns-05",
+        "focus": "concerns",
+        "seeded": true,
+        "statement": "internal/api has no tests: the handlers, their status codes and the input validation are untested.",
+        "evidence": { "path": "internal/api", "pattern": "_test\\.go$", "absent": true },
+        "accept_any": ["no tests for internal/api", "api package is untested", "handlers are untested", "internal/api"]
+      },
+      {
+        "id": "concerns-06",
+        "focus": "concerns",
+        "seeded": true,
+        "statement": "POST /checks has no rate limiting; only a TODO: rate limit comment marks it, so a client can enqueue checks without bound and fill the queue.",
+        "evidence": { "path": "internal/api/handler.go", "pattern": "// TODO: rate limit" },
+        "accept_any": ["rate limit", "TODO"]
+      },
+      {
+        "id": "concerns-07",
+        "focus": "concerns",
+        "statement": "The service fetches any http or https URL a client submits, including loopback and internal addresses, with no allow or deny list (server-side request forgery).",
+        "evidence": { "path": "internal/api/handler.go", "pattern": "u\\.Scheme != \"http\" && u\\.Scheme != \"https\"" },
+        "accept_any": ["SSRF", "server-side request forgery", "internal addresses", "localhost", "internal network"]
+      },
+      {
+        "id": "concerns-08",
+        "focus": "concerns",
+        "statement": "Save truncates and rewrites the file in place with os.Create instead of writing a temporary file and renaming it, so a concurrent read or a crash can see a partial or empty file.",
+        "evidence": { "path": "internal/store/file.go", "pattern": "os\\.Create\\(s\\.path\\(c\\.ID\\)\\)" },
+        "accept_any": ["atomic write", "partial", "truncat", "rename"]
+      }
+    ]
+  }
+}

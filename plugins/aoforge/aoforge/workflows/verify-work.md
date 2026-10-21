@@ -18,7 +18,7 @@ No Pass/Fail buttons. No severity questions. Just: "Here's what should happen. D
 </philosophy>
 
 <template>
-@~/.claude/aoforge/templates/UAT.md
+`{runtime_root}/templates/UAT.md` (already in context when the verify-work skill includes it)
 </template>
 
 <process>
@@ -30,7 +30,7 @@ If $ARGUMENTS contains an objective number, load context:
 INIT=$(node ~/.claude/aoforge/bin/aof-tools.cjs init verify-work "${OBJECTIVE_ARG}")
 ```
 
-Parse JSON for: `planner_model`, `checker_model`, `commit_docs`, `objective_found`, `objective_dir`, `objective_number`, `objective_name`, `has_verification`.
+Parse JSON for: `runtime_root` (fills `{runtime_root}`), `planner_model`, `checker_model`, `commit_docs`, `objective_found`, `objective_dir`, `objective_number`, `objective_name`, `has_verification`.
 </step>
 
 <step name="check_active_session">
@@ -234,32 +234,16 @@ Read Current Test section from UAT file.
 TaskUpdate(taskId=test_task_id, status="in_progress")
 ```
 
-**Browser pre-verification (for UI tests):**
+**Stack pre-verification (UI tests):** core drives no UI. Once per session, before the first UI test:
+1. Reuse what the active stack packs already recorded for these surfaces: runtime-check rows in the
+   objective's VERIFICATION.md and any pack self-check section in the TRD SUMMARYs.
+2. If none covers a UI test, run `node ~/.claude/aoforge/bin/aof-tools.cjs stack context verifier --raw`.
+   When `packs.subagents` lists an agent whose `when` fits, spawn it once with the Task tool for every
+   uncovered UI test (objective dir; each test's route and landmark; start command and URL if known;
+   model from `aof-tools resolve-model <name after the colon> --raw`) and keep its rows.
+3. With no pack evidence and no listed agent, present the test without a **Pre-verified** block.
 
-If the test involves a UI feature and a dev server is running (or can be started):
-
-1. Navigate to the relevant page:
-   ```
-   browser_navigate(url="http://localhost:{port}/{route}")
-   ```
-
-2. Take a snapshot to verify content renders:
-   ```
-   browser_snapshot()
-   ```
-
-3. If the test involves interactions, simulate them:
-   ```
-   browser_click(element="{relevant element}")
-   browser_snapshot()  # Verify state changed
-   ```
-
-4. Take a screenshot for evidence:
-   ```
-   browser_take_screenshot()
-   ```
-
-5. Include pre-verification results in the checkpoint:
+Fill the box's Pre-verified lines from the pack's row for this test.
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
@@ -281,7 +265,7 @@ Please verify the visual quality and UX:
 ──────────────────────────────────────────────────────────────
 ```
 
-**For non-UI tests** (API, CLI, backend), skip browser pre-verification and present the standard checkpoint:
+**For non-UI tests** (API, CLI, backend), skip stack pre-verification and present the standard checkpoint:
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
@@ -468,7 +452,7 @@ Spawning parallel debug agents to investigate each issue.
 ```
 
 - Load diagnose-issues workflow
-- Follow @~/.claude/aoforge/workflows/diagnose-issues.md
+- Read and follow `{runtime_root}/workflows/diagnose-issues.md`
 - Spawn parallel debug agents for each issue
 - Collect root causes
 - Record root causes in the UAT gaps (draft + `aof-tools doc put`, as diagnose-issues does)
@@ -501,6 +485,8 @@ Spawn planner in --gaps mode:
 ```
 Task(
   prompt="""
+AOForge runtime: {runtime_root}
+
 <planning_context>
 
 **Objective:** {objective_number}
@@ -556,6 +542,8 @@ GAP_PLANS=$(grep -l "gap_closure: true" "{objective_dir}"/*-TRD.md "{objective_d
 ```
 Task(
   prompt="""
+AOForge runtime: {runtime_root}
+
 <verification_context>
 
 **Objective:** {objective_number}
@@ -596,6 +584,8 @@ Spawn planner with revision context:
 ```
 Task(
   prompt="""
+AOForge runtime: {runtime_root}
+
 <revision_context>
 
 **Objective:** {objective_number}

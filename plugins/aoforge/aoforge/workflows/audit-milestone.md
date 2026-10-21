@@ -17,7 +17,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 INIT=$(node ~/.claude/aoforge/bin/aof-tools.cjs init milestone-op)
 ```
 
-Extract from init JSON: `milestone_version`, `milestone_name`, `objective_count`, `completed_objectives`, `commit_docs`.
+Extract from init JSON: `runtime_root` (fills `{runtime_root}`), `milestone_version`, `milestone_name`, `objective_count`, `completed_objectives`, `commit_docs`.
 
 Resolve integration checker model:
 ```bash
@@ -65,6 +65,7 @@ Extract `MILESTONE_REQ_IDS` from REQUIREMENTS.md traceability table — all REQ-
 ```
 Task(
   prompt="Check cross-objective integration and E2E flows.
+AOForge runtime: {runtime_root}
 
 Objectives: {phase_dirs}
 Objective exports: {from SUMMARYs}

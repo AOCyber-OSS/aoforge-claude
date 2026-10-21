@@ -140,13 +140,16 @@ function byCodeUnit(a, b) {
  * Reads exactly `<root>/<key>/<session>/subagents/agent-*.meta.json` (sorted at each level, no deeper walk). A meta file
  * whose agentType normalises to an overhead agent is one spawn; only then is the sibling jsonl's FIRST user record read.
  * A repository claims the spawn by the executor rule (token-usage.repoMatch): a REPO_ROOT line, else the first record's
- * cwd in the repo or its `.df-worktrees`, else a `<repo>/.aoforge/` path. The project-key directory name is never
- * evidence: keys are lossy.
+ * cwd in the repo or its `.df-worktrees`, else a `<repo>/.aoforge/` path. A project's `alsoRoots` (quick 41,
+ * `calibrate --also-root`) are former checkout roots matched the same way, so spawns recorded before a move still
+ * count for it; their planning paths may also use the legacy planning directory name. The project-key directory name
+ * is never evidence: keys are lossy.
  *
  * counts: `spawns` = overhead-typed meta files; each is exactly one of `quick` (a planner whose description starts with
  * Quick), `unreadable` (no readable first user record), `foreign` (no listed repository claims it) or `matched`.
  *
- * @param {{root: string, projects?: Array<{root: string, label: string}>}} opts  root is required, never defaulted
+ * @param {{root: string, projects?: Array<{root: string, label: string, alsoRoots?: string[]}>}} opts  root is
+ *   required, never defaulted; alsoRoots are absolute paths
  * @returns {{entries: Array<{agent, project, session, agent_id, file}>,
  *   counts: {spawns, matched, foreign, quick, unreadable, by_agent: Object<string, number>}}}
  */
@@ -154,7 +157,7 @@ function indexOverheadTranscripts({ root, projects = [] } = {}) {
   if (typeof root !== 'string' || !root) throw new Error('indexOverheadTranscripts: root is required');
   const repos = [...projects]
     .sort((a, b) => byCodeUnit(a.root, b.root))
-    .map((p) => ({ label: p.label, repo: repoMatcher(p.root) }));
+    .map((p) => ({ label: p.label, repo: repoMatcher(p.root, { alsoRoots: p.alsoRoots || [] }) }));
   const counts = { spawns: 0, matched: 0, foreign: 0, quick: 0, unreadable: 0, by_agent: {} };
   const entries = [];
 
@@ -193,7 +196,7 @@ function indexOverheadTranscripts({ root, projects = [] } = {}) {
  * One sample per matched overhead spawn: `{agent, project, session, agent_id}` plus spawnSample's measurements. No file
  * path in a sample. Sorted by agent, project, session, agent_id, so two calls over the same tree are deep-equal.
  *
- * @param {{root: string, projects?: Array<{root: string, label: string}>}} opts
+ * @param {{root: string, projects?: Array<{root: string, label: string, alsoRoots?: string[]}>}} opts
  * @returns {{samples: Array<object>, counts: object}}  counts as indexOverheadTranscripts
  */
 function collectOverhead({ root, projects = [] } = {}) {

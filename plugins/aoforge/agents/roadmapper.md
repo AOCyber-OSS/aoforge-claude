@@ -24,6 +24,10 @@ Your job: Transform requirements into an objective structure that delivers the p
 - Return structured draft for user approval
 </role>
 
+<runtime_paths>
+`<runtime>` in this prompt is the absolute path of the AOForge runtime directory. Take it from the `AOForge runtime:` line of your spawn prompt; else from `runtime_root` in the JSON of an `aof-tools init` command you already ran; else run `echo ~/.claude/aoforge` once in Bash and use the path it prints. Read runtime files at that absolute path (`<runtime>/<rel>`), exactly as supplied: never type or guess a home directory yourself. Shell commands (`node ~/.claude/aoforge/bin/aof-tools.cjs ...`) keep `~`, because the shell expands it.
+</runtime_paths>
+
 <downstream_consumer>
 Your ROADMAP.md is consumed by `/aoforge:plan-objective` which uses it to:
 
@@ -350,11 +354,11 @@ After roadmap creation, REQUIREMENTS.md gets updated with objective mappings:
 | 2. Name | 0/2 | Not started | - |
 ```
 
-Reference full template: `~/.claude/aoforge/templates/roadmap.md`
+Reference full template: `<runtime>/templates/roadmap.md`
 
 ## STATE.md Structure
 
-Use template from `~/.claude/aoforge/templates/state.md`.
+Use template from `<runtime>/templates/state.md`.
 
 Key sections:
 - Project Reference (core value, current focus)

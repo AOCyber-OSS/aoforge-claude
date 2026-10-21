@@ -59,6 +59,7 @@ The reconciliation rules (from 09-CONTEXT.md decision #2):
 
 - `trd_summary_exists`: TRD has SUMMARY → `[x]`
 - `trd_summary_failed`: SUMMARY contains `Self-Check: FAILED` → `[ ]` + `(failed)`
+- `trd_summary_not_complete`: SUMMARY frontmatter `status:` is `deferred` or `checkpoint` → not completion; a `[x]` line goes back to `[ ]`, a `[ ]` line stays
 - `trd_orphan_warning`: TRD in ROADMAP but no TRD file → warning, no auto-flip
 
 Plus objective-level rollup (decision #3) when ALL TRDs are `[x]`.
@@ -69,7 +70,7 @@ Limitations:
 - **No auto-deletion.** Orphan TRDs surface as warnings only — user manually decides.
 - **Forward-only rollup.** Once an objective Status flips to `complete`, the reconciler doesn't auto-revert even if a TRD becomes `[ ] (failed)`. Revert it with `aof-tools objective set-status <id> reopened`; in local mode also correct the ROADMAP `**Status:**` line by hand (only the store regenerates it).
 
-Note: The skill takes effect on next session restart (sync-runtime hook mirrors it to `~/.claude/aoforge/skills/sync-roadmap/SKILL.md`).
+Note: The skill takes effect on next session restart (sync-runtime hook mirrors it to `{runtime_root}/skills/sync-roadmap/SKILL.md`). `{runtime_root}` is what `RUNTIME_ROOT=$(echo ~/.claude/aoforge) && echo "$RUNTIME_ROOT"` prints.
 
 ## Triggers
 

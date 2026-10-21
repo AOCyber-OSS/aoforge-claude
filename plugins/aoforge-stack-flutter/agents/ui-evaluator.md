@@ -62,7 +62,9 @@ Run the engine consumer arm and parse the rollup:
 UI_EVAL=$(node ~/.claude/aoforge/stacks/flutter/bin/aof-flutter.cjs verify flutter-ui-eval "<manifest-path>" --raw)
 ```
 
-Rollup: `{ verdict: 'pass'|'pass-with-reviews'|'fail', counts, reviews[], fails[], states[] }`.
+Keep the manifest argument first. Add `--judge live` when the prompt asks for the live judge. Add `--judge-tier <tier>` only when the prompt names one, which happens only on an escalated re-spawn (`--judge live --judge-tier opus`); the flag is rejected without `--judge live`.
+
+Rollup: `{ verdict: 'pass'|'pass-with-reviews'|'fail', counts, reviews[], fails[], states[], tier_escalation }` (live runs also carry `judge_tier`, the rung the vision calls used).
 Each `states[]` entry: `{ state_id, verdict: 'pass'|'review'|'fail', is_broken, defects[], errors[] }`.
 
 On `{ error: ... }` (manifest not found / invalid) → return `SKIPPED (no ui-eval manifest)`; never a hard fail.
@@ -83,6 +85,13 @@ Apply the verdict→action mapping when describing each state in the rollup:
 - `pass` → machine-verified; verifier drops the surface from human-verify.
 </step>
 
+<step name="escalate">
+The judge escalates its vision rung only on split votes in a live run (quick 42, objective 76 MEF-06):
+- If the run was live, the rollup's `tier_escalation.requested` is true, and the prompt carries no `<prior_attempt>` escalation block: write the evidence as usual (the first attempt stays on record), then return `## ESCALATION REQUESTED` (see `<output>`) instead of UI-EVAL COMPLETE. The orchestrator picks the next rung; you never do.
+- If the prompt carries `<prior_attempt>`: you are the escalated re-spawn. Skip `capture` (the screenshots are on disk), re-score with `--judge live --judge-tier <the tier the prompt names>`, and always return UI-EVAL COMPLETE, whatever `tier_escalation` says.
+- Never escalate an advisory (labels) run, a run whose reviews are credential, network or refusal errors (no `flake`, so `requested` stays false), or a design-review run: design-review is a single advisory critique with no recorded signal.
+</step>
+
 </execution_flow>
 
 <output>
@@ -93,11 +102,31 @@ Apply the verdict→action mapping when describing each state in the rollup:
 
 **Verdict:** {pass | pass-with-reviews | fail | SKIPPED}
 **Counts:** {pass}/{review}/{fail} of {total} states
+**Judge tier:** {judge_tier} (live runs only; omit the line otherwise)
 **Report:** .aoforge/objectives/{obj}/evidence/ui_eval/ui-eval-report.json
 
 {If fail:} {N} defect(s) → gaps; see report.
 {If pass-with-reviews:} {N} review(s) stay on human-verify.
 {If pass:} all surfaces machine-verified; drop from human-verify.
+```
+
+On the `escalate` step's signal, return this instead (same budget):
+
+```markdown
+## ESCALATION REQUESTED
+
+**Manifest:** {manifest path}
+**Judge tier:** {tier_escalation.from_tier}
+**Trigger:** split-votes
+**States:** {tier_escalation.states, comma-separated}
+**Report:** .aoforge/objectives/{obj}/evidence/ui_eval/ui-eval-report.json
+
+### What was tried
+{one line per split state: votes broken/ok at this tier}
+### Why it is not converging
+The live samples disagreed, so the flake budget cannot tell a defect from judge noise.
+### What a higher rung should do differently
+Re-judge the same captures with `--judge live --judge-tier {next rung}`; no recapture.
 ```
 
 DO NOT include per-state tables, defect narratives, or screenshots inline — those live in the report.
@@ -106,6 +135,8 @@ DO NOT commit. The orchestrator/verifier bundles evidence with other objective a
 
 <critical_rules>
 **DO NOT pick a vision model id or hardcode an image format.** The engine resolves `ui-evaluator` via `references/model-profiles.json` and judges offline.
+
+**DO NOT pick a judge tier.** Your only tier input is the `--judge-tier` the orchestrator passes on an escalated re-spawn; on split votes you return `## ESCALATION REQUESTED` and let it choose the rung.
 
 **DO NOT re-implement scoring.** Call `aof-flutter verify flutter-ui-eval` and route its verdict.
 

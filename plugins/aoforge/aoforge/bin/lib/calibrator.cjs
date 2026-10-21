@@ -307,6 +307,65 @@ function windowNote(window) {
   return `Window: only the ${window} most recent objectives with samples (by objective number) are read per project; older objectives are dropped before every statistic. agent_overhead is not windowed.`;
 }
 
+const ALSO_ROOTS_NOTE = 'Agent overhead also counts spawns recorded under the former checkout roots in method.also_roots (REPO_ROOT line, cwd or worktree there, or a path under their current or legacy planning directory).';
+
+// ─── Former checkout roots (quick 41, calibrate --also-root) ─────────────────
+
+/** The `code` of an Error thrown because alsoRoots cannot apply; the CLI reports it as a usage error. */
+const ALSO_ROOTS_ERROR = 'ERR_CALIBRATE_ALSO_ROOTS';
+
+function alsoRootsError(message) {
+  const err = new Error(message);
+  err.code = ALSO_ROOTS_ERROR;
+  return err;
+}
+
+function realOrResolved(p) {
+  try { return fs.realpathSync(p); } catch { return path.resolve(p); }
+}
+
+/** True when `p` is `base` or inside it. */
+function within(p, base) {
+  return p === base || p.startsWith(base + path.sep);
+}
+
+/**
+ * The former checkout roots to add to the overhead scan: resolved, de-duplicated and sorted by code unit. undefined and
+ * null are none. Anything but an array of non-empty absolute paths is a TypeError.
+ */
+function normalizeAlsoRoots(alsoRoots) {
+  if (alsoRoots === undefined || alsoRoots === null) return [];
+  const ok = Array.isArray(alsoRoots)
+    && alsoRoots.every((r) => typeof r === 'string' && r !== '' && path.isAbsolute(r));
+  if (!ok) throw new TypeError('buildCalibration: alsoRoots must be an array of absolute paths');
+  return sortedUnique(alsoRoots.map((r) => path.resolve(r)));
+}
+
+/**
+ * The roots that apply to `projectRoots`, after the checks: none without a scan to apply them to, exactly one project,
+ * the project root itself dropped, and no root that contains the project (it would claim every checkout under it).
+ * Zero projects passes the list through: the caller refuses an empty history on its own.
+ */
+function applicableAlsoRoots(roots, projectRoots, scanned) {
+  if (roots.length === 0) return roots;
+  if (!scanned) {
+    throw alsoRootsError('alsoRoots (calibrate --also-root) needs the agent-overhead scan; it cannot be combined with --no-overhead');
+  }
+  if (projectRoots.length > 1) {
+    throw alsoRootsError(`alsoRoots (calibrate --also-root) needs exactly one project; found ${projectRoots.length}`);
+  }
+  if (projectRoots.length === 0) return roots;
+  const project = projectRoots[0];
+  const projectReal = realOrResolved(project);
+  const kept = roots.filter((r) => r !== project && realOrResolved(r) !== projectReal);
+  for (const r of kept) {
+    if (within(project, r) || within(projectReal, realOrResolved(r))) {
+      throw alsoRootsError(`--also-root ${r} contains the project ${project}: it would claim every checkout under it`);
+    }
+  }
+  return kept;
+}
+
 // ─── Agent overhead ───────────────────────────────────────────────────────────
 
 const NO_OVERHEAD_COUNTS = Object.freeze({ spawns: 0, matched: 0, foreign: 0, quick: 0, unreadable: 0 });
@@ -443,20 +502,32 @@ function inputsDigest(projectList, rates, sources, overhead, windowBlock = null,
  * no number, with its metric rows, so a later objective cannot change anything below; the window then applies to what is
  * left. `minutes` is `task_sum` (undefined) or `trd_level`: the estimator reads it from the `method` block, and no
  * statistic here depends on it. `method` always records the requested minutes, window and cutoff, and is in `inputs_digest`.
- * @param {{paths:string[], ratesPath?:string, transcriptsRoot?:?string, window?:?number, minutes?:string, through?:?number}} options
+ *
+ * `alsoRoots` (quick 41, `calibrate --also-root`) names former checkout roots of the one project, such as its path
+ * before a move: the overhead scan also claims spawns recorded under them (token-usage.repoMatcher). They are resolved,
+ * de-duplicated and sorted; one equal to the project root is dropped. When any remain they are recorded as
+ * `method.also_roots` (so they are in `inputs_digest`) with a note; with none, `method` and the file are what they were
+ * without the option. It needs a transcripts root and exactly one project, and a root that contains the project is
+ * refused: those throw an Error whose `code` is ALSO_ROOTS_ERROR. A non-array or a relative path is a TypeError.
+ * @param {{paths:string[], ratesPath?:string, transcriptsRoot?:?string, window?:?number, minutes?:string, through?:?number, alsoRoots?:string[]}} options
  */
-function buildCalibration({ paths, ratesPath = ci.RATES_PATH, transcriptsRoot = null, window, minutes, through } = {}) {
+function buildCalibration({ paths, ratesPath = ci.RATES_PATH, transcriptsRoot = null, window, minutes, through, alsoRoots } = {}) {
   const effectiveWindow = window === undefined ? DEFAULT_WINDOW_OBJECTIVES : window;
   assertWindow(effectiveWindow);
   const effectiveMinutes = minutes === undefined ? DEFAULT_MINUTES_METHOD : minutes;
   assertMinutesMethod(effectiveMinutes);
   const effectiveThrough = through === undefined ? null : through;
   ci.assertThrough(effectiveThrough);
+  const requestedAlsoRoots = normalizeAlsoRoots(alsoRoots);
   const method = { minutes: effectiveMinutes, window_objectives: effectiveWindow, through_objective: effectiveThrough };
   const rates = ci.loadRates(ratesPath);
   if (!rates.ok) throw new Error(rates.error);
 
   const projectRoots = ci.discoverProjects(paths);
+  const scanned = typeof transcriptsRoot === 'string' && transcriptsRoot !== '';
+  const formerRoots = applicableAlsoRoots(requestedAlsoRoots, projectRoots, scanned);
+  // Only a non-empty list is recorded: a build without former roots keeps the bytes and the digest it always had.
+  if (formerRoots.length > 0) method.also_roots = formerRoots;
   const windowed = applyWindow(
     projectRoots.map((root) => ci.collectProject(root, { through: effectiveThrough })), effectiveWindow);
   const projectList = windowed.projects;
@@ -493,11 +564,11 @@ function buildCalibration({ paths, ratesPath = ci.RATES_PATH, transcriptsRoot = 
   const sources = projectList.map(sourceCounts).sort((a, b) => compareStrings(a.project, b.project));
 
   // Overhead is read after, and separately from, the TRD samples above: it must not touch task_classes or trd_level.
-  const scanned = typeof transcriptsRoot === 'string' && transcriptsRoot !== '';
+  // formerRoots is non-empty only with exactly one project (applicableAlsoRoots), so it never names another project's.
   const overhead = scanned
     ? collectOverhead({
       root: transcriptsRoot,
-      projects: projectRoots.map((root, i) => ({ root, label: projectList[i].label })),
+      projects: projectRoots.map((root, i) => ({ root, label: projectList[i].label, alsoRoots: formerRoots })),
     })
     : { samples: [], counts: { ...NO_OVERHEAD_COUNTS } };
   const overheadSamples = overhead.samples.map((s) => ({ ...s, cost_usd: overheadCost(s, rates, unpricedModels) }));
@@ -510,11 +581,12 @@ function buildCalibration({ paths, ratesPath = ci.RATES_PATH, transcriptsRoot = 
     unreadable: overhead.counts.unreadable,
   };
 
-  // Base notes, then the window note, the cutoff note and the minutes note, each only when it applies.
+  // Base notes, then the window note, the cutoff note, the minutes note and the former-roots note, each only when it applies.
   const notes = [...NOTES];
   if (windowBlock !== null) notes.push(windowNote(windowBlock.objectives));
   if (effectiveThrough !== null) notes.push(throughNote(effectiveThrough));
   if (effectiveMinutes === 'trd_level') notes.push(TRD_LEVEL_MINUTES_NOTE);
+  if (formerRoots.length > 0) notes.push(ALSO_ROOTS_NOTE);
 
   const calibration = {
     version: CALIBRATION_VERSION,
@@ -593,6 +665,7 @@ function writeCalibration(outPath, obj) {
 
 module.exports = {
   CALIBRATION_VERSION,
+  ALSO_ROOTS_ERROR,
   MINUTES_METHODS,
   DEFAULT_MINUTES_METHOD,
   DEFAULT_WINDOW_OBJECTIVES,

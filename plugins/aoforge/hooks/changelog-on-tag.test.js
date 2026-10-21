@@ -395,18 +395,34 @@ describe('changelog-on-tag — commit-ish-aware tree resolution', () => {
 
   const commit556Present = hasCommit('556f8d3');
 
-  test('case 17: real history — v2.6.0 at 556f8d3 denies on the marketplace entry alone', {
+  // TRD 78-02: the hook reads one plugin manifest. 556f8d3 predates the objective 72 rename, so its tree has no
+  // plugins/aoforge manifest and the version-sync check is skipped (the CHANGELOG check still ran and passed).
+  test('case 17: real history — a pre-rename tree (v2.6.0 at 556f8d3) has no AOForge manifest: pass through', {
     skip: commit556Present ? false : 'commit 556f8d3 not present in this checkout',
   }, () => {
     const r = runHook({ tool_name: 'Bash', tool_input: {
       command: 'git tag -a v2.6.0 556f8d3 -m "release"',
     } }, REPO_ROOT);
-    assert.ok(isDeny(r.stdout), `expected deny, got: ${r.stdout}`);
-    const reason = denyReason(r.stdout);
-    // 556f8d3 predates the objective 72 rename: its plugin and marketplace entry carry the legacy name.
+    assert.ok(isPassThrough(r.stdout), `expected pass-through, got: ${r.stdout}`);
+  });
+
+  // TRD 78-02: no second manifest path. A plugin manifest only under the pre-rename plugin directory is not read,
+  // so mismatched versions there are not gated (the tree has no AOForge manifest).
+  test('case 17b: a manifest only under the pre-rename plugin directory is not read', () => {
     const { LEGACY } = require('../aoforge/bin/lib/legacy-names.cjs');
-    assert.match(reason, new RegExp(`marketplace\\.json \\[${LEGACY.slug}\\]: 2\\.5\\.0`));
-    assert.doesNotMatch(reason, /package\.json/);
+    const files = manifestsForTag('3.1.0', '3.1.0');
+    delete files['plugins/aoforge/.claude-plugin/plugin.json'];
+    files[`plugins/${LEGACY.slug}/.claude-plugin/plugin.json`] = JSON.stringify({ name: LEGACY.slug, version: '0.0.1' }, null, 2);
+    const { root, cleanup } = mkRepo({ commitFiles: files });
+    try {
+      const r = runHook({ tool_name: 'Bash', tool_input: { command: 'git tag -a v3.1.0 -m "x"' } }, root);
+      assert.ok(isPassThrough(r.stdout), `expected pass-through, got: ${r.stdout}`);
+    } finally { cleanup(); }
+  });
+
+  test('case 17c: the hook names exactly one manifest, the AOForge one', () => {
+    const { PLUGIN_MANIFEST } = require('./changelog-on-tag.js');
+    assert.equal(PLUGIN_MANIFEST, 'plugins/aoforge/.claude-plugin/plugin.json');
   });
 
 });
@@ -497,5 +513,119 @@ describe('changelog-on-tag — prefixed release tags (objective 77)', () => {
       assert.match(denyReason(r.stdout), /marketplace\.json \[aoforge-stack-demo\]: 0\.9\.0/);
       assert.doesNotMatch(denyReason(r.stdout), /package\.json/);
     } finally { repo.cleanup(); }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Quick 34 — the printed fix must work as printed for every tag form. For `aoforge--vX.Y.Z` the
+// hint used to pass the prefixed tag to `changelog update`, which wrote `## [aoforge--vX.Y.Z]`.
+// ---------------------------------------------------------------------------
+
+describe('changelog-on-tag — the CHANGELOG hint for prefixed tags (quick 34)', () => {
+  const AOF_TOOLS = path.join(__dirname, '..', 'aoforge', 'bin', 'aof-tools.cjs');
+  const GIT_FLAGS = ['-c', 'user.email=t@t', '-c', 'user.name=T', '-c', 'commit.gpgsign=false'];
+  const bash = (command) => ({ tool_name: 'Bash', tool_input: { command } });
+
+  /** Manifests at 3.1.1 and a CHANGELOG that stops at 3.1.0. */
+  function at311() {
+    const m = manifests('3.1.1');
+    m['CHANGELOG.md'] = '# Changelog\n\n## [3.1.0] - 2026-10-16\n\n- entry\n';
+    return m;
+  }
+
+  test('aoforge--v3.1.1 is denied with a hint that passes the bare version', () => {
+    const { root, cleanup } = mkRepo({ commitFiles: at311() });
+    try {
+      const r = runHook(bash('git tag -a aoforge--v3.1.1 -m x'), root);
+      assert.ok(isDeny(r.stdout), r.stdout);
+      const reason = denyReason(r.stdout);
+      assert.ok(reason.includes('changelog update --version v3.1.1'), reason);
+      assert.ok(!reason.includes('--version aoforge--v'), reason);
+    } finally { cleanup(); }
+  });
+
+  test('the plain v3.1.1 deny reason is unchanged, byte for byte', () => {
+    const { root, cleanup } = mkRepo({ commitFiles: at311() });
+    try {
+      const r = runHook(bash('git tag -a v3.1.1 -m x'), root);
+      assert.ok(isDeny(r.stdout), r.stdout);
+      assert.equal(denyReason(r.stdout),
+        'CHANGELOG.md has no entry for v3.1.1. Run before tagging: ' +
+        '  node ~/.claude/aoforge/bin/aof-tools.cjs changelog update --version v3.1.1 ' +
+        'Then commit the CHANGELOG update, then re-run the tag command. ' +
+        'Escape hatch: AOFORGE_SKIP_CHANGELOG_GATE=1');
+    } finally { cleanup(); }
+  });
+
+  test('a pack tag deny names the pack CHANGELOG and the ## [version] heading', () => {
+    const files = manifests('3.1.0');
+    files['plugins/aoforge-stack-demo/.claude-plugin/plugin.json'] = JSON.stringify({ name: 'aoforge-stack-demo', version: '1.0.0' });
+    files['plugins/aoforge-stack-demo/CHANGELOG.md'] = '# Changelog\n\n## [0.9.0] - 2026-10-01\n\n- old\n';
+    files['.claude-plugin/marketplace.json'] = JSON.stringify({
+      name: 'aocyber', version: '3.1.0',
+      plugins: [{ name: 'aoforge', version: '3.1.0' }, { name: 'aoforge-stack-demo', version: '1.0.0' }],
+    });
+    const { root, cleanup } = mkRepo({ commitFiles: files });
+    try {
+      const r = runHook(bash('git tag -a aoforge-stack-demo--v1.0.0 -m x'), root);
+      assert.ok(isDeny(r.stdout), r.stdout);
+      const reason = denyReason(r.stdout);
+      assert.ok(reason.includes('plugins/aoforge-stack-demo/CHANGELOG.md'), reason);
+      assert.ok(reason.includes('## [1.0.0]'), reason);
+    } finally { cleanup(); }
+  });
+
+  test('end to end: running the hinted changelog update and committing makes aoforge--v3.1.1 pass', () => {
+    const { root, cleanup } = mkRepo({ commitFiles: at311() });
+    try {
+      const cmd = 'git tag -a aoforge--v3.1.1 -m x';
+      const first = runHook(bash(cmd), root);
+      assert.ok(isDeny(first.stdout), first.stdout);
+      const m = /--version (\S+)/.exec(denyReason(first.stdout));
+      assert.ok(m, denyReason(first.stdout));
+      const upd = spawnSync(process.execPath, [AOF_TOOLS, '--cwd', root, 'changelog', 'update', '--version', m[1]], { encoding: 'utf-8' });
+      assert.equal(upd.status, 0, upd.stderr);
+      execFileSync('git', [...GIT_FLAGS, 'commit', '-qam', 'docs: changelog'], { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] });
+      const second = runHook(bash(cmd), root);
+      assert.ok(isPassThrough(second.stdout), second.stdout);
+    } finally { cleanup(); }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Quick 37 — this repository's own release tags. The gate reads the working tree when the tag
+// command names no commit, so every tag a release of the current versions pushes must pass here.
+// ---------------------------------------------------------------------------
+
+describe('this repository: release tags pass the gate (quick 37)', () => {
+  // hooks/ -> plugins/aoforge/ -> plugins/ -> the repository root.
+  const REPO = path.join(__dirname, '..', '..', '..');
+  const readJson = (rel) => JSON.parse(fs.readFileSync(path.join(REPO, rel), 'utf8'));
+  const packs = () => fs.readdirSync(path.join(REPO, 'plugins'))
+    .filter((d) => /^aoforge-stack-/.test(d) && fs.existsSync(path.join(REPO, 'plugins', d, '.claude-plugin', 'plugin.json')))
+    .sort()
+    .map((d) => ({ dir: d, ...readJson(`plugins/${d}/.claude-plugin/plugin.json`) }));
+
+  test('19: v<core>, aoforge--v<core> and every <pack>--v<version> are allowed against the working tree', () => {
+    const core = readJson('package.json').version;
+    const found = packs();
+    assert.ok(found.length >= 2, `expected the flutter and web packs, found ${found.map((p) => p.dir).join(', ')}`);
+    const tags = [`v${core}`, `aoforge--v${core}`, ...found.map((p) => `${p.name}--v${p.version}`)];
+    for (const tag of tags) {
+      const r = runHook({ tool_name: 'Bash', tool_input: { command: `git tag -a ${tag} -m x` } }, REPO);
+      assert.equal(r.status, 0, `${tag}: ${r.stderr}`);
+      assert.ok(!isDeny(r.stdout), `${tag} denied: ${isDeny(r.stdout) ? denyReason(r.stdout) : r.stdout}`);
+    }
+  });
+
+  test('20: 3.1.0 and both packs\' 1.0.0 carry their release date, 2026-10-17', () => {
+    const heading = (rel, version) => {
+      const text = fs.readFileSync(path.join(REPO, rel), 'utf8');
+      const line = text.split('\n').find((l) => l.startsWith(`## [${version}]`));
+      assert.equal(line, `## [${version}] - 2026-10-17`, `${rel}: ${line}`);
+    };
+    heading('CHANGELOG.md', '3.1.0');
+    heading('plugins/aoforge-stack-flutter/CHANGELOG.md', '1.0.0');
+    heading('plugins/aoforge-stack-web/CHANGELOG.md', '1.0.0');
   });
 });

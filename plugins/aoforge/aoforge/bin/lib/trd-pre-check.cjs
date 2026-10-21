@@ -494,7 +494,7 @@ function cmdVerifyTrdPre(cwd, objective, raw) {
   const passed = passedCount === totalDimensions;
 
   // needs_agent: false because cheap-checker failures are mechanical (not LLM-grade).
-  // The caller decides whether to additionally spawn df-job-checker for LLM dimensions.
+  // The caller decides whether to additionally spawn the job-checker agent for LLM dimensions.
   const needs_agent = false;
 
   const elapsed_ms = Number(process.hrtime.bigint() - startNs) / 1e6;

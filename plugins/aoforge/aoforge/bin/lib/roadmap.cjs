@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { output, error, normalizeObjectiveName, findPlanFiles, generateSlugInternal } = require('./helpers.cjs');
 const { extractFrontmatter } = require('./frontmatter.cjs');
-const { findObjectiveInternal } = require('./objective.cjs');
+const { findObjectiveInternal, completedSummaryFiles } = require('./objective.cjs');
 const { updateProgressTableRow, updateJobsLine } = require('./roadmap-progress.cjs');
 const { reconcile } = require('./roadmap-reconcile.cjs');
 const { isStoreMode } = require('./planning-mode.cjs');
@@ -270,7 +270,12 @@ function analyzeRoadmap(cwd) {
       if (dirMatch) {
         const objectiveFiles = fs.readdirSync(path.join(objectivesDir, dirMatch));
         jobCount = findPlanFiles(objectiveFiles).length;
-        summaryCount = objectiveFiles.filter(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md').length;
+        // Completed TRDs only: a deferred or checkpoint SUMMARY, or a progress checkpoint, is not one
+        // (objective 74, TRD 75-03).
+        summaryCount = completedSummaryFiles(
+          path.join(objectivesDir, dirMatch),
+          objectiveFiles.filter(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md'),
+        ).length;
         hasContext = objectiveFiles.some(f => f.endsWith('-CONTEXT.md') || f === 'CONTEXT.md');
         hasResearch = objectiveFiles.some(f => f.endsWith('-RESEARCH.md') || f === 'RESEARCH.md');
 
@@ -405,7 +410,10 @@ function cmdRoadmapUpdateJobProgress(cwd, objectiveNum, raw) {
   }
 
   const jobCount = objectiveInfo.jobs.length;
-  const summaryCount = objectiveInfo.summaries.length;
+  // Completed TRDs only: a SUMMARY whose frontmatter status is deferred or checkpoint, or a progress
+  // checkpoint (unticked Progress task, no Self-Check), is on disk but is not completion
+  // (objective 74, TRD 75-03), so it never makes the objective Complete.
+  const summaryCount = completedSummaryFiles(path.join(cwd, objectiveInfo.directory), objectiveInfo.summaries).length;
 
   if (jobCount === 0) {
     output({ updated: false, reason: 'No plans found', job_count: 0, summary_count: 0 }, raw, 'no plans');
@@ -450,7 +458,9 @@ function cmdRoadmapUpdateJobProgress(cwd, objectiveNum, raw) {
   fs.writeFileSync(roadmapPath, roadmapContent, 'utf-8');
 
   // Nested per-TRD checkboxes (`- [ ] NN-MM-TRD.md — ...`) from SUMMARY.md
-  // presence + Self-Check verdict. Reuses the LOCKED `reconcile` export of
+  // presence + Self-Check verdict + frontmatter status (a `deferred` or
+  // `checkpoint` SUMMARY un-ticks a [x] line: trd_summary_not_complete,
+  // objective 74). Reuses the LOCKED `reconcile` export of
   // roadmap-reconcile.cjs in dry-run and applies ONLY this objective's per-TRD
   // changes. Write mode is deliberately not used: it rewrites every
   // objective's TRD lines and applies the `**Status:** complete` /
@@ -462,8 +472,9 @@ function cmdRoadmapUpdateJobProgress(cwd, objectiveNum, raw) {
   const trdCheckboxes = [];
   if (/^\d+$/.test(String(objectiveNum))) {
     const want = String(parseInt(objectiveNum, 10)); // '040' / '40' -> '40'
+    const TRD_KINDS = ['trd_summary_exists', 'trd_summary_failed', 'trd_summary_not_complete'];
     const mine = reconcile({ projectRoot: cwd, mode: 'dry-run' }).changes.filter(c =>
-      (c.kind === 'trd_summary_exists' || c.kind === 'trd_summary_failed') &&
+      TRD_KINDS.includes(c.kind) &&
       String(parseInt(c.objective_num, 10)) === want);
     if (mine.length) {
       const lines = fs.readFileSync(roadmapPath, 'utf-8').split('\n');
@@ -542,7 +553,7 @@ function summaryOneLiner(text) {
 // execute). planMilestoneComplete reads and decides; applyMilestonePlan carries out the ops it is given and decides
 // nothing; `--dry-run` prints the plan instead of executing it. Paths in the plan are project-relative POSIX
 // (`.aoforge/milestones/v1.0-ROADMAP.md`), the form `scope.objectives[].dir` already uses; each names the project's
-// resolved planning directory (`.aoforge/`, or a legacy one): planMilestoneComplete and cmdMilestoneComplete resolve
+// resolved planning directory (`.aoforge/`): planMilestoneComplete and cmdMilestoneComplete resolve
 // MILESTONES_REL, STATE_REL and MILESTONE_ARCHIVE_REL per call.
 
 /**

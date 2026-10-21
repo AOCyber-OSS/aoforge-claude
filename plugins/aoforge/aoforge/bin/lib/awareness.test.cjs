@@ -5,7 +5,7 @@ const assert = require('node:assert');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const { planningDirName, PLANNING_DIR_NAMES } = require('./compat.cjs');
+const { planningDirName } = require('./compat.cjs');
 
 const {
   parseStateMd,
@@ -714,7 +714,7 @@ test('gitignore G1: .gitignore contains .awareness-cache.json line', () => {
     return;
   }
   const content = fs.readFileSync(gitignorePath, 'utf-8');
-  // the line names this repository's planning directory, wherever it is (the legacy name until 72-21 moves it, `.aoforge/` after)
+  // the line names this repository's planning directory, `.aoforge/`
   const dir = planningDirName(path.dirname(gitignorePath));
   assert.ok(content.split(/\r?\n/).includes(`${dir}/.awareness-cache.json`), `no ${dir}/.awareness-cache.json line`);
 });
@@ -725,14 +725,12 @@ test('gitignore G2: gitignore line appears exactly once (does not inadvertently 
     return;
   }
   const content = fs.readFileSync(gitignorePath, 'utf-8');
-  // One line per planning-directory name (TRD 72-06: the legacy line keeps its new twin for one release),
-  // each exactly once, and nothing else names the file.
+  // The `.aoforge/` line exactly once, and no other line names the file (the legacy twin went with the main
+  // reconcile, TRD 79-01; AOForge reads `.aoforge/` only, TRD 78-11).
   const lines = content.split(/\r?\n/).filter((l) => l.includes('.awareness-cache.json'));
-  assert.deepStrictEqual(
-    lines.sort(),
-    PLANNING_DIR_NAMES.map((dir) => `${dir}/.awareness-cache.json`).sort(),
-    'one .awareness-cache.json line per planning directory name in .gitignore',
-  );
+  const allowed = [`${planningDirName(path.dirname(gitignorePath))}/.awareness-cache.json`];
+  assert.strictEqual(lines.filter((l) => l === allowed[0]).length, 1, 'the .aoforge/ line appears exactly once');
+  assert.deepStrictEqual(lines.filter((l) => !allowed.includes(l)), [], 'nothing else names .awareness-cache.json');
 });
 
 // ─── Group T: templates/config.json documentation ────────────────────────────

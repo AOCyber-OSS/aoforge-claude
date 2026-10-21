@@ -8,6 +8,10 @@ what happens next, then — for a fresh or resumed adoption — map the code, in
 scaffold the planning tree, verify health, and produce ADOPT-REPORT.md, ending in exactly one
 recorded change on `aoforge/adopt`. Nothing here ever asks a question; every uncertain call is
 written down with its confidence and evidence instead.
+
+A pre-rename project (its planning directory, config stamp key or CLAUDE.md block markers date
+from before the rename) takes the migrate path instead: it is moved onto `.aoforge/` as the same
+one recorded change, with nothing mapped or inferred.
 </purpose>
 
 <rules>
@@ -39,9 +43,11 @@ Run:
 node ~/.claude/aoforge/bin/aof-tools.cjs --cwd "$TARGET" adopt preflight
 ```
 
-Parse the JSON. `route` is one of `refuse`, `new-project`, `upgrade`, `resume`, `adopt`.
+Parse the JSON. `route` is one of `refuse`, `new-project`, `upgrade`, `resume`, `adopt`, `migrate`.
 
 - **`refuse`** — print `reason` and `next` verbatim, stop. Nothing changes.
+  The migrate reasons `both-planning-dirs` and `legacy-block-malformed` (from this step) and
+  `move-failed` (from `begin`) stop the same way.
 - **`new-project`** — this repository has no source code yet; say so and point at
   `/aoforge:new-project`, stop.
 - **`upgrade`** — this is already an AOForge project. Run
@@ -53,11 +59,23 @@ Parse the JSON. `route` is one of `refuse`, `new-project`, `upgrade`, `resume`, 
   stop.
 - **`resume`** — an adoption was already in progress on this target. Note `adopt.steps` (the flags
   `mapped`, `project_md`, `scaffolded`, `reported`) — the steps below use them to skip work already
-  done. Continue to `begin`.
+  done. Continue to `begin`. With `adopt.mode` `migrate` the steps are `moved`, `scaffolded` and
+  `reported` instead, and the migrate path applies; every step of it is safe to re-run.
 - **`adopt`** — fresh adoption. Continue to `begin`.
+- **`migrate`** — a pre-rename project: its planning directory, config stamp key or CLAUDE.md
+  block markers date from before the rename. `migration` lists what will move and change. Continue
+  to `begin` and follow the migrate path: `begin`, `scaffold`, `report`, `commit`, `summary`.
 </step>
 
 <step name="begin">
+On the migrate path the command below also moves the planning trees itself, with `git mv`. Nothing
+is edited by hand, and a project whose planning lives only in component directories has no root
+planning directory to hold a skill marker, so do not run `skill-active --start` afterwards.
+On the migrate path, go on to `scaffold` after the command; the `map` text at the end of this step
+is for the other routes. On the migrate path, a `refuse` from the command (`move-failed`, or
+`branch-failed` before anything moved) is printed and stops the run; re-running `/aoforge:adopt`
+resumes the move.
+
 Run:
 
 ```bash
@@ -75,8 +93,11 @@ Continue to `map`.
 </step>
 
 <step name="map">
+Skip on the migrate path.
+
 Unless `steps.mapped` is already true (from `resume`), follow
-`@~/.claude/aoforge/workflows/map-codebase.md` for `$TARGET` in non-interactive mode — see that
+`{runtime_root}/workflows/map-codebase.md` (`{runtime_root}` is what
+`RUNTIME_ROOT=$(echo ~/.claude/aoforge) && echo "$RUNTIME_ROOT"` prints) for `$TARGET` in non-interactive mode — see that
 workflow's `<non_interactive_mode>` section. If the Task tool is unavailable in this run, perform
 each mapper focus (tech, arch, quality, concerns) yourself in sequence instead of spawning agents.
 
@@ -84,6 +105,8 @@ Continue to `infer_project`.
 </step>
 
 <step name="infer_project">
+Skip on the migrate path.
+
 Unless `steps.project_md` is already true (from `resume`), read the 8 codebase maps, any README*,
 and the manifest files, then produce two files.
 
@@ -124,6 +147,13 @@ Continue to `scaffold`.
 </step>
 
 <step name="scaffold">
+On the migrate path the command below renames the config stamp key, the CLAUDE.md block markers
+and the ignore lines, after a backup, and writes nothing else (its JSON carries a `converted` count;
+with `--raw` it prints `migrated: <n> converted`). On the migrate path, exit 1 means the move is not
+finished: stop and report, fix nothing by hand; re-running `/aoforge:adopt` resumes.
+Continue to `report` on the migrate path (skipping `confirm_stack_profile` and `health`); the text
+after the command is for the other routes.
+
 Run:
 
 ```bash
@@ -137,6 +167,8 @@ Continue to `confirm_stack_profile`.
 </step>
 
 <step name="confirm_stack_profile">
+Skip on the migrate path.
+
 Best-effort: confirm the drafted `.aoforge/STACK.md` against the code with the gopls/dart MCP
 tools when this session has them. `.mcp.json` servers need approval and a session restart, so
 their absence is normal — never block on them, never install anything.
@@ -166,6 +198,9 @@ Continue to `health`.
 </step>
 
 <step name="health">
+Skip on the migrate path: the `report` step checks health at every planning root itself, and
+`--repair` would write planning content, so it is never run there. Continue to `report`.
+
 Run:
 
 ```bash
@@ -193,10 +228,20 @@ node ~/.claude/aoforge/bin/aof-tools.cjs --cwd "$TARGET" adopt report
 
 Keep `commit_files` and `commit_message` from the result for the next step.
 
+On the migrate path, read `commit_blocked` first. When it is not null, print its `reason`,
+`message` and `fix`, skip `commit` and stop: nothing was committed, and re-running `/aoforge:adopt`
+after the fix resumes. Otherwise keep `report_path` and the `needs_review` rows for the summary
+too; `commit_files` is already compact (a directory entry per moved tree), pass it as it is.
+
 Continue to `commit`.
 </step>
 
 <step name="commit">
+On the migrate path no skill marker was started, so skip `skill-active --end` and run only the
+`commit` command below. On the migrate path, an empty `commit_files`, or a result whose `reason` is
+`nothing_to_commit`, means nothing is left to record: do not commit, go on to `summary`. That happens when the
+change was already recorded another way; after adopt's own commit, `adopt preflight` routes the project to `upgrade`.
+
 End the skill marker first:
 
 ```bash
@@ -224,6 +269,12 @@ Report, in plain text:
 - "Review `.aoforge/ADOPT-REPORT.md`, then `git switch <base_branch> && git merge aoforge/adopt`.
   Nothing was pushed."
 
+On the migrate path report instead: the branch and commit sha as above (or that nothing was left
+to record); the `report_path` and how many `needs_review` rows it holds; "Review `<report_path>`,
+then `git switch <base_branch> && git merge aoforge/adopt`. Nothing was pushed."; and the next
+step, `node ~/.claude/aoforge/bin/aof-tools.cjs --cwd "$TARGET" upgrade --check` (the next session
+start applies the automatic migrations).
+
 End workflow.
 </step>
 
@@ -235,6 +286,9 @@ End workflow.
 - A fresh or resumed `adopt` route produces exactly one recorded change on `aoforge/adopt`, with
   PROJECT.md, the codebase maps, STACK.md, config/STATE/ROADMAP, the CLAUDE.md block, and
   `.aoforge/ADOPT-REPORT.md` all present.
+- A `migrate` route ends in one recorded change on `aoforge/adopt` that moves the planning trees
+  with history and converts only the config stamp key, the CLAUDE.md block markers and ignore
+  lines; a blocked commit stops with the reason.
 - Never asks the user anything, anywhere in the run.
 - `.aoforge/.skill-active` is never part of the committed file list.
 </success_criteria>

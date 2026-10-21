@@ -22,7 +22,7 @@ Load all context in one call:
 INIT=$(node ~/.claude/aoforge/bin/aof-tools.cjs init execute-objective "${OBJECTIVE_ARG}")
 ```
 
-Parse JSON for: `executor_model`, `verifier_model`, `commit_docs`, `parallelization`, `branching_strategy`, `branch_name`, `objective_found`, `objective_dir`, `objective_number`, `objective_name`, `objective_slug`, `jobs`, `incomplete_jobs`, `job_count`, `incomplete_count`, `state_exists`, `roadmap_exists`, `bootstrap`, `bootstrap_objectives`, `pr_lifecycle`, `objective_branch`, `pr_number`, `branching_strategy_ignored`, `deprecations`.
+Parse JSON for: `runtime_root` (fills `{runtime_root}`), `executor_model`, `verifier_model`, `commit_docs`, `parallelization`, `branching_strategy`, `branch_name`, `objective_found`, `objective_dir`, `objective_number`, `objective_name`, `objective_slug`, `jobs`, `incomplete_jobs`, `job_count`, `incomplete_count`, `state_exists`, `roadmap_exists`, `bootstrap`, `bootstrap_objectives`, `pr_lifecycle`, `objective_branch`, `pr_number`, `branching_strategy_ignored`, `deprecations`.
 
 `pr_lifecycle` is the one switch for the objective branch and pull request (store mode). Branch on this field only; never probe config with a shell command. When it is true, `objective_branch` is the linked branch name, `pr_number` is the PR number (null until `gh pr start` has opened it) and `branch_name` is null. When it is false, every value is as before and `deprecations` is present only if `branching_strategy` is `objective` or `milestone`.
 
@@ -386,6 +386,9 @@ Note the printed `MODE` value as a literal. A shell variable does not survive in
 
    Safety rule: never downgrade executor below sonnet.
 
+   The model this step picks for a plan is `{resolved_executor_model}`, which every spawn of that plan below uses.
+   <!-- model-source: resolved_executor_model from executor_model -->
+
 4. **Spawn executor agents:**
 
    Embed the full TRD content inline in every executor spawn prompt. A parallel-wave
@@ -417,6 +420,8 @@ Note the printed `MODE` value as a literal. A shell variable does not survive in
      subagent_type="executor",
      model="{resolved_executor_model}",
      prompt="
+       AOForge runtime: {runtime_root}
+
        <objective>
        Execute plan {plan_number} of objective {objective_number}-{objective_name}.
        Commit each task atomically. Publish the SUMMARY with `aof-tools summary checkpoint` (per task) and
@@ -426,11 +431,9 @@ Note the printed `MODE` value as a literal. A shell variable does not survive in
        <execution_context>
        A Task prompt does not expand @ references: Read these files yourself, each at the moment it is needed,
        never all of them up front (checkpoints.md alone is 42 KB).
-       - ~/.claude/aoforge/templates/summary.md — before the first `summary checkpoint`
-       - ~/.claude/aoforge/references/checkpoints.md — only if the TRD has a checkpoint task (type checkpoint:human-verify, checkpoint:decision or checkpoint:human-action), before that task
-       - ~/.claude/aoforge/references/tdd.md — only if the TRD frontmatter says type: tdd or a task carries tdd=true
-       - ~/.claude/aoforge/references/anti-patterns.md — not needed: your prompt carries the quick reference
-       - ~/.claude/aoforge/workflows/execute-trd.md — only if your own prompt leaves a step unclear (your prompt is the complete procedure)
+       - {runtime_root}/references/checkpoints.md — only if the TRD has a checkpoint task (type checkpoint:human-verify, checkpoint:decision or checkpoint:human-action), before that task
+       - {runtime_root}/references/anti-patterns.md — not needed: your prompt carries the quick reference
+       - {runtime_root}/workflows/execute-trd.md — only if your own prompt leaves a step unclear (your prompt is the complete procedure)
        </execution_context>
 
        <plan_content>
@@ -607,7 +610,7 @@ Note the printed `MODE` value as a literal. A shell variable does not survive in
    node ~/.claude/aoforge/bin/aof-tools.cjs roadmap update-job-progress "${OBJECTIVE_NUMBER}"
    ```
    ```bash
-   node ~/.claude/aoforge/bin/aof-tools.cjs commit "docs(objective-{objective_number}): refresh roadmap and state after wave {N} merges" --files .aoforge/ROADMAP.md .aoforge/STATE.md .aoforge/state.json
+   node ~/.claude/aoforge/bin/aof-tools.cjs commit "docs(objective-{objective_number}): refresh roadmap and state after wave {N} merges" --files .aoforge/ROADMAP.md .aoforge/STATE.md .aoforge/STATE_ARCHIVE.md .aoforge/state.json
    ```
    <!-- merge-sequence:end -->
 
@@ -907,8 +910,10 @@ When executor returns a checkpoint AND `MODE` is `"autonomous"`:
   ```
   Task(
     subagent_type="verifier",
-    model="{resolved_verifier_model}",
+    model="{verifier_model}",
     prompt="
+      AOForge runtime: {runtime_root}
+
       <objective>
       CHECKPOINT VERIFICATION MODE — scoped functional pass, not full objective verification.
       Verify the checkpoint below and return structured status.
@@ -1017,6 +1022,8 @@ When executor returns a checkpoint AND `MODE` is not `"autonomous"` AND `AUTO_CF
      model="{resolved_executor_model}",
      description="Execute TRD {trd_id} (continuation)",
      prompt="
+       AOForge runtime: {runtime_root}
+
        <objective>
        Execute TRD {trd_id} of objective {objective_number}-{objective_name}: continuation after a checkpoint.
        Resume at Task {resume_task_number} ({resume_task_name}). Do not redo committed tasks.
@@ -1039,11 +1046,9 @@ When executor returns a checkpoint AND `MODE` is not `"autonomous"` AND `AUTO_CF
        <execution_context>
        A Task prompt does not expand @ references: Read these files yourself, each at the moment it is needed,
        never all of them up front (checkpoints.md alone is 42 KB).
-       - ~/.claude/aoforge/templates/summary.md — before the first `summary checkpoint`
-       - ~/.claude/aoforge/references/checkpoints.md — only if the TRD has a checkpoint task (type checkpoint:human-verify, checkpoint:decision or checkpoint:human-action), before that task
-       - ~/.claude/aoforge/references/tdd.md — only if the TRD frontmatter says type: tdd or a task carries tdd=true
-       - ~/.claude/aoforge/references/anti-patterns.md — not needed: your prompt carries the quick reference
-       - ~/.claude/aoforge/workflows/execute-trd.md — only if your own prompt leaves a step unclear (your prompt is the complete procedure)
+       - {runtime_root}/references/checkpoints.md — only if the TRD has a checkpoint task (type checkpoint:human-verify, checkpoint:decision or checkpoint:human-action), before that task
+       - {runtime_root}/references/anti-patterns.md — not needed: your prompt carries the quick reference
+       - {runtime_root}/workflows/execute-trd.md — only if your own prompt leaves a step unclear (your prompt is the complete procedure)
        </execution_context>
 
        <plan_content>
@@ -1110,7 +1115,7 @@ When executor returns a checkpoint AND `MODE` is not `"autonomous"` AND `AUTO_CF
 
 **Why fresh agent, not resume:** Resume relies on internal serialization that breaks with parallel tool calls. Fresh agents with explicit state are more reliable.
 
-**Future consideration:** For simple plans (single auto task + checkpoint, no parallel tool calls), agent resume may be viable. Before considering resume, verify the agent did NOT use parallel tool calls during execution. See `@~/.claude/aoforge/references/checkpoints.md` "Resume vs Fresh Agent Decision" section for the full decision framework.
+**Future consideration:** For simple plans (single auto task + checkpoint, no parallel tool calls), agent resume may be viable. Before considering resume, verify the agent did NOT use parallel tool calls during execution. See `{runtime_root}/references/checkpoints.md` "Resume vs Fresh Agent Decision" section for the full decision framework.
 
 **Checkpoints in parallel waves:** Agent pauses and returns while other parallel agents may complete. Present checkpoint, spawn continuation, wait for all before next wave.
 </step>
@@ -1245,6 +1250,7 @@ OBJECTIVE_REQ_IDS=$(node ~/.claude/aoforge/bin/aof-tools.cjs roadmap get-objecti
 ```
 Task(
   prompt="Verify objective {objective_number} goal achievement.
+AOForge runtime: {runtime_root}
 Objective directory: {objective_dir}
 Objective goal: {goal from ROADMAP.md}
 Objective requirement IDs: {objective_req_ids}
@@ -1309,10 +1315,16 @@ MAX_GAP_CYCLES=2
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ```
 
+   `init execute-objective` prints no planner model (quick 42). Resolve it once per run:
+   ```bash
+   PLANNER_MODEL=$(node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model planner --objective "${OBJECTIVE_NUMBER}" --raw)
+   ```
+
    Spawn planner with `--gaps` flag:
    ```
    Task(
      prompt="<planning_context>
+     AOForge runtime: {runtime_root}
      **Objective:** {objective_number}
      **Mode:** gap_closure
      **Gap Closure:** {verification_content}
@@ -1320,7 +1332,7 @@ MAX_GAP_CYCLES=2
      **Roadmap:** {roadmap_content}
      </planning_context>",
      subagent_type="planner",
-     model="{planner_model}",
+     model="{PLANNER_MODEL}",
      description="Plan gap closure for Objective {objective_number}"
    )
    ```
@@ -1453,7 +1465,7 @@ A dependent objective starts from the default branch, so merge (or reconcile) th
 
 Execute the transition workflow inline (do NOT use Task — orchestrator context is ~10-15%, transition needs objective completion data already in context):
 
-Read and follow `~/.claude/aoforge/workflows/transition.md`, passing through the `--auto` flag so it propagates to the next objective invocation.
+Read and follow `{runtime_root}/workflows/transition.md`, passing through the `--auto` flag so it propagates to the next objective invocation.
 
 **If neither `--auto` nor `AUTO_CFG` is true:**
 

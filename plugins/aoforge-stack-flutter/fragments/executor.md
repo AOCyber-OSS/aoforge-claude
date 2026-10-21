@@ -60,7 +60,7 @@ exit 1
 
 For non-Flutter TRDs (type != ui OR stack != flutter), skip this detector entirely.
 
-The bootstrap detector is shipped by TRD 10-04a (`lib/flutter-ui-bootstrap.cjs` + aof-tools subcommand). See `~/.claude/aoforge/stacks/flutter/references/flutter-state-patterns.md` "Web verification mechanism" section for why test_driver/integration_test.dart is required (web verification flows through `flutter drive --driver=test_driver/integration_test.dart`).
+The bootstrap detector is shipped by TRD 10-04a (`lib/flutter-ui-bootstrap.cjs` + aof-tools subcommand). See `<runtime>/stacks/flutter/references/flutter-state-patterns.md` "Web verification mechanism" section for why test_driver/integration_test.dart is required (web verification flows through `flutter drive --driver=test_driver/integration_test.dart`).
 
 ## Flutter UI per-task verification (REQ-10-04)
 
@@ -243,5 +243,5 @@ If any post-all-tasks gate fails:
 For non-Flutter TRDs (type != ui OR stack != flutter), skip ALL Flutter UI verification.
 
 **Flutter UI reference docs:**
-- `~/.claude/aoforge/stacks/flutter/references/flutter-state-patterns.md` — state-coverage regex catalog AND "Web verification mechanism" section (why tests.maestro is mobile-only-by-design; why flutter drive is the web verifier)
+- `<runtime>/stacks/flutter/references/flutter-state-patterns.md` — state-coverage regex catalog AND "Web verification mechanism" section (why tests.maestro is mobile-only-by-design; why flutter drive is the web verifier)
 - `aof-flutter verify flutter-ui-bootstrap` — bootstrap gate at executor start (REQ-10-07; shipped by TRD 10-04a)

@@ -11,7 +11,7 @@
  *
  * These tests are the mechanical guard against that class of drift:
  *   - agent files and profile entries stay in one-to-one correspondence
- *   - both key spellings resolve identically
+ *   - a prefixed spelling is an unknown agent (quick 40 removed the pre-plugin df- alias)
  *   - every tier names a real model id
  *   - resolution is auditable (tier + concrete id, not just an alias)
  */
@@ -83,12 +83,18 @@ describe('TRD 28-02 — the model profile table binds', () => {
 });
 
 describe('TRD 28-02 — resolve-model resolution is correct and auditable', () => {
-  test('both key spellings resolve identically', () => {
+  // quick 40: the pre-plugin `df-` alias is gone. A prefixed name is an unknown agent like any other: exit 0, a
+  // stderr warning and the `sonnet` fallback, the same shape as `resolve-model no-such-agent`.
+  test('a df- prefixed agent name is an unknown agent', () => {
     for (const agent of agentNames) {
-      const bare = resolveModel(agent);
-      const prefixed = resolveModel(`df-${agent}`);
-      assert.equal(bare.model, prefixed.model, `${agent}: bare=${bare.model} df-=${prefixed.model}`);
-      assert.equal(bare.tier, prefixed.tier, `${agent}: tier mismatch between spellings`);
+      const name = `df-${agent}`;
+      const r = spawnSync(process.execPath, [DF_TOOLS, 'resolve-model', name], { cwd: REPO, encoding: 'utf8' });
+      assert.equal(r.status, 0, `${name}: exit ${r.status}: ${r.stderr}`);
+      const out = JSON.parse(r.stdout);
+      assert.equal(out.unknown_agent, true, `${name}: expected unknown_agent, got ${r.stdout}`);
+      assert.equal(out.model, 'sonnet', `${name}: expected the sonnet fallback`);
+      assert.equal(out.requested, name);
+      assert.ok(r.stderr.includes(`unknown agent "${name}"`), `${name}: no unknown-agent warning on stderr: ${r.stderr}`);
     }
   });
 
@@ -311,10 +317,17 @@ describe('TRD 76-06 — per-focus tiers and the verdict floor', () => {
         assert.ok(rank[profiles.agents[agent][p]] >= rank[floor], `agents.${agent}.${p} is below the verdict floor`);
       }
     }
-    const dir = project({ model_profile: 'budget', agent_models: { verifier: { budget: 'haiku' } } });
+    // quick 35: the planner entry proves the project's agent_models is read at all. Before, loadConfig dropped the
+    // key, so the verifier assertion passed on the table row alone and said nothing about the floor.
+    const dir = project({ model_profile: 'budget', agent_models: { verifier: { budget: 'haiku' }, planner: { budget: 'haiku' } } });
     try {
-      assert.equal(resolveIn(dir, 'verifier').tier, floor, 'a project agent_models entry cannot drop a verdict below the floor');
+      const verifier = resolveIn(dir, 'verifier');
+      assert.equal(verifier.tier, floor, 'a project agent_models entry cannot drop a verdict below the floor');
+      assert.equal(verifier.tier_source, 'verdict_floor');
       assert.equal(resolveIn(dir, 'job-checker').tier, floor);
+      const planner = resolveIn(dir, 'planner');
+      assert.equal(planner.tier, 'haiku', 'a non-verdict agent_models entry changes its tier');
+      assert.equal(planner.tier_source, 'agent_models');
     } finally { fs.rmSync(dir, { recursive: true, force: true }); }
   });
 
@@ -358,5 +371,223 @@ describe('TRD 76-07 — escalation re-spawns one rung up', () => {
       assert.match(read(rel), /ESCALATION REQUESTED[\s\S]*--escalate-from/, `${rel} must re-spawn one rung up`);
     }
     assert.match(read('agents/debugger.md'), /## ESCALATION REQUESTED/);
+  });
+});
+
+// quick 35: loadConfig dropped `agent_models` and `model_overrides`, so neither ever reached a spawn, and
+// cmdResolveModel never read `model_overrides` at all. Precedence, highest first: --escalate-from,
+// model_overrides (unfloored), the project agent_models tier, the focus tier, the package table row; the verdict
+// floor applies to the last three. One resolver serves resolve-model and every init command.
+describe('quick 35 — project model settings bind', () => {
+  const os = require('os');
+  function project(config, { objectiveDir } = {}) {
+    const dir = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'mp-q35-'));
+    fs.mkdirSync(path.join(dir, '.aoforge'));
+    fs.mkdirSync(path.join(dir, 'home'));
+    fs.writeFileSync(path.join(dir, '.aoforge', 'config.json'), JSON.stringify(config));
+    if (objectiveDir) fs.mkdirSync(path.join(dir, '.aoforge', 'objectives', objectiveDir), { recursive: true });
+    return dir;
+  }
+  function aof(dir, args) {
+    const env = { ...process.env, HOME: path.join(dir, 'home') };
+    delete env.AOFORGE_STACKS_DIR;
+    const r = spawnSync(process.execPath, [DF_TOOLS, ...args], { cwd: dir, encoding: 'utf8', env });
+    assert.equal(r.status, 0, `aof-tools ${args.join(' ')}: ${r.stderr}`);
+    return r.stdout;
+  }
+  const resolveIn = (dir, ...args) => JSON.parse(aof(dir, ['resolve-model', ...args]));
+  const rawIn = (dir, ...args) => aof(dir, ['resolve-model', ...args, '--raw']);
+  const done = (dir) => fs.rmSync(dir, { recursive: true, force: true });
+
+  test('1. agent_models binds: resolve-model planner gives the project tier, --raw prints it', () => {
+    const dir = project({ model_profile: 'quality', agent_models: { planner: { quality: 'haiku' } } });
+    try {
+      const r = resolveIn(dir, 'planner');
+      assert.equal(r.tier, 'haiku');
+      assert.equal(r.tier_source, 'agent_models');
+      assert.equal(r.model_id, profiles.models.haiku);
+      assert.equal(rawIn(dir, 'planner'), 'haiku');
+    } finally { done(dir); }
+  });
+
+  test('2. model_overrides binds in resolve-model', () => {
+    const dir = project({ model_overrides: { debugger: 'haiku' } });
+    try {
+      assert.equal(rawIn(dir, 'debugger'), 'haiku');
+      const r = resolveIn(dir, 'debugger');
+      assert.equal(r.tier, 'haiku');
+      assert.equal(r.tier_source, 'model_overrides');
+    } finally { done(dir); }
+  });
+
+  test('3. init execute-objective and init quick agree with resolve-model', () => {
+    const dir = project({ model_profile: 'quality', model_overrides: { executor: 'haiku' } }, { objectiveDir: '01-x' });
+    try {
+      const cli = rawIn(dir, 'executor');
+      assert.equal(cli, 'haiku');
+      assert.equal(JSON.parse(aof(dir, ['init', 'execute-objective', '1'])).executor_model, cli);
+      assert.equal(JSON.parse(aof(dir, ['init', 'quick', 'x'])).executor_model, cli);
+    } finally { done(dir); }
+  });
+
+  test('4. model_overrides is not floored: a verdict agent can be pinned below the floor', () => {
+    const dir = project({ model_profile: 'budget', model_overrides: { verifier: 'haiku' } });
+    try {
+      const r = resolveIn(dir, 'verifier');
+      assert.equal(r.tier, 'haiku');
+      assert.equal(r.tier_source, 'model_overrides');
+    } finally { done(dir); }
+  });
+
+  test('6. agent_models beats the focus tier', () => {
+    const dir = project({ model_profile: 'balanced', agent_models: { 'codebase-mapper': { balanced: 'haiku' } } });
+    try {
+      const r = resolveIn(dir, 'codebase-mapper', '--focus', 'concerns');
+      assert.equal(r.tier, 'haiku');
+      assert.equal(r.tier_source, 'agent_models');
+      assert.equal(r.focus, 'concerns');
+    } finally { done(dir); }
+  });
+
+  // quick 40: only the bare key binds. A `df-` spelled key names an agent that does not exist, so the table applies.
+  test('7. a df- prefixed agent_models key does not bind: the table tier applies', () => {
+    const dir = project({ model_profile: 'quality', agent_models: { 'df-planner': { quality: 'haiku' } } });
+    try {
+      const r = resolveIn(dir, 'planner');
+      assert.equal(r.tier_source, 'table');
+      assert.equal(r.tier, profiles.agents.planner.quality);
+    } finally { done(dir); }
+  });
+
+  test('7b. a df- prefixed model_overrides key does not bind', () => {
+    const dir = project({ model_overrides: { 'df-debugger': 'haiku' } });
+    try {
+      const r = resolveIn(dir, 'debugger');
+      assert.equal(r.tier_source, 'table');
+      assert.equal(r.tier, profiles.agents.debugger.balanced);
+    } finally { done(dir); }
+  });
+
+  test('8. --escalate-from beats an override: one rung above the model the attempt ran on', () => {
+    const dir = project({ model_overrides: { planner: 'haiku' } });
+    try {
+      const r = resolveIn(dir, 'planner', '--escalate-from', 'haiku');
+      assert.equal(r.tier, 'sonnet');
+      assert.equal(r.tier_source, 'escalation');
+      assert.equal(r.escalated_from, 'haiku');
+    } finally { done(dir); }
+  });
+
+  // quick 40: every compound init command resolves the bare agent name. A bare-key model_overrides sentinel for
+  // every agent reaches every `*_model` field and every value of every `*_models` map; a caller that passed any
+  // other spelling would fall back to the table or to `sonnet` and miss the sentinel.
+  test('9. every compound init command resolves bare agent names (sentinel override)', () => {
+    const SENTINEL = 'claude-sentinel-1';
+    const overrides = Object.fromEntries(Object.keys(profiles.agents).map((a) => [a, SENTINEL]));
+    const dir = project({ model_profile: 'quality', model_overrides: overrides }, { objectiveDir: '01-x' });
+    try {
+      const commands = [
+        ['execute-objective', '1'], ['plan-objective', '1'], ['quick', 'x'], ['verify-work', '1'],
+        ['new-project'], ['new-milestone'], ['map-codebase'], ['security-audit'], ['progress'],
+      ];
+      const seen = new Set();
+      const wrong = [];
+      for (const args of commands) {
+        const out = JSON.parse(aof(dir, ['init', ...args]));
+        for (const [k, v] of Object.entries(out)) {
+          if (k.endsWith('_model')) {
+            seen.add(k);
+            if (v !== SENTINEL) wrong.push(`init ${args[0]} ${k}=${JSON.stringify(v)}`);
+          } else if (k.endsWith('_models')) {
+            seen.add(k);
+            for (const [f, m] of Object.entries(v || {})) {
+              if (m !== SENTINEL) wrong.push(`init ${args[0]} ${k}.${f}=${JSON.stringify(m)}`);
+            }
+          }
+        }
+      }
+      assert.deepEqual(wrong, [], `init fields that missed the bare-key override:\n  ${wrong.join('\n  ')}`);
+      const expected = [
+        'executor_model', 'verifier_model', 'researcher_model', 'planner_model', 'checker_model', 'researcher_models',
+        'synthesizer_model', 'roadmapper_model', 'mapper_model', 'mapper_models', 'auditor_model',
+      ];
+      const missing = expected.filter((k) => !seen.has(k));
+      assert.deepEqual(missing, [], `model fields no init command emitted: ${missing.join(', ')}`);
+    } finally { done(dir); }
+  });
+
+  test('table and focus tiers report their source', () => {
+    const dir = project({ model_profile: 'balanced' });
+    try {
+      assert.equal(resolveIn(dir, 'planner').tier_source, 'table');
+      assert.equal(resolveIn(dir, 'codebase-mapper', '--focus', 'concerns').tier_source, 'focus');
+    } finally { done(dir); }
+  });
+});
+
+// Objective 82 (TRD 82-03): the five tier proposals objective 81 put to the user, approved 2026-10-17 as
+// "P3, P2-arch-only, P1, P4, P5" (81-HAIKU-EVAL.md, Decision). P1 lives in the Flutter pack manifest and is pinned in
+// flutter-ui-eval.test.cjs; P2-P5 are the `focus` block here. P2 raises the architecture mapper alone: the shared
+// agents.codebase-mapper row (tech and quality) and the quality profile's mapper tier are not part of the approval.
+// P4 and P5 lower a budget focus to the project-researcher row's own tier, so the "only raise" test above still holds.
+describe('objective 82: approved tier proposals (81 P2-P5)', () => {
+  const os = require('os');
+  const PROFILES = ['quality', 'balanced', 'budget'];
+  const dirs = [];
+  function project(profile) {
+    const dir = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'mp-8203-'));
+    dirs.push(dir);
+    fs.mkdirSync(path.join(dir, '.aoforge'));
+    fs.writeFileSync(path.join(dir, '.aoforge', 'config.json'), JSON.stringify({ model_profile: profile }));
+    return dir;
+  }
+  function run(dir, ...args) {
+    const r = spawnSync(process.execPath, [DF_TOOLS, ...args], { cwd: dir, encoding: 'utf8' });
+    assert.equal(r.status, 0, `${args.join(' ')}: ${r.stderr}`);
+    return JSON.parse(r.stdout);
+  }
+  test.after(() => { for (const d of dirs) fs.rmSync(d, { recursive: true, force: true }); });
+
+  test('init map-codebase: arch and concerns resolve to sonnet, tech and quality to haiku, on balanced and budget', () => {
+    for (const profile of ['balanced', 'budget']) {
+      const m = run(project(profile), 'init', 'map-codebase').mapper_models;
+      assert.deepEqual(m, { tech: 'haiku', arch: 'sonnet', quality: 'haiku', concerns: 'sonnet' }, profile);
+    }
+  });
+
+  // TRD 82-08 measured P4 and P5 live (82-CHECK-RULES.md section 2): P4 reverted (item lost: hub HU-A01, Sonnet 2 of 2
+  // runs, Haiku 0 of 2), so architecture is opus/sonnet/sonnet again; P5 kept, so pitfalls stays opus/sonnet/haiku.
+  test('init new-project and new-milestone: researcher architecture opus/sonnet/sonnet (P4 reverted), pitfalls opus/sonnet/haiku (P5 kept)', () => {
+    const wantArch = { quality: 'inherit', balanced: 'sonnet', budget: 'sonnet' };
+    const wantPit = { quality: 'inherit', balanced: 'sonnet', budget: 'haiku' };
+    for (const profile of PROFILES) {
+      const dir = project(profile);
+      for (const wf of ['new-project', 'new-milestone']) {
+        const r = run(dir, 'init', wf).researcher_models;
+        assert.equal(r.architecture, wantArch[profile], `${wf} ${profile} architecture`);
+        assert.equal(r.pitfalls, wantPit[profile], `${wf} ${profile} pitfalls`);
+      }
+    }
+  });
+
+  test('resolve-model codebase-mapper --focus arch is sonnet from the focus table on every profile', () => {
+    for (const profile of PROFILES) {
+      const r = run(project(profile), 'resolve-model', 'codebase-mapper', '--focus', 'arch');
+      assert.equal(r.tier, 'sonnet', profile);
+      assert.equal(r.tier_source, 'focus', profile);
+      assert.equal(r.focus, 'arch', profile);
+    }
+  });
+
+  test('table pins: P2 arch, P3 concerns, P4 architecture (reverted by 82-08), P5 pitfalls', () => {
+    assert.deepEqual(profiles.focus['codebase-mapper'].arch, { quality: 'sonnet', balanced: 'sonnet', budget: 'sonnet' });
+    assert.deepEqual(profiles.focus['codebase-mapper'].concerns, { quality: 'sonnet', balanced: 'sonnet', budget: 'sonnet' });
+    assert.deepEqual(profiles.focus['project-researcher'].architecture, { quality: 'opus', balanced: 'sonnet', budget: 'sonnet' });
+    assert.deepEqual(profiles.focus['project-researcher'].pitfalls, { quality: 'opus', balanced: 'sonnet', budget: 'haiku' });
+  });
+
+  test('the shared mapper row is untouched and tech and quality get no focus entry (P2 is arch only)', () => {
+    assert.deepEqual(profiles.agents['codebase-mapper'], { quality: 'sonnet', balanced: 'haiku', budget: 'haiku' });
+    assert.deepEqual(Object.keys(profiles.focus['codebase-mapper']).sort(), ['arch', 'concerns']);
   });
 });

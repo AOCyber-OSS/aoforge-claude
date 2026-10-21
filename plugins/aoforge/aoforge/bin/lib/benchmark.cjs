@@ -20,6 +20,18 @@ const readline = require('readline');
 const { execSync } = require('child_process');
 const { planningRoot, PLANNING_DIR_NAMES } = require('./compat.cjs');
 const { escapeRegExp } = require('./text-escape.cjs');
+const { NAMES, LEGACY } = require('./legacy-names.cjs');
+
+// A history reader counts today's executor and, in old transcripts, the pre-rename and install-prefixed ones
+// (agent-overhead.cjs, TRD 72-10). Quick 42: the old check compared a pre-rename literal, so executor_calls was
+// always 0 on AOForge transcripts.
+const EXECUTOR_TYPE_RE = new RegExp(
+  `^(?:${[NAMES.agentNs, LEGACY.agentNs, LEGACY.installPrefix].map(escapeRegExp).join('|')})executor$`
+);
+
+function isExecutorType(t) {
+  return typeof t === 'string' && EXECUTOR_TYPE_RE.test(t);
+}
 
 // ─── Pricing ($/M tokens) ────────────────────────────────────────────────────
 
@@ -237,7 +249,8 @@ function getRepoMetrics({ repo }) {
     } catch { continue; }
 
     const touchedDirs = new Set();
-    // a file under either planning directory's objectives/ (`.aoforge`, or the legacy one)
+    // a file under the planning directory's objectives/ (`.aoforge`; commits under the pre-rename directory are
+    // history this reader no longer counts, TRD 78-11)
     const OBJECTIVE_FILE_RE = new RegExp(`^(?:${PLANNING_DIR_NAMES.map(escapeRegExp).join('|')})/objectives/([^/]+)/`);
     for (const f of touchedFiles.split('\n')) {
       const m = f.match(OBJECTIVE_FILE_RE);
@@ -349,7 +362,7 @@ async function buildPerObjective({ projectDir, repo, since, model }) {
     o.total_output += r.outputTokens;
     o.active_work += r.activeWork;
     o.cost += r.cost;
-    if (r.agentType === 'df-executor') {
+    if (isExecutorType(r.agentType)) {
       o.executor_calls++;
       o.executor_active += r.activeWork;
       o.executor_cost += r.cost;
@@ -669,6 +682,7 @@ module.exports = {
   canonicalize,
   dollars,
   parseSince,
+  isExecutorType,
   buildPerObjective,
   runBenchmarkSession,
   PRICING,

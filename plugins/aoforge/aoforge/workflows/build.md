@@ -8,7 +8,7 @@ Unified build pipeline: research → plan → execute → verify → done. Colla
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
-@~/.claude/aoforge/references/ui-brand.md
+`{runtime_root}/references/ui-brand.md` (already in context when the skill includes it).
 </required_reading>
 
 <process>
@@ -26,17 +26,17 @@ else
 fi
 ```
 
-Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `commit_docs`, `objective_found`, `objective_dir`, `objective_number`, `objective_name`, `objective_slug`, `padded_objective`, `has_research`, `has_context`, `has_jobs`, `job_count`, `planning_exists`, `roadmap_exists`, `research_enabled`, `job_checker_enabled`.
+Parse JSON for: `runtime_root` (fills `{runtime_root}`), `researcher_model`, `planner_model`, `checker_model`, `commit_docs`, `objective_found`, `objective_dir`, `objective_number`, `objective_name`, `objective_slug`, `padded_objective`, `has_research`, `has_context`, `has_jobs`, `job_count`, `planning_exists`, `roadmap_exists`, `research_enabled`, `job_checker_enabled`.
 
 **File contents (from --include):** `state_content`, `roadmap_content`, `requirements_content`, `context_content`, `research_content`.
 
 `init plan-objective` emits no `executor_model` or `verifier_model` (TRD 76-01: the step 8 verifier
 used to spawn with an empty model). Resolve both; use them as `{executor_model}` and `{verifier_model}`:
 ```bash
-node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model executor --objective "$OBJECTIVE_NUMBER" --raw
+EXECUTOR_MODEL=$(node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model executor --objective "$OBJECTIVE_NUMBER" --raw)
 ```
 ```bash
-node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model verifier --objective "$OBJECTIVE_NUMBER" --raw
+VERIFIER_MODEL=$(node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model verifier --objective "$OBJECTIVE_NUMBER" --raw)
 ```
 
 **If `planning_exists` is false:** Error — run `/aoforge:new-project` first.
@@ -269,6 +269,7 @@ OBJECTIVE_REQ_IDS=$(node ~/.claude/aoforge/bin/aof-tools.cjs roadmap get-objecti
 ```
 Task(
   prompt="Verify objective ${OBJECTIVE_NUMBER} goal achievement.
+AOForge runtime: {runtime_root}
 Objective directory: ${objective_dir}
 Objective goal: ${goal from ROADMAP.md}
 Objective requirement IDs: ${OBJECTIVE_REQ_IDS}

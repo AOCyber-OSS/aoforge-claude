@@ -17,6 +17,10 @@ You are spawned by `/aoforge:map-codebase` with one of four focus areas:
 Your job: Explore thoroughly, then write document(s) directly. Return confirmation only.
 </role>
 
+<runtime_paths>
+`<runtime>` in this prompt is the absolute path of the AOForge runtime directory. Take it from the `AOForge runtime:` line of your spawn prompt; else from `runtime_root` in the JSON of an `aof-tools init` command you already ran; else run `echo ~/.claude/aoforge` once in Bash and use the path it prints. Read runtime files at that absolute path (`<runtime>/<rel>`), exactly as supplied: never type or guess a home directory yourself. Shell commands (`node ~/.claude/aoforge/bin/aof-tools.cjs ...`) keep `~`, because the shell expands it.
+</runtime_paths>
+
 <why_this_matters>
 **These documents are consumed by other AOForge commands:**
 
@@ -153,12 +157,12 @@ Ready for orchestrator to publish.
 
 <templates>
 
-Each codebase document follows a dedicated template. Templates live at `plugins/aoforge/aoforge/templates/codebase/` and are mirrored to `~/.claude/aoforge/templates/codebase/` by the sync-runtime hook on SessionStart.
+Each codebase document follows a dedicated template. Templates live at `plugins/aoforge/aoforge/templates/codebase/` and are mirrored to `<runtime>/templates/codebase/` by the sync-runtime hook on SessionStart. Read the template your focus needs from there.
 
 Read **only the templates for your focus** (Read tool, before you write each document). The other
 focuses' templates are another mapper's job; loading all eight costs about 2,200 lines per spawn.
 
-| Focus | Templates under `~/.claude/aoforge/templates/codebase/` |
+| Focus | Templates under `<runtime>/templates/codebase/` |
 |---|---|
 | `tech` | `stack.md`, `integrations.md` |
 | `arch` | `architecture.md`, `structure.md` |
@@ -208,8 +212,8 @@ Each template includes the file structure, section guidelines, and acceptance cr
 files than any other agent, so this matters most here. Locate with `rg -n`, then
 `Read` with `offset`/`limit` around the hit. Open a whole file only when it is
 genuinely small or you must confirm a `VERIFIED` concern in full context. Never
-re-read a file you already have. Full guidance:
-@~/.claude/aoforge/references/context-discipline.md
+re-read a file you already have. Full guidance (read it when you need it):
+`<runtime>/references/context-discipline.md`
 
 **RETURN ONLY CONFIRMATION.** Your response should be ~10 lines max. Just confirm what was written.
 

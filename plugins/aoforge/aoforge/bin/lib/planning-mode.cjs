@@ -18,7 +18,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { planningRoot, planningRel, planningDirLabel } = require('./compat.cjs');
+const { planningRoot, planningRel, planningDirLabel, findProjectRoot, isUserHome } = require('./compat.cjs');
 
 const LOCAL = 'local';
 const STORE = 'store';
@@ -99,14 +99,16 @@ function findGitHolder(start) {
   }
 }
 
-/** The nearest ancestor of `start` (inclusive) with a `.aoforge/` directory; null when none. */
+/**
+ * The nearest ancestor of `start` (inclusive) with a planning directory; null when none. One walker, one $HOME rule:
+ * compat.findProjectRoot, which never returns $HOME and does not search above it (TRD 73-09, gap G5). Any filesystem
+ * error reads as "none" (this module never throws).
+ */
 function nearestPlanningRoot(start) {
-  let dir = path.resolve(start);
-  for (;;) {
-    if (isDir(planningRoot(dir))) return dir;
-    const parent = path.dirname(dir);
-    if (parent === dir) return null;
-    dir = parent;
+  try {
+    return findProjectRoot(start, { maxUp: Infinity });
+  } catch {
+    return null;
   }
 }
 
@@ -163,8 +165,10 @@ function resolveMainRoot(cwd) {
   } catch {
     candidate = null;
   }
-  if (candidate && isDir(planningRoot(candidate))) return realOrResolved(candidate);
+  // A $HOME kept in git is never the main root: its `.aoforge/` is the user's dot directory (TRD 73-09).
+  if (candidate && isDir(planningRoot(candidate)) && !isUserHome(candidate)) return realOrResolved(candidate);
 
+  // Also stops at $HOME: a refused $HOME candidate falls through to a walk that cannot return it either.
   const nearest = nearestPlanningRoot(start);
   return nearest ? realOrResolved(nearest) : null;
 }
@@ -183,9 +187,26 @@ function resolveCheckoutRoot(cwd) {
   const start = typeof cwd === 'string' && cwd !== '' ? cwd : process.cwd();
   try {
     const holder = findGitHolder(start);
-    if (holder && isDir(planningRoot(holder.dir))) return realOrResolved(holder.dir);
+    // Never $HOME, as in resolveMainRoot (TRD 73-09).
+    if (holder && isDir(planningRoot(holder.dir)) && !isUserHome(holder.dir)) return realOrResolved(holder.dir);
   } catch { /* fall through to the main checkout */ }
   return resolveMainRoot(start);
+}
+
+/**
+ * The root a planning verb reads and writes for `cwd`, realpath'd, or null when there is no planning dir (quick 36).
+ *
+ * Store mode: the MAIN checkout (resolveMainRoot), always. The cache, ledger, journal and outbox are single-writer files
+ * there (D-14). Local mode: the checkout holding `cwd` when it has its own planning dir (resolveCheckoutRoot, the 53-01
+ * rule generalised from the summary verbs to every verb), so a linked worktree reads and writes, and then commits, its
+ * own tree; a worktree with none falls back to MAIN. The mode itself is always read from MAIN's config. resolveMainRoot
+ * keeps meaning "main" for config, journal, ledger, outbox and the drafts' repo key.
+ */
+function resolveVerbRoot(cwd) {
+  const main = resolveMainRoot(cwd);
+  if (!main) return null;
+  if (planningMode(main).mode !== LOCAL) return main; // D-14: cache, ledger, journal, outbox live in main
+  return resolveCheckoutRoot(cwd) || main; // 53-01 generalised: the checkout that will commit it
 }
 
 // ─── mode ─────────────────────────────────────────────────────────────────────
@@ -221,4 +242,5 @@ module.exports = {
   isStoreMode,
   resolveMainRoot,
   resolveCheckoutRoot,
+  resolveVerbRoot,
 };

@@ -674,3 +674,102 @@ test.describe('Case X1-X4 — a failing run exits non-zero (32-04)', () => {
     }
   });
 });
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Case J1-J6 (quick 42, objective 76 SC6 / MEF-06) — the judge escalates one rung on split votes.
+// `--judge-tier` sets the rung the live vision calls use (live only, strict values); every scored
+// rollup carries `tier_escalation`, live runs also `judge_tier`. ui-evaluator returns
+// `## ESCALATION REQUESTED` on the signal and /aoforge:ui-eval re-spawns it once from
+// `resolve-model ui-evaluator --escalate-from <judge tier>`. Every live run here is credential-less
+// (as Case G3), so no network call is possible.
+// ──────────────────────────────────────────────────────────────────────────────
+
+test.describe('judge tier and escalation, CLI and wiring (quick 42)', () => {
+  const PACK_ROOT = path.join(__dirname, '..');
+  const CORE_TOOLS = path.join(PACK_ROOT, '..', 'aoforge', 'aoforge', 'bin', 'aof-tools.cjs');
+  const strippedEnv = () => {
+    const env = { ...process.env };
+    delete env.ANTHROPIC_API_KEY;
+    delete env.ANTHROPIC_AUTH_TOKEN;
+    delete env.ANTHROPIC_BASE_URL;
+    return env;
+  };
+  const run = (argv) => spawnSync(process.execPath, [DF_TOOLS, ...argv], { encoding: 'utf-8', env: strippedEnv() });
+
+  test('Case J1 — --judge live --judge-tier opus reports judge_tier and an unrequested tier_escalation', () => {
+    const r = run(['verify', 'flutter-ui-eval', MANIFEST, '--judge', 'live', '--judge-tier', 'opus', '--raw']);
+    const rollup = JSON.parse(r.stdout);
+    assert.strictEqual(rollup.judge_tier, 'opus');
+    assert.strictEqual(rollup.gate, 'binding');
+    assert.strictEqual(rollup.verdict, 'fail', 'credential-less: every state is a review, as Case G3');
+    assert.deepStrictEqual(rollup.tier_escalation, { requested: false, trigger: null, from_tier: 'opus', states: [] });
+  });
+
+  test('Case J2 — --judge-tier without --judge live is a usage error', () => {
+    for (const argv of [
+      ['verify', 'flutter-ui-eval', MANIFEST, '--judge-tier', 'opus', '--raw'],
+      ['verify', 'flutter-ui-eval', MANIFEST, '--judge', 'labels', '--judge-tier', 'opus', '--raw'],
+    ]) {
+      const r = run(argv);
+      assert.notStrictEqual(r.status, 0, `${argv.join(' ')} must exit non-zero`);
+      assert.match(r.stderr, /--judge-tier/, `${argv.join(' ')}: stderr names the flag, got: ${r.stderr}`);
+    }
+  });
+
+  test('Case J3 — an unknown or missing --judge-tier value is a usage error', () => {
+    for (const argv of [
+      ['verify', 'flutter-ui-eval', MANIFEST, '--judge', 'live', '--judge-tier', 'nonsense', '--raw'],
+      ['verify', 'flutter-ui-eval', MANIFEST, '--judge', 'live', '--judge-tier'],
+      ['verify', 'flutter-ui-eval', MANIFEST, '--judge', 'live', '--judge-tier', '--raw'],
+    ]) {
+      const r = run(argv);
+      assert.notStrictEqual(r.status, 0, `${argv.join(' ')} must exit non-zero`);
+      assert.match(r.stderr, /--judge-tier/, `${argv.join(' ')}: stderr names the flag, got: ${r.stderr}`);
+    }
+  });
+
+  test('Case J4 — the default labels run gains only an unrequested tier_escalation (no judge_tier)', () => {
+    const rollup = runJSON(['verify', 'flutter-ui-eval', MANIFEST]);
+    assert.deepStrictEqual(rollup.tier_escalation, { requested: false, trigger: null, from_tier: null, states: [] });
+    assert.ok(!('judge_tier' in rollup), 'a labels run calls no model, so it names no judge tier');
+    assert.strictEqual(rollup.gate, 'advisory');
+    assert.strictEqual(rollup.network, false);
+    assert.strictEqual(rollup.judge, 'offline-label-echo');
+  });
+
+  test('Case J5 — the escalation call the skill makes: resolve-model ui-evaluator --escalate-from, pack mirrored', () => {
+    const { mirrorPack } = require(path.join(PACK_ROOT, '..', 'aoforge', 'aoforge', 'bin', 'lib', 'pack-mirror.cjs'));
+    const tmp = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'ui-eval-j5-'));
+    try {
+      const home = path.join(tmp, 'home');
+      const stacksDir = path.join(tmp, 'stacks');
+      fs.mkdirSync(home);
+      mirrorPack({ packRoot: PACK_ROOT, stacksDir });
+      const env = { ...process.env, HOME: home, AOFORGE_STACKS_DIR: stacksDir };
+      const resolve = (from) => {
+        const r = spawnSync(process.execPath, [CORE_TOOLS, 'resolve-model', 'ui-evaluator', '--escalate-from', from],
+          { encoding: 'utf-8', env, cwd: tmp });
+        assert.strictEqual(r.status, 0, r.stderr);
+        return JSON.parse(r.stdout);
+      };
+      const up = resolve('sonnet');
+      assert.strictEqual(up.tier, 'opus');
+      assert.strictEqual(up.model, 'inherit');
+      assert.strictEqual(up.ceiling, false);
+      assert.strictEqual(resolve('opus').ceiling, true);
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
+  test('Case J6 — the agent returns the escalation block and the skill re-spawns one rung up', () => {
+    const agent = fs.readFileSync(path.join(PACK_ROOT, 'agents', 'ui-evaluator.md'), 'utf-8');
+    for (const s of ['## ESCALATION REQUESTED', 'split-votes', '**Judge tier:**', '--judge-tier']) {
+      assert.ok(agent.includes(s), `agents/ui-evaluator.md must contain ${s}`);
+    }
+    const skill = fs.readFileSync(path.join(PACK_ROOT, 'skills', 'ui-eval', 'SKILL.md'), 'utf-8');
+    for (const s of ['UI_EVALUATOR_MODEL=$(', 'resolve-model ui-evaluator --escalate-from', '--judge-tier']) {
+      assert.ok(skill.includes(s), `skills/ui-eval/SKILL.md must contain ${s}`);
+    }
+  });
+});

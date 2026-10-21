@@ -46,15 +46,14 @@
 //
 // Scope: the ROOT `.aoforge/` only. Store mode is a root-level config; nested `**/.aoforge/` dirs are out of scope.
 //
-// The legacy planning directory (objective 72, TRD 72-08). For one release (until legacy-names SHIM_REMOVAL):
-//   - `readBlock` recognises the block under either marker slug (NAMES.slug, LEGACY.slug), so the block a pre-rename
-//     install wrote in a user's repository is found, replaced in place and never duplicated;
-//   - `upsertBlock` always writes the AOForge markers;
-//   - the block lists both directory names (`.aoforge/` first), so a branch that still has the legacy directory keeps
-//     its cache ignored, and migration 0012's move leaves the moved cache ignored;
-//   - "current" means the block covers the project's resolved directory, so a legacy store project whose legacy block
-//     already does is not offered a second write before 0012 moves it.
-// 0012 re-upserts the block before it moves the directory.
+// The block is recognised only under the AOForge marker slug (TRD 78-04). A block a pre-rename install wrote under its
+// own slug is ordinary user text to this migration: kept byte for byte, never replaced, with the AOForge block appended
+// beside it. Only a project 3.0.x's migration 0012 never moved can still carry one, and that project is on the legacy layout,
+// which is refused before any migration runs (78-07).
+//
+// The planning directory: the block lists `.aoforge/` (compat.PLANNING_DIR_NAMES). For one release (TRD 72-08) it also
+// listed the legacy directory; TRD 78-11 removed that with the shims. A 3.0.x block that still lists both still covers
+// `.aoforge/`, so it counts as current and is not rewritten.
 //
 // Exports: `apply` is the upgrade-runner adapter (a refusal THROWS, so the runner reports it as failed, halts later
 // writes and never stamps 0010 as applied). `migrate` returns the full report or `{applied:false, refused, details}`.
@@ -72,18 +71,13 @@ const ghTrd = require('../gh-trd.cjs');
 const upgrade = require('../upgrade.cjs');
 const { branchCommitSteps, commitCommand } = require('../commit-steps.cjs');
 const { planningRoot, planningRel, PLANNING_DIR_NAMES } = require('../compat.cjs');
-const { NAMES, LEGACY } = require('../legacy-names.cjs');
+const { NAMES } = require('../legacy-names.cjs');
 
 const GITIGNORE_REL = '.gitignore';
-const blockStart = (slug) => `# >>> ${slug} store (0010) >>>`;
-const blockEnd = (slug) => `# <<< ${slug} store (0010) <<<`;
-const BLOCK_START = blockStart(NAMES.slug);
-const BLOCK_END = blockEnd(NAMES.slug);
-// The markers a pre-rename install wrote: recognised for one release, never written.
-const LEGACY_BLOCK_START = blockStart(LEGACY.slug);
-const LEGACY_BLOCK_END = blockEnd(LEGACY.slug);
-const START_MARKERS = [BLOCK_START, LEGACY_BLOCK_START];
-const END_MARKERS = [BLOCK_END, LEGACY_BLOCK_END];
+const BLOCK_START = `# >>> ${NAMES.slug} store (0010) >>>`;
+const BLOCK_END = `# <<< ${NAMES.slug} store (0010) <<<`;
+const START_MARKERS = [BLOCK_START];
+const END_MARKERS = [BLOCK_END];
 const LEGACY_TRD_RE = /^objectives\/[^/]+\/(\d+(?:\.\d+)?-\d+)-TRD-(.+)\.md$/;
 const RM_BATCH = 200;
 const LOCAL_ONLY_NOTE = 'kept on this machine only after untrack (no GitHub home)';
@@ -95,8 +89,8 @@ const LOCAL_ONLY_NOTE = 'kept on this machine only after untrack (no GitHub home
 // <objective>`, then the bare command). Still a string constant computed once at load: 0011 dedupes its notes on
 // `tenNotes.includes(m0010().STORE_COMMIT_STEPS)`.
 const STORE_BRANCH = 'aoforge-store-cache';
-// TRD 72-08: the steps name the planning directory the project actually has (a legacy one until 0012 moves it).
-// STORE_COMMIT_STEPS stays the `.aoforge/` form; `storeCommitSteps(root)` equals it for every `.aoforge/` project.
+// The steps name the planning directory, `.aoforge/` (TRD 72-08 named a legacy one until 0012 moved it; TRD 78-11
+// removed that). `storeCommitSteps(root)` equals STORE_COMMIT_STEPS for every project.
 function storeCommitStepsFor(dirName) {
   return branchCommitSteps({
     branch: STORE_BRANCH,
@@ -143,14 +137,14 @@ function isWorkTree(ctx) {
 
 // ─── the managed .gitignore block ───────────────────────────────────────────────
 
-/** The block as written: AOForge markers, both planning-directory names (the new one first) for one release. */
+/** The block as written: AOForge markers and the planning directory, `.aoforge/` (compat.PLANNING_DIR_NAMES). */
 function blockLines() {
   return [BLOCK_START, ...PLANNING_DIR_NAMES.flatMap((d) => planningPaths.gitignoreLines(d)), BLOCK_END];
 }
 
 /**
- * Locate the block under either marker slug: null when absent, `{start, end, inner:[lines], legacy}` (`legacy`: the
- * start marker is the pre-rename one); throws on two blocks (any slugs) or a missing end marker.
+ * Locate the block (AOForge markers only): null when absent, `{start, end, inner:[lines]}`; throws on two blocks or a
+ * missing end marker. A block under any other slug is not a block here.
  */
 function readBlock(text) {
   const lines = text.split('\n');
@@ -158,39 +152,35 @@ function readBlock(text) {
   lines.forEach((l, i) => { if (START_MARKERS.includes(l.replace(/\r$/, ''))) starts.push(i); });
   if (starts.length === 0) return null;
   if (starts.length > 1) throw new Error(`.gitignore holds ${starts.length} "${BLOCK_START}" blocks; refusing to edit it`);
-  const startLine = lines[starts[0]].replace(/\r$/, '');
   const end = lines.findIndex((l, i) => i > starts[0] && END_MARKERS.includes(l.replace(/\r$/, '')));
-  if (end === -1) throw new Error(`.gitignore has "${startLine}" with no "${BLOCK_END}"; refusing to edit it`);
+  if (end === -1) throw new Error(`.gitignore has "${BLOCK_START}" with no "${BLOCK_END}"; refusing to edit it`);
   return {
     start: starts[0],
     end,
     inner: lines.slice(starts[0] + 1, end).map((l) => l.replace(/\r$/, '')),
-    legacy: startLine === LEGACY_BLOCK_START,
   };
 }
 
 /**
- * `{present, current, error, legacy}` for the project's .gitignore. `current`: the block holds every line the project's
- * resolved planning directory needs (TRD 72-08: the both-names block is current in either layout, and so is a
- * legacy-marker block that covers the legacy directory it was written for).
+ * `{present, current, error}` for the project's .gitignore. `current`: the block holds every line the project's
+ * resolved planning directory needs (TRD 72-08: the both-names block is current in either layout).
  */
 function blockState(root) {
   const text = readGitignore(root);
-  if (text === null) return { present: false, current: false, error: null, legacy: false };
+  if (text === null) return { present: false, current: false, error: null };
   try {
     const b = readBlock(text);
-    if (!b) return { present: false, current: false, error: null, legacy: false };
+    if (!b) return { present: false, current: false, error: null };
     const want = planningPaths.gitignoreLines(planningRel(root));
     const current = want.every((l) => b.inner.includes(l));
-    return { present: true, current, error: null, legacy: b.legacy };
+    return { present: true, current, error: null };
   } catch (e) {
-    return { present: true, current: false, error: e.message, legacy: false };
+    return { present: true, current: false, error: e.message };
   }
 }
 
 /**
- * `text` with the block replaced in place (under either marker slug; the result carries the AOForge markers), or
- * appended newline-safely. Bytes outside the block are kept.
+ * `text` with the block replaced in place, or appended newline-safely. Bytes outside the block are kept.
  */
 function upsertBlock(text) {
   const block = blockLines();
@@ -509,8 +499,6 @@ module.exports = {
   blockLines,
   BLOCK_START,
   BLOCK_END,
-  LEGACY_BLOCK_START,
-  LEGACY_BLOCK_END,
   LOCAL_ONLY_NOTE,
   STORE_COMMIT_STEPS,
   storeCommitSteps,

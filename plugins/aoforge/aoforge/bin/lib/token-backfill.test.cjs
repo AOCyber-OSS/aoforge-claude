@@ -204,6 +204,48 @@ describe('57-04 planBackfill: a dry run that classifies every historical SUMMARY
   });
 });
 
+// TRD 82-04: planBackfill forwards `alsoRoots` to the executor index, so `tokens backfill --also-root` recovers a SUMMARY
+// whose executor ran before the checkout moved. The former root is never created, like the real one.
+describe('82-04 planBackfill takes former checkout roots', () => {
+  /** The fixture repo plus 98-01's executor transcript, recorded under a former root (REPO_ROOT line names it). */
+  function withFormerRoot() {
+    const built = buildBackfillRepo();
+    const former = path.join(path.dirname(built.repo), 'moved-from-' + path.basename(built.repo));
+    assert.equal(fs.existsSync(former), false, 'the former root must not exist on disk');
+    fx.formerRootExecutor(built.root, { former, trdId: '98-01', objectiveDir: '98-old' });
+    return { ...built, former };
+  }
+
+  test('q82-4: alsoRoots recovers 98-01 from the former root; without it 98-01 stays no_transcript; nothing is written', () => {
+    const { repo, root, former } = withFormerRoot();
+    const beforeRepo = snapshot(repo);
+    const beforeRoot = snapshot(root);
+
+    const plain = backfill.planBackfill({ checkoutRoot: repo, repoRoot: repo, root });
+    assert.deepEqual(summed(plain.entries.find((e) => e.id === '98-01')), ['98-old', '98-01-SUMMARY.md', 'unrecovered', 'no_transcript']);
+    assert.deepEqual(plain.index_counts, { executor_transcripts: 3, identified: 2, unidentified: 0, ambiguous: 0, foreign: 1 });
+
+    const aliased = backfill.planBackfill({ checkoutRoot: repo, repoRoot: repo, root, alsoRoots: [former] });
+    assert.deepEqual(summed(aliased.entries.find((e) => e.id === '98-01')), ['98-old', '98-01-SUMMARY.md', 'recovered', null]);
+    assert.deepEqual(aliased.counts, {
+      summaries: 6, already_stamped: 1, recovered: 2, unrecovered: 3, by_reason: { ambiguous_objective: 2, unkeyed: 1 },
+    });
+    assert.deepEqual(aliased.index_counts, { executor_transcripts: 3, identified: 3, unidentified: 0, ambiguous: 0, foreign: 0 });
+    assert.equal(Object.fromEntries(aliased.entries.find((e) => e.id === '98-01').fields).tokens_output, '1370');
+
+    assert.deepEqual(snapshot(repo), beforeRepo);
+    assert.deepEqual(snapshot(root), beforeRoot);
+  });
+
+  test('q82-5: omitted and empty alsoRoots give the same plan', () => {
+    const { repo, root } = withFormerRoot();
+    const omitted = backfill.planBackfill({ checkoutRoot: repo, repoRoot: repo, root });
+    const empty = backfill.planBackfill({ checkoutRoot: repo, repoRoot: repo, root, alsoRoots: [] });
+    assert.deepEqual(empty, omitted);
+    assert.equal(Object.prototype.hasOwnProperty.call(omitted, 'also_roots'), false, 'the plan shape is unchanged');
+  });
+});
+
 describe('57-04 formatBackfillReport', () => {
   test('10. two lines from a plan, three with applied; reasons in sorted key order, zero counts omitted', () => {
     const { repo, root } = buildBackfillRepo();

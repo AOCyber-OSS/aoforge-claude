@@ -30,8 +30,8 @@ Note: decimal objectives (insert) were removed in v1.2 (TRD 12-06, I2 survey: 0%
 </objective>
 
 <execution_context>
-One workflow is loaded after routing, never all of them: `Read` the `workflow` path the route returns (expand `~`), then follow it.
-The routes are ~/.claude/aoforge/workflows/add-objective.md (add) and ~/.claude/aoforge/workflows/remove-objective.md (remove).
+One workflow is loaded after routing, never all of them: Read `{runtime_root}/workflows/<name>`, where `<name>` is the file name of the `workflow` path the route returns, then follow it. `{runtime_root}` is what `RUNTIME_ROOT=$(echo ~/.claude/aoforge) && echo "$RUNTIME_ROOT"` prints: never type a home directory yourself.
+The routes are add-objective.md (add) and remove-objective.md (remove).
 </execution_context>
 
 <context>
@@ -52,7 +52,7 @@ ROUTE_JSON=$(node ~/.claude/aoforge/bin/aof-tools.cjs skill-route objective $ARG
 
 Parse the JSON. If it contains `error`, display the `usage` field to the user and stop. Otherwise extract `subcommand`, `args`, and `workflow`.
 
-**2. Read the resolved workflow (the `workflow` path, `~` expanded) with the Read tool, then follow it.**
+**2. Read the resolved workflow (`{runtime_root}/workflows/<name>`, as above) with the Read tool, then follow it.**
 
 Based on `subcommand`:
 - `add` → execute the add-objective workflow with the residual args

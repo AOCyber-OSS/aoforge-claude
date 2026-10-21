@@ -1,6 +1,12 @@
 'use strict';
 
 // TRD 36-04c — migration 0005 claude-md-block (test list items 1-14, plus 15: never downgrade).
+// Quick 43 adds (the rules section ends at the next heading of any level):
+//   16. A v=2 block with no `# Development Rules` whose sections are `##` headings (`## Codebase map` with two
+//       bullets, `## Release flow` with one line): apply inserts the rules first; detect is then false; a second
+//       apply leaves the file byte-identical; both `##` sections and their bullets survive both applies.
+//   17. A `## Local rules` subsection the user put under `# Development Rules` (after one stale bullet): apply
+//       replaces the rules list with the template's and keeps the subsection byte for byte; detect is then false.
 //
 // no_llm_test_data: projects come from the shared hand-built fixtures (upgrade-fixtures.cjs); the
 // versioned variants below are literal strings built in canonical managed-block form. Nothing
@@ -66,6 +72,11 @@ function versionedClaudeMd(startMarker, rulesSection) {
   const sections = ['# Project Overview\n\nFixture app.'];
   if (rulesSection !== null) sections.push(rulesSection);
   sections.push('# Code Style\n\n- Use camelCase');
+  return blockWith(startMarker, sections);
+}
+
+// The same canonical form with the caller's own section list.
+function blockWith(startMarker, sections) {
   return `${BEFORE}${startMarker}\n\n${sections.join('\n\n')}\n${END}${AFTER}`;
 }
 
@@ -90,8 +101,10 @@ describe('migration 0005 claude-md-block', () => {
     assert.equal(tpl.version, '2');
     assert.ok(tpl.rules.startsWith('# Development Rules'), 'rules start at the heading');
     assert.ok(tpl.rules.includes('Objectives chain automatically'));
-    assert.ok(tpl.rules.includes('~/.claude/aoforge/references/tdd.md'));
-    assert.ok(tpl.rules.includes('~/.claude/aoforge/references/anti-patterns.md'));
+    // TRD 82-11: the rules name runtime files at `<runtime>/`, defined once as what `echo ~/.claude/aoforge` prints.
+    assert.ok(tpl.rules.includes('`<runtime>/references/tdd.md`'));
+    assert.ok(tpl.rules.includes('`echo ~/.claude/aoforge` prints'));
+    assert.ok(tpl.rules.includes('`<runtime>/references/anti-patterns.md`'));
     assert.doesNotMatch(tpl.rules, /Phases/);
     assert.doesNotMatch(tpl.rules, /\n# /, 'rules stop before the next section');
     assert.doesNotMatch(tpl.rules, /\s$/, 'trailing blank lines trimmed');
@@ -260,5 +273,43 @@ describe('migration 0005 claude-md-block', () => {
     const det = m0005().detect(ctxFor(root));
     assert.equal(det.applies, false);
     assert.match(det.reason, /newer/);
+  });
+
+  test('16. a block whose sections are ## headings converges in one apply and keeps them', () => {
+    const m = m0005();
+    const root = track(fx.makeV1Project());
+    const codebase = '## Codebase map\n\n- State lives in `.aoforge/STATE.md`.\n- Small fixes go through `/aoforge:quick`.';
+    const release = '## Release flow\n\nTag from main once the suite is green.';
+    writeClaude(root, blockWith(V2_START, [codebase, release]));
+    assert.equal(m.detect(ctxFor(root)).applies, true);
+
+    m.apply(ctxFor(root));
+    const once = readClaude(root);
+    assert.equal(once, blockWith(V2_START, [templateRules(), codebase, release]), 'the rules go first; both ## sections follow');
+
+    const det = m.detect(ctxFor(root));
+    assert.equal(det.applies, false, det.reason);
+    m.apply(ctxFor(root));
+    const twice = readClaude(root);
+    assert.equal(twice, once, 'a second apply changes nothing');
+    for (const kept of [codebase, release]) assert.ok(twice.includes(kept), `${kept.split('\n')[0]} and its lines are kept`);
+  });
+
+  test('17. a ## subsection the user put under the rules survives apply', () => {
+    const m = m0005();
+    const root = track(fx.makeV1Project());
+    const local = '## Local rules\n\n- keep me';
+    writeClaude(root, versionedClaudeMd(V2_START, `# Development Rules\n\n- A stale rule\n\n${local}`));
+
+    m.apply(ctxFor(root));
+    const after = readClaude(root);
+    assert.equal(after, blockWith(V2_START, [
+      '# Project Overview\n\nFixture app.', templateRules(), local, '# Code Style\n\n- Use camelCase',
+    ]), 'the rules list is the template\'s; the subsection follows it');
+    assert.ok(after.includes(`\n${local}\n`), 'the subsection is kept byte for byte');
+    assert.ok(!after.includes('A stale rule'));
+
+    const det = m.detect(ctxFor(root));
+    assert.equal(det.applies, false, det.reason);
   });
 });

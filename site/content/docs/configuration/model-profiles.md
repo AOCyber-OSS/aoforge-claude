@@ -40,8 +40,9 @@ costs a whole build, a slightly worse codebase map costs a re-read.
 
 ```bash
 aof-tools resolve-model planner
-aof-tools resolve-model df-planner    # the df- prefix is accepted too
 ```
+
+An unrecognised name warns on stderr and falls back to `sonnet`.
 
 `resolve-model` emits a `Task()` model **alias**, not a model id. The `opus` tier
 resolves to `inherit`, which means the agent keeps whatever model the session is

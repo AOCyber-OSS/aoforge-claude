@@ -8,6 +8,7 @@ Template for spawning debugger agent. The agent contains all debugging expertise
 
 ```markdown
 <objective>
+AOForge runtime: {runtime_root}
 Investigate issue: {issue_id}
 
 **Summary:** {issue_summary}
@@ -37,6 +38,7 @@ Session: .aoforge/debug/{slug}.md. Start and save it only with `node ~/.claude/a
 
 | Placeholder | Source | Example |
 |-------------|--------|---------|
+| `{runtime_root}` | `runtime_root` from the orchestrator's init JSON | the absolute path, as printed |
 | `{issue_id}` | Orchestrator-assigned | `auth-screen-dark` |
 | `{issue_summary}` | User description | `Auth screen is too dark` |
 | `{expected}` | From symptoms | `See logo clearly` |

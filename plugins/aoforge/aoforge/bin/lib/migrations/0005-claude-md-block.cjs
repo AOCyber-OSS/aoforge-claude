@@ -8,20 +8,25 @@
 // Ownership: the block's sections are synthesised per project by /aoforge:map-codebase from the
 // codebase docs. Regenerating the whole block from the template would destroy them, so 0005 owns
 // ONLY the AOForge-authored `# Development Rules` section. It replaces that one section by string
-// slicing (inserting it as the first section when absent), restamps the start marker
+// slicing (inserting it as the first section when absent); the section runs from its heading to the
+// next heading of any level, so the sections after it are never touched. It restamps the start marker
 // `v=<template_version> src=claude-md`, and routes the write through managed-block.upsert so every
 // byte outside the block is preserved.
+//
+// A CLAUDE.md block under the pre-rename markers (TRD 78-08) is not applicable: managed-block refuses it
+// (ELEGACYBLOCK) and detect reports W069 with its fix, so the runner goes on to every later migration.
 
 const fs = require('fs');
 const path = require('path');
 const managedBlock = require('../managed-block.cjs');
+const { CLAUDE_MD_CODE } = require('../planning-layout.cjs');
 
 const CLAUDE_REL = 'CLAUDE.md';
 const TEMPLATE_SRC = 'claude-md';
 const TEMPLATE_PATH = path.join(__dirname, '..', '..', '..', 'templates', 'claude-md.md');
 
 const RULES_HEADING_RE = /^# Development Rules[ \t]*\r?$/m;
-const NEXT_H1_RE = /^# /m;
+const NEXT_HEADING_RE = /^#{1,6}[ \t]/m;
 
 function normalizeSection(text) {
   return text.replace(/\r\n/g, '\n').replace(/\s+$/, '');
@@ -29,14 +34,14 @@ function normalizeSection(text) {
 
 /**
  * Locate the `# Development Rules` section inside `content`: from the heading up to (not
- * including) the next line starting `# `, or the end of the content.
+ * including) the next heading of any level (`#` to `######`), or the end of the content.
  * @returns {null | {start:number, end:number}}
  */
 function locateRules(content) {
   const h = RULES_HEADING_RE.exec(content);
   if (!h) return null;
   const afterHeading = h.index + h[0].length;
-  const n = NEXT_H1_RE.exec(content.slice(afterHeading));
+  const n = NEXT_HEADING_RE.exec(content.slice(afterHeading));
   return { start: h.index, end: n ? afterHeading + n.index : content.length };
 }
 
@@ -92,6 +97,9 @@ function detect(ctx) {
   try {
     ({ block } = readBlock(claudePath));
   } catch (e) {
+    if (e instanceof managedBlock.ManagedBlockError && e.code === managedBlock.LEGACY_BLOCK_CODE) {
+      return { applies: false, reason: `${CLAUDE_REL} holds a pre-rename managed block (${CLAUDE_MD_CODE}): ${e.fix}` };
+    }
     if (e instanceof managedBlock.ManagedBlockError) {
       return { applies: false, reason: `${CLAUDE_REL}: ${e.message}` };
     }

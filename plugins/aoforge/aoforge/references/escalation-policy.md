@@ -22,7 +22,7 @@ Escalate on **verified failure to make progress**, not on friction.
 | Trigger | Source | Action |
 |---|---|---|
 | Tests still red after **2** cheap reflect/replan attempts | executor's own verification | escalate one rung |
-| Verifier returns `gaps_found` / fail | `df-verifier` | escalate one rung |
+| Verifier returns `gaps_found` / fail | `verifier` | escalate one rung |
 | No-progress guard reports `stuck` | `guard-no-progress.js` (TRD 28-04) | escalate one rung |
 | `checkpoint:decision` reached | TRD checkpoint | escalate to the **human**, not a model |
 | Authority or judgement call | executor deviation rules | escalate to the **human** |

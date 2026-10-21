@@ -8,14 +8,22 @@
  * Module is CommonJS that hooks (which run in their own Node processes) can
  * require directly. All paths honour $HOME (so tests can point at a temp dir).
  *
- * Legacy pid file (objective 72, INST-03, one release): when ~/.aoforge/ has no
- * pid file, the legacy daemon's pid file under the legacy dot directory is read
- * (compat.userDotFile) and the record is marked `legacy: true`, so `status` and
- * `stop` see a daemon started before the rename. Writes and removals touch the
- * ~/.aoforge/ file only. The legacy daemon watches its own handoff directories,
- * not this one's, so its pid file is never taken over: add/remove refuse it.
- * The compat layer is loaded fail-open, because some stub runtimes copy this
- * file alone; without it there is no legacy fallback.
+ * Where the pid file lives (TRD 73-12): the watch state directory,
+ * ~/.claude/aoforge/state/watch/aoforge-watch.pid (compat.watchStateDir), beside
+ * the other per-user runtime state. $AOFORGE_HANDOFF_PID_FILE overrides it.
+ * That one file is the daemon record: it is the only file this module reads,
+ * writes or removes as the record (TRD 78-05). Neither ~/.aoforge/aoforge-watch.pid
+ * (where AOForge 3.0.0 kept it) nor the pre-rename daemon's pid file is read.
+ *
+ * The 3.0.0-daemon detector (TRD 78-05): a daemon AOForge 3.0.0 started is the
+ * same program still rereading ~/.aoforge/aoforge-watch.pid. interimDaemon()
+ * reads that file and probes its pid with signal 0, so `aoforge-watch start`
+ * can name a live one instead of starting a second daemon beside it. It only
+ * reports: nothing is served from, written to or removed from that file (moving
+ * the leftover is doctor check 17's job). With the override set it reads nothing.
+ *
+ * Node built-ins only: some stub runtimes copy this file alone, which is why the
+ * watch directory is spelled here rather than taken from compat.cjs.
  */
 
 const fs = require('fs');
@@ -23,7 +31,12 @@ const path = require('path');
 const os = require('os');
 
 const PID_FILE_NAME = 'aoforge-watch.pid';
-const PID_DIR_NAME = '.aoforge';
+// <home>/.claude/aoforge/state/watch = compat.watchStateDir(home). Spelled here: some stub runtimes copy this file
+// alone. watcher-state.test.cjs pins the two equal.
+const WATCH_DIR_SEGMENTS = Object.freeze(['.claude', 'aoforge', 'state', 'watch']);
+// Where AOForge 3.0.0 kept the pid file (NAMES.userDotDir, AOForge's own 3.0.0 user directory). Read only by the
+// interimDaemon() detector, never as the daemon record (TRD 78-05).
+const INTERIM_DOT_DIR = '.aoforge';
 
 function homeDir() {
   // Use process.env.HOME first so tests can override it. os.homedir() reads
@@ -32,39 +45,34 @@ function homeDir() {
   return process.env.HOME || os.homedir();
 }
 
-/** The AOForge daemon's pid file: the only one this module writes or removes. */
+/** The AOForge daemon's pid file: the daemon record, and the only file this module reads, writes or removes as it. */
 function pidFilePath() {
   // Allow explicit override via env (used by hook tests).
   if (process.env.AOFORGE_HANDOFF_PID_FILE) {
     return process.env.AOFORGE_HANDOFF_PID_FILE;
   }
-  return path.join(homeDir(), PID_DIR_NAME, PID_FILE_NAME);
+  return path.join(homeDir(), ...WATCH_DIR_SEGMENTS, PID_FILE_NAME);
 }
 
-/** The pid file to read: `{ file, legacy }`, the legacy daemon's file only when the AOForge one is absent. */
-function readablePidFile() {
-  const current = pidFilePath();
-  if (process.env.AOFORGE_HANDOFF_PID_FILE) return { file: current, legacy: false };
-  let userDotFile;
-  let LEGACY;
+/** Parse a pid file into an object, or null when it is missing, unreadable, malformed or not an object. */
+function readRecord(file) {
+  let data;
   try {
-    ({ userDotFile } = require('./compat.cjs'));
-    ({ LEGACY } = require('./legacy-names.cjs'));
-  } catch (e) {
-    if (e.code !== 'MODULE_NOT_FOUND') throw e;
-    return { file: current, legacy: false };
+    data = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    return null;
   }
-  const file = userDotFile(homeDir(), PID_FILE_NAME, fs, `${LEGACY.watch}.pid`);
-  return { file, legacy: file !== current };
+  return data && typeof data === 'object' ? data : null;
 }
 
-function legacyDaemonError(pid) {
-  const err = new Error(
-    `the running watcher (pid ${pid}) was started before the rename to AOForge and watches only its own ` +
-    'handoff directories; stop it with `aoforge-watch stop`, then start aoforge-watch',
-  );
-  err.code = 'ELEGACYDAEMON';
-  return err;
+/** Is `pid` a running process? Signal 0 only probes: EPERM (alive, another user's) counts as live, ESRCH as dead. */
+function pidAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (e) {
+    return !!(e && e.code === 'EPERM');
+  }
 }
 
 function writePidFile({ pid, version, shell, watching }) {
@@ -81,26 +89,32 @@ function writePidFile({ pid, version, shell, watching }) {
   return payload;
 }
 
-/** The daemon's pid record, or null. A record read from the legacy daemon's file carries `legacy: true`. */
+/** The daemon's pid record (pidFilePath() only), or null. The record is the file's object as written. */
 function readPidFile() {
-  const { file, legacy } = readablePidFile();
-  if (!fs.existsSync(file)) return null;
-  try {
-    const data = JSON.parse(fs.readFileSync(file, 'utf8'));
-    if (!data || typeof data !== 'object') return null;
-    return legacy ? { ...data, legacy: true } : data;
-  } catch {
-    return null;
-  }
+  return readRecord(pidFilePath());
 }
 
+/** Remove the daemon's pid file. Idempotent. No other file is touched: not the 3.0.0 one, not the pre-rename one. */
 function removePidFile() {
-  const file = pidFilePath();
   try {
-    fs.unlinkSync(file);
+    fs.unlinkSync(pidFilePath());
   } catch (e) {
     if (e.code !== 'ENOENT') throw e;
   }
+}
+
+/**
+ * A daemon AOForge 3.0.0 started, as its pid file ~/.aoforge/aoforge-watch.pid says (TRD 78-05): `{ pid, file, live }`,
+ * where `live` is a signal-0 probe of `pid`; null when there is no such file, it is malformed, its pid is not a
+ * positive integer, or AOFORGE_HANDOFF_PID_FILE is set (then nothing else is read). Detected, never adopted: the
+ * caller names it so the user can stop it; nothing here reads its `watching` list or touches the file.
+ */
+function interimDaemon() {
+  if (process.env.AOFORGE_HANDOFF_PID_FILE) return null;
+  const file = path.join(homeDir(), INTERIM_DOT_DIR, PID_FILE_NAME);
+  const data = readRecord(file);
+  if (!data || !Number.isInteger(data.pid) || data.pid <= 0) return null;
+  return { pid: data.pid, file, live: pidAlive(data.pid) };
 }
 
 function isWatcherLive() {
@@ -193,7 +207,6 @@ function addWatchedProject(projectPath) {
     err.code = 'ENOPIDFILE';
     throw err;
   }
-  if (current.legacy) throw legacyDaemonError(current.pid);
   const watching = Array.isArray(current.watching) ? [...current.watching] : [];
   const norm = path.resolve(projectPath);
   if (!watching.includes(norm)) watching.push(norm);
@@ -222,7 +235,6 @@ function removeWatchedProject(projectPath) {
     err.code = 'ENOPIDFILE';
     throw err;
   }
-  if (current.legacy) throw legacyDaemonError(current.pid);
   const watching = Array.isArray(current.watching) ? [...current.watching] : [];
   const norm = path.resolve(projectPath);
   const idx = watching.indexOf(norm);
@@ -236,11 +248,13 @@ function removeWatchedProject(projectPath) {
 }
 
 module.exports = {
+  WATCH_DIR_SEGMENTS,
   pidFilePath,
   writePidFile,
   readPidFile,
   removePidFile,
   isWatcherLive,
+  interimDaemon,
   makeDoneRecord,
   markConsumed,
   listUnconsumed,

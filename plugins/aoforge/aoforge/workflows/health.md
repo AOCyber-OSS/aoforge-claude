@@ -51,7 +51,7 @@ Parse JSON output:
 - `errors[]`: Critical issues (code, message, fix, repairable)
 - `warnings[]`: Non-critical issues
 - `info[]`: Informational notes
-- `engine`: `{ running, mirror, installed, main }` — engine-lag row (`running` = the version the invoked aof-tools reports; `mirror` = `~/.claude/aoforge/.plugin-version`; `installed` = plugin-registry version; `main` = `origin/main`; any may be `null` when unknown)
+- `engine`: `{ running, mirror, installed, main }` — engine-lag row (`running` = the version the invoked aof-tools reports; `mirror` = the runtime mirror's `.plugin-version`; `installed` = plugin-registry version; `main` = `origin/main`; any may be `null` when unknown)
 - `repairable_count`: Number of auto-fixable issues
 - `repairs_performed[]`: Actions taken if --repair was used
 </step>
@@ -359,7 +359,7 @@ Report final status.
 | W006 | warning | Objective in ROADMAP but no directory | No |
 | W007 | warning | Objective on disk but not in ROADMAP | No |
 | I001 | info | Plan without SUMMARY (may be in progress) | No |
-| E020 | error | mirror behind installed plugin (~/.claude/aoforge stale) | No |
+| E020 | error | mirror behind installed plugin (runtime mirror stale) | No |
 | W021 | warning | installed plugin behind origin/main | No |
 | I022 | info | mirror ahead of installed plugin (dev checkout) | No |
 | E030 | error | Check 12: `.aoforge/STACK.md` invalid (schema, parse, cycle, depth, unknown section, missing component) | No |

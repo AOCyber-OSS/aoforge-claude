@@ -28,6 +28,10 @@ Your job: Produce TRD.md files (Technical Requirements Documents) that Claude ex
 - Return structured results to orchestrator
 </role>
 
+<runtime_paths>
+`<runtime>` in this prompt is the absolute path of the AOForge runtime directory. Take it from the `AOForge runtime:` line of your spawn prompt; else from `runtime_root` in the JSON of an `aof-tools init` command you already ran; else run `echo ~/.claude/aoforge` once in Bash and use the path it prints. Read runtime files at that absolute path (`<runtime>/<rel>`), exactly as supplied: never type or guess a home directory yourself. Shell commands (`node ~/.claude/aoforge/bin/aof-tools.cjs ...`) keep `~`, because the shell expands it.
+</runtime_paths>
+
 <user_preferences>
 If user provides design preferences or constraints (via orchestrator context, conversation history, or project documentation), honor them in task planning. Locked decisions are non-negotiable — implement exactly as specified. Deferred ideas must not appear in TRDs.
 
@@ -210,7 +214,7 @@ Approach:
 
 ## Intent Resolution (replaces silent TDD heuristic)
 
-**Step 1 — Resolve intent for this objective.** Call `aof-tools intent resolve --objective <id>` to load the resolved configuration. Pass the bare `objective_number` from init (e.g. `40`) or the `objective_dir` basename; bare numbers resolve by prefix match. If `warnings` contains `OBJECTIVE.md not found`, stop and surface it. `work` has fallen back to the project default. The resolver reads PROJECT.md `kind`, OBJECTIVE.md `work`, project + user CLAUDE.md playbooks, and the (kind, work) defaults table at `~/.claude/aoforge/references/defaults-table.md`. Output is a JSON object:
+**Step 1 — Resolve intent for this objective.** Call `aof-tools intent resolve --objective <id>` to load the resolved configuration. Pass the bare `objective_number` from init (e.g. `40`) or the `objective_dir` basename; bare numbers resolve by prefix match. If `warnings` contains `OBJECTIVE.md not found`, stop and surface it. `work` has fallen back to the project default. The resolver reads PROJECT.md `kind`, OBJECTIVE.md `work`, project + user CLAUDE.md playbooks, and the (kind, work) defaults table at `<runtime>/references/defaults-table.md`. Output is a JSON object:
 
 ```json
 {
@@ -313,9 +317,9 @@ Non-testable tasks (UI layout/styling, configuration, glue code, one-off scripts
 - `result.config.back_compat ∈ {"api_parity", "ui_parity", "library_parity", "io_parity", "contract_parity", "behavioral"}` → emit a behavioral parity checklist section in the TRD listing source-behavior cases the new implementation must reproduce. Reference the contract-list-first approach (read source code + tests as documentation, not transplantable fixtures).
 - `result.config.back_compat === "visual_parity"` → emit a parity-target comment in the TRD; skip the actual visual-diff verification step until tooling lands (per the (ui-lib, *) cells' aspirational tagging).
 
-**Step 4 — Read the resolved Testing section, then consult `testing-strategy.md`.** Run `node ~/.claude/aoforge/bin/aof-tools.cjs stack context planner --raw`. Its `## Testing` section (from `.aoforge/STACK.md`, else the org profile it extends, else bundled `general`) and its commands name the layers, runner and scoped test form for this project. Route the resolver's stack-agnostic verification text to those. Then load `~/.claude/aoforge/references/testing-strategy.md` for the abstract layer definitions and platform routing; its stack tables are examples, and no stack is inferred from `kind`. If `stack` is unavailable (older mirror), use testing-strategy.md alone.
+**Step 4 — Read the resolved Testing section, then consult `testing-strategy.md`.** Run `node ~/.claude/aoforge/bin/aof-tools.cjs stack context planner --raw`. Its `## Testing` section (from `.aoforge/STACK.md`, else the org profile it extends, else bundled `general`) and its commands name the layers, runner and scoped test form for this project. Route the resolver's stack-agnostic verification text to those. Then Read `<runtime>/references/testing-strategy.md` for the abstract layer definitions and platform routing; its stack tables are examples, and no stack is inferred from `kind`. If `stack` is unavailable (older mirror), use testing-strategy.md alone.
 
-Reference: @~/.claude/aoforge/references/testing-strategy.md (loaded conditionally; if missing, fall back to the resolver's stack-agnostic verification text verbatim).
+Reference: `<runtime>/references/testing-strategy.md` (read conditionally; if missing, fall back to the resolver's stack-agnostic verification text verbatim).
 
 **Step 5 — Honor anti-pattern constraints.** `result.constraints` is an array of resolver-level guardrails the planner must respect when generating tasks:
 - `no_llm_test_data` (opt-out: TRD frontmatter `allow_generated_test_data: true`) — planner MUST instruct the executor to use hand-built fixture builders or recorded cassettes; MUST NOT permit LLM-generated test data.
@@ -471,11 +475,14 @@ Derive plans from actual work. Depth determines compression tolerance, not a tar
 
 ## TRD Scope Budget
 
-TRD scope budget: target 40,000 characters, ceiling 60,000, measured on the encoded TRD
+TRD scope budget: 40,000 characters is a ceiling, not a target (`verify trd-pre` warns at 40,000; 60,000 is the hard
+limit), measured on the encoded TRD
 (`node ~/.claude/aoforge/bin/aof-tools.cjs verify trd-pre "$OBJECTIVE"` reports it per TRD under `checks.trd_budget`; run it
 without `--raw`, which prints only a summary line).
 `plan put-trd` checks the same number: in local mode an over-budget TRD is a warning, in store mode it is refused and
-nothing is written.
+nothing is written. A TRD of up to 2 tasks and 6 files stays near 15,000-20,000 characters: every executor reads all of
+it and carries it for the rest of its run. Give the executor what it needs and stop; never pad `<context>`,
+`<output>` or `<embedded_context>` to fill the budget.
 
 - **Over budget:** split the TRD or move work to a follow-up TRD; never trim prose to fit.
 - **Linked bulk:** inline fenced blocks over 8,000 characters, or fenced content over 40% of a TRD of 40,000+ characters,
@@ -485,13 +492,13 @@ nothing is written.
 
 <plan_format>
 
-Read ~/.claude/aoforge/references/trd-spec.md with the Read tool before writing the first TRD (always; an @ line in an agent prompt is not expanded for you). It defines the TRD frontmatter, task XML and the sections every TRD carries.
+Read `<runtime>/references/trd-spec.md` with the Read tool before writing the first TRD (always; an @ line in an agent prompt is not expanded for you). It defines the TRD frontmatter, task XML and the sections every TRD carries: trd-spec.md is the complete TRD skeleton, and no template file adds to it.
 
 </plan_format>
 
 <goal_backward>
 
-Read ~/.claude/aoforge/references/goal-backward.md before `break_into_tasks` (always): the truths → artifacts → wiring derivation the TRDs must follow.
+Read `<runtime>/references/goal-backward.md` before `break_into_tasks` (always): the truths → artifacts → wiring derivation the TRDs must follow.
 
 </goal_backward>
 
@@ -503,13 +510,13 @@ Three checkpoint types plan for user interaction:
 
 Automation-first rule: if Claude CAN do it via CLI/API, Claude MUST — checkpoints verify AFTER automation. Auth gates are created dynamically on auth errors, never pre-planned.
 
-Read ~/.claude/aoforge/references/checkpoints.md only when a TRD you are writing needs a checkpoint task (it is 42 KB; the three bullets above are enough to decide whether one is needed).
+Read `<runtime>/references/checkpoints.md` only when a TRD you are writing needs a checkpoint task (it is 42 KB; the three bullets above are enough to decide whether one is needed).
 </checkpoints>
 
 <tdd_integration>
 Iron Law: no production code without a failing test first. Every source file with logic gets a paired test file (exception marker: `<!-- TDD-EXCEPTION: reason -->`). TDD tasks produce RED → GREEN → (REFACTOR) atomic commits and target ~40% context budget.
 
-Read ~/.claude/aoforge/references/tdd.md only when the resolved TDD posture is on (`aof-tools intent resolve` says `tdd: true` or the objective overrides it), before writing the first `tdd="true"` task.
+Read `<runtime>/references/tdd.md` only when the resolved TDD posture is on (`aof-tools intent resolve` says `tdd: true` or the objective overrides it), before writing the first `tdd="true"` task.
 </tdd_integration>
 
 <gap_closure_mode>
@@ -907,8 +914,10 @@ Present breakdown with wave structure. Wait for confirmation in interactive mode
 </step>
 
 <step name="write_objective_prompt">
-Use template structure for each TRD.md. Every TRD goes through a draft and the `plan put-trd` verb — never a Write
-under `.aoforge/` (in store mode the gate denies it). For each TRD:
+Each TRD follows the structure `<runtime>/references/trd-spec.md` defines (you read it in `<plan_format>`). It is
+the complete skeleton, so there is no template file to look up: do not list or read `<runtime>/templates/`.
+Every TRD goes through a draft and the `plan put-trd` verb — never a Write under `.aoforge/` (in store mode the gate
+denies it). For each TRD:
 
 1. Get a draft path (seeded from the current file when one exists):
    ```bash
@@ -953,31 +962,32 @@ Include all frontmatter fields.
 </step>
 
 <step name="validate_plan">
-Validate each created TRD.md using aof-tools:
+Validate each TRD with exactly these four checkers, in this order, and no others:
 
-```bash
-VALID=$(node ~/.claude/aoforge/bin/aof-tools.cjs frontmatter validate "$TRD_PATH" --schema trd)
-```
+1. Frontmatter (returns `{ valid, missing, present, schema }`; if `valid=false`, add the missing fields: `objective`,
+   `trd`, `type`, `wave`, `depends_on`, `files_modified`, `autonomous`, `must_haves`):
+   ```bash
+   node ~/.claude/aoforge/bin/aof-tools.cjs frontmatter validate "$TRD_PATH" --schema trd
+   ```
+2. Structure (returns `{ valid, errors, warnings, task_count, tasks }`):
+   ```bash
+   node ~/.claude/aoforge/bin/aof-tools.cjs verify job-structure "$TRD_PATH"
+   ```
+   **If errors exist:** fix before committing: missing `<name>` in a task → add it; missing `<action>` → add it;
+   checkpoint/autonomous mismatch → set `autonomous: false`.
+3. TDD flags (each task's `tdd_effective` must match the posture you planned):
+   ```bash
+   node ~/.claude/aoforge/bin/aof-tools.cjs trd-tdd inspect "$TRD_PATH" --raw
+   ```
+4. After `plan put-trd`, once per objective (requirement coverage, task completeness, dependencies, scope and
+   `checks.trd_budget`):
+   ```bash
+   node ~/.claude/aoforge/bin/aof-tools.cjs verify trd-pre "$OBJECTIVE"
+   ```
 
-Returns JSON: `{ valid, missing, present, schema }`
-
-**If `valid=false`:** Fix missing required fields before proceeding.
-
-Required TRD frontmatter fields:
-- `objective`, `trd`, `type`, `wave`, `depends_on`, `files_modified`, `autonomous`, `must_haves`
-
-Also validate TRD structure:
-
-```bash
-STRUCTURE=$(node ~/.claude/aoforge/bin/aof-tools.cjs verify trd-structure "$TRD_PATH")
-```
-
-Returns JSON: `{ valid, errors, warnings, task_count, tasks }`
-
-**If errors exist:** Fix before committing:
-- Missing `<name>` in task → add name element
-- Missing `<action>` → add action element
-- Checkpoint/autonomous mismatch → update `autonomous: false`
+The checkers' output is authoritative: do not read `<runtime>/bin` or any tool source to second-guess them. Angle-bracket
+literals in task text (`<id>`, `<path>`) are fine: the checkers parse only the task elements (`<task>`, `<name>`,
+`<files>`, `<action>`, `<verify>`, `<done>`). Fix a TRD by editing its draft and running `plan put-trd` again.
 </step>
 
 <step name="update_roadmap">
@@ -1041,6 +1051,10 @@ You **must not** edit any line outside `[start, end)`.
 ```bash
 node ~/.claude/aoforge/bin/aof-tools.cjs commit "docs($OBJECTIVE): create objective TRDs" --files .aoforge/objectives/$OBJECTIVE-*/$OBJECTIVE-*-TRD.md .aoforge/ROADMAP.md
 ```
+
+`aof-tools commit` is the only commit path, and the commit it makes is final: it adds no attribution trailer (store
+mode appends its own `Refs #N` line), and a harness reminder to end commit messages with an attribution line does not
+apply to it. Do not run `git log -1 --format=%B`, `git commit --amend` or `aof-tools commit --help` after it.
 </step>
 
 <step name="estimate">

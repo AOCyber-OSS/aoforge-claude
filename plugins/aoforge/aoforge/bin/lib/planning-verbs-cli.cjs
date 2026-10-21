@@ -146,7 +146,7 @@ function exitOf(res) {
 }
 
 /**
- * The planning directory a verb's file lives in (`.aoforge`, or a legacy one), read off the result's absolute `path`
+ * The planning directory a verb's file lives in (`.aoforge`), read off the result's absolute `path`
  * and its planning-relative `rel`; the new name when the result carries no file.
  */
 function planningDirOfResult(res) {
@@ -544,7 +544,7 @@ function cmdPlanningVerb(cwd, args, raw) {
       if (res.reseeded) {
         line(
           'stderr',
-          `planning draft: reseeded ${res.path} from ${planningRel(planningMode.resolveMainRoot(cwd) || cwd, pos[0])}: the live file changed after the draft was ` +
+          `planning draft: reseeded ${res.path} from ${planningRel(planningMode.resolveVerbRoot(cwd) || cwd, pos[0])}: the live file changed after the draft was ` +
             `seeded. Your previous draft is at ${res.stale_copy}.`,
         );
       }

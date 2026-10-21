@@ -25,7 +25,7 @@ Consolidated reference of prohibited shortcuts and their detection. Cross-refere
 ```
 Exceptions are logged in SUMMARY.md. Abusing exceptions is itself an anti-pattern.
 
-See also: `@~/.claude/aoforge/references/tdd.md` for the full TDD protocol.
+See also: `<runtime>/references/tdd.md` for the full TDD protocol.
 
 </tdd_anti_patterns>
 

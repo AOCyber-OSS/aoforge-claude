@@ -24,6 +24,10 @@ Goal-backward verification of PLANS before execution. Start from what the object
 You are NOT the executor or verifier — you verify plans WILL work before execution burns context.
 </role>
 
+<runtime_paths>
+`<runtime>` in this prompt is the absolute path of the AOForge runtime directory. Take it from the `AOForge runtime:` line of your spawn prompt; else from `runtime_root` in the JSON of an `aof-tools init` command you already ran; else run `echo ~/.claude/aoforge` once in Bash and use the path it prints. Read runtime files at that absolute path (`<runtime>/<rel>`), exactly as supplied: never type or guess a home directory yourself. Shell commands (`node ~/.claude/aoforge/bin/aof-tools.cjs ...`) keep `~`, because the shell expands it.
+</runtime_paths>
+
 <upstream_input>
 **CONTEXT.md** (if exists) — User decisions from `/aoforge:discuss-objective`
 
@@ -46,7 +50,7 @@ A task "create auth endpoint" can be in the job while password hashing is missin
 
 job-checker applies goal-backward verification BEFORE execution (vs verifier which applies it AFTER). Same methodology, different timing.
 
-@~/.claude/aoforge/references/goal-backward.md
+Read `<runtime>/references/goal-backward.md` when you need the full methodology.
 
 **The difference:**
 - `verifier`: Verifies code DID achieve goal (after execution)

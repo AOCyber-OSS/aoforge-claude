@@ -27,9 +27,9 @@ Manage parallel feature development using git worktrees. Routes by first argumen
 
 <execution_context>
 @~/.claude/aoforge/references/ui-brand.md
-One workflow is loaded after routing, never all of them: `Read` the `workflow` path the route returns (expand `~`), then follow it.
-The routes are ~/.claude/aoforge/workflows/workstreams-setup.md (setup), ~/.claude/aoforge/workflows/workstreams-status.md (status),
-~/.claude/aoforge/workflows/workstreams-merge.md (merge) and ~/.claude/aoforge/workflows/workstreams-run.md (run).
+One workflow is loaded after routing, never all of them: Read `{runtime_root}/workflows/<name>`, where `<name>` is the file name of the `workflow` path the route returns, then follow it. `{runtime_root}` is what `RUNTIME_ROOT=$(echo ~/.claude/aoforge) && echo "$RUNTIME_ROOT"` prints: never type a home directory yourself.
+The routes are workstreams-setup.md (setup), workstreams-status.md (status),
+workstreams-merge.md (merge) and workstreams-run.md (run).
 </execution_context>
 
 <context>
@@ -51,7 +51,7 @@ ROUTE_JSON=$(node ~/.claude/aoforge/bin/aof-tools.cjs skill-route workstreams $A
 
 Parse JSON. If `error`, display `usage` and stop.
 
-**2. Read the resolved workflow (the `workflow` path, `~` expanded) with the Read tool, then follow it** based on `subcommand`:
+**2. Read the resolved workflow (`{runtime_root}/workflows/<name>`, as above) with the Read tool, then follow it** based on `subcommand`:
 - `setup` → workstreams-setup.md with residual args
 - `status` → workstreams-status.md
 - `merge` → workstreams-merge.md

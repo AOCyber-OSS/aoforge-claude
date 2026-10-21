@@ -517,7 +517,13 @@ describe('48-13 characterization — local-mode STATE.md mutators write today\'s
     const dir = charProject();
     const r = run(['state', 'advance-job'], dir);
     assert.equal(r.status, 0, r.stderr);
-    assert.deepEqual(r.json, { advanced: true, previous_job: 2, current_job: 3, total_jobs: 4 });
+    // quick 35 added files_changed and archive_updated; the pre-35 keys and values are unchanged. The archive is
+    // seeded on the STATE.md-writing path, so a commit naming it cannot fail on a missing path.
+    assert.deepEqual(r.json, {
+      advanced: true, previous_job: 2, current_job: 3, total_jobs: 4,
+      files_changed: ['.aoforge/STATE.md', '.aoforge/STATE_ARCHIVE.md', '.aoforge/state.json'],
+      archive_updated: true,
+    });
     let want = edit(CHAR_STATE, '**Current Job:** 2', '**Current Job:** 3');
     want = edit(want, '**Status:** Planning', '**Status:** Ready to execute');
     want = edit(want, '**Last Activity:** 2026-01-01', '**Last Activity:** 2099-09-09');
@@ -533,6 +539,25 @@ describe('48-13 characterization — local-mode STATE.md mutators write today\'s
     assert.deepEqual(r.json, { updated: true, percent: 50, completed: 1, total: 2, bar: '[█████░░░░░] 50%' });
     assert.equal(readFile(dir, 'STATE.md'), edit(CHAR_STATE, '[░░░░░░░░░░] 0%', '[█████░░░░░] 50%'));
     assert.equal(readFile(dir, 'state.json'), sjBytes({ progress_pct: 50 }));
+  });
+
+  // Objective 74: a deferred or checkpoint SUMMARY is not a completed TRD, so it does
+  // not move the progress bar.
+  test('2c\'. state update-progress → deferred and checkpoint SUMMARYs are not counted', () => {
+    const dir = charProject();
+    fs.writeFileSync(path.join(dir, '.aoforge', 'objectives', '07-x', '07-02-SUMMARY.md'),
+      '---\nobjective: 07\ntrd: 07-02\nstatus: deferred\n---\n\n# x\n\n## Self-Check: PASSED\n', 'utf-8');
+    const obj8 = path.join(dir, '.aoforge', 'objectives', '08-y');
+    fs.mkdirSync(obj8, { recursive: true });
+    fs.writeFileSync(path.join(obj8, '08-01-TRD.md'), '# x\n', 'utf-8');
+    fs.writeFileSync(path.join(obj8, '08-01-SUMMARY.md'),
+      '---\nobjective: 08\ntrd: 08-01\nstatus: checkpoint\n---\n\n# x\n', 'utf-8');
+
+    const r = run(['state', 'update-progress'], dir);
+    assert.equal(r.status, 0, r.stderr);
+    assert.deepEqual(r.json, { updated: true, percent: 33, completed: 1, total: 3, bar: '[███░░░░░░░] 33%' });
+    assert.equal(readFile(dir, 'STATE.md'), edit(CHAR_STATE, '[░░░░░░░░░░] 0%', '[███░░░░░░░] 33%'));
+    assert.equal(readFile(dir, 'state.json'), sjBytes({ progress_pct: 33 }));
   });
 
   test('2d. state record-metric → seeded STATE_ARCHIVE.md row; STATE.md and state.json untouched', () => {
@@ -762,5 +787,68 @@ describe('48-13 store mode — STATE.md mutators record into state.json only', (
 
     const d = run(['state', 'add-decision', '--summary', 'x'], dir);
     assert.equal(d.json.hint, undefined, 'local mode output is unchanged');
+  });
+});
+
+// Quick 36 (D3): `trd finalize` is a safe retry because the verbs it runs are idempotent.
+//  22. record-metric twice for the same objective and job keeps one row (the later duration), and in store mode one
+//      metrics_log entry.
+//  23. add-decision with an identical entry is a no-op that exits 0 (`added: false, duplicate: true`); a different
+//      rationale is a different line.
+describe('quick 36 — record-metric and add-decision are safe to retry', () => {
+  const metric = (dir, duration) => run(['state', 'record-metric', '--objective', '7', '--job', '02',
+    '--duration', duration, '--tasks', '3', '--files', '4'], dir);
+
+  test('22a. record-metric twice for one objective and job keeps one row carrying the later duration', () => {
+    const dir = charProject();
+    assert.equal(metric(dir, '5min').status, 0);
+    const r = metric(dir, '7min');
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.json.recorded, true);
+    assert.equal(readFile(dir, 'STATE_ARCHIVE.md'),
+      ARCHIVE_HEAD + '- *(none yet)*\n\n' + ARCHIVE_METRICS + '| Objective 7 P02 | 7min | 3 tasks | 4 files |\n');
+  });
+
+  test('22b. a different job still appends its own row', () => {
+    const dir = charProject();
+    assert.equal(metric(dir, '5min').status, 0);
+    const r = run(['state', 'record-metric', '--objective', '7', '--job', '03', '--duration', '9min'], dir);
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(readFile(dir, 'STATE_ARCHIVE.md'), ARCHIVE_HEAD + '- *(none yet)*\n\n' + ARCHIVE_METRICS +
+      '| Objective 7 P02 | 5min | 3 tasks | 4 files |\n| Objective 7 P03 | 9min | - tasks | - files |\n');
+  });
+
+  test('22c. store mode: one metrics_log entry for the objective and job, carrying the later duration', () => {
+    const dir = charProject(STORE_CONFIG);
+    assert.equal(metric(dir, '5min').status, 0);
+    const r = metric(dir, '7min');
+    assert.equal(r.status, 0, r.stderr);
+    assert.deepEqual(readSj(dir).metrics_log, [{ objective: '7', job: '02', duration: '7min', tasks: '3', files: '4' }]);
+    const rows = readFile(dir, 'STATE_ARCHIVE.md').split('\n').filter((l) => l.startsWith('| Objective 7 P02 |'));
+    assert.deepEqual(rows, ['| Objective 7 P02 | 7min | 3 tasks | 4 files |']);
+  });
+
+  test('23. an identical add-decision is a no-op that exits 0; a different rationale is added', () => {
+    const dir = charProject();
+    const args = ['state', 'add-decision', '--objective', '7', '--summary', 'x', '--rationale', 'y'];
+    assert.equal(run(args, dir).status, 0);
+    const archiveOnce = readFile(dir, 'STATE_ARCHIVE.md');
+    const sjOnce = readFile(dir, 'state.json');
+
+    const again = run(args, dir);
+    assert.equal(again.status, 0, again.stderr);
+    assert.deepEqual(again.json, { added: false, duplicate: true, decision: '- [Objective 7]: x — y' });
+    assert.equal(readFile(dir, 'STATE_ARCHIVE.md'), archiveOnce);
+    assert.equal(readFile(dir, 'state.json'), sjOnce);
+    const rawAgain = run([...args, '--raw'], dir);
+    assert.equal(rawAgain.status, 0);
+    assert.equal(rawAgain.stdout, 'false');
+
+    const other = run(['state', 'add-decision', '--objective', '7', '--summary', 'x', '--rationale', 'z'], dir);
+    assert.equal(other.status, 0, other.stderr);
+    assert.equal(other.json.added, true);
+    const lines = readFile(dir, 'STATE_ARCHIVE.md').split('\n').filter((l) => l.startsWith('- [Objective 7]: x'));
+    assert.deepEqual(lines, ['- [Objective 7]: x — y', '- [Objective 7]: x — z']);
+    assert.equal(readSj(dir).decisions.length, 2);
   });
 });

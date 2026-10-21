@@ -27,10 +27,14 @@
 //
 // Real environment on purpose: process.env (the real PATH and HOME) reaches `stack init` and the tier
 // resolution, as in the 43-07 dry run. The golden and realshape suites use stubs; this one does not.
+// The drafter and the stack packs are both this checkout's (a dev checkout): useRepoPacks() points
+// AOFORGE_STACKS_DIR at a mirror of plugins/aoforge-stack-* (quick 34); HOME and PATH stay real.
 //
 // Skips, never fails, when: AOFORGE_SKIP_FLEET_HARNESS=1; the fleet root (AOFORGE_FLEET_ROOT, default
 // ~/dev) is absent or holds fewer than half of FLEET; and, per repo, when the repo or its committed
-// STACK.md is absent. A `stack init` that exits non-zero is a failure, not a skip.
+// STACK.md is absent, or the repo still has only the pre-rename planning directory (TRD 78-07: aof-tools refuses
+// such a project with the legacy-layout message until it moves to `.aoforge/`). A `stack init` that exits
+// non-zero is a failure, not a skip.
 // The table guards (15) read no repository, so they always run.
 
 const { describe, test } = require('node:test');
@@ -40,11 +44,14 @@ const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
+require('./__fixtures__/stack-pack-env.cjs').useRepoPacks(); // pack-shipped profiles (flutter, dart): objective 77
+
 const golden = require('./__fixtures__/stack-golden-fixtures.cjs');
 const tables = require('./__fixtures__/stack-fleet-tables.cjs');
 const { FLEET, ACCEPTED, OPEN } = tables;
 const { compareDrift, formatRow, selfTestDrafts } = require('./__fixtures__/stack-drift-compare.cjs');
 const { parseProfile, resolveFromParsed } = require('./stack-profile.cjs');
+const { isLegacyPlanning } = require('./planning-layout.cjs');
 
 const { HAND_ONLY, KEY_ALIASES } = golden;
 
@@ -182,6 +189,10 @@ describe('stack init against the real fleet (TRD 43-08)', { skip: fleetSkipReaso
       const dir = path.join(FLEET_ROOT, repo);
       if (!fs.existsSync(dir)) {
         t.skip(`${repo} is not under ${FLEET_ROOT}`);
+        return;
+      }
+      if (isLegacyPlanning(dir)) {
+        t.skip(`${repo} still uses the pre-rename planning directory; aof-tools refuses it until it moves (TRD 78-07)`);
         return;
       }
       const text = committedText(dir);

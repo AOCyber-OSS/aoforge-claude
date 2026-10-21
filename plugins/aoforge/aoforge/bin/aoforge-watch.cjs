@@ -5,10 +5,24 @@
  * aoforge-watch — daemon CLI for the seamless handoff watcher.
  *
  * Subcommands:
- *   start [--project <path>] [--shell <name>] [--foreground]
+ *   start [--project <path>] [--shell <name>] [--foreground] [--no-attend]
  *     Start the daemon. Default detaches (background); --foreground stays
  *     in this process. Refuses to start if a live PID is already recorded.
- *     Cleans up stale PID files automatically.
+ *     Cleans up stale PID files automatically. Also refuses (exit 2) while a
+ *     daemon AOForge 3.0.0 started is alive (its pid file ~/.aoforge/aoforge-watch.pid,
+ *     which this release no longer reads), naming its pid, `kill <pid>` and
+ *     the service reinstall (TRD 78-05).
+ *
+ *     Attended terminal (TRD 73-05): `start --foreground` run in a terminal
+ *     (stdin and stdout are TTYs) is ATTENDED. While a queued command runs,
+ *     its live output is mirrored to that terminal and the keys typed there
+ *     go to the command, so YOU answer its prompt (a key passphrase, an API
+ *     token, a login question); the daemon never types, logs or stores them.
+ *     Ctrl+C during a command interrupts the command (exit 130) and the
+ *     daemon keeps running; between commands Ctrl+C stops the daemon as
+ *     before. --no-attend, AOFORGE_WATCH_UNATTENDED=1, or a stdin/stdout that
+ *     is not a TTY (the detached start, launchd, systemd) runs UNATTENDED:
+ *     commands run without a terminal, exactly as before.
  *
  *   stop
  *     Send SIGTERM to the recorded daemon. Waits up to 5s for clean exit,
@@ -18,9 +32,13 @@
  *   status
  *     Print JSON: { running, pid, version, uptime_ms, project, shell,
  *                   pending_count, done_count, allowlist_size }
+ *     While a daemon AOForge 3.0.0 started is alive, a `warning:` line naming
+ *     it goes to stderr (TRD 78-05).
  *
  *   logs [--tail N]
- *     Print the last N lines of ~/.aoforge/aoforge-watch.log (default 100).
+ *     Print the last N lines of the daemon log (default 100), which lives in
+ *     the watch state directory: ~/.claude/aoforge/state/watch/aoforge-watch.log
+ *     (TRD 73-12), beside the pid file. No other log is read (TRD 78-05).
  *
  *   version
  *     Print "aoforge-watch <version>".
@@ -35,15 +53,13 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { planningRoot } = require('./lib/compat.cjs');
-require('./lib/compat.cjs').aliasLegacyEnv();
+const { planningRoot, watchStateDir } = require('./lib/compat.cjs');
 const { spawn } = require('child_process');
 
 const state = require('./lib/watcher-state.cjs');
 const allowlistLib = require('./lib/watcher-allowlist.cjs');
 
 const VERSION = '0.1.0'; // bumped per release
-const LOG_DIR_NAME = '.aoforge';
 const LOG_FILE_NAME = 'aoforge-watch.log';
 const STOP_TIMEOUT_MS = 5000;
 // How long the daemon's own SIGTERM handler may spend draining before it exits
@@ -53,7 +69,26 @@ const STOP_TIMEOUT_MS = 5000;
 const SHUTDOWN_DEADLINE_MS = STOP_TIMEOUT_MS;
 
 function homeDir() { return process.env.HOME || os.homedir(); }
-function logFilePath() { return path.join(homeDir(), LOG_DIR_NAME, LOG_FILE_NAME); }
+/** The log the daemon writes and `logs` prints: in the watch state directory, beside its pid file (TRD 73-12). */
+function logFilePath() { return path.join(watchStateDir(homeDir()), LOG_FILE_NAME); }
+
+/**
+ * What `start` refuses with and `status` warns with while a daemon AOForge 3.0.0 started is still alive (TRD 78-05).
+ * `d` is a live watcher-state.interimDaemon() result. That daemon keeps serving from its own pid file, which this
+ * release no longer reads, so starting beside it would run two daemons on the same handoff queue.
+ */
+function interimDaemonMessage(d) {
+  return `an aoforge-watch daemon started by AOForge 3.0.0 is still running (pid ${d.pid}, ${d.file}); `
+    + 'this release no longer reads that file. '
+    + `Stop it with \`kill ${d.pid}\` (a login service: run \`aoforge-watch install-service --project <path>\` again), `
+    + 'then run `aoforge-watch start`';
+}
+
+/** The live 3.0.0 daemon, or null (none, or its pid is dead). */
+function liveInterimDaemon() {
+  const d = state.interimDaemon();
+  return d && d.live ? d : null;
+}
 
 function printErr(msg) { process.stderr.write(msg + '\n'); }
 function printOut(msg) { process.stdout.write(msg + '\n'); }
@@ -128,6 +163,9 @@ function cmdStatus() {
 
   if (info && !live) result.stale_pid_file = true;
   printOut(JSON.stringify(result, null, 2));
+  // On stderr, so the JSON on stdout stays parseable (TRD 78-05).
+  const interim = liveInterimDaemon();
+  if (interim) printErr(`aoforge-watch: warning: ${interimDaemonMessage(interim)}`);
   return 0;
 }
 
@@ -210,6 +248,13 @@ function cmdStart(flags) {
     return cmdInstallService(flags);
   }
 
+  // A daemon AOForge 3.0.0 started still serves from ~/.aoforge/: name it rather than start a second one beside it.
+  const interim = liveInterimDaemon();
+  if (interim) {
+    printErr(`aoforge-watch: ${interimDaemonMessage(interim)}`);
+    return 2;
+  }
+
   // Refuse if already running
   if (state.isWatcherLive()) {
     const info = state.readPidFile();
@@ -237,7 +282,7 @@ function cmdStart(flags) {
   const shell = flags.shell || process.env.SHELL || 'bash';
 
   if (flags.foreground) {
-    return runForeground({ projects, shell });
+    return runForeground({ projects, shell, attend: !flags['no-attend'] });
   }
   return startDetached({ projects, shell });
 }
@@ -276,13 +321,14 @@ function startDetached({ projects, shell }) {
   });
 }
 
-function runForeground({ projects, shell }) {
+function runForeground({ projects, shell, attend = true }) {
   // 20-03: primary projectRoot for logs/cwd/config-load is projects[0];
   // the daemon iterates ALL projects via watching:[] in PID file.
   const projectRoot = projects[0];
   // Lazy require so the start CLI doesn't pay the import cost when launching detached.
   const daemon = require('./lib/watcher-daemon.cjs');
   const { ShellSession } = require('./lib/watcher-shell.cjs');
+  const { createSessionHandle, attachTerminal } = require('./lib/watcher-attend.cjs');
 
   // Open log file (append mode)
   const logFile = logFilePath();
@@ -307,12 +353,35 @@ function runForeground({ projects, shell }) {
   if (degraded) log('warn', 'user allow file present but malformed; ignoring');
   log('info', `allowlist size=${allowlist.length} (${userPatterns} user-extended)`);
 
-  const session = new ShellSession({ shell, cwd: projectRoot, interactive: true });
+  // TRD 73-05: the session runLoop and processOnce receive is a facade that
+  // replaces a shell that died (a dispatch timeout kills it) before the next
+  // dispatch, and that attachTerminal hooks the user's terminal onto.
+  const session = createSessionHandle({
+    makeSession: () => new ShellSession({ shell, cwd: projectRoot, interactive: true }),
+    log,
+  });
+
+  // Attended: this process owns a real terminal, so the user can answer a
+  // command's prompt there. A detached start, launchd/systemd and the test
+  // harness have none; they run unattended, dispatch behaviour unchanged.
+  const attended = attend !== false
+    && process.env.AOFORGE_WATCH_UNATTENDED !== '1'
+    && !!process.stdin.isTTY && !!process.stdout.isTTY;
+  let detachTerminal = null;
+  if (attended) {
+    detachTerminal = attachTerminal(session, { input: process.stdin, output: process.stdout, log });
+  }
+  log('info', attended ? 'attended: queued commands share this terminal' : 'unattended: queued commands run without a terminal');
+  printOut(attended
+    ? 'aoforge-watch: attended: prompts from queued commands appear here; Ctrl+C during a command interrupts it'
+    : 'aoforge-watch: unattended: queued commands run without a terminal');
 
   let loop = null;
   let shuttingDown = false;
 
   function finish(code, why) {
+    // Leave the user's terminal in its normal mode even if we exit mid-dispatch.
+    if (detachTerminal) { try { detachTerminal(); } catch {} }
     try { state.removePidFile(); } catch {}
     log(code === 0 ? 'info' : 'error', why);
     try { fs.closeSync(logFd); } catch {}

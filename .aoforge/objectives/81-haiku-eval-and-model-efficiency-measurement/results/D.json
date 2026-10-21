@@ -1,0 +1,1763 @@
+{
+  "batch": "D",
+  "planned": {
+    "haiku": 60,
+    "sonnet": 60
+  },
+  "roles": {
+    "ui-evaluator": {
+      "primary": "accuracy",
+      "models": {
+        "haiku": {
+          "n_scored": 60,
+          "planned": 60,
+          "sessions_scored": 12,
+          "sessions_planned": 12,
+          "metrics": {
+            "accuracy": {
+              "k": 18,
+              "n": 20
+            },
+            "broken_missed": {
+              "k": 1,
+              "n": 13
+            },
+            "false_fail": {
+              "k": 1,
+              "n": 7
+            },
+            "split_rate": {
+              "k": 8,
+              "n": 20
+            },
+            "engine_escalations": {
+              "k": 4,
+              "n": 7
+            },
+            "engine_reviews": {
+              "k": 3,
+              "n": 7
+            },
+            "sample_accuracy": {
+              "k": 48,
+              "n": 60
+            },
+            "accuracy_by_defect_type": {
+              "blank_empty": {
+                "k": 2,
+                "n": 2
+              },
+              "broken_layout": {
+                "k": 1,
+                "n": 1
+              },
+              "contrast_legibility": {
+                "k": 2,
+                "n": 2
+              },
+              "misalignment": {
+                "k": 1,
+                "n": 2
+              },
+              "overflow": {
+                "k": 4,
+                "n": 4
+              },
+              "overlap_zindex": {
+                "k": 2,
+                "n": 2
+              },
+              "none": {
+                "k": 6,
+                "n": 7
+              }
+            },
+            "accuracy_by_severity": {
+              "high": {
+                "k": 9,
+                "n": 9
+              },
+              "medium": {
+                "k": 3,
+                "n": 4
+              },
+              "none": {
+                "k": 6,
+                "n": 7
+              }
+            }
+          },
+          "cost_usd": 0.042899,
+          "mean_wall_ms": 11861,
+          "mean_first_turn_input": 6989
+        },
+        "sonnet": {
+          "n_scored": 60,
+          "planned": 60,
+          "sessions_scored": 12,
+          "sessions_planned": 12,
+          "metrics": {
+            "accuracy": {
+              "k": 20,
+              "n": 20
+            },
+            "broken_missed": {
+              "k": 0,
+              "n": 13
+            },
+            "false_fail": {
+              "k": 0,
+              "n": 7
+            },
+            "split_rate": {
+              "k": 2,
+              "n": 20
+            },
+            "engine_escalations": {
+              "k": 1,
+              "n": 7
+            },
+            "engine_reviews": {
+              "k": 1,
+              "n": 7
+            },
+            "sample_accuracy": {
+              "k": 58,
+              "n": 60
+            },
+            "accuracy_by_defect_type": {
+              "blank_empty": {
+                "k": 2,
+                "n": 2
+              },
+              "broken_layout": {
+                "k": 1,
+                "n": 1
+              },
+              "contrast_legibility": {
+                "k": 2,
+                "n": 2
+              },
+              "misalignment": {
+                "k": 2,
+                "n": 2
+              },
+              "overflow": {
+                "k": 4,
+                "n": 4
+              },
+              "overlap_zindex": {
+                "k": 2,
+                "n": 2
+              },
+              "none": {
+                "k": 7,
+                "n": 7
+              }
+            },
+            "accuracy_by_severity": {
+              "high": {
+                "k": 9,
+                "n": 9
+              },
+              "medium": {
+                "k": 4,
+                "n": 4
+              },
+              "none": {
+                "k": 7,
+                "n": 7
+              }
+            }
+          },
+          "cost_usd": 0.693494,
+          "mean_wall_ms": 9795,
+          "mean_first_turn_input": 6219
+        }
+      }
+    }
+  },
+  "runs": [
+    {
+      "id": "D-home-haiku-r1",
+      "model": "haiku",
+      "role": "ui-evaluator",
+      "fixture": "home",
+      "repeat": 1,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-home-sonnet-r1",
+      "model": "sonnet",
+      "role": "ui-evaluator",
+      "fixture": "home",
+      "repeat": 1,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-ui-eval-guide-sonnet-r1",
+      "model": "sonnet",
+      "role": "ui-evaluator",
+      "fixture": "ui-eval-guide",
+      "repeat": 1,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-ui-eval-guide-haiku-r1",
+      "model": "haiku",
+      "role": "ui-evaluator",
+      "fixture": "ui-eval-guide",
+      "repeat": 1,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-commands-haiku-r1",
+      "model": "haiku",
+      "role": "ui-evaluator",
+      "fixture": "commands",
+      "repeat": 1,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-commands-sonnet-r1",
+      "model": "sonnet",
+      "role": "ui-evaluator",
+      "fixture": "commands",
+      "repeat": 1,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-troubleshooting-sonnet-r1",
+      "model": "sonnet",
+      "role": "ui-evaluator",
+      "fixture": "troubleshooting",
+      "repeat": 1,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-troubleshooting-haiku-r1",
+      "model": "haiku",
+      "role": "ui-evaluator",
+      "fixture": "troubleshooting",
+      "repeat": 1,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-home-haiku-r2",
+      "model": "haiku",
+      "role": "ui-evaluator",
+      "fixture": "home",
+      "repeat": 2,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-home-sonnet-r2",
+      "model": "sonnet",
+      "role": "ui-evaluator",
+      "fixture": "home",
+      "repeat": 2,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-ui-eval-guide-sonnet-r2",
+      "model": "sonnet",
+      "role": "ui-evaluator",
+      "fixture": "ui-eval-guide",
+      "repeat": 2,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-ui-eval-guide-haiku-r2",
+      "model": "haiku",
+      "role": "ui-evaluator",
+      "fixture": "ui-eval-guide",
+      "repeat": 2,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-commands-haiku-r2",
+      "model": "haiku",
+      "role": "ui-evaluator",
+      "fixture": "commands",
+      "repeat": 2,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-commands-sonnet-r2",
+      "model": "sonnet",
+      "role": "ui-evaluator",
+      "fixture": "commands",
+      "repeat": 2,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-troubleshooting-sonnet-r2",
+      "model": "sonnet",
+      "role": "ui-evaluator",
+      "fixture": "troubleshooting",
+      "repeat": 2,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-troubleshooting-haiku-r2",
+      "model": "haiku",
+      "role": "ui-evaluator",
+      "fixture": "troubleshooting",
+      "repeat": 2,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-home-haiku-r3",
+      "model": "haiku",
+      "role": "ui-evaluator",
+      "fixture": "home",
+      "repeat": 3,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-home-sonnet-r3",
+      "model": "sonnet",
+      "role": "ui-evaluator",
+      "fixture": "home",
+      "repeat": 3,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-ui-eval-guide-sonnet-r3",
+      "model": "sonnet",
+      "role": "ui-evaluator",
+      "fixture": "ui-eval-guide",
+      "repeat": 3,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-ui-eval-guide-haiku-r3",
+      "model": "haiku",
+      "role": "ui-evaluator",
+      "fixture": "ui-eval-guide",
+      "repeat": 3,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-commands-haiku-r3",
+      "model": "haiku",
+      "role": "ui-evaluator",
+      "fixture": "commands",
+      "repeat": 3,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-commands-sonnet-r3",
+      "model": "sonnet",
+      "role": "ui-evaluator",
+      "fixture": "commands",
+      "repeat": 3,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-troubleshooting-sonnet-r3",
+      "model": "sonnet",
+      "role": "ui-evaluator",
+      "fixture": "troubleshooting",
+      "repeat": 3,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    },
+    {
+      "id": "D-troubleshooting-haiku-r3",
+      "model": "haiku",
+      "role": "ui-evaluator",
+      "fixture": "troubleshooting",
+      "repeat": 3,
+      "status": "ok",
+      "outcome": "scored",
+      "contaminated": false,
+      "samples": 5
+    }
+  ],
+  "excluded": [],
+  "notes": [
+    "One session judges every state of a surface (about five), so the judge can compare states; the engine judges each state in its own call. Mitigations: the state order is shuffled per repeat (seed = repeat x 1000 + surface index), each state is judged against its own expected text, and the prompt says to judge each screenshot on its own.",
+    "engine_escalations is the pre-registered rule (ok-labelled states with split votes); engine_reviews counts the ok-labelled states the engine's scoreState would put in review. accuracy_by_defect_type and accuracy_by_severity group broken-labelled states by the key's primary defect type and severity; none is the ok-labelled states."
+  ],
+  "states": {
+    "haiku": [
+      {
+        "id": "d01",
+        "label": "broken",
+        "defect_type": "blank_empty",
+        "severity": "high",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d02",
+        "label": "ok",
+        "defect_type": null,
+        "severity": null,
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 2,
+          "ok": 1
+        },
+        "majority": "broken",
+        "split": true,
+        "tie": false,
+        "correct": false,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": true,
+        "escalation": true,
+        "review": false,
+        "samples_correct": 1
+      },
+      {
+        "id": "d03",
+        "label": "broken",
+        "defect_type": "overflow",
+        "severity": "medium",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 2,
+          "ok": 1
+        },
+        "majority": "broken",
+        "split": true,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 2
+      },
+      {
+        "id": "d04",
+        "label": "broken",
+        "defect_type": "misalignment",
+        "severity": "high",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "pass",
+        "known_broken": true,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d05",
+        "label": "broken",
+        "defect_type": "overlap_zindex",
+        "severity": "high",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d06",
+        "label": "broken",
+        "defect_type": "overflow",
+        "severity": "high",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d07",
+        "label": "broken",
+        "defect_type": "blank_empty",
+        "severity": "high",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d08",
+        "label": "broken",
+        "defect_type": "contrast_legibility",
+        "severity": "medium",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "pass",
+        "known_broken": true,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d09",
+        "label": "ok",
+        "defect_type": null,
+        "severity": null,
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "pass",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d10",
+        "label": "ok",
+        "defect_type": null,
+        "severity": null,
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 1,
+          "ok": 2
+        },
+        "majority": "ok",
+        "split": true,
+        "tie": false,
+        "correct": true,
+        "verdict": "review",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": true,
+        "review": true,
+        "samples_correct": 2
+      },
+      {
+        "id": "d11",
+        "label": "broken",
+        "defect_type": "overlap_zindex",
+        "severity": "high",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 2,
+          "ok": 1
+        },
+        "majority": "broken",
+        "split": true,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 2
+      },
+      {
+        "id": "d12",
+        "label": "broken",
+        "defect_type": "contrast_legibility",
+        "severity": "medium",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 2,
+          "ok": 1
+        },
+        "majority": "broken",
+        "split": true,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 2
+      },
+      {
+        "id": "d13",
+        "label": "broken",
+        "defect_type": "broken_layout",
+        "severity": "high",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d14",
+        "label": "broken",
+        "defect_type": "overflow",
+        "severity": "high",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d15",
+        "label": "broken",
+        "defect_type": "overflow",
+        "severity": "high",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 2,
+          "ok": 1
+        },
+        "majority": "broken",
+        "split": true,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 2
+      },
+      {
+        "id": "d16",
+        "label": "ok",
+        "defect_type": null,
+        "severity": null,
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 1,
+          "ok": 2
+        },
+        "majority": "ok",
+        "split": true,
+        "tie": false,
+        "correct": true,
+        "verdict": "review",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": true,
+        "review": true,
+        "samples_correct": 2
+      },
+      {
+        "id": "d17",
+        "label": "broken",
+        "defect_type": "misalignment",
+        "severity": "medium",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "split": false,
+        "tie": false,
+        "correct": false,
+        "verdict": "pass",
+        "known_broken": false,
+        "broken_missed": true,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 0
+      },
+      {
+        "id": "d18",
+        "label": "ok",
+        "defect_type": null,
+        "severity": null,
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "pass",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d19",
+        "label": "ok",
+        "defect_type": null,
+        "severity": null,
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 1,
+          "ok": 2
+        },
+        "majority": "ok",
+        "split": true,
+        "tie": false,
+        "correct": true,
+        "verdict": "review",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": true,
+        "review": true,
+        "samples_correct": 2
+      },
+      {
+        "id": "d20",
+        "label": "ok",
+        "defect_type": null,
+        "severity": null,
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "pass",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      }
+    ],
+    "sonnet": [
+      {
+        "id": "d01",
+        "label": "broken",
+        "defect_type": "blank_empty",
+        "severity": "high",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d02",
+        "label": "ok",
+        "defect_type": null,
+        "severity": null,
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "pass",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d03",
+        "label": "broken",
+        "defect_type": "overflow",
+        "severity": "medium",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "pass",
+        "known_broken": true,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d04",
+        "label": "broken",
+        "defect_type": "misalignment",
+        "severity": "high",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d05",
+        "label": "broken",
+        "defect_type": "overlap_zindex",
+        "severity": "high",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d06",
+        "label": "broken",
+        "defect_type": "overflow",
+        "severity": "high",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d07",
+        "label": "broken",
+        "defect_type": "blank_empty",
+        "severity": "high",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d08",
+        "label": "broken",
+        "defect_type": "contrast_legibility",
+        "severity": "medium",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d09",
+        "label": "ok",
+        "defect_type": null,
+        "severity": null,
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "pass",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d10",
+        "label": "ok",
+        "defect_type": null,
+        "severity": null,
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "pass",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d11",
+        "label": "broken",
+        "defect_type": "overlap_zindex",
+        "severity": "high",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d12",
+        "label": "broken",
+        "defect_type": "contrast_legibility",
+        "severity": "medium",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d13",
+        "label": "broken",
+        "defect_type": "broken_layout",
+        "severity": "high",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d14",
+        "label": "broken",
+        "defect_type": "overflow",
+        "severity": "high",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d15",
+        "label": "broken",
+        "defect_type": "overflow",
+        "severity": "high",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 3,
+          "ok": 0
+        },
+        "majority": "broken",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "fail",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d16",
+        "label": "ok",
+        "defect_type": null,
+        "severity": null,
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "pass",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d17",
+        "label": "broken",
+        "defect_type": "misalignment",
+        "severity": "medium",
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 2,
+          "ok": 1
+        },
+        "majority": "broken",
+        "split": true,
+        "tie": false,
+        "correct": true,
+        "verdict": "pass",
+        "known_broken": true,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 2
+      },
+      {
+        "id": "d18",
+        "label": "ok",
+        "defect_type": null,
+        "severity": null,
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "pass",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      },
+      {
+        "id": "d19",
+        "label": "ok",
+        "defect_type": null,
+        "severity": null,
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 1,
+          "ok": 2
+        },
+        "majority": "ok",
+        "split": true,
+        "tie": false,
+        "correct": true,
+        "verdict": "review",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": true,
+        "review": true,
+        "samples_correct": 2
+      },
+      {
+        "id": "d20",
+        "label": "ok",
+        "defect_type": null,
+        "severity": null,
+        "n_samples": 3,
+        "unjudged": false,
+        "flagged": null,
+        "votes": {
+          "broken": 0,
+          "ok": 3
+        },
+        "majority": "ok",
+        "split": false,
+        "tie": false,
+        "correct": true,
+        "verdict": "pass",
+        "known_broken": false,
+        "broken_missed": false,
+        "false_fail": false,
+        "escalation": false,
+        "review": false,
+        "samples_correct": 3
+      }
+    ]
+  },
+  "scored_at": "2026-10-17T19:20:08.982Z",
+  "spend": {
+    "ledger_version": 1,
+    "batch": "D",
+    "status": "complete",
+    "spent_usd": 0.736393,
+    "ledger_total_usd": 4.559846,
+    "entries": [
+      {
+        "id": "D-home-haiku-r1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.25558,
+        "reserve_usd": 0.319475,
+        "reported_usd": 0.0042882,
+        "transcript_usd": 0.004288,
+        "charged_usd": 0.004288,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:15:16.128Z"
+      },
+      {
+        "id": "D-home-sonnet-r1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.067499,
+        "transcript_usd": 0.067499,
+        "charged_usd": 0.067499,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:15:26.195Z"
+      },
+      {
+        "id": "D-ui-eval-guide-sonnet-r1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.053161299999999995,
+        "transcript_usd": 0.053161,
+        "charged_usd": 0.053161,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:16:03.682Z"
+      },
+      {
+        "id": "D-ui-eval-guide-haiku-r1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.25558,
+        "reserve_usd": 0.319475,
+        "reported_usd": 0.0032720300000000004,
+        "transcript_usd": 0.003272,
+        "charged_usd": 0.003272,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:16:14.085Z"
+      },
+      {
+        "id": "D-commands-haiku-r1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.25558,
+        "reserve_usd": 0.319475,
+        "reported_usd": 0.00368985,
+        "transcript_usd": 0.00369,
+        "charged_usd": 0.00369,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:16:25.702Z"
+      },
+      {
+        "id": "D-commands-sonnet-r1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0599585,
+        "transcript_usd": 0.059959,
+        "charged_usd": 0.059959,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:16:36.216Z"
+      },
+      {
+        "id": "D-troubleshooting-sonnet-r1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0561122,
+        "transcript_usd": 0.056112,
+        "charged_usd": 0.056112,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:16:45.915Z"
+      },
+      {
+        "id": "D-troubleshooting-haiku-r1",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.25558,
+        "reserve_usd": 0.319475,
+        "reported_usd": 0.0036263199999999997,
+        "transcript_usd": 0.003626,
+        "charged_usd": 0.003626,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:16:58.924Z"
+      },
+      {
+        "id": "D-home-haiku-r2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.25558,
+        "reserve_usd": 0.319475,
+        "reported_usd": 0.00348907,
+        "transcript_usd": 0.003489,
+        "charged_usd": 0.003489,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:17:08.817Z"
+      },
+      {
+        "id": "D-home-sonnet-r2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0599697,
+        "transcript_usd": 0.05997,
+        "charged_usd": 0.05997,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:17:17.947Z"
+      },
+      {
+        "id": "D-ui-eval-guide-sonnet-r2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0531913,
+        "transcript_usd": 0.053191,
+        "charged_usd": 0.053191,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:17:27.503Z"
+      },
+      {
+        "id": "D-ui-eval-guide-haiku-r2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.25558,
+        "reserve_usd": 0.319475,
+        "reported_usd": 0.00321753,
+        "transcript_usd": 0.003218,
+        "charged_usd": 0.003218,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:17:37.415Z"
+      },
+      {
+        "id": "D-commands-haiku-r2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.25558,
+        "reserve_usd": 0.319475,
+        "reported_usd": 0.00358835,
+        "transcript_usd": 0.003588,
+        "charged_usd": 0.003588,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:17:49.752Z"
+      },
+      {
+        "id": "D-commands-sonnet-r2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.059498499999999996,
+        "transcript_usd": 0.059498,
+        "charged_usd": 0.059498,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:17:59.571Z"
+      },
+      {
+        "id": "D-troubleshooting-sonnet-r2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0563622,
+        "transcript_usd": 0.056362,
+        "charged_usd": 0.056362,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:18:09.148Z"
+      },
+      {
+        "id": "D-troubleshooting-haiku-r2",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.25558,
+        "reserve_usd": 0.319475,
+        "reported_usd": 0.00361482,
+        "transcript_usd": 0.003615,
+        "charged_usd": 0.003615,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:18:22.921Z"
+      },
+      {
+        "id": "D-home-haiku-r3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.25558,
+        "reserve_usd": 0.319475,
+        "reported_usd": 0.0036277700000000006,
+        "transcript_usd": 0.003628,
+        "charged_usd": 0.003628,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:18:33.635Z"
+      },
+      {
+        "id": "D-home-sonnet-r3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.059069699999999996,
+        "transcript_usd": 0.05907,
+        "charged_usd": 0.05907,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:18:44.145Z"
+      },
+      {
+        "id": "D-ui-eval-guide-sonnet-r3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0530613,
+        "transcript_usd": 0.053061,
+        "charged_usd": 0.053061,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:18:53.909Z"
+      },
+      {
+        "id": "D-ui-eval-guide-haiku-r3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.25558,
+        "reserve_usd": 0.319475,
+        "reported_usd": 0.00317453,
+        "transcript_usd": 0.003175,
+        "charged_usd": 0.003175,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:19:03.648Z"
+      },
+      {
+        "id": "D-commands-haiku-r3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.25558,
+        "reserve_usd": 0.319475,
+        "reported_usd": 0.00387295,
+        "transcript_usd": 0.003873,
+        "charged_usd": 0.003873,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:19:17.814Z"
+      },
+      {
+        "id": "D-commands-sonnet-r3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0595985,
+        "transcript_usd": 0.059599,
+        "charged_usd": 0.059599,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:19:27.590Z"
+      },
+      {
+        "id": "D-troubleshooting-sonnet-r3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0560122,
+        "transcript_usd": 0.056012,
+        "charged_usd": 0.056012,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:19:37.238Z"
+      },
+      {
+        "id": "D-troubleshooting-haiku-r3",
+        "batch": "D",
+        "role": "ui-evaluator",
+        "status": "ok",
+        "cap_usd": 0.25558,
+        "reserve_usd": 0.319475,
+        "reported_usd": 0.0034368199999999997,
+        "transcript_usd": 0.003437,
+        "charged_usd": 0.003437,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T19:19:49.781Z"
+      }
+    ]
+  }
+}

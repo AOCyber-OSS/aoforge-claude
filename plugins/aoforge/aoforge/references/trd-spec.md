@@ -40,8 +40,8 @@ src/
 </file_tree>
 
 <execution_context>
-@~/.claude/aoforge/workflows/execute-trd.md
-@~/.claude/aoforge/templates/summary.md
+<runtime>/workflows/execute-trd.md
+<runtime>/templates/summary.md
 </execution_context>
 
 <embedded_context>
@@ -121,7 +121,7 @@ After completion, create `.aoforge/objectives/XX-name/{objective}-{trd}-SUMMARY.
 |-------|----------|---------|
 | `objective` | Yes | Objective identifier (e.g., `01-foundation`) |
 | `trd` | Yes | TRD number within objective |
-| `type` | Yes | `standard` or `tdd` |
+| `type` | Yes | `standard` or `tdd` (`ui` when a stack pack defines it) |
 | `wave` | Yes | Execution wave number |
 | `depends_on` | Yes | Plan IDs this TRD requires |
 | `files_modified` | Yes | Files this TRD touches |
@@ -131,6 +131,11 @@ After completion, create `.aoforge/objectives/XX-name/{objective}-{trd}-SUMMARY.
 | `decision_gate` | No | Decision id (e.g., `DECISION-001`) that must be resolved before this TRD can start; absent = independent |
 | `validation_gates` | No | Runnable lint/test/build commands from STACK.md |
 | `must_haves` | Yes | Goal-backward verification criteria |
+| `stack` | No | Stack pack field: the stack family an active pack's planner fragment sets on its TRDs |
+| `platform` | No | Stack pack field: array of target platforms; core reads it to select a pack for them |
+| `api_contract` | No | List of `{path, sha}` pinning referenced contract files (`api-contract.cjs`); drift is advisory |
+
+The stack pack fields are not in `FRONTMATTER_SCHEMAS.trd.required`: an active pack's planner fragment (`stack context planner` lists it) adds its own fields and says which are required.
 
 Wave numbers are pre-computed during planning. Execute-objective reads `wave` directly from frontmatter.
 

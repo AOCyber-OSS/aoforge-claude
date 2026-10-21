@@ -8,7 +8,8 @@ and `stack: flutter`; for any other TRD, skip it.
 ## Runtime mapping (Step 8)
 
 - `mobile` runtime, or TRD `must_haves.platform: mobile` → Step 8b below (Maestro via its CLI).
-- Flutter web smoke-only → the web pack's Playwright check against a `flutter build web --release` bundle served statically, with `?enable-semantics=true`. Never `flutter run -d web-server`/`-d chrome` for capture: DWDS wedges into a blank page with no console error.
+- `web` runtime, or a TRD whose `platform` (or `must_haves.platform`) includes `web` → the web pack's verifier fragment and its `aoforge-stack-web:web-ui-verifier` agent, run against a `flutter build web --release` bundle served statically on port 8091 (never 8080), with `?enable-semantics=true`. This pack lists the web pack in `soft_depends`, so `stack context verifier` lists it for such a project whenever it is installed and not in `stacks.disabled`. Never `flutter run -d web-server`/`-d chrome` for capture: DWDS wedges into a blank page with no console error.
+- **Web pack not active.** If `stack context verifier` lists no `web` pack, record each Flutter web surface as `? SKIPPED (web pack not active: /plugin install aoforge-stack-web@aocyber, or remove "web" from stacks.disabled)` and put it on the Step 9 human-verification list. This happens when aoforge-stack-web is not installed or not enabled (`aof-tools stack doctor` warns) or when `stacks.disabled` names it. Never report Flutter web coverage as passed without the web pack. Pack selection reads only explicit `platform` values, but a `type: ui` TRD with no `platform` still counts as `[mobile, web]` for these gates: handle its web half the same way when the web pack is not listed.
 
 ## Step 4: artifact state coverage
 
@@ -239,9 +240,11 @@ node ~/.claude/aoforge/bin/aof-tools.cjs doc put objectives/{objective_dir}/{pha
 ```
 
 The generator produces:
-- State-coverage rows expanded per platform (e.g., `platform: [mobile, web]` doubles state rows — one row per (state, platform) combination)
-- Maestro flow rows (mobile-only by design — Maestro on Flutter web is blocked upstream)
-- Web integration rows (`flutter drive` invocations) — when `web` is in the TRD's `platform` field
+- **State-coverage rows:** one row per `(must_haves.artifacts[*].states[*], platform)` pair across every `type: ui` TRD, so 3 states × `[mobile, web]` = 6 rows per artifact. The per-platform expansion verifies the same UI on both platforms: REQUIRED coverage by default, never opt-in.
+- **Maestro flow rows:** one **mobile-only** row per YAML file in `.maestro/` (Maestro on Flutter web is blocked upstream, mobile-dev-inc/maestro#2591).
+- **Web integration rows:** when `web` is in a TRD's `platform`, one row per artifact telling the user to run `flutter drive --driver=test_driver/integration_test.dart --target=<tests.integration> -d chrome`. The web verifier is `flutter drive`, invoking the same `tests.integration` path mobile runs with `flutter test`, never Maestro (`<runtime>/stacks/flutter/references/flutter-state-patterns.md`, "Web verification mechanism").
+
+State text is human-readable for `loading`, `data`, `error`, `empty` and `initial`; a custom state gets "the `<state>` state UI is rendered correctly". The body uses the manually-authored UAT format, `### N. {test name}` / `expected: ...` / `result: [pending]`, a walkthrough of about 5 minutes. Every later edit (walkthrough results, diagnosis) goes through a `planning draft` of that path and `doc put`, never a direct edit of the `.aoforge/` file.
 
 On success, mention the UAT.md path in the verifier's final report. The user runs through the checklist; results feed back into `/aoforge:verify-work` via the existing UAT.md flow (see `templates/UAT.md` lifecycle section).
 

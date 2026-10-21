@@ -14,9 +14,23 @@
 // 7. Disabled (enabledPlugins false) or absent -> no notice file, exit 0, stdout empty.
 // 8. Corrupt installed_plugins.json -> no notice, exit 0, stdout empty.
 // 9. AOFORGE_SKIP_COEXISTENCE=1 -> nothing read, nothing written (in process: the detector is never called; spawned:
-//    no notice file). The legacy-prefixed variable skips too (the env alias runs first).
+//    no notice file). The legacy-prefixed variable does not skip (TRD 78-10: no env alias): the detector runs and
+//    the queued notice names the variable.
 // 9b. Malformed or empty stdin still queues the notice (the session id is only a dedupe key); a notices file the
 //    hook cannot parse is left byte for byte as it was.
+//
+// Test list (TRD 78-06, objective 78, SC-3/SC-4): one SessionStart notice for every global leftover. Homes from
+// legacy-doctor-fixtures.cjs (leftoverHome), same hermetic spawn as above.
+//
+// 1. DEVFLOW_SKIP_EDIT_GATE=1 and nothing else -> one global notice naming DEVFLOW_SKIP_EDIT_GATE and
+//    AOFORGE_SKIP_EDIT_GATE and saying it is no longer read; stdout empty, exit 0. A second SessionStart of the same
+//    session queues nothing.
+// 2. The pre-rename runtime home present without the migration marker -> the notice names it and the 3.0.x path;
+//    present WITH the marker -> no notice.
+// 3. ~/.aoforge/defaults.json present -> the notice names `aof-tools doctor --global --fix`.
+// 4. Nothing at all -> no notice file (the plugin cases are 6-9 above).
+// 5. Several findings at once -> exactly one notice: `message` one line, `detail` one line per finding; level action.
+//    In process: run() reports status 'nothing' / 'queued'.
 
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
@@ -27,6 +41,7 @@ const { spawnSync } = require('child_process');
 const HOOK = path.join(__dirname, 'coexistence-guard.js');
 const LIB = path.join(__dirname, '..', 'aoforge', 'bin', 'lib');
 const { pluginHome } = require(path.join(LIB, '__fixtures__', 'legacy-plugin-fixtures.cjs'));
+const { leftoverHome } = require(path.join(LIB, '__fixtures__', 'legacy-doctor-fixtures.cjs'));
 const notices = require(path.join(LIB, 'notices.cjs'));
 
 const ENABLED = { devflow: { version: '2.15.0' } };
@@ -132,13 +147,20 @@ describe('coexistence-guard hook', () => {
     });
   });
 
-  it('9. AOFORGE_SKIP_COEXISTENCE=1 (or the legacy prefix) -> nothing written', () => {
-    for (const env of [{ AOFORGE_SKIP_COEXISTENCE: '1' }, { DEVFLOW_SKIP_COEXISTENCE: '1' }]) {
-      withHome(ENABLED, ({ home }) => {
-        spawnGuard(home, { env });
-        assert.equal(fs.existsSync(globalFile(home)), false, JSON.stringify(env));
-      });
-    }
+  it('9. AOFORGE_SKIP_COEXISTENCE=1 -> nothing written', () => {
+    withHome(ENABLED, ({ home }) => {
+      spawnGuard(home, { env: { AOFORGE_SKIP_COEXISTENCE: '1' } });
+      assert.equal(fs.existsSync(globalFile(home)), false);
+    });
+  });
+
+  it('9. the legacy-prefixed skip variable does not skip (TRD 78-10): the notice is queued and names it', () => {
+    withHome(ENABLED, ({ home }) => {
+      spawnGuard(home, { env: { DEVFLOW_SKIP_COEXISTENCE: '1' } });
+      const list = queued(home);
+      assert.equal(list.length, 1);
+      assert.match(JSON.stringify(list[0]), /DEVFLOW_SKIP_COEXISTENCE/);
+    });
   });
 
   it('9. in process: the skip returns before the detector is called', () => {
@@ -152,9 +174,12 @@ describe('coexistence-guard hook', () => {
     assert.equal(result.status, 'skip');
     assert.equal(calls, 0);
 
-    const legacy = guard.run({ env: { DEVFLOW_SKIP_COEXISTENCE: '1' }, home: '/nonexistent-home', payload: {}, detect });
-    assert.equal(legacy.status, 'skip');
-    assert.equal(calls, 0);
+    // TRD 78-10: the legacy prefix is no longer aliased, so its skip variable does not skip; the detector runs.
+    assert.throws(
+      () => guard.run({ env: { DEVFLOW_SKIP_COEXISTENCE: '1' }, home: '/nonexistent-home', payload: {}, detect }),
+      /the detector must not run when skipped/
+    );
+    assert.equal(calls, 1);
   });
 
   it('9b. malformed stdin still queues; an unparseable notices file is left alone', () => {
@@ -172,6 +197,118 @@ describe('coexistence-guard hook', () => {
       fs.writeFileSync(file, '{ broken');
       spawnGuard(home);
       assert.equal(fs.readFileSync(file, 'utf8'), '{ broken');
+    });
+  });
+});
+
+function withLeftover(opts, fn) {
+  const h = leftoverHome(opts);
+  try {
+    return fn(h);
+  } finally {
+    h.cleanup();
+  }
+}
+
+describe('coexistence-guard: every global leftover in one notice (TRD 78-06)', () => {
+  it('1. a DEVFLOW_* variable alone -> one notice naming it, its AOFORGE_* form and "no longer read"; once per session', () => {
+    withLeftover({}, ({ home }) => {
+      const env = { DEVFLOW_SKIP_EDIT_GATE: '1' };
+      const r = spawnGuard(home, { payload: sessionStart(home, 'sess-env'), env });
+      assert.equal(r.stderr, '');
+      const list = queued(home);
+      assert.equal(list.length, 1, JSON.stringify(list));
+      const [n] = list;
+      assert.equal(n.source, 'coexistence-guard');
+      assert.equal(n.key, 'coexistence:sess-env');
+      assert.equal(n.level, 'action');
+      assert.ok(n.message.includes('DEVFLOW_SKIP_EDIT_GATE'), n.message);
+      assert.ok(n.message.includes('AOFORGE_SKIP_EDIT_GATE'), n.message);
+      assert.match(n.message, /no longer read/);
+      assert.equal(n.message.includes('\n'), false, 'one line');
+      assert.equal(n.detail, null, 'one finding: the message says it all');
+
+      spawnGuard(home, { payload: sessionStart(home, 'sess-env', 'resume'), env });
+      assert.equal(queued(home).length, 1, 'the same session queues nothing more');
+    });
+  });
+
+  it('2. the pre-rename runtime home without the marker -> named with the 3.0.x path; with the marker -> no notice', () => {
+    withLeftover({ legacyRuntime: true }, ({ home }) => {
+      spawnGuard(home);
+      const list = queued(home);
+      assert.equal(list.length, 1, JSON.stringify(list));
+      assert.ok(list[0].message.includes('~/.claude/devflow/'), list[0].message);
+      assert.ok(list[0].message.includes('AOForge 3.0.x'), list[0].message);
+      assert.match(list[0].message, /no longer migrates it/);
+      assert.equal(list[0].level, 'action');
+    });
+    withLeftover({ legacyRuntime: true, migrated: true }, ({ home }) => {
+      spawnGuard(home);
+      assert.equal(fs.existsSync(globalFile(home)), false, 'migrated under 3.0.x: quiet (doctor check 16 reports the leftover)');
+    });
+  });
+
+  it('3. ~/.aoforge/defaults.json -> the notice names the doctor fix', () => {
+    withLeftover({ interimFiles: ['defaults.json'] }, ({ home }) => {
+      spawnGuard(home);
+      const list = queued(home);
+      assert.equal(list.length, 1, JSON.stringify(list));
+      assert.ok(list[0].message.includes('defaults.json'), list[0].message);
+      assert.ok(list[0].message.includes('aof-tools doctor --global --fix'), list[0].message);
+      assert.match(list[0].message, /no longer reads them there/);
+    });
+  });
+
+  it('4. nothing at all -> no notice', () => {
+    withLeftover({}, ({ home }) => {
+      spawnGuard(home);
+      assert.equal(fs.existsSync(globalFile(home)), false);
+    });
+    withLeftover({ interimFiles: ['notes.txt', 'STATE.md'] }, ({ home }) => {
+      spawnGuard(home);
+      assert.equal(fs.existsSync(globalFile(home)), false, 'only files AOForge 3.0.0 wrote count');
+    });
+  });
+
+  it('5. several findings -> exactly one notice: a one-line message and one detail line per finding', () => {
+    withLeftover({ devflowEnabled: true, legacyRuntime: true, interimFiles: ['defaults.json'] }, ({ home }) => {
+      spawnGuard(home, { env: { DEVFLOW_SKIP_UPGRADE: '1' } });
+      const list = queued(home);
+      assert.equal(list.length, 1, JSON.stringify(list));
+      const [n] = list;
+      assert.equal(n.level, 'action');
+      assert.equal(n.message.includes('\n'), false, 'one line');
+      assert.match(n.message, /4 leftovers/);
+      const lines = String(n.detail).split('\n');
+      assert.equal(lines.length, 4, n.detail);
+      assert.ok(lines[0].includes('claude plugin disable devflow@aocyber'), lines[0]);
+      assert.ok(lines[1].includes('DEVFLOW_SKIP_UPGRADE') && lines[1].includes('AOFORGE_SKIP_UPGRADE'), lines[1]);
+      assert.ok(lines[2].includes('~/.claude/devflow/'), lines[2]);
+      assert.ok(lines[3].includes('aof-tools doctor --global --fix'), lines[3]);
+
+      const rendered = notices.renderNotices(list);
+      assert.ok(rendered.includes('DEVFLOW_SKIP_UPGRADE'), 'route-results shows the detail lines');
+    });
+  });
+
+  it('5. the pointer plugin beside a DEVFLOW_* variable -> level action (info only when the pointer is the sole finding)', () => {
+    withLeftover({}, ({ home }) => {
+      const guard = require('./coexistence-guard.js');
+      const detect = () => ({ installed: true, enabled: true, version: '3.0.0', pointer: true });
+      const r = guard.run({ env: { DEVFLOW_SKIP_UPGRADE: '1' }, home, payload: { session_id: 's-ptr' }, detect });
+      assert.equal(r.status, 'queued');
+      assert.equal(r.notice.level, 'action');
+      assert.equal(String(r.notice.detail).split('\n').length, 2);
+    });
+  });
+
+  it('5. in process: nothing found -> status nothing, no file', () => {
+    withLeftover({}, ({ home }) => {
+      const guard = require('./coexistence-guard.js');
+      const r = guard.run({ env: { PATH: '/usr/bin' }, home, payload: { session_id: 's-none' } });
+      assert.equal(r.status, 'nothing');
+      assert.equal(fs.existsSync(globalFile(home)), false);
     });
   });
 });

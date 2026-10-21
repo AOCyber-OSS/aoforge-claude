@@ -16,19 +16,64 @@
  *                        Used by unit tests and any caller that doesn't need
  *                        a real terminal.
  *
- * The sentinel-fenced output protocol is identical on both transports — the
- * dispatch wrapper writes a temp-file-redirected command and emits BEGIN /
- * DELIM / END markers around the captured stdout / stderr / exit-code:
+ * Both transports fence a command's output with BEGIN / DELIM / END sentinels
+ * (`sentinelMarkers(id)`); how the command is run differs.
  *
- *   __DFW_OUT=$(mktemp); __DFW_ERR=$(mktemp)
- *   { <cmd> ; } > $__DFW_OUT 2> $__DFW_ERR
- *   __DFW_RC=$?
- *   echo __DFW_BEGIN_<id>__
- *   cat $__DFW_OUT 2>/dev/null
- *   echo __DFW_DELIM_<id>__
- *   cat $__DFW_ERR 2>/dev/null
- *   echo __DFW_END_<id>__:$__DFW_RC
- *   rm -f $__DFW_OUT $__DFW_ERR
+ * 1. Replay protocol — pipe mode, and fish / powershell in either mode. The
+ *    dispatch wrapper writes a temp-file-redirected command and replays the
+ *    captured streams between the markers:
+ *
+ *      __DFW_OUT=$(mktemp); __DFW_ERR=$(mktemp)
+ *      { <cmd> ; } > $__DFW_OUT 2> $__DFW_ERR
+ *      __DFW_RC=$?
+ *      echo __DFW_BEGIN_<id>__
+ *      cat $__DFW_OUT 2>/dev/null
+ *      echo __DFW_DELIM_<id>__
+ *      cat $__DFW_ERR 2>/dev/null
+ *      echo __DFW_END_<id>__:$__DFW_RC
+ *      rm -f $__DFW_OUT $__DFW_ERR
+ *
+ *    Why temp files instead of `1>&2` mirroring of a stderr sentinel: when
+ *    bash's stderr is connected to a pipe (not a TTY), it block-buffers and the
+ *    END sentinel may never arrive in time, leaving captured stderr empty.
+ *    Routing through temp files + cat puts everything on the captured stream
+ *    where the sentinel parser is reliable. stdout and stderr stay separate.
+ *
+ * 2. In-band script protocol — bash / zsh in PTY mode (objective 73, TRD
+ *    73-01). On a PTY the replay protocol has three faults, all of which
+ *    objective 19 found live (19-05-mock-auth-e2e-SUMMARY.md, "Architectural
+ *    Findings"):
+ *
+ *      gap 1  the command's fds are regular files, so isatty() is false and a
+ *             TUI such as doctl's quits with "unknown terminal";
+ *      gap 2  every wrapper line is queued on the tty at once, so a command
+ *             that reads stdin consumes the next wrapper line as its answer
+ *             before the prompt detector can inject anything;
+ *      Ctrl+C the tty driver flushes the queued lines on SIGINT, END is never
+ *             printed and the dispatch runs to its 10-minute timeout.
+ *
+ *    So the wrapper (`ptyScript`) is written to a 0600 file in a 0700 directory
+ *    private to the session, and the shell is sent ONE line: `. '<file>'` + CR.
+ *    The script prints BEGIN, runs the command with stdout AND stderr still on
+ *    the terminal, then prints DELIM and END:<rc>. The output is read in band
+ *    between BEGIN and DELIM; the DELIM-END section is empty, so on this path
+ *    stderr arrives WITH stdout and the parsed `stderr` is ''. An INT trap held
+ *    for the whole script lets a Ctrl+C kill only the command. The file is
+ *    removed when the dispatch settles; kill() removes the directory.
+ *
+ * Live window (objective 73, TRD 73-03, gap 3). A data listener attached with
+ * `{ liveOnly: true }` receives only the bytes the running command produces
+ * while it runs, never sentinel text and never the replay that follows it:
+ *
+ *   in-band protocol   the bytes after the BEGIN line, up to DELIM
+ *   replay protocol    the bytes from the start of the dispatch, up to BEGIN
+ *                      (the replay of captured output comes after BEGIN)
+ *
+ * `makeLiveFilter` is that rule as a pure function; the session builds one per
+ * dispatch and feeds it every chunk. The prompt detector listens this way so a
+ * tool's error text, replayed after it has exited, can never be taken for a
+ * prompt that is still waiting. A listener attached without options is unchanged
+ * and sees every chunk.
  *
  * On PTY mode the line separator is `\r` (carriage return — PTY input
  * convention). On pipe mode it stays `\n`. `splitDispatchOutput` is
@@ -40,18 +85,13 @@
  * Once seen, we split the buffer by BEGIN/DELIM/END to recover stdout,
  * stderr, and exit code, then resolve.
  *
- * Why temp files instead of `1>&2` mirroring of a stderr sentinel: when
- * bash's stderr is connected to a pipe (not a TTY), it block-buffers and the
- * END sentinel may never arrive in time, leaving captured stderr empty.
- * Routing through temp files + cat puts everything on the captured stream
- * where the sentinel parser is reliable. (PTY mode merges stdout+stderr at
- * the OS layer anyway, so the temp-file separation is load-bearing on both
- * transports.)
- *
  * See 19-RESEARCH.md §2 "Sentinel protocol compatibility" for the full
  * design rationale.
  */
 
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const { spawn } = require('child_process');
 const { EventEmitter } = require('events');
 
@@ -76,6 +116,89 @@ function _loadPTY() {
 // about how long the shell takes to start — that guess is what this replaced.
 // It only bounds a shell that will never answer at all.
 const READY_TIMEOUT_MS = 10000;
+
+/**
+ * The three sentinel names that fence one dispatch's output. One function names
+ * them for dispatch(), for a wrapper's ptyScript and for anything that has to
+ * recognise them in the stream.
+ *
+ * @param {string} id — handoff id (/[A-Za-z0-9-]+/)
+ * @returns {{begin: string, delim: string, end: string}}
+ */
+function sentinelMarkers(id) {
+  return {
+    begin: `__DFW_BEGIN_${id}__`,
+    delim: `__DFW_DELIM_${id}__`,
+    end: `__DFW_END_${id}__`,
+  };
+}
+
+/**
+ * Length of the longest suffix of `text` that is a proper prefix of `marker`:
+ * the bytes that might be the start of a marker whose remainder has not arrived.
+ */
+function heldSuffixLength(text, marker) {
+  const max = Math.min(text.length, marker.length - 1);
+  for (let n = max; n > 0; n -= 1) {
+    if (marker.startsWith(text.slice(text.length - n))) return n;
+  }
+  return 0;
+}
+
+/**
+ * The live window of one dispatch, as a pure stateful filter (TRD 73-03).
+ *
+ * Feed it every chunk the shell emits during the dispatch, in arrival order;
+ * each call returns the part of that chunk that is live output, possibly ''.
+ *
+ *   protocol 'inband'  phases before -> live -> after. The window opens after
+ *                      the newline that ends the BEGIN line and closes at DELIM.
+ *   protocol 'replay'  phases live -> after. The window is open from the start
+ *                      and closes at BEGIN.
+ *
+ * A marker can be split across chunks, so the longest tail of the pending text
+ * that is a proper prefix of the marker being waited for is held back until the
+ * next chunk says whether it was one. Held-back text that turns out not to be a
+ * marker is emitted in full then. Only a few bytes are ever held.
+ *
+ * @param {{begin: string, delim: string, protocol?: 'inband'|'replay'}} spec
+ * @returns {(chunk: string) => string}
+ */
+function makeLiveFilter({ begin, delim, protocol } = {}) {
+  const inband = protocol === 'inband';
+  let phase = inband ? 'before' : 'live';
+  let pending = '';
+  return function filter(chunk) {
+    if (phase === 'after' || !chunk) return '';
+    pending += chunk;
+    if (phase === 'before') {
+      const b = pending.indexOf(begin);
+      if (b === -1) {
+        pending = pending.slice(pending.length - heldSuffixLength(pending, begin));
+        return '';
+      }
+      const nl = pending.indexOf('\n', b);
+      if (nl === -1) {
+        pending = pending.slice(b); // BEGIN seen, its line not finished yet
+        return '';
+      }
+      pending = pending.slice(nl + 1);
+      phase = 'live';
+    }
+    const marker = inband ? delim : begin;
+    const m = pending.indexOf(marker);
+    if (m !== -1) {
+      const out = pending.slice(0, m);
+      pending = '';
+      phase = 'after';
+      return out;
+    }
+    const hold = heldSuffixLength(pending, marker);
+    const out = pending.slice(0, pending.length - hold);
+    pending = pending.slice(pending.length - hold);
+    return out;
+  };
+}
 
 class ShellSessionClosed extends Error {
   constructor(msg) {
@@ -103,12 +226,17 @@ class ShellSession extends EventEmitter {
     this._closed = false;
     this._stdoutBuf = '';
     this._stderrBuf = '';
-    this._activeDispatch = null; // { id, beginRx, endRx, resolve, timeout }
+    this._activeDispatch = null; // { id, begin, delim, end, endRx, resolve, timer, scriptFile, live }
     this._readyProbe = null;     // { token, resolve, abort, timer, settled } — PTY only
+    // TRD 73-01: private 0700 directory holding the per-dispatch script files of
+    // the in-band PTY protocol. Created on the first such dispatch, removed by
+    // kill() / on shell death. The path is kept after removal (it is only a name).
+    this._scriptDir = null;
     // TRD 19-02: external data listeners for token-passing prompt detection.
     // Daemon attaches a detector that scans the data stream for prompt
     // regexes and writes resolved secrets back to the shell. Both PTY mode
     // (single onData stream) and pipe mode (stdout + stderr) feed listeners.
+    // TRD 73-03: entries are { fn, liveOnly }.
     this._extDataListeners = [];
   }
 
@@ -118,10 +246,17 @@ class ShellSession extends EventEmitter {
    * stderr). Used by the daemon to detect interactive prompts in the
    * accumulated buffer and inject resolved secrets via injectInput().
    *
+   * With `{ liveOnly: true }` (TRD 73-03) the listener instead receives only the
+   * active dispatch's live window (see the header, "Live window"): never sentinel
+   * text, never replayed output, and nothing at all outside a dispatch. Without
+   * options it sees every chunk, exactly as before.
+   *
    * @param {(chunk: string) => void} fn
+   * @param {{liveOnly?: boolean}} [opts]
    */
-  attachDataListener(fn) {
-    if (typeof fn === 'function') this._extDataListeners.push(fn);
+  attachDataListener(fn, opts) {
+    if (typeof fn !== 'function') return;
+    this._extDataListeners.push({ fn, liveOnly: !!(opts && opts.liveOnly) });
   }
 
   /**
@@ -130,7 +265,7 @@ class ShellSession extends EventEmitter {
    * @param {(chunk: string) => void} fn
    */
   detachDataListener(fn) {
-    this._extDataListeners = this._extDataListeners.filter((x) => x !== fn);
+    this._extDataListeners = this._extDataListeners.filter((x) => x.fn !== fn);
   }
 
   /**
@@ -150,11 +285,19 @@ class ShellSession extends EventEmitter {
   }
 
   _emitExtData(chunk) {
+    // TRD 73-03: the active dispatch's live-window filter sees EVERY chunk, once,
+    // whether or not a liveOnly listener is attached yet, so a listener attached
+    // mid-dispatch starts from the right phase. Its result is shared by all
+    // liveOnly listeners.
+    const d = this._activeDispatch;
+    const live = d && !d.settled && d.live ? d.live(chunk) : '';
     if (this._extDataListeners.length === 0) return;
     // Snapshot listeners before iterating: a listener may detach itself.
     const listeners = this._extDataListeners.slice();
-    for (const fn of listeners) {
-      try { fn(chunk); } catch { /* listener errors must not break dispatch */ }
+    for (const l of listeners) {
+      const data = l.liveOnly ? live : chunk;
+      if (!data) continue;
+      try { l.fn(data); } catch { /* listener errors must not break dispatch */ }
     }
   }
 
@@ -179,8 +322,9 @@ class ShellSession extends EventEmitter {
         throw new Error(`PTY spawn failed: ${e.message}`);
       }
       this._isPTY = true;
-      // PTYs merge stdout+stderr at the OS layer; the sentinel protocol's
-      // temp-file redirection inside the wrapped command separates them again.
+      // PTYs merge stdout+stderr at the OS layer. The replay protocol's temp-file
+      // redirection separated them again; the bash/zsh in-band script protocol
+      // (TRD 73-01) does not, and stderr then arrives with stdout.
       this.proc.onData((chunk) => {
         this._stdoutBuf += chunk;
         // TRD 19-02: feed external listeners (e.g. prompt detector) BEFORE
@@ -330,6 +474,7 @@ class ShellSession extends EventEmitter {
     if (this._activeDispatch && !this._activeDispatch.settled) {
       this._activeDispatch.settled = true;
       clearTimeout(this._activeDispatch.timer);
+      this._cleanupScript(this._activeDispatch);
       this._activeDispatch.resolve({
         stdout: '',
         stderr: '',
@@ -338,7 +483,37 @@ class ShellSession extends EventEmitter {
       });
       this._activeDispatch = null;
     }
+    // The session cannot dispatch again, so its private script directory has no
+    // further use whether or not anyone calls kill().
+    this._removeScriptDir();
     this.emit('closed');
+  }
+
+  /**
+   * Remove one dispatch's script file. Synchronous and never throws: it runs on
+   * every settle path (done, failed, timeout, shell_died, killed), several of
+   * them inside event callbacks.
+   */
+  _cleanupScript(d) {
+    if (!d || !d.scriptFile) return;
+    const file = d.scriptFile;
+    d.scriptFile = null;
+    try { fs.unlinkSync(file); } catch { /* already gone, or never written */ }
+  }
+
+  /** Remove the session's private script directory and anything left in it. Never throws. */
+  _removeScriptDir() {
+    if (!this._scriptDir) return;
+    try { fs.rmSync(this._scriptDir, { recursive: true, force: true }); } catch { /* best effort */ }
+  }
+
+  /** Create (once) the private 0700 directory for per-dispatch script files. */
+  _ensureScriptDir() {
+    if (this._scriptDir && fs.existsSync(this._scriptDir)) return this._scriptDir;
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'aoforge-watch-'));
+    fs.chmodSync(dir, 0o700); // mkdtemp already creates 0700; be explicit, umask cannot widen it
+    this._scriptDir = dir;
+    return dir;
   }
 
   isAlive() {
@@ -369,6 +544,7 @@ class ShellSession extends EventEmitter {
     d.settled = true;
     clearTimeout(d.timer);
     this._activeDispatch = null;
+    this._cleanupScript(d);
     d.resolve({
       stdout,
       stderr,
@@ -392,12 +568,36 @@ class ShellSession extends EventEmitter {
       return Promise.reject(new Error('dispatch in progress'));
     }
     const timeoutMs = typeof opts.timeout_ms === 'number' ? opts.timeout_ms : 600000;
-    const begin = `__DFW_BEGIN_${id}__`;
-    const delim = `__DFW_DELIM_${id}__`;
-    const end = `__DFW_END_${id}__`;
+    const { begin, delim, end } = sentinelMarkers(id);
     const endRx = new RegExp(`${escapeRegExp(end)}:(-?\\d+)`);
 
     return new Promise((resolve) => {
+      // TRD 73-01: bash/zsh on a PTY run the command from a private script file
+      // (in-band protocol, see the header). Prepare it BEFORE arming the timer
+      // and registering the dispatch, so a failed write rejects this promise
+      // and leaves no half-registered dispatch behind.
+      const useScript = this._isPTY
+        && typeof this._wrapper.ptyScript === 'function'
+        && typeof this._wrapper.sourceLine === 'function';
+      let scriptFile = null;
+      if (useScript) {
+        const dir = this._ensureScriptDir();
+        // The id is documented as /[A-Za-z0-9-]+/; sanitize anyway so a stray
+        // separator can never walk the file out of the private directory.
+        scriptFile = path.join(dir, `${String(id).replace(/[^A-Za-z0-9._-]/g, '_')}.sh`);
+        try {
+          fs.writeFileSync(
+            scriptFile,
+            this._wrapper.ptyScript(cmd, { begin, delim, end }, { scriptPath: scriptFile }),
+            { mode: 0o600 },
+          );
+          fs.chmodSync(scriptFile, 0o600); // umask can only narrow the mode above; be explicit
+        } catch (e) {
+          try { fs.unlinkSync(scriptFile); } catch { /* nothing was written */ }
+          throw e; // rejects the dispatch promise
+        }
+      }
+
       const d = {
         id,
         begin,
@@ -407,6 +607,10 @@ class ShellSession extends EventEmitter {
         resolve,
         settled: false,
         timer: null,
+        scriptFile,
+        // TRD 73-03: where this dispatch's live window is depends on the protocol it
+        // runs under; dropped with the dispatch when it settles.
+        live: makeLiveFilter({ begin, delim, protocol: useScript ? 'inband' : 'replay' }),
       };
       d.timer = setTimeout(() => {
         if (d.settled) return;
@@ -421,16 +625,26 @@ class ShellSession extends EventEmitter {
           try { this.proc.destroy(); } catch {}
         }
         this._closed = true;
+        // The shell is gone for good: drop this dispatch's script and the
+        // private directory with it.
+        this._cleanupScript(d);
+        this._removeScriptDir();
         resolve({ stdout: '', stderr: '', exit_code: -1, status: 'timeout' });
       }, timeoutMs);
       this._activeDispatch = d;
 
-      // TRD 20-05: per-shell wrapper generates wrappedLines (sentinel-fenced
-      // protocol; output shape is shell-agnostic). PTY input separator is
-      // always \r (PTY input convention); pipe mode uses wrapper.lineSep.
-      const wrappedLines = this._wrapper.wrapCommand(cmd, id);
-      const sep = this._isPTY ? '\r' : this._wrapper.lineSep;
-      this._writeRaw(wrappedLines.join(sep));
+      if (useScript) {
+        // ONE short line, so nothing the command reads from the tty can be a
+        // wrapper line (gap 2) and a Ctrl+C has no queued input to flush.
+        this._writeRaw(this._wrapper.sourceLine(scriptFile) + '\r');
+      } else {
+        // TRD 20-05: per-shell wrapper generates wrappedLines (sentinel-fenced
+        // replay protocol; output shape is shell-agnostic). PTY input separator
+        // is always \r (PTY input convention); pipe mode uses wrapper.lineSep.
+        const wrappedLines = this._wrapper.wrapCommand(cmd, id);
+        const sep = this._isPTY ? '\r' : this._wrapper.lineSep;
+        this._writeRaw(wrappedLines.join(sep));
+      }
       // In case markers already arrived (race-free).
       this._tryComplete();
     });
@@ -438,7 +652,12 @@ class ShellSession extends EventEmitter {
 
   async kill() {
     if (!this.proc) return;
-    if (this._closed) return;
+    if (this._closed) {
+      // Already closed (timeout, shell exit): the shell is gone but a script
+      // directory may still be on disk. kill() is idempotent, and so is this.
+      this._removeScriptDir();
+      return;
+    }
     this._closed = true;
     if (this._isPTY) {
       // node-pty: kill signal + destroy() which closes the read stream and
@@ -493,6 +712,7 @@ class ShellSession extends EventEmitter {
     if (this._activeDispatch && !this._activeDispatch.settled) {
       this._activeDispatch.settled = true;
       clearTimeout(this._activeDispatch.timer);
+      this._cleanupScript(this._activeDispatch);
       this._activeDispatch.resolve({
         stdout: '',
         stderr: '',
@@ -501,6 +721,7 @@ class ShellSession extends EventEmitter {
       });
       this._activeDispatch = null;
     }
+    this._removeScriptDir();
   }
 }
 
@@ -602,6 +823,8 @@ module.exports = {
   ShellSession,
   ShellSessionClosed,
   splitDispatchOutput,
+  sentinelMarkers,
+  makeLiveFilter,
   stripBracketedPaste,
   stripAnsi,
   UnsupportedShell,

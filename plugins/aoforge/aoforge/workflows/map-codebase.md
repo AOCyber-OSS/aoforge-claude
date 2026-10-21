@@ -54,7 +54,7 @@ Load codebase mapping context:
 INIT=$(node ~/.claude/aoforge/bin/aof-tools.cjs init map-codebase)
 ```
 
-Extract from init JSON: `mapper_models` (one model per focus: `tech`, `arch`, `quality`, `concerns`), `commit_docs`, `codebase_dir`, `existing_maps`, `has_maps`, `codebase_dir_exists`.
+Extract from init JSON: `runtime_root` (fills `{runtime_root}`), `mapper_models` (one model per focus: `tech`, `arch`, `quality`, `concerns`), `commit_docs`, `codebase_dir`, `existing_maps`, `has_maps`, `codebase_dir_exists`.
 </step>
 
 <step name="check_existing">
@@ -169,6 +169,7 @@ description: "Map codebase tech stack"
 Prompt:
 ```
 Focus: tech
+AOForge runtime: {runtime_root}
 
 Analyze this codebase for technology stack and external integrations.
 
@@ -192,6 +193,7 @@ description: "Map codebase architecture"
 Prompt:
 ```
 Focus: arch
+AOForge runtime: {runtime_root}
 
 Analyze this codebase architecture and directory structure.
 
@@ -215,6 +217,7 @@ description: "Map codebase conventions"
 Prompt:
 ```
 Focus: quality
+AOForge runtime: {runtime_root}
 
 Analyze this codebase for coding conventions, testing patterns, and representative code examples.
 
@@ -239,6 +242,7 @@ description: "Map codebase concerns"
 Prompt:
 ```
 Focus: concerns
+AOForge runtime: {runtime_root}
 
 Analyze this codebase for technical debt, known issues, and areas of concern.
 
@@ -396,7 +400,7 @@ Read: .aoforge/codebase/TESTING.md
 Read: .aoforge/codebase/PATTERNS.md
 Read: .aoforge/codebase/INTEGRATIONS.md
 Read: .aoforge/codebase/CONCERNS.md
-Read: ~/.claude/aoforge/templates/claude-md.md
+Read: {runtime_root}/templates/claude-md.md
 ```
 
 Follow the template's section structure and guidelines to synthesize a CLAUDE.md:

@@ -43,7 +43,7 @@ If `$FULL_MODE`:
 INIT=$(node ~/.claude/aoforge/bin/aof-tools.cjs init quick "$DESCRIPTION")
 ```
 
-Parse JSON for: `planner_model`, `executor_model`, `checker_model`, `verifier_model`, `commit_docs`, `next_num`, `slug`, `date`, `timestamp`, `quick_dir`, `task_dir`, `roadmap_exists`, `planning_exists`.
+Parse JSON for: `runtime_root` (fills `{runtime_root}`), `planner_model`, `executor_model`, `checker_model`, `verifier_model`, `commit_docs`, `next_num`, `slug`, `date`, `timestamp`, `quick_dir`, `task_dir`, `roadmap_exists`, `planning_exists`.
 
 **If `roadmap_exists` is false:** Error — Quick mode requires an active project with ROADMAP.md. Run `/aoforge:new-project` first.
 
@@ -105,6 +105,8 @@ Skip the `Check plan` and `Verify` creates when NOT `$FULL_MODE`.
 ```
 Task(
   prompt="
+AOForge runtime: {runtime_root}
+
 <planning_context>
 
 **Mode:** ${FULL_MODE ? 'quick-full' : 'quick'}
@@ -171,6 +173,7 @@ Checker prompt:
 
 ```markdown
 <verification_context>
+AOForge runtime: {runtime_root}
 **Mode:** quick-full
 **Task Description:** ${DESCRIPTION}
 
@@ -225,6 +228,7 @@ Revision prompt:
 
 ```markdown
 <revision_context>
+AOForge runtime: {runtime_root}
 **Mode:** quick-full (revision)
 
 **Existing job:** ${PLAN_CONTENT}
@@ -299,6 +303,8 @@ Spawn executor with plan reference:
 ```
 Task(
   prompt="
+AOForge runtime: {runtime_root}
+
 Execute quick task ${next_num}.
 
 Job: @${QUICK_DIR}/${next_num}-JOB.md
@@ -361,6 +367,7 @@ Display banner:
 ```
 Task(
   prompt="Verify quick task goal achievement.
+AOForge runtime: {runtime_root}
 Task directory: ${QUICK_DIR}
 Task goal: ${DESCRIPTION}
 Job: @${QUICK_DIR}/${next_num}-JOB.md

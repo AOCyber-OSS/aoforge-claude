@@ -654,3 +654,137 @@ test.describe('parseVisionResponse (pure response → Shape-C)', () => {
     assert.throws(() => parseVisionResponse(apiBody, { state_id: 's5' }), /no text/);
   });
 });
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Judge tier override and the split-vote escalation signal (quick 42, objective 76 SC6 / MEF-06).
+// The judge's verdict is the vision model the engine calls, so a one-rung escalation has to move
+// the engine's rung: `--judge-tier` overrides it, and `tier_escalation` records the signal (split
+// live votes) that the agent returns and /aoforge:ui-eval acts on. The engine never escalates itself.
+// ──────────────────────────────────────────────────────────────────────────────
+
+test.describe('judge tier and split-vote escalation (quick 42)', () => {
+  const engine = require('./flutter-ui-eval.cjs');
+  const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'aoforge-stack.json'), 'utf-8'));
+  const packTiers = manifest.models['ui-evaluator'];
+  const profiles = JSON.parse(fs.readFileSync(require('./core.cjs').corePath('..', '..', 'references', 'model-profiles.json'), 'utf-8'));
+
+  test('Case E1 — judgeTier: the manifest tier per profile, a valid override wins, an invalid one throws', () => {
+    assert.strictEqual(engine.judgeTier('balanced'), packTiers.balanced);
+    assert.strictEqual(engine.judgeTier('quality'), packTiers.quality);
+    assert.strictEqual(engine.judgeTier('balanced', 'opus'), 'opus');
+    assert.throws(() => engine.judgeTier('balanced', 'gpt-9'), /judge-tier/);
+  });
+
+  test('Case E2 — judgeModel: the override picks that rung\'s pinned id; no override is unchanged', () => {
+    assert.strictEqual(engine.judgeModel('balanced', 'opus'), profiles.models.opus);
+    assert.strictEqual(engine.judgeModel('balanced'), profiles.models[packTiers.balanced]);
+  });
+
+  test('Case E3 — buildVisionRequest: request.judge_tier sets body.model; without it, judgeModel() as before', () => {
+    const req = {
+      state_id: 'crm-contacts-populated',
+      screenshot_path: REAL_PNG,
+      expected: 'A populated contacts table; no empty-state.',
+      defect_types: DEFECT_TYPES,
+      severities: SEVERITIES,
+    };
+    assert.strictEqual(buildVisionRequest({ ...req, judge_tier: 'opus' }).body.model, profiles.models.opus);
+    assert.strictEqual(buildVisionRequest(req).body.model, engine.judgeModel());
+  });
+
+  test('Case E4a — a live run with a split-vote review requests escalation', () => {
+    const r = engine.judgeEscalation({
+      live: true, judgeTier: 'sonnet', reviews: ['s1'],
+      states: [{ state_id: 's1', verdict: 'review', flake: true }],
+    });
+    assert.deepStrictEqual(r, { requested: true, trigger: 'split-votes', from_tier: 'sonnet', states: ['s1'] });
+  });
+
+  test('Case E4b — a live review with no flake (credential, network or refusal error) does not', () => {
+    const r = engine.judgeEscalation({
+      live: true, judgeTier: 'sonnet', reviews: ['s1'],
+      states: [{ state_id: 's1', verdict: 'review', is_broken: null, defects: [], errors: ['ANTHROPIC_API_KEY not set'] }],
+    });
+    assert.strictEqual(r.requested, false);
+    assert.strictEqual(r.trigger, null);
+    assert.deepStrictEqual(r.states, []);
+  });
+
+  test('Case E4c — an advisory (labels) run never requests escalation', () => {
+    const r = engine.judgeEscalation({
+      live: false, judgeTier: 'sonnet', reviews: ['s1'],
+      states: [{ state_id: 's1', verdict: 'review', flake: true }],
+    });
+    assert.deepStrictEqual(r, { requested: false, trigger: null, from_tier: null, states: [] });
+  });
+
+  test('Case E4d — a split expect:fail state (not in reviews[]) does not', () => {
+    const r = engine.judgeEscalation({
+      live: true, judgeTier: 'sonnet', reviews: [],
+      states: [{ state_id: 'known-bad', verdict: 'fail', flake: true }],
+    });
+    assert.strictEqual(r.requested, false);
+  });
+
+  test('Case E4e — a live run with no reviews records its tier and requests nothing', () => {
+    const r = engine.judgeEscalation({ live: true, judgeTier: 'sonnet', reviews: [], states: [] });
+    assert.strictEqual(r.requested, false);
+    assert.strictEqual(r.from_tier, 'sonnet');
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// P1 (objective 82, TRD 82-03): the UI judge starts at haiku on balanced and budget
+// ──────────────────────────────────────────────────────────────────────────────
+// Objective 81 measured the Haiku judge at 18/20 against Sonnet's 20/20 (exactly the 10-point bound) with a 40% split
+// rate, and the user approved the start tier on 2026-10-17 (P1). A split vote escalates one rung to sonnet through
+// /aoforge:ui-eval, and TRD 82-08 reverts P1 unless escalation keeps the verdicts right at a cost below a Sonnet start.
+// The quality profile stays on opus. These values are pinned literally on purpose: the dynamic E1 case above follows
+// the manifest, so it cannot notice a change to it.
+
+test.describe('P1 (objective 82): the judge start tier', () => {
+  const engine = require('./flutter-ui-eval.cjs');
+  const PACK_ROOT = path.join(__dirname, '..');
+  const CORE_TOOLS = path.join(PACK_ROOT, '..', 'aoforge', 'aoforge', 'bin', 'aof-tools.cjs');
+  const manifest = JSON.parse(fs.readFileSync(path.join(PACK_ROOT, 'aoforge-stack.json'), 'utf-8'));
+
+  // Reverted by TRD 82-08: P1 failed its pre-registered rule (82-CHECK-RULES.md section 1) on
+  // broken_missed(Haiku start, final) = 1 of 13, so the judge starts at sonnet again.
+  test('P1-1 — the manifest carries opus/sonnet/sonnet and judgeTier follows it per profile', () => {
+    assert.deepStrictEqual(manifest.models['ui-evaluator'], { quality: 'opus', balanced: 'sonnet', budget: 'sonnet' });
+    assert.strictEqual(engine.judgeTier('quality'), 'opus');
+    assert.strictEqual(engine.judgeTier('balanced'), 'sonnet');
+    assert.strictEqual(engine.judgeTier('budget'), 'sonnet');
+  });
+
+  test('P1-2 — with the pack mirrored, a budget project resolves ui-evaluator to sonnet and a split vote goes up to opus', () => {
+    const { mirrorPack } = require(path.join(PACK_ROOT, '..', 'aoforge', 'aoforge', 'bin', 'lib', 'pack-mirror.cjs'));
+    const { spawnSync } = require('node:child_process');
+    const tmp = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'ui-eval-p1-'));
+    try {
+      const home = path.join(tmp, 'home');
+      const stacksDir = path.join(tmp, 'stacks');
+      const project = path.join(tmp, 'project');
+      fs.mkdirSync(home);
+      fs.mkdirSync(path.join(project, '.aoforge'), { recursive: true });
+      fs.writeFileSync(path.join(project, '.aoforge', 'config.json'), JSON.stringify({ model_profile: 'budget' }));
+      mirrorPack({ packRoot: PACK_ROOT, stacksDir });
+      const env = { ...process.env, HOME: home, AOFORGE_STACKS_DIR: stacksDir };
+      delete env.AOFORGE_MODEL_PROFILE;
+      const resolve = (...args) => {
+        const r = spawnSync(process.execPath, [CORE_TOOLS, 'resolve-model', 'ui-evaluator', ...args], { encoding: 'utf-8', env, cwd: project });
+        assert.strictEqual(r.status, 0, r.stderr);
+        return JSON.parse(r.stdout);
+      };
+      const start = resolve();
+      assert.strictEqual(start.tier, 'sonnet');
+      assert.strictEqual(start.model, 'sonnet');
+      const up = resolve('--escalate-from', 'sonnet');
+      assert.strictEqual(up.tier, 'opus');
+      assert.strictEqual(up.model, 'inherit'); // the opus tier spawns with `inherit` (init.cjs tierAlias)
+      assert.strictEqual(up.ceiling, false);
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+});

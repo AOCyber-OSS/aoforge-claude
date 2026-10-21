@@ -1,26 +1,43 @@
 'use strict';
 
-// One-release shim primitives for the rename to AOForge (objective 72, INST-03).
+// compat.cjs — where AOForge names its planning directory, project root, $HOME, agent types and
+// user files. Every library under bin/ and every hook resolves these here (TRDs 72-05, 72-06).
 //
-// Each primitive keeps one old surface working next to its new name:
-//   - aliasLegacyEnv     the old environment-variable prefix is still honored
-//   - planningDirName    a project's planning directory may be the new one or the legacy one
-//   - findProjectRoot    a project root is a directory holding either planning directory
-//   - isOwnAgentType     gates treat both agent-type namespaces as their own (isOwnExecutor: the executor role)
-//   - userDotFile        a file under the user's dot directory is read from the old
-//                        location when the new one has none
-//   - runtimeHome        the runtime mirror under ~/.claude, new and old
+//   - planningDirName    a project's planning directory: always `.aoforge`
+//   - planningRoot / planningRel / PLANNING_DIR_NAMES / isPlanningDirName / planningDirLabel
+//                        the same name as an absolute path, a posix relative path, a list,
+//                        a segment test and a "not found" label
+//   - findProjectRoot    a project root is a directory holding `.aoforge/`, never $HOME (the
+//                        walk stops there: TRD 73-09, gap G5)
+//   - userHomeDir        $HOME as the hooks see it, read per call
+//   - isUserHome         a directory is $HOME, in any symlinked form
+//   - isOwnAgentType     an agent type in the `aoforge:` namespace (isOwnExecutor: the executor role)
+//   - userDotFile        a file AOForge keeps for the user, in the runtime home only (TRD 73-11)
+//   - runtimeHome        the runtime mirror, ~/.claude/aoforge
+//   - watchStateDir      the watch daemon's runtime directory under the runtime home
 //
-// The new name always wins: when both exist, the new one is used. Nothing here caches a
-// result (a migration can move the planning directory mid-process). The libraries under
-// bin/ resolve their planning paths here (TRD 72-05); hooks and prose follow in 72-06.
+// Why the name stays `compat.cjs`: until AOForge 3.1.0 this module held the one-release shims of
+// the rename (objective 72): a legacy planning directory, the pre-rename agent namespace, the
+// pre-rename and 3.0.0 user dot directories and the pre-rename environment prefix were read beside
+// the new names. Objective 78 removed them (TRD 78-11 the readers, TRD 78-12 the environment alias);
+// the module keeps its name and every surviving signature because ~80 modules and every hook import
+// it, and renaming it would only multiply conflicts with `main`. Detecting a pre-rename layout to
+// REPORT it is planning-layout.cjs's job, never this module's.
 //
-// This module spells no old name. Every one is built from LEGACY in legacy-names.cjs,
-// which is also where SHIM_REMOVAL records when the shims go (the release after 3.0.0).
+// Nothing here caches a result: tests and spawned hooks change HOME per process. This module
+// spells no old name and requires nothing from legacy-names.cjs (TRD 78-12): the three current names
+// it needs are held below, and compat.legacy.test.cjs (16c) pins them equal to NAMES there.
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
-const { NAMES, LEGACY } = require('./legacy-names.cjs');
+
+// The current names this module resolves: the planning directory, the agent namespace and the runtime directory
+// (the planningDir, agentNs and runtimeDir keys of NAMES; written as key names, never as dotted access, because a
+// dotted access to the directory key would contain the legacy directory's spelling and trip test 16).
+const NEW_PLAN_DIR = '.aoforge';
+const AGENT_NS = 'aoforge:';
+const RUNTIME_DIR = 'aoforge';
 
 // ─── stat helpers ─────────────────────────────────────────────────────────────
 
@@ -42,57 +59,17 @@ function isDir(p, fsImpl) {
   return st !== null && st.isDirectory();
 }
 
-function isFile(p, fsImpl) {
-  const st = statOrNull(p, fsImpl);
-  return st !== null && st.isFile();
-}
-
-// ─── environment ──────────────────────────────────────────────────────────────
-
-/**
- * Copy each old-prefix variable to the new prefix when the new one is unset.
- * The new-prefix value wins when both are set. The old key is never deleted.
- *
- * @param {object} [env=process.env]
- * @returns {string[]} the sorted names that were set
- */
-function aliasLegacyEnv(env = process.env) {
-  const aliased = [];
-  for (const key of Object.keys(env)) {
-    if (!key.startsWith(LEGACY.envPrefix)) continue;
-    const suffix = key.slice(LEGACY.envPrefix.length);
-    if (suffix === '' || env[key] === undefined) continue;
-    const target = NAMES.envPrefix + suffix;
-    if (env[target] !== undefined) continue;
-    env[target] = env[key];
-    aliased.push(target);
-  }
-  return aliased.sort();
-}
-
 // ─── planning directory ───────────────────────────────────────────────────────
-
-// Destructured so the literal-name source guard stays meaningful: a dotted access to the
-// directory key would itself contain the legacy directory's spelling as a substring.
-const { planningDir: NEW_PLAN_DIR } = NAMES;
-const { planningDir: OLD_PLAN_DIR } = LEGACY;
 
 function hasNewPlanDir(root, fsImpl) {
   return isDir(path.join(root, NEW_PLAN_DIR), fsImpl);
 }
 
-function hasOldPlanDir(root, fsImpl) {
-  return isDir(path.join(root, OLD_PLAN_DIR), fsImpl);
-}
-
 /**
- * The name of a project's planning directory: the new one when it is a directory,
- * else the legacy one when that is a directory, else the new one (where a new
- * project is created).
+ * The name of a project's planning directory: always `.aoforge`. `root` and `fsImpl` are kept
+ * so every caller's signature stays (TRD 78-11): nothing is read from the disk.
  */
 function planningDirName(root, fsImpl = fs) {
-  if (hasNewPlanDir(root, fsImpl)) return NEW_PLAN_DIR;
-  if (hasOldPlanDir(root, fsImpl)) return OLD_PLAN_DIR;
   return NEW_PLAN_DIR;
 }
 
@@ -108,39 +85,116 @@ function planningRel(root, ...segments) {
   return path.posix.join(planningDirName(root), ...segments.flatMap((s) => String(s).split(/[\\/]+/)));
 }
 
-/** Both planning-directory names, the new one first: for exclusion lists, scans and attribute lines. */
-const PLANNING_DIR_NAMES = Object.freeze([NEW_PLAN_DIR, OLD_PLAN_DIR]);
+/** The planning-directory name as a list (`['.aoforge']`): for exclusion lists, scans and attribute lines. */
+const PLANNING_DIR_NAMES = Object.freeze([NEW_PLAN_DIR]);
 
-/** True for a path segment that names either planning directory. */
+/** True for a path segment that names the planning directory. */
 function isPlanningDirName(name) {
-  return name === NEW_PLAN_DIR || name === OLD_PLAN_DIR;
+  return name === NEW_PLAN_DIR;
 }
 
 /** The planning directory as a "not found" message names it, when there is none to resolve. */
 function planningDirLabel() {
-  return `${NEW_PLAN_DIR}/ (or legacy ${OLD_PLAN_DIR}/)`;
+  return `${NEW_PLAN_DIR}/`;
 }
 
-/** True only for a root that has the legacy planning directory and not the new one. */
-function isLegacyPlanning(root, fsImpl = fs) {
-  return !hasNewPlanDir(root, fsImpl) && hasOldPlanDir(root, fsImpl);
+// ─── $HOME ────────────────────────────────────────────────────────────────────
+
+/**
+ * $HOME as the hooks see it, read on every call (tests and spawned hooks set HOME per
+ * process): `env.HOME` when it is a non-empty string, else `os.homedir()`, else ''.
+ * '' means "no home": nothing is $HOME and no walk stops.
+ *
+ * @param {object} [env=process.env]
+ * @returns {string}
+ */
+function userHomeDir(env = process.env) {
+  if (env && typeof env.HOME === 'string' && env.HOME !== '') return env.HOME;
+  try {
+    return os.homedir() || '';
+  } catch {
+    return '';
+  }
 }
 
-/** True when a root holds both planning directories (an unfinished migration). */
-function bothPlanningDirs(root, fsImpl = fs) {
-  return hasNewPlanDir(root, fsImpl) && hasOldPlanDir(root, fsImpl);
+/** realpath of `p`, or `p` itself when it cannot be resolved (or the injected fs has no realpathSync). */
+function realOr(p, fsImpl) {
+  if (typeof fsImpl.realpathSync !== 'function') return p;
+  try {
+    return fsImpl.realpathSync(p);
+  } catch {
+    return p;
+  }
 }
 
 /**
- * The nearest directory, from `start` upward, that holds either planning directory.
+ * One matcher per walk, with two checks of different cost:
+ *   stopsAt(dir)  runs on EVERY directory of a walk: the exact resolved path, or (only when
+ *                 the basename equals home's) a realpath comparison. An ordinary walk costs
+ *                 no extra syscalls.
+ *   isHome(dir)   runs only on a CANDIDATE, a directory found to hold a planning directory,
+ *                 right before it would be returned: the exact path, else realpath(dir) ===
+ *                 realpath(home). One realpath per candidate, so a home reached under another
+ *                 name (`<base>/link -> <base>/real`) is still refused.
+ * home's own realpath is computed lazily, at most once per matcher, and shared by both.
+ * An empty or non-string home matches nothing.
+ */
+function homeMatcher(home, fsImpl) {
+  if (typeof home !== 'string' || home === '') return { stopsAt: () => false, isHome: () => false };
+  const resolved = path.resolve(home);
+  const base = path.basename(resolved);
+  let real;
+  const homeReal = () => (real === undefined ? (real = realOr(resolved, fsImpl)) : real);
+  return {
+    stopsAt: (dir) => dir === resolved || (path.basename(dir) === base && realOr(dir, fsImpl) === homeReal()),
+    isHome: (dir) => dir === resolved || realOr(dir, fsImpl) === homeReal(),
+  };
+}
+
+/**
+ * True when `dir` is the user's home directory, in any symlinked form and under any name.
+ * One realpath of `dir` (plus one of home) when the paths are not already equal.
+ *
+ * @param {string} dir
+ * @param {object} [opts]
+ * @param {string} [opts.home=userHomeDir()] '' means no home: always false
+ * @param {object} [opts.fsImpl=fs]
+ * @returns {boolean}
+ */
+function isUserHome(dir, { home = userHomeDir(), fsImpl = fs } = {}) {
+  if (typeof dir !== 'string' || dir === '') return false;
+  return homeMatcher(home, fsImpl).isHome(path.resolve(dir));
+}
+
+/**
+ * The nearest directory, from `start` upward, that holds `.aoforge/`. A directory holding only the
+ * pre-rename planning directory is not a project (TRD 78-11): the walk passes it by.
  * `maxUp` bounds how many parents are inspected after `start`.
  *
+ * $HOME is never a project root, and nothing above it is searched (TRD 73-09, gap G5): the
+ * user's dot directory has the planning directory's name, so `~/.aoforge/` (the watcher's
+ * log and pid file) would otherwise make every repository below $HOME a project. A walk
+ * that reaches $HOME returns null. A start outside $HOME walks to the filesystem root as
+ * before; `home: ''` (no home) disables the stop.
+ *
+ * @param {string} start
+ * @param {object} [opts]
+ * @param {object} [opts.fsImpl=fs]
+ * @param {number} [opts.maxUp=64]
+ * @param {string} [opts.home=userHomeDir()] read per call, never cached
  * @returns {string|null}
  */
-function findProjectRoot(start, { fsImpl = fs, maxUp = 64 } = {}) {
+function findProjectRoot(start, { fsImpl = fs, maxUp = 64, home = userHomeDir() } = {}) {
+  const atHome = homeMatcher(home, fsImpl);
   let dir = path.resolve(start);
   for (let i = 0; i <= maxUp; i++) {
-    if (hasNewPlanDir(dir, fsImpl) || hasOldPlanDir(dir, fsImpl)) return dir;
+    // CRITICAL: $HOME is never a project root, and nothing above it is searched (G5, objective 73).
+    if (atHome.stopsAt(dir)) return null;
+    if (hasNewPlanDir(dir, fsImpl)) {
+      // GOTCHA: the stop check misses a home whose symlinked name differs; the candidate check
+      // catches it. A candidate that IS $HOME ends the walk: it never continues above $HOME.
+      return atHome.isHome(dir) ? null : dir;
+    }
     const parent = path.dirname(dir);
     if (parent === dir) return null;
     dir = parent;
@@ -151,67 +205,57 @@ function findProjectRoot(start, { fsImpl = fs, maxUp = 64 } = {}) {
 // ─── agents ───────────────────────────────────────────────────────────────────
 
 /**
- * True for an agent type in either namespace with a non-empty agent name. The exact, case-sensitive prefix is
- * required: `x:<ns>:y`, an upper-case namespace and a bare namespace are all rejected (gate-edits trusted only a
- * non-empty name before the shim, TRD 72-10).
+ * True for an agent type in the `aoforge:` namespace with a non-empty agent name. The exact, case-sensitive prefix
+ * is required: `x:<ns>:y`, an upper-case namespace and a bare namespace are all rejected (TRD 72-10). The
+ * pre-rename namespace is not ours (TRD 78-11).
  */
 function isOwnAgentType(t) {
   if (typeof t !== 'string') return false;
-  for (const ns of [NAMES.agentNs, LEGACY.agentNs]) {
-    if (t.startsWith(ns) && t.length > ns.length) return true;
-  }
-  return false;
+  return t.startsWith(AGENT_NS) && t.length > AGENT_NS.length;
 }
 
 const EXECUTOR_AGENT = 'executor';
 
-/**
- * The executor in either namespace (`<ns>executor` exactly): what verify-commits and gate-executor-stop act on
- * (TRD 72-10).
- */
+/** `aoforge:executor` exactly: what verify-commits and gate-executor-stop act on (TRD 72-10). */
 function isOwnExecutor(t) {
-  return isOwnAgentType(t) && (t === NAMES.agentNs + EXECUTOR_AGENT || t === LEGACY.agentNs + EXECUTOR_AGENT);
+  return isOwnAgentType(t) && t === AGENT_NS + EXECUTOR_AGENT;
 }
 
-// ─── user dot directory and runtime home ──────────────────────────────────────
+// ─── user files and runtime home ──────────────────────────────────────────────
+
+/** The runtime mirror and the home of every file AOForge keeps for the user: <home>/.claude/aoforge. */
+function runtimeHome(home) {
+  return path.join(home, '.claude', RUNTIME_DIR);
+}
 
 /**
- * Path of a file under the user's dot directory: the new location when the file
- * exists there, else the old one when it exists there, else the new location.
- * `legacyName` is the file's name under the old directory when the name itself was
- * renamed too (the watch daemon's files); it defaults to `name`. A read-path resolver
- * only: a writer joins the new directory itself and never writes the old one.
+ * Path of a file AOForge keeps for the user (defaults.json, the Brave API key, the watch allowlist):
+ * <home>/.claude/aoforge/<name>, the runtime home (TRD 73-11). There is no fallback (TRD 78-11): a copy left in
+ * ~/.aoforge/ by AOForge 3.0.0 or in the pre-rename dot directory is not read; doctor check 17 moves 3.0.0's files
+ * into the runtime home on request. A path builder only: nothing is read, created, copied or moved.
  */
-function userDotFile(home, name, fsImpl = fs, legacyName = name) {
-  const current = path.join(home, NAMES.userDotDir, name);
-  if (isFile(current, fsImpl)) return current;
-  const legacy = path.join(home, LEGACY.userDotDir, legacyName);
-  if (isFile(legacy, fsImpl)) return legacy;
-  return current;
+function userDotFile(home, name) {
+  return path.join(runtimeHome(home), name);
 }
 
-function runtimeHome(home) {
-  return path.join(home, '.claude', NAMES.runtimeDir);
-}
-
-function legacyRuntimeHome(home) {
-  return path.join(home, '.claude', LEGACY.runtimeDir);
+/** The watch daemon's runtime directory (pid, log, service logs): <home>/.claude/aoforge/state/watch (TRD 73-11). */
+function watchStateDir(home) {
+  return path.join(runtimeHome(home), 'state', 'watch');
 }
 
 module.exports = {
-  aliasLegacyEnv,
   planningDirName,
   planningRoot,
   planningRel,
   PLANNING_DIR_NAMES,
   isPlanningDirName,
   planningDirLabel,
-  isLegacyPlanning,
-  bothPlanningDirs,
   findProjectRoot,
+  userHomeDir,
+  isUserHome,
   isOwnAgentType,
   isOwnExecutor,
   userDotFile,
   runtimeHome,
-  legacyRuntimeHome,
+  watchStateDir,
 };

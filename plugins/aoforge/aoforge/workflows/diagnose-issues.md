@@ -96,7 +96,7 @@ DEBUGGER_MODEL=$(node ~/.claude/aoforge/bin/aof-tools.cjs resolve-model debugger
 
 **Spawn debug agents in parallel:**
 
-For each gap, fill the debug-subagent-prompt template and spawn:
+For each gap, fill the debug-subagent-prompt template and spawn. Its `{runtime_root}` is `runtime_root` from an init JSON already in context, else what `RUNTIME_ROOT=$(echo ~/.claude/aoforge) && echo "$RUNTIME_ROOT"` prints.
 
 ```
 Task(

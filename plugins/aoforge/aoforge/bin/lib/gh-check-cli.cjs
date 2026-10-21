@@ -8,9 +8,9 @@
  *   node gh-check-cli.cjs reconcile              closes what a merged PR left open; posts no status
  *
  * It reads the event (`GITHUB_EVENT_PATH`), fetches what the pure checks in gh-check.cjs need through
- * gh-client, and posts the verdict as a COMMIT STATUS with the exact required context. For one release (TRD 72-11)
- * every status is posted twice, under the AOForge context and then under its legacy twin, so a ruleset created before
- * 3.0.0 keeps passing until `gh rebrand` switches it; two POSTs per check run are well inside the statuses budget. This settles research
+ * gh-client, and posts the verdict as a COMMIT STATUS with the exact required context, `aoforge/<check>`, once
+ * (TRD 78-03; 3.0.0 also posted the pre-rename twin): a ruleset that still requires the pre-rename context waits until
+ * `aof-tools gh rebrand --apply` rewrites it. This settles research
  * Open Question 2 on the AOForge side: a ruleset's required-status rule matches a status context by name,
  * whatever the job or workflow is called, so nesting through `workflow_call` (`<caller job> / <called job>`)
  * cannot break the match the way it can for a check run named after a job. The job also exits non-zero on a
@@ -59,8 +59,9 @@ const fs = require('fs');
 const client = require('./gh-client.cjs');
 const check = require('./gh-check.cjs');
 const ghBody = require('./gh-body.cjs');
+const rebrandCheck = require('./gh-legacy-labels.cjs');
 const { PLANNING_DIR_NAMES } = require('./compat.cjs');
-const { NAMES, LEGACY } = require('./legacy-names.cjs');
+const { NAMES } = require('./legacy-names.cjs');
 const { escapeRegExp } = require('./text-escape.cjs');
 
 const { CONTEXTS } = check;
@@ -155,18 +156,15 @@ function targetUrl(repo, env) {
   return server && run && repo ? `${server}/${repo}/actions/runs/${run}` : null;
 }
 
-// The context namespaces a status is posted under, in order. The legacy one is removed in the release after 3.0.0
-// (legacy-names.cjs SHIM_REMOVAL), once `gh rebrand` (72-16) has switched the rulesets that require it.
-const CONTEXT_NAMESPACES = Object.freeze([NAMES.checkContextNs, LEGACY.checkContextNs]);
-
-/** `aoforge/<check>` -> the same check under every namespace; any other context is posted as given, once. */
+/**
+ * The contexts a status is posted under: `aoforge/<check>` once (TRD 78-03). A ruleset that still requires the
+ * pre-rename contexts waits until `aof-tools gh rebrand --apply` (72-16) rewrites it.
+ */
 function statusContexts(context) {
-  if (typeof context !== 'string' || !context.startsWith(NAMES.checkContextNs)) return [context];
-  const check = context.slice(NAMES.checkContextNs.length);
-  return CONTEXT_NAMESPACES.map((ns) => `${ns}${check}`);
+  return [context];
 }
 
-/** POST one commit status on `ctx.sha` under each of `ctx.context`'s namespaces, AOForge first. Thrown on failure. */
+/** POST one commit status on `ctx.sha` under `ctx.context`. Thrown on failure. */
 function postStatus(ctx, state, description) {
   const url = targetUrl(ctx.repo, ctx.env);
   for (const context of statusContexts(ctx.context)) {
@@ -195,7 +193,9 @@ function failed(ctx, e) {
       // best effort: the exit code still reports the failure
     }
   }
-  return result(1, 'error', clip(message, DESCRIPTION_MAX), [message]);
+  // An error may carry longer `details` than a status description holds (78-09's un-rebranded-repository refusal).
+  const details = e && Array.isArray(e.details) && e.details.length > 0 ? e.details : [message];
+  return result(1, 'error', clip(message, DESCRIPTION_MAX), details);
 }
 
 // ─── Reading what the checks need ────────────────────────────────────────────
@@ -282,9 +282,9 @@ const storeModeOn = (config) => Boolean(config && config.github && config.github
 
 /**
  * The parsed planning `config.json` at `ref`, through the contents API: in store mode the planning directory is not
- * in git, but config.json is tracked, and the runner has no checkout of the caller's. The new directory is read
- * first, then the legacy one (a repository not yet migrated, INST-03). null when neither has it (404), it is not a
- * file, or not a JSON object: the check then reads it as store mode off.
+ * in git, but config.json is tracked, and the runner has no checkout of the caller's. Only `.aoforge/config.json` is
+ * read (compat.PLANNING_DIR_NAMES; the legacy directory's fallback, INST-03, was removed by TRD 78-11). null when it is
+ * missing (404), not a file, or not a JSON object: the check then reads it as store mode off.
  */
 function fetchConfig(repo, ref) {
   let got = { missing: true };
@@ -315,17 +315,21 @@ function findObjectiveIssue(repo, pr, issues, config) {
 
   const configured = config && config.github && config.github.labels && config.github.labels.objective;
   const label = typeof configured === 'string' && configured !== '' ? configured : DEFAULT_OBJECTIVE_LABEL;
-  // The default label, then its legacy twin (TRD 72-11): a repository not yet rebranded labels its objectives that way.
-  for (const form of ghBody.labelForms(label, DEFAULT_OBJECTIVE_LABEL)) {
-    const listed = client.ghPaginate(`repos/${repo}/issues?labels=${encodeURIComponent(form)}&state=all`);
-    if (!listed.ok) {
-      if (isNotFound(listed)) continue;
-      throw new Error(`could not list the ${form} issues of ${repo}: ${why(listed)}`);
-    }
-    const found = listed.items.find(isObjective);
-    if (found) return found;
+  // One label (TRD 78-09). A repository that still has the default label's pre-rename twin is an error: its objective
+  // may carry the old label only. The status names the fix in 140 characters; the details carry the full refusal.
+  const rebranded = rebrandCheck.checkRebranded({ repo, label, defaultLabel: DEFAULT_OBJECTIVE_LABEL });
+  if (!rebranded.ok) {
+    if (rebranded.kind !== 'legacy-namespace') throw new Error(rebranded.error);
+    const e = new Error(`${repo} still has the label "${rebrandCheck.legacyTwin(label)}": run \`aof-tools gh rebrand --apply\`, then re-run this check`);
+    e.details = [rebranded.error];
+    throw e;
   }
-  return null;
+  const listed = client.ghPaginate(`repos/${repo}/issues?labels=${encodeURIComponent(label)}&state=all`);
+  if (!listed.ok) {
+    if (isNotFound(listed)) return null;
+    throw new Error(`could not list the ${label} issues of ${repo}: ${why(listed)}`);
+  }
+  return listed.items.find(isObjective) || null;
 }
 
 /** The issue numbers linked under an objective issue: sub-issues, or its `trds` task list without the sub-issues API. */
@@ -357,10 +361,8 @@ function runPlanningConsistency(ctx) {
 // ─── Merge-time reconcile ────────────────────────────────────────────────────
 
 const RECONCILE_MARKER = '<!-- aoforge:reconcile -->';
-// The first line of a reconcile comment in either namespace (TRD 72-11): one comment per PR, whoever wrote it.
-const RECONCILE_LINE_RE = new RegExp(
-  `^\\s*<!--\\s*(?:${escapeRegExp(NAMES.markerNs)}|${escapeRegExp(LEGACY.markerNs)}):reconcile\\s*-->\\s*$`,
-);
+// The first line of an AOForge reconcile comment (TRD 78-03): a pre-rename one is another comment, left as it is.
+const RECONCILE_LINE_RE = new RegExp(`^\\s*<!--\\s*${escapeRegExp(NAMES.markerNs)}:reconcile\\s*-->\\s*$`);
 
 const list = (numbers) => numbers.map((n) => `#${n}`).join(', ');
 
@@ -386,7 +388,7 @@ function commentOnPr(repo, prNumber, body) {
   }
 }
 
-/** The reconcile comment already on the PR (either namespace), or null: none, or the comments could not be read. */
+/** The AOForge reconcile comment already on the PR, or null: none, or the comments could not be read. */
 function findReconcileComment(repo, prNumber) {
   const r = client.ghPaginate(`repos/${repo}/issues/${prNumber}/comments`);
   if (!r.ok) return null;
@@ -395,9 +397,9 @@ function findReconcileComment(repo, prNumber) {
 }
 
 /**
- * Record `lines` on the PR: in the reconcile comment already there (edited in place under the AOForge marker, its
- * earlier text kept above the new lines), else in a new one. A re-run, or a run after the pre-rename runner, never
- * leaves two. A comment list that cannot be read falls back to a new comment: a second record beats none.
+ * Record `lines` on the PR: in the AOForge reconcile comment already there (edited in place, its earlier text kept
+ * above the new lines), else in a new one. A re-run never leaves two; a comment the pre-rename runner left is not this
+ * comment and is left alone. A comment list that cannot be read falls back to a new comment: a second record beats none.
  * -> null, or what went wrong.
  */
 function writeReconcileComment(repo, prNumber, lines) {

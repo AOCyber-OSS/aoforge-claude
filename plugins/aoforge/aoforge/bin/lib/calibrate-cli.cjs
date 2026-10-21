@@ -5,7 +5,7 @@
  *
  * Thin CLI front end for the calibrator (lib/calibrator.cjs, TRD 57-05):
  *
- *   aof-tools calibrate [--paths <dir[,dir]>] [--out <file>] [--rates <file>] [--root <dir> | --no-overhead] [--window <N|all>] [--minutes <task_sum|trd_level>] [--through <N>] [--dry-run] [--raw]
+ *   aof-tools calibrate [--paths <dir[,dir]>] [--out <file>] [--rates <file>] [--root <dir> | --no-overhead] [--also-root <dir>]... [--window <N|all>] [--minutes <task_sum|trd_level>] [--through <N>] [--dry-run] [--raw]
  *       Builds the per-task-class medians and P90s (minutes, tokens, dollars) from SUMMARY frontmatter, STATE_ARCHIVE
  *       metrics and model-rates.json, and writes calibration.json. Version 2 also measures what one spawn of each
  *       non-executor agent costs (planner, verifier, ...) from subagent transcripts. Version 3 (TRD 67-02) names the
@@ -19,6 +19,12 @@
  *   root    --root (relative to cwd), else ~/.claude/projects resolved when the command runs: the Claude Code projects
  *           directory the agent-overhead spawns are read from. `--no-overhead` skips the scan (agent_overhead is then
  *           empty and says `scanned: false`). The two flags are exclusive.
+ *   also-root --also-root <dir> (quick 41), repeatable, relative to cwd: a former checkout path of the project, such as
+ *           its path before a move or rename. The agent-overhead scan only (not `tokens`) also claims spawns recorded
+ *           under it: a REPO_ROOT line naming it, a cwd inside it or its `.df-worktrees/<basename>` base, or a path under
+ *           its current or legacy planning directory. The roots are recorded in `method.also_roots` (so in the digest);
+ *           without the flag the file is unchanged. It needs exactly one project, cannot be combined with
+ *           --no-overhead, and a root containing the project is refused (usage errors); one equal to it is dropped.
  *   window  --window <N|all> (TRD 64-08): keep, per project, only the N most recent objectives that have a sample (by
  *           objective number) and drop the TRDs of older ones before any statistic; `all` means no window. Agent
  *           overhead is not windowed. Default (TRD 64-10): the most recent 10 objectives with samples per project when
@@ -49,7 +55,7 @@ const calibrator = require('./calibrator.cjs');
 const planningMode = require('./planning-mode.cjs');
 const { planningDirLabel } = require('./compat.cjs');
 
-const USAGE = 'aof-tools calibrate [--paths <dir[,dir]>] [--out <file>] [--rates <file>] [--root <dir> | --no-overhead] [--window <N|all>] [--minutes <task_sum|trd_level>] [--through <N>] [--dry-run] [--raw]';
+const USAGE = 'aof-tools calibrate [--paths <dir[,dir]>] [--out <file>] [--rates <file>] [--root <dir> | --no-overhead] [--also-root <dir>]... [--window <N|all>] [--minutes <task_sum|trd_level>] [--through <N>] [--dry-run] [--raw]';
 
 const VALUE_FLAGS = ['paths', 'out', 'rates', 'root', 'window', 'minutes', 'through'];
 const BOOL_FLAGS = ['dry-run', 'no-overhead'];
@@ -69,11 +75,15 @@ function usageError(message) {
  * MINUTES_METHODS; `through` is undefined without the flag (no cutoff) and otherwise a non-negative number (digits with an
  * optional decimal part, safe to represent). Any other value is a usage error naming the flag.
  *
- * @returns {{ok:true, flags: Object<string,string>, dryRun: boolean, noOverhead: boolean, window: (undefined|null|number), minutes: (undefined|string), through: (undefined|number)} | {ok:false, message:string}}
+ * `alsoRoots` holds every `--also-root` value in order, unresolved ([] without the flag); with --no-overhead it is a
+ * usage error.
+ *
+ * @returns {{ok:true, flags: Object<string,string>, dryRun: boolean, noOverhead: boolean, window: (undefined|null|number), minutes: (undefined|string), through: (undefined|number), alsoRoots: string[]} | {ok:false, message:string}}
  */
 function parseArgs(argv) {
   const flags = {};
   const bools = {};
+  const alsoRoots = [];
   for (let i = 0; i < argv.length; i++) {
     const tok = argv[i];
     if (tok === '--raw') continue;
@@ -81,6 +91,13 @@ function parseArgs(argv) {
     const name = tok.slice(2);
     if (BOOL_FLAGS.includes(name)) {
       bools[name] = true;
+      continue;
+    }
+    if (name === 'also-root') {
+      const value = argv[i + 1];
+      if (value === undefined || value.startsWith('--')) return usageError(`${tok} needs a value`);
+      alsoRoots.push(value);
+      i++;
       continue;
     }
     if (!VALUE_FLAGS.includes(name)) return usageError(`unknown flag ${tok} for calibrate`);
@@ -91,6 +108,9 @@ function parseArgs(argv) {
   }
   if (flags.root !== undefined && bools['no-overhead']) {
     return usageError('--root and --no-overhead cannot be used together: --no-overhead reads no transcripts');
+  }
+  if (alsoRoots.length > 0 && bools['no-overhead']) {
+    return usageError('--also-root and --no-overhead cannot be used together: --also-root adds former checkout roots to the agent-overhead scan, which --no-overhead skips');
   }
   let window;
   if (flags.window !== undefined) {
@@ -117,7 +137,9 @@ function parseArgs(argv) {
     }
     through = number;
   }
-  return { ok: true, flags, dryRun: bools['dry-run'] === true, noOverhead: bools['no-overhead'] === true, window, minutes, through };
+  return {
+    ok: true, flags, dryRun: bools['dry-run'] === true, noOverhead: bools['no-overhead'] === true, window, minutes, through, alsoRoots,
+  };
 }
 
 /** Non-empty trimmed pieces of `text` split on `sep`, each resolved against `base`. */
@@ -174,9 +196,14 @@ function windowText(block) {
   return ` · window ${block.objectives} objectives (dropped ${dropped} TRDs)`;
 }
 
-/** ` · minutes trd_level` always, then ` · through objective 66` when a cutoff was asked for. */
+/**
+ * ` · minutes trd_level` always, then ` · through objective 66` when a cutoff was asked for, then
+ * ` · also roots /a, /b` when former checkout roots were added (quick 41).
+ */
 function methodText(method) {
-  return ` · minutes ${method.minutes}${method.through_objective === null ? '' : ` · through objective ${method.through_objective}`}`;
+  const through = method.through_objective === null ? '' : ` · through objective ${method.through_objective}`;
+  const also = Array.isArray(method.also_roots) && method.also_roots.length > 0 ? ` · also roots ${method.also_roots.join(', ')}` : '';
+  return ` · minutes ${method.minutes}${through}${also}`;
 }
 
 /** Would writing `obj` to `file` change it? True when the file is absent or its bytes differ. */
@@ -214,10 +241,15 @@ function runCalibrate({ argv = [], cwd = process.cwd(), env = process.env } = {}
       : require('./token-usage.cjs').defaultTranscriptRoot();
   }
 
+  // Former checkout roots resolve against cwd, like every other path flag (quick 41).
+  const alsoRoots = parsed.alsoRoots.map((p) => path.resolve(base, p));
+
   let calibration;
   try {
-    calibration = calibrator.buildCalibration({ paths: where.paths, ratesPath, transcriptsRoot, window, minutes, through });
+    calibration = calibrator.buildCalibration({ paths: where.paths, ratesPath, transcriptsRoot, window, minutes, through, alsoRoots });
   } catch (err) {
+    // A former root the library cannot apply (two projects, one containing the project) is a usage error.
+    if (err && err.code === calibrator.ALSO_ROOTS_ERROR) return usageError(err.message);
     return { ok: false, message: err.message };
   }
   if (calibration.sources.length === 0) {

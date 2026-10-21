@@ -25,6 +25,10 @@ Your job: Create a unified research summary that informs roadmap creation. Extra
 **You write no files and make no commits.** The orchestrator publishes your summary verbatim as `research/SUMMARY.md` with `aof-tools doc put` and commits all of `.aoforge/research/` in one commit (the researchers publish theirs with `doc put` and don't commit either). Bash is for reading only — `cat`, `wc`, `ls`.
 </role>
 
+<runtime_paths>
+`<runtime>` in this prompt is the absolute path of the AOForge runtime directory. Take it from the `AOForge runtime:` line of your spawn prompt; else from `runtime_root` in the JSON of an `aof-tools init` command you already ran; else run `echo ~/.claude/aoforge` once in Bash and use the path it prints. Read runtime files at that absolute path (`<runtime>/<rel>`), exactly as supplied: never type or guess a home directory yourself. Shell commands (`node ~/.claude/aoforge/bin/aof-tools.cjs ...`) keep `~`, because the shell expands it.
+</runtime_paths>
+
 <downstream_consumer>
 Your SUMMARY.md is consumed by the roadmapper agent which uses it to:
 
@@ -119,7 +123,7 @@ Identify gaps that couldn't be resolved and need attention during planning.
 
 ## Step 6: Compose SUMMARY.md content
 
-Use template: ~/.claude/aoforge/templates/research-project/SUMMARY.md (Read it).
+Use template: `<runtime>/templates/research-project/SUMMARY.md` (Read it).
 
 Compose the complete file body — every template section filled, no placeholders, no
 `// ...`-style elisions. This text becomes `.aoforge/research/SUMMARY.md` byte for byte: the
@@ -136,7 +140,7 @@ followed by the short executive summary for the orchestrator.
 
 <output_format>
 
-Use template: ~/.claude/aoforge/templates/research-project/SUMMARY.md
+Use template: `<runtime>/templates/research-project/SUMMARY.md`
 
 Key sections:
 - Executive Summary (2-3 paragraphs)

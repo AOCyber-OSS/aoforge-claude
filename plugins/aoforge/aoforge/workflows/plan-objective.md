@@ -8,7 +8,7 @@ Produce executable objective prompts (TRD.md files, published by the planner wit
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
-@~/.claude/aoforge/references/ui-brand.md
+`{runtime_root}/references/ui-brand.md` (already in context when the skill includes it).
 </required_reading>
 
 <process>
@@ -29,7 +29,7 @@ else
 fi
 ```
 
-Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_enabled`, `job_checker_enabled`, `commit_docs`, `objective_found`, `objective_dir`, `objective_number`, `objective_name`, `objective_slug`, `padded_objective`, `has_research`, `has_context`, `has_jobs`, `job_count`, `planning_exists`, `roadmap_exists`, `bootstrap`, `bootstrap_objectives`.
+Parse JSON for: `runtime_root` (fills `{runtime_root}`), `researcher_model`, `planner_model`, `checker_model`, `research_enabled`, `job_checker_enabled`, `commit_docs`, `objective_found`, `objective_dir`, `objective_number`, `objective_name`, `objective_slug`, `padded_objective`, `has_research`, `has_context`, `has_jobs`, `job_count`, `planning_exists`, `roadmap_exists`, `bootstrap`, `bootstrap_objectives`.
 
 **Bootstrap surface (one line, only when something changed).** If `bootstrap.applied` is true or
 `bootstrap_objectives.applied > 0`, print exactly one line and continue:
@@ -173,6 +173,7 @@ Research prompt:
 
 ```markdown
 <objective>
+AOForge runtime: {runtime_root}
 Research how to implement Objective {objective_number}: {objective_name}
 Answer: "What do I need to know to plan this objective well?"
 </objective>
@@ -442,7 +443,7 @@ fi
 
 # Extract initiative context for current repo (TRD 05-04)
 # Plan-time read is file-only — never calls gh. aof-tools initiatives format-for-planner
-# loads from ~/.claude/aoforge/initiatives/, filters by PROJECT.md::github_repo,
+# loads from {runtime_root}/initiatives/, filters by PROJECT.md::github_repo,
 # returns formatted markdown bounded by MAX_FORMATTED_PLANNER_CHARS per initiative.
 PROJECT_GITHUB_REPO=""
 if [[ -f .aoforge/PROJECT.md ]]; then
@@ -486,6 +487,7 @@ Planner prompt:
 
 ```markdown
 <planning_context>
+AOForge runtime: {runtime_root}
 **Objective:** {objective_number}
 **Mode:** {standard | gap_closure}
 **Flags:** {--skip-research if passed, otherwise none}
@@ -513,7 +515,7 @@ If context exists below, it contains user decisions. Honor them exactly.
 
 {CROSS_REPO}
 
-**Active Initiatives (from ~/.claude/aoforge/initiatives/, advisory):**
+**Active Initiatives (from {runtime_root}/initiatives/, advisory):**
 
 {INITIATIVES}
 </additional_context>
@@ -641,6 +643,7 @@ Checker prompt:
 
 ```markdown
 <verification_context>
+AOForge runtime: {runtime_root}
 **Objective:** {objective_number}
 **Objective Goal:** {goal from ROADMAP}
 
@@ -708,6 +711,7 @@ Revision prompt:
 
 ```markdown
 <revision_context>
+AOForge runtime: {runtime_root}
 **Objective:** {objective_number}
 **Mode:** revision
 

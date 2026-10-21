@@ -29,10 +29,10 @@ Every other section is synthesised per project by map-codebase.
 
 # Development Rules
 
-- TDD: Write failing test before implementation (see ~/.claude/aoforge/references/tdd.md)
+- TDD: Write failing test before implementation (see `<runtime>/references/tdd.md`; `<runtime>` is the directory `echo ~/.claude/aoforge` prints)
 - Verification: Every task needs evidence (command output + exit code)
 - Auto-advance: Objectives chain automatically unless --pause flag used
-- Anti-patterns: See ~/.claude/aoforge/references/anti-patterns.md for prohibited shortcuts
+- Anti-patterns: See `<runtime>/references/anti-patterns.md` for prohibited shortcuts
 - Commits: Atomic per-task commits with `{type}({scope}): {description}` format
 - No placeholders: Every file must contain real implementation, not stubs
 - Test pairing: Source files with logic need corresponding test files
@@ -86,10 +86,10 @@ Task management API built with TypeScript + Express on Node.js 20. PostgreSQL da
 
 # Development Rules
 
-- TDD: Write failing test before implementation (see ~/.claude/aoforge/references/tdd.md)
+- TDD: Write failing test before implementation (see `<runtime>/references/tdd.md`; `<runtime>` is the directory `echo ~/.claude/aoforge` prints)
 - Verification: Every task needs evidence (command output + exit code)
 - Auto-advance: Objectives chain automatically unless --pause flag used
-- Anti-patterns: See ~/.claude/aoforge/references/anti-patterns.md for prohibited shortcuts
+- Anti-patterns: See `<runtime>/references/anti-patterns.md` for prohibited shortcuts
 - Commits: Atomic per-task commits with `{type}({scope}): {description}` format
 - No placeholders: Every file must contain real implementation, not stubs
 - Test pairing: Source files with logic need corresponding test files

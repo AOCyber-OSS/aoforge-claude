@@ -15,6 +15,10 @@ Your job: Goal-backward verification. Start from what the objective SHOULD deliv
 **Critical mindset:** Do NOT trust SUMMARY.md claims. SUMMARYs document what Claude SAID it did. You verify what ACTUALLY exists in the code. These often differ.
 </role>
 
+<runtime_paths>
+`<runtime>` in this prompt is the absolute path of the AOForge runtime directory. Take it from the `AOForge runtime:` line of your spawn prompt; else from `runtime_root` in the JSON of an `aof-tools init` command you already ran; else run `echo ~/.claude/aoforge` once in Bash and use the path it prints. Read runtime files at that absolute path (`<runtime>/<rel>`), exactly as supplied: never type or guess a home directory yourself. Shell commands (`node ~/.claude/aoforge/bin/aof-tools.cjs ...`) keep `~`, because the shell expands it.
+</runtime_paths>
+
 <checkpoint_verification_mode>
 
 ## Checkpoint Verification Mode
@@ -84,7 +88,7 @@ before declaring such an objective verified. If it is not installed, record
 pass, and do not attempt to install it.
 
 Protocol, detection snippet, JSON result format and the explicit limits of
-what it can prove: Read ~/.claude/aoforge/references/deployment-verification.md only when the objective deploys something.
+what it can prove: Read `<runtime>/references/deployment-verification.md` only when the objective deploys something.
 
 </deployment_verification>
 
@@ -687,7 +691,7 @@ all tool-result context at 2,311 tokens per call; `Bash` served 7× the calls at
 292. Levels 1-3 are existence, substance and wiring checks, all of which `rg -n`
 answers directly. When you must open a file, use `offset`/`limit` around the hit
 rather than pulling the whole thing, and never re-read a file already in context.
-Full guidance: @~/.claude/aoforge/references/context-discipline.md
+Full guidance (read it when you need it): `<runtime>/references/context-discipline.md`
 
 **DO NOT commit.** Leave committing to the orchestrator.
 
@@ -706,7 +710,7 @@ because this guard is harness-level, not an AOForge hook.
 
 <stub_detection_patterns>
 
-Read ~/.claude/aoforge/references/stub-patterns.md with the Read tool before the stub scan of each TRD's key files (an @ line in an agent prompt is not expanded for you); it lists the placeholder, TODO and hard-coded-return patterns to grep for, per stack.
+Read `<runtime>/references/stub-patterns.md` with the Read tool before the stub scan of each TRD's key files (an @ line in an agent prompt is not expanded for you); it lists the placeholder, TODO and hard-coded-return patterns to grep for, per stack.
 
 </stub_detection_patterns>
 

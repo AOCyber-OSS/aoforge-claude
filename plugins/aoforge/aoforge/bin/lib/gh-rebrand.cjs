@@ -6,8 +6,8 @@
 // namespace, legacy hidden markers and wording in the issues, pull requests and comments AOForge manages, legacy names
 // in the wiki, legacy required-check contexts (and the legacy ruleset name), and in its checkout the legacy managed
 // caller workflow, a legacy docs-backend directory, the legacy pull request template block and legacy label values in
-// config.json. 72-11 keeps all of that readable for one release; this verb renames it, one repository at a time, after
-// a full preview.
+// config.json. 3.0.0 (TRD 72-11) kept all of that readable for one release; 3.1 no longer reads the label and
+// check-context twins (TRDs 78-03, 78-09), so this verb renames it, one repository at a time, after a full preview.
 //
 //   snapshotRepo(client, repo)    GitHub reads only -> labels, issues (PRs included), comments, rulesets, wiki
 //   snapshotLocal(root, opts)     local reads only  -> the legacy caller, PR template, docs backend, config.json
@@ -57,7 +57,10 @@ const { branchCommitSteps, commitCommand } = require('./commit-steps.cjs');
 const { rewriteLegacyNames, unifiedDiff } = require('./legacy-rewrite.cjs');
 const { NAMES, LEGACY, PRESERVE } = require('./legacy-names.cjs');
 const { escapeRegExp } = require('./text-escape.cjs');
-const { planningRel, isLegacyPlanning, findProjectRoot } = require('./compat.cjs');
+const { planningRel, findProjectRoot } = require('./compat.cjs');
+// The converter still recognises a checkout on the pre-rename planning directory when it rewrites local files, so
+// it does not turn that directory's name into `.aoforge` in text (planning-layout.cjs: detection, never a reader).
+const { isLegacyPlanning } = require('./planning-layout.cjs');
 
 const EXIT = Object.freeze({ OK: 0, ERROR: 1 });
 const SECTIONS = Object.freeze(['labels', 'issues', 'comments', 'wiki', 'rulesets', 'local']);
@@ -830,7 +833,11 @@ function baseRefresher(root, snapshot, env) {
     const key = prs.has(op.number) ? `${marker.id}#pr-${marker.kind}` : `${marker.id}#${marker.kind}`;
     const entry = bases[key];
     if (!entry || entry.issue_number !== op.number) return;
-    const found = bodyLib.findCommentsByMarker(list, marker.id, marker.kind);
+    // gh-body reads the AOForge namespace only (78-03), and the other parts of a multi-part comment may not be
+    // rewritten yet: read the list with every marker re-spelled (this module's own legacy pattern), so a partly
+    // rewritten comment still joins.
+    const view = list.map((c) => ({ ...c, body: respellMarkers(c.body) }));
+    const found = bodyLib.findCommentsByMarker(view, marker.id, marker.kind);
     if (found.length === 0) return;
     const joined = trdLib.joinParts(found.map((f) => stripMarkerLine(f.comment.body)));
     if (!joined.ok) {

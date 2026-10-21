@@ -1,6 +1,6 @@
 # Built-ins: progress, plan mode and questions
 
-AOForge skills and workflows use Claude Code's built-in task, plan-mode and question tools instead of ad hoc prose. This is the one rule set for all three. Load it with `@~/.claude/aoforge/references/built-ins.md` in a skill's `<execution_context>`.
+AOForge skills and workflows use Claude Code's built-in task, plan-mode and question tools instead of ad hoc prose. This is the one rule set for all three. A skill loads it with a line-start `@` include of `references/built-ins.md` in its `<execution_context>`, the include form every skill uses.
 
 ## 1. Progress
 

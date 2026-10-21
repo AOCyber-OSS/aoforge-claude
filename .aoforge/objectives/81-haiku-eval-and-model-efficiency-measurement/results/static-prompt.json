@@ -1,0 +1,2247 @@
+{
+  "method": {
+    "resident_bytes": "body_bytes + max_spawn_bytes; named @ paths excluded (they do not cross the Task boundary)",
+    "body_bytes": "agent file without YAML frontmatter, UTF-8 bytes",
+    "max_spawn_bytes": "largest spawn-prompt template naming the agent, as written, placeholders unfilled, UTF-8 bytes; null when none was found",
+    "resident_tokens": "Math.round(resident_bytes / 4) (CHARS_PER_TOKEN from lib/context-audit.cjs; UTF-8 bytes >= chars, so slightly high for non-ASCII)",
+    "source": "git ls-tree and git show only; no checkout, no worktree, no model call, no network"
+  },
+  "chars_per_token": 4,
+  "from": {
+    "ref": "v3.0.0",
+    "sha": "b4a9d87030fbbdfe707514cedbd06601598e4041",
+    "plugins_tree": "37fc721610edeb12b7713f3a1ed6645ff5ffc61f"
+  },
+  "to": {
+    "ref": "HEAD",
+    "sha": "c4694697820d8f7094541b358bc5582bbec81260",
+    "plugins_tree": "32213984d1f70c6038506adc8fb648cf514aea69"
+  },
+  "agents": [
+    {
+      "name": "verifier",
+      "path": {
+        "from": "plugins/aoforge/agents/verifier.md",
+        "to": "plugins/aoforge/agents/verifier.md"
+      },
+      "pack": {
+        "from": false,
+        "to": false
+      },
+      "defined": {
+        "from": true,
+        "to": true
+      },
+      "agent_bytes": {
+        "from": 47839,
+        "to": 30490,
+        "delta_bytes": -17349,
+        "delta_pct": -36.27
+      },
+      "body_bytes": {
+        "from": 47080,
+        "to": 30163,
+        "delta_bytes": -16917,
+        "delta_pct": -35.93
+      },
+      "max_spawn_bytes": {
+        "from": 946,
+        "to": 946,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "named_at_bytes": {
+        "from": 13167,
+        "to": 4830,
+        "delta_bytes": -8337,
+        "delta_pct": -63.32
+      },
+      "resident_bytes": {
+        "from": 48026,
+        "to": 31109,
+        "delta_bytes": -16917,
+        "delta_pct": -35.22
+      },
+      "resident_tokens": {
+        "from": 12007,
+        "to": 7777,
+        "delta_tokens": -4230,
+        "delta_pct": -35.23
+      },
+      "spawn_sites": {
+        "from": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/build.md",
+            "line": 261,
+            "prompt_line": 262,
+            "agent": "verifier",
+            "subagent_type": "verifier",
+            "form": "literal",
+            "prompt_bytes": 505,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/execute-objective.md",
+            "line": 885,
+            "prompt_line": 888,
+            "agent": "verifier",
+            "subagent_type": "verifier",
+            "form": "literal",
+            "prompt_bytes": 946,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/execute-objective.md",
+            "line": 1221,
+            "prompt_line": 1222,
+            "agent": "verifier",
+            "subagent_type": "verifier",
+            "form": "literal",
+            "prompt_bytes": 632,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/quick.md",
+            "line": 363,
+            "prompt_line": 364,
+            "agent": "verifier",
+            "subagent_type": "verifier",
+            "form": "literal",
+            "prompt_bytes": 387,
+            "reason": null
+          }
+        ],
+        "to": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/build.md",
+            "line": 270,
+            "prompt_line": 271,
+            "agent": "verifier",
+            "subagent_type": "verifier",
+            "form": "literal",
+            "prompt_bytes": 505,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/execute-objective.md",
+            "line": 911,
+            "prompt_line": 914,
+            "agent": "verifier",
+            "subagent_type": "verifier",
+            "form": "literal",
+            "prompt_bytes": 946,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/execute-objective.md",
+            "line": 1249,
+            "prompt_line": 1250,
+            "agent": "verifier",
+            "subagent_type": "verifier",
+            "form": "literal",
+            "prompt_bytes": 632,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/quick.md",
+            "line": 362,
+            "prompt_line": 363,
+            "agent": "verifier",
+            "subagent_type": "verifier",
+            "form": "literal",
+            "prompt_bytes": 387,
+            "reason": null
+          }
+        ]
+      },
+      "named_at": {
+        "from": {
+          "paths": [
+            "~/.claude/aoforge/references/deployment-verification.md",
+            "~/.claude/aoforge/references/context-discipline.md",
+            "~/.claude/aoforge/references/stub-patterns.md"
+          ],
+          "bytes": 13167,
+          "missing": []
+        },
+        "to": {
+          "paths": [
+            "~/.claude/aoforge/references/context-discipline.md"
+          ],
+          "bytes": 4830,
+          "missing": []
+        }
+      },
+      "pack_fragments": {
+        "from": {},
+        "to": {
+          "flutter": 19537,
+          "web": 1650
+        }
+      }
+    },
+    {
+      "name": "executor",
+      "path": {
+        "from": "plugins/aoforge/agents/executor.md",
+        "to": "plugins/aoforge/agents/executor.md"
+      },
+      "pack": {
+        "from": false,
+        "to": false
+      },
+      "defined": {
+        "from": true,
+        "to": true
+      },
+      "agent_bytes": {
+        "from": 62118,
+        "to": 49610,
+        "delta_bytes": -12508,
+        "delta_pct": -20.14
+      },
+      "body_bytes": {
+        "from": 60376,
+        "to": 47895,
+        "delta_bytes": -12481,
+        "delta_pct": -20.67
+      },
+      "max_spawn_bytes": {
+        "from": 4153,
+        "to": 4737,
+        "delta_bytes": 584,
+        "delta_pct": 14.06
+      },
+      "named_at_bytes": {
+        "from": 121022,
+        "to": 42243,
+        "delta_bytes": -78779,
+        "delta_pct": -65.09
+      },
+      "resident_bytes": {
+        "from": 64529,
+        "to": 52632,
+        "delta_bytes": -11897,
+        "delta_pct": -18.44
+      },
+      "resident_tokens": {
+        "from": 16132,
+        "to": 13158,
+        "delta_tokens": -2974,
+        "delta_pct": -18.44
+      },
+      "spawn_sites": {
+        "from": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/execute-objective.md",
+            "line": 416,
+            "prompt_line": 419,
+            "agent": "executor",
+            "subagent_type": "executor",
+            "form": "literal",
+            "prompt_bytes": 3540,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/execute-objective.md",
+            "line": 496,
+            "prompt_line": 499,
+            "agent": "executor",
+            "subagent_type": "executor",
+            "form": "literal",
+            "prompt_bytes": null,
+            "reason": "prompt is elided (\"...\") in the workflow; the full prompt is at an earlier site"
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/execute-objective.md",
+            "line": 992,
+            "prompt_line": 996,
+            "agent": "executor",
+            "subagent_type": "executor",
+            "form": "literal",
+            "prompt_bytes": 4153,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/quick.md",
+            "line": 301,
+            "prompt_line": 302,
+            "agent": "executor",
+            "subagent_type": "executor",
+            "form": "literal",
+            "prompt_bytes": 751,
+            "reason": null
+          }
+        ],
+        "to": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/execute-objective.md",
+            "line": 419,
+            "prompt_line": 422,
+            "agent": "executor",
+            "subagent_type": "executor",
+            "form": "literal",
+            "prompt_bytes": 4124,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/execute-objective.md",
+            "line": 501,
+            "prompt_line": 504,
+            "agent": "executor",
+            "subagent_type": "executor",
+            "form": "literal",
+            "prompt_bytes": null,
+            "reason": "prompt is elided (\"...\") in the workflow; the full prompt is at an earlier site"
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/execute-objective.md",
+            "line": 1018,
+            "prompt_line": 1022,
+            "agent": "executor",
+            "subagent_type": "executor",
+            "form": "literal",
+            "prompt_bytes": 4737,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/quick.md",
+            "line": 300,
+            "prompt_line": 301,
+            "agent": "executor",
+            "subagent_type": "executor",
+            "form": "literal",
+            "prompt_bytes": 859,
+            "reason": null
+          }
+        ]
+      },
+      "named_at": {
+        "from": {
+          "paths": [
+            "~/.claude/aoforge/references/deviation-rules.md",
+            "~/.claude/aoforge/references/checkpoints.md",
+            "~/.claude/aoforge/references/anti-patterns.md",
+            "~/.claude/aoforge/references/verification-patterns.md",
+            "~/.claude/aoforge/references/full-output.md",
+            "~/.claude/aoforge/references/context-discipline.md",
+            "~/.claude/aoforge/references/escalation-policy.md",
+            "~/.claude/aoforge/templates/summary.md",
+            "~/.claude/aoforge/workflows/execute-trd.md",
+            "~/.claude/aoforge/references/tdd.md"
+          ],
+          "bytes": 121022,
+          "missing": []
+        },
+        "to": {
+          "paths": [
+            "~/.claude/aoforge/references/checkpoints.md"
+          ],
+          "bytes": 42243,
+          "missing": []
+        }
+      },
+      "pack_fragments": {
+        "from": {},
+        "to": {
+          "flutter": 15387,
+          "web": 4839
+        }
+      }
+    },
+    {
+      "name": "planner",
+      "path": {
+        "from": "plugins/aoforge/agents/planner.md",
+        "to": "plugins/aoforge/agents/planner.md"
+      },
+      "pack": {
+        "from": false,
+        "to": false
+      },
+      "defined": {
+        "from": true,
+        "to": true
+      },
+      "agent_bytes": {
+        "from": 59762,
+        "to": 53372,
+        "delta_bytes": -6390,
+        "delta_pct": -10.69
+      },
+      "body_bytes": {
+        "from": 59510,
+        "to": 53120,
+        "delta_bytes": -6390,
+        "delta_pct": -10.74
+      },
+      "max_spawn_bytes": {
+        "from": 1745,
+        "to": 1745,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "named_at_bytes": {
+        "from": 74125,
+        "to": 6194,
+        "delta_bytes": -67931,
+        "delta_pct": -91.64
+      },
+      "resident_bytes": {
+        "from": 61255,
+        "to": 54865,
+        "delta_bytes": -6390,
+        "delta_pct": -10.43
+      },
+      "resident_tokens": {
+        "from": 15314,
+        "to": 13716,
+        "delta_tokens": -1598,
+        "delta_pct": -10.43
+      },
+      "spawn_sites": {
+        "from": [
+          {
+            "file": "plugins/aoforge/aoforge/templates/planner-subagent-prompt.md",
+            "line": 73,
+            "prompt_line": 74,
+            "agent": "planner",
+            "subagent_type": "planner",
+            "form": "variable",
+            "prompt_bytes": null,
+            "reason": "prompt=filled_template: no fenced block labelled \"filled template\", no \"... prompt:\" block and no markdown block directly above the call, after the previous spawn site"
+          },
+          {
+            "file": "plugins/aoforge/aoforge/templates/planner-subagent-prompt.md",
+            "line": 82,
+            "prompt_line": 83,
+            "agent": "planner",
+            "subagent_type": "planner",
+            "form": "variable",
+            "prompt_bytes": null,
+            "reason": "prompt=filled_template: no fenced block labelled \"filled template\", no \"... prompt:\" block and no markdown block directly above the call, after the previous spawn site"
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/execute-objective.md",
+            "line": 1289,
+            "prompt_line": 1290,
+            "agent": "planner",
+            "subagent_type": "planner",
+            "form": "literal",
+            "prompt_bytes": 222,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/plan-objective.md",
+            "line": 540,
+            "prompt_line": 487,
+            "agent": "planner",
+            "subagent_type": "planner",
+            "form": "variable:nearest-labelled",
+            "prompt_bytes": 1745,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/plan-objective.md",
+            "line": 715,
+            "prompt_line": 692,
+            "agent": "planner",
+            "subagent_type": "planner",
+            "form": "variable:label",
+            "prompt_bytes": 910,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/quick.md",
+            "line": 106,
+            "prompt_line": 107,
+            "agent": "planner",
+            "subagent_type": "planner",
+            "form": "literal",
+            "prompt_bytes": 815,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/quick.md",
+            "line": 244,
+            "prompt_line": 227,
+            "agent": "planner",
+            "subagent_type": "planner",
+            "form": "variable:label",
+            "prompt_bytes": 396,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/verify-work.md",
+            "line": 502,
+            "prompt_line": 503,
+            "agent": "planner",
+            "subagent_type": "planner",
+            "form": "literal",
+            "prompt_bytes": 379,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/verify-work.md",
+            "line": 592,
+            "prompt_line": 593,
+            "agent": "planner",
+            "subagent_type": "planner",
+            "form": "literal",
+            "prompt_bytes": 382,
+            "reason": null
+          }
+        ],
+        "to": [
+          {
+            "file": "plugins/aoforge/aoforge/templates/planner-subagent-prompt.md",
+            "line": 73,
+            "prompt_line": 74,
+            "agent": "planner",
+            "subagent_type": "planner",
+            "form": "variable",
+            "prompt_bytes": null,
+            "reason": "prompt=filled_template: no fenced block labelled \"filled template\", no \"... prompt:\" block and no markdown block directly above the call, after the previous spawn site"
+          },
+          {
+            "file": "plugins/aoforge/aoforge/templates/planner-subagent-prompt.md",
+            "line": 82,
+            "prompt_line": 83,
+            "agent": "planner",
+            "subagent_type": "planner",
+            "form": "variable",
+            "prompt_bytes": null,
+            "reason": "prompt=filled_template: no fenced block labelled \"filled template\", no \"... prompt:\" block and no markdown block directly above the call, after the previous spawn site"
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/execute-objective.md",
+            "line": 1322,
+            "prompt_line": 1323,
+            "agent": "planner",
+            "subagent_type": "planner",
+            "form": "literal",
+            "prompt_bytes": 222,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/plan-objective.md",
+            "line": 540,
+            "prompt_line": 487,
+            "agent": "planner",
+            "subagent_type": "planner",
+            "form": "variable:nearest-labelled",
+            "prompt_bytes": 1745,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/plan-objective.md",
+            "line": 732,
+            "prompt_line": 709,
+            "agent": "planner",
+            "subagent_type": "planner",
+            "form": "variable:label",
+            "prompt_bytes": 910,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/quick.md",
+            "line": 106,
+            "prompt_line": 107,
+            "agent": "planner",
+            "subagent_type": "planner",
+            "form": "literal",
+            "prompt_bytes": 910,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/quick.md",
+            "line": 243,
+            "prompt_line": 226,
+            "agent": "planner",
+            "subagent_type": "planner",
+            "form": "variable:label",
+            "prompt_bytes": 396,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/verify-work.md",
+            "line": 486,
+            "prompt_line": 487,
+            "agent": "planner",
+            "subagent_type": "planner",
+            "form": "literal",
+            "prompt_bytes": 540,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/verify-work.md",
+            "line": 581,
+            "prompt_line": 582,
+            "agent": "planner",
+            "subagent_type": "planner",
+            "form": "literal",
+            "prompt_bytes": 382,
+            "reason": null
+          }
+        ]
+      },
+      "named_at": {
+        "from": {
+          "paths": [
+            "~/.claude/aoforge/references/testing-strategy.md",
+            "~/.claude/aoforge/references/trd-spec.md",
+            "~/.claude/aoforge/references/goal-backward.md",
+            "~/.claude/aoforge/references/checkpoints.md",
+            "~/.claude/aoforge/references/tdd.md"
+          ],
+          "bytes": 74125,
+          "missing": []
+        },
+        "to": {
+          "paths": [
+            "~/.claude/aoforge/references/testing-strategy.md"
+          ],
+          "bytes": 6194,
+          "missing": []
+        }
+      },
+      "pack_fragments": {
+        "from": {},
+        "to": {
+          "flutter": 10898
+        }
+      }
+    },
+    {
+      "name": "security-auditor",
+      "path": {
+        "from": "plugins/aoforge/agents/security-auditor.md",
+        "to": "plugins/aoforge/agents/security-auditor.md"
+      },
+      "pack": {
+        "from": false,
+        "to": false
+      },
+      "defined": {
+        "from": true,
+        "to": true
+      },
+      "agent_bytes": {
+        "from": 14498,
+        "to": 9463,
+        "delta_bytes": -5035,
+        "delta_pct": -34.73
+      },
+      "body_bytes": {
+        "from": 14284,
+        "to": 9249,
+        "delta_bytes": -5035,
+        "delta_pct": -35.25
+      },
+      "max_spawn_bytes": {
+        "from": 410,
+        "to": 410,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "named_at_bytes": {
+        "from": 0,
+        "to": 0,
+        "delta_bytes": 0,
+        "delta_pct": null
+      },
+      "resident_bytes": {
+        "from": 14694,
+        "to": 9659,
+        "delta_bytes": -5035,
+        "delta_pct": -34.27
+      },
+      "resident_tokens": {
+        "from": 3674,
+        "to": 2415,
+        "delta_tokens": -1259,
+        "delta_pct": -34.27
+      },
+      "spawn_sites": {
+        "from": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/security-audit.md",
+            "line": 106,
+            "prompt_line": 113,
+            "agent": "security-auditor",
+            "subagent_type": "security-auditor",
+            "form": "parameter-block",
+            "prompt_bytes": 398,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/security-audit.md",
+            "line": 129,
+            "prompt_line": 136,
+            "agent": "security-auditor",
+            "subagent_type": "security-auditor",
+            "form": "parameter-block",
+            "prompt_bytes": 385,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/security-audit.md",
+            "line": 152,
+            "prompt_line": 159,
+            "agent": "security-auditor",
+            "subagent_type": "security-auditor",
+            "form": "parameter-block",
+            "prompt_bytes": 410,
+            "reason": null
+          }
+        ],
+        "to": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/security-audit.md",
+            "line": 106,
+            "prompt_line": 113,
+            "agent": "security-auditor",
+            "subagent_type": "security-auditor",
+            "form": "parameter-block",
+            "prompt_bytes": 398,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/security-audit.md",
+            "line": 129,
+            "prompt_line": 136,
+            "agent": "security-auditor",
+            "subagent_type": "security-auditor",
+            "form": "parameter-block",
+            "prompt_bytes": 385,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/security-audit.md",
+            "line": 152,
+            "prompt_line": 159,
+            "agent": "security-auditor",
+            "subagent_type": "security-auditor",
+            "form": "parameter-block",
+            "prompt_bytes": 410,
+            "reason": null
+          }
+        ]
+      },
+      "named_at": {
+        "from": {
+          "paths": [],
+          "bytes": 0,
+          "missing": []
+        },
+        "to": {
+          "paths": [],
+          "bytes": 0,
+          "missing": []
+        }
+      },
+      "pack_fragments": {
+        "from": {},
+        "to": {}
+      }
+    },
+    {
+      "name": "codebase-mapper",
+      "path": {
+        "from": "plugins/aoforge/agents/codebase-mapper.md",
+        "to": "plugins/aoforge/agents/codebase-mapper.md"
+      },
+      "pack": {
+        "from": false,
+        "to": false
+      },
+      "defined": {
+        "from": true,
+        "to": true
+      },
+      "agent_bytes": {
+        "from": 11146,
+        "to": 10583,
+        "delta_bytes": -563,
+        "delta_pct": -5.05
+      },
+      "body_bytes": {
+        "from": 10936,
+        "to": 10373,
+        "delta_bytes": -563,
+        "delta_pct": -5.15
+      },
+      "max_spawn_bytes": {
+        "from": 563,
+        "to": 563,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "named_at_bytes": {
+        "from": 67016,
+        "to": 4830,
+        "delta_bytes": -62186,
+        "delta_pct": -92.79
+      },
+      "resident_bytes": {
+        "from": 11499,
+        "to": 10936,
+        "delta_bytes": -563,
+        "delta_pct": -4.9
+      },
+      "resident_tokens": {
+        "from": 2875,
+        "to": 2734,
+        "delta_tokens": -141,
+        "delta_pct": -4.9
+      },
+      "spawn_sites": {
+        "from": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/map-codebase.md",
+            "line": 163,
+            "prompt_line": 170,
+            "agent": "codebase-mapper",
+            "subagent_type": "codebase-mapper",
+            "form": "parameter-block",
+            "prompt_bytes": 466,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/map-codebase.md",
+            "line": 186,
+            "prompt_line": 193,
+            "agent": "codebase-mapper",
+            "subagent_type": "codebase-mapper",
+            "form": "parameter-block",
+            "prompt_bytes": 456,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/map-codebase.md",
+            "line": 209,
+            "prompt_line": 216,
+            "agent": "codebase-mapper",
+            "subagent_type": "codebase-mapper",
+            "form": "parameter-block",
+            "prompt_bytes": 563,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/map-codebase.md",
+            "line": 233,
+            "prompt_line": 240,
+            "agent": "codebase-mapper",
+            "subagent_type": "codebase-mapper",
+            "form": "parameter-block",
+            "prompt_bytes": 400,
+            "reason": null
+          }
+        ],
+        "to": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/map-codebase.md",
+            "line": 163,
+            "prompt_line": 170,
+            "agent": "codebase-mapper",
+            "subagent_type": "codebase-mapper",
+            "form": "parameter-block",
+            "prompt_bytes": 466,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/map-codebase.md",
+            "line": 186,
+            "prompt_line": 193,
+            "agent": "codebase-mapper",
+            "subagent_type": "codebase-mapper",
+            "form": "parameter-block",
+            "prompt_bytes": 456,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/map-codebase.md",
+            "line": 209,
+            "prompt_line": 216,
+            "agent": "codebase-mapper",
+            "subagent_type": "codebase-mapper",
+            "form": "parameter-block",
+            "prompt_bytes": 563,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/map-codebase.md",
+            "line": 233,
+            "prompt_line": 240,
+            "agent": "codebase-mapper",
+            "subagent_type": "codebase-mapper",
+            "form": "parameter-block",
+            "prompt_bytes": 400,
+            "reason": null
+          }
+        ]
+      },
+      "named_at": {
+        "from": {
+          "paths": [
+            "~/.claude/aoforge/templates/codebase/stack.md",
+            "~/.claude/aoforge/templates/codebase/integrations.md",
+            "~/.claude/aoforge/templates/codebase/architecture.md",
+            "~/.claude/aoforge/templates/codebase/structure.md",
+            "~/.claude/aoforge/templates/codebase/conventions.md",
+            "~/.claude/aoforge/templates/codebase/testing.md",
+            "~/.claude/aoforge/templates/codebase/patterns.md",
+            "~/.claude/aoforge/templates/codebase/concerns.md",
+            "~/.claude/aoforge/references/context-discipline.md"
+          ],
+          "bytes": 67016,
+          "missing": []
+        },
+        "to": {
+          "paths": [
+            "~/.claude/aoforge/references/context-discipline.md"
+          ],
+          "bytes": 4830,
+          "missing": []
+        }
+      },
+      "pack_fragments": {
+        "from": {},
+        "to": {}
+      }
+    },
+    {
+      "name": "job-checker",
+      "path": {
+        "from": "plugins/aoforge/agents/job-checker.md",
+        "to": "plugins/aoforge/agents/job-checker.md"
+      },
+      "pack": {
+        "from": false,
+        "to": false
+      },
+      "defined": {
+        "from": true,
+        "to": true
+      },
+      "agent_bytes": {
+        "from": 24821,
+        "to": 24775,
+        "delta_bytes": -46,
+        "delta_pct": -0.19
+      },
+      "body_bytes": {
+        "from": 24642,
+        "to": 24596,
+        "delta_bytes": -46,
+        "delta_pct": -0.19
+      },
+      "max_spawn_bytes": {
+        "from": 834,
+        "to": 834,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "named_at_bytes": {
+        "from": 3806,
+        "to": 3806,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "resident_bytes": {
+        "from": 25476,
+        "to": 25430,
+        "delta_bytes": -46,
+        "delta_pct": -0.18
+      },
+      "resident_tokens": {
+        "from": 6369,
+        "to": 6358,
+        "delta_tokens": -11,
+        "delta_pct": -0.17
+      },
+      "spawn_sites": {
+        "from": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/plan-objective.md",
+            "line": 651,
+            "prompt_line": 626,
+            "agent": "job-checker",
+            "subagent_type": "job-checker",
+            "form": "variable:label",
+            "prompt_bytes": 707,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/quick.md",
+            "line": 200,
+            "prompt_line": 173,
+            "agent": "job-checker",
+            "subagent_type": "job-checker",
+            "form": "variable:label",
+            "prompt_bytes": 834,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/verify-work.md",
+            "line": 553,
+            "prompt_line": 554,
+            "agent": "job-checker",
+            "subagent_type": "job-checker",
+            "form": "literal",
+            "prompt_bytes": 344,
+            "reason": null
+          }
+        ],
+        "to": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/plan-objective.md",
+            "line": 668,
+            "prompt_line": 642,
+            "agent": "job-checker",
+            "subagent_type": "job-checker",
+            "form": "variable:label",
+            "prompt_bytes": 770,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/quick.md",
+            "line": 199,
+            "prompt_line": 172,
+            "agent": "job-checker",
+            "subagent_type": "job-checker",
+            "form": "variable:label",
+            "prompt_bytes": 834,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/verify-work.md",
+            "line": 541,
+            "prompt_line": 542,
+            "agent": "job-checker",
+            "subagent_type": "job-checker",
+            "form": "literal",
+            "prompt_bytes": 485,
+            "reason": null
+          }
+        ]
+      },
+      "named_at": {
+        "from": {
+          "paths": [
+            "~/.claude/aoforge/references/goal-backward.md"
+          ],
+          "bytes": 3806,
+          "missing": []
+        },
+        "to": {
+          "paths": [
+            "~/.claude/aoforge/references/goal-backward.md"
+          ],
+          "bytes": 3806,
+          "missing": []
+        }
+      },
+      "pack_fragments": {
+        "from": {},
+        "to": {}
+      }
+    },
+    {
+      "name": "general-purpose",
+      "path": {
+        "from": null,
+        "to": null
+      },
+      "pack": {
+        "from": false,
+        "to": false
+      },
+      "defined": {
+        "from": false,
+        "to": false
+      },
+      "agent_bytes": {
+        "from": null,
+        "to": null,
+        "delta_bytes": null,
+        "delta_pct": null
+      },
+      "body_bytes": {
+        "from": null,
+        "to": null,
+        "delta_bytes": null,
+        "delta_pct": null
+      },
+      "max_spawn_bytes": {
+        "from": 57,
+        "to": 57,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "named_at_bytes": {
+        "from": 0,
+        "to": 0,
+        "delta_bytes": 0,
+        "delta_pct": null
+      },
+      "resident_bytes": {
+        "from": 57,
+        "to": 57,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "resident_tokens": {
+        "from": 14,
+        "to": 14,
+        "delta_tokens": 0,
+        "delta_pct": 0
+      },
+      "spawn_sites": {
+        "from": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/build.md",
+            "line": 237,
+            "prompt_line": 238,
+            "agent": "general-purpose",
+            "subagent_type": "general-purpose",
+            "form": "literal",
+            "prompt_bytes": 57,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/discuss-objective.md",
+            "line": 468,
+            "prompt_line": 469,
+            "agent": "general-purpose",
+            "subagent_type": "general-purpose",
+            "form": "literal",
+            "prompt_bytes": 47,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/plan-objective.md",
+            "line": 814,
+            "prompt_line": 815,
+            "agent": "general-purpose",
+            "subagent_type": "general-purpose",
+            "form": "literal",
+            "prompt_bytes": 50,
+            "reason": null
+          }
+        ],
+        "to": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/build.md",
+            "line": 246,
+            "prompt_line": 247,
+            "agent": "general-purpose",
+            "subagent_type": "general-purpose",
+            "form": "literal",
+            "prompt_bytes": 57,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/discuss-objective.md",
+            "line": 468,
+            "prompt_line": 469,
+            "agent": "general-purpose",
+            "subagent_type": "general-purpose",
+            "form": "literal",
+            "prompt_bytes": 47,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/plan-objective.md",
+            "line": 831,
+            "prompt_line": 832,
+            "agent": "general-purpose",
+            "subagent_type": "general-purpose",
+            "form": "literal",
+            "prompt_bytes": 50,
+            "reason": null
+          }
+        ]
+      },
+      "named_at": {
+        "from": {
+          "paths": [],
+          "bytes": 0,
+          "missing": []
+        },
+        "to": {
+          "paths": [],
+          "bytes": 0,
+          "missing": []
+        }
+      },
+      "pack_fragments": {
+        "from": {},
+        "to": {}
+      }
+    },
+    {
+      "name": "integration-checker",
+      "path": {
+        "from": "plugins/aoforge/agents/integration-checker.md",
+        "to": "plugins/aoforge/agents/integration-checker.md"
+      },
+      "pack": {
+        "from": false,
+        "to": false
+      },
+      "defined": {
+        "from": true,
+        "to": true
+      },
+      "agent_bytes": {
+        "from": 14573,
+        "to": 14573,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "body_bytes": {
+        "from": 14382,
+        "to": 14382,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "max_spawn_bytes": {
+        "from": 376,
+        "to": 376,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "named_at_bytes": {
+        "from": 7020,
+        "to": 7020,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "resident_bytes": {
+        "from": 14758,
+        "to": 14758,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "resident_tokens": {
+        "from": 3690,
+        "to": 3690,
+        "delta_tokens": 0,
+        "delta_pct": 0
+      },
+      "spawn_sites": {
+        "from": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/audit-milestone.md",
+            "line": 66,
+            "prompt_line": 67,
+            "agent": "integration-checker",
+            "subagent_type": "integration-checker",
+            "form": "literal",
+            "prompt_bytes": 376,
+            "reason": null
+          }
+        ],
+        "to": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/audit-milestone.md",
+            "line": 66,
+            "prompt_line": 67,
+            "agent": "integration-checker",
+            "subagent_type": "integration-checker",
+            "form": "literal",
+            "prompt_bytes": 376,
+            "reason": null
+          }
+        ]
+      },
+      "named_at": {
+        "from": {
+          "paths": [
+            "~/.claude/aoforge/references/deployment-verification.md"
+          ],
+          "bytes": 7020,
+          "missing": []
+        },
+        "to": {
+          "paths": [
+            "~/.claude/aoforge/references/deployment-verification.md"
+          ],
+          "bytes": 7020,
+          "missing": []
+        }
+      },
+      "pack_fragments": {
+        "from": {},
+        "to": {}
+      }
+    },
+    {
+      "name": "objective-researcher",
+      "path": {
+        "from": "plugins/aoforge/agents/objective-researcher.md",
+        "to": "plugins/aoforge/agents/objective-researcher.md"
+      },
+      "pack": {
+        "from": false,
+        "to": false
+      },
+      "defined": {
+        "from": true,
+        "to": true
+      },
+      "agent_bytes": {
+        "from": 13070,
+        "to": 13070,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "body_bytes": {
+        "from": 12816,
+        "to": 12816,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "max_spawn_bytes": {
+        "from": 1950,
+        "to": 1950,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "named_at_bytes": {
+        "from": 4936,
+        "to": 4936,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "resident_bytes": {
+        "from": 14766,
+        "to": 14766,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "resident_tokens": {
+        "from": 3692,
+        "to": 3692,
+        "delta_tokens": 0,
+        "delta_pct": 0
+      },
+      "spawn_sites": {
+        "from": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/plan-objective.md",
+            "line": 204,
+            "prompt_line": 174,
+            "agent": "objective-researcher",
+            "subagent_type": "objective-researcher",
+            "form": "variable:label",
+            "prompt_bytes": 1035,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/research-objective.md",
+            "line": 70,
+            "prompt_line": 71,
+            "agent": "objective-researcher",
+            "subagent_type": "objective-researcher",
+            "form": "literal",
+            "prompt_bytes": 545,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/skills/research-objective/SKILL.md",
+            "line": 237,
+            "prompt_line": 179,
+            "agent": "objective-researcher",
+            "subagent_type": "objective-researcher",
+            "form": "variable:adjacent-block",
+            "prompt_bytes": 1950,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/skills/research-objective/SKILL.md",
+            "line": 313,
+            "prompt_line": 297,
+            "agent": "objective-researcher",
+            "subagent_type": "objective-researcher",
+            "form": "variable:adjacent-block",
+            "prompt_bytes": 308,
+            "reason": null
+          }
+        ],
+        "to": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/plan-objective.md",
+            "line": 204,
+            "prompt_line": 174,
+            "agent": "objective-researcher",
+            "subagent_type": "objective-researcher",
+            "form": "variable:label",
+            "prompt_bytes": 1035,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/research-objective.md",
+            "line": 73,
+            "prompt_line": 74,
+            "agent": "objective-researcher",
+            "subagent_type": "objective-researcher",
+            "form": "literal",
+            "prompt_bytes": 545,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/skills/research-objective/SKILL.md",
+            "line": 237,
+            "prompt_line": 179,
+            "agent": "objective-researcher",
+            "subagent_type": "objective-researcher",
+            "form": "variable:adjacent-block",
+            "prompt_bytes": 1950,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/skills/research-objective/SKILL.md",
+            "line": 313,
+            "prompt_line": 297,
+            "agent": "objective-researcher",
+            "subagent_type": "objective-researcher",
+            "form": "variable:adjacent-block",
+            "prompt_bytes": 308,
+            "reason": null
+          }
+        ]
+      },
+      "named_at": {
+        "from": {
+          "paths": [
+            "~/.claude/aoforge/references/research-tooling.md"
+          ],
+          "bytes": 4936,
+          "missing": []
+        },
+        "to": {
+          "paths": [
+            "~/.claude/aoforge/references/research-tooling.md"
+          ],
+          "bytes": 4936,
+          "missing": []
+        }
+      },
+      "pack_fragments": {
+        "from": {},
+        "to": {}
+      }
+    },
+    {
+      "name": "research-synthesizer",
+      "path": {
+        "from": "plugins/aoforge/agents/research-synthesizer.md",
+        "to": "plugins/aoforge/agents/research-synthesizer.md"
+      },
+      "pack": {
+        "from": false,
+        "to": false
+      },
+      "defined": {
+        "from": true,
+        "to": true
+      },
+      "agent_bytes": {
+        "from": 8042,
+        "to": 8042,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "body_bytes": {
+        "from": 7860,
+        "to": 7860,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "max_spawn_bytes": {
+        "from": 415,
+        "to": 415,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "named_at_bytes": {
+        "from": 0,
+        "to": 0,
+        "delta_bytes": 0,
+        "delta_pct": null
+      },
+      "resident_bytes": {
+        "from": 8275,
+        "to": 8275,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "resident_tokens": {
+        "from": 2069,
+        "to": 2069,
+        "delta_tokens": 0,
+        "delta_pct": 0
+      },
+      "spawn_sites": {
+        "from": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-milestone.md",
+            "line": 192,
+            "prompt_line": 192,
+            "agent": "research-synthesizer",
+            "subagent_type": "research-synthesizer",
+            "form": "literal",
+            "prompt_bytes": 275,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-project.md",
+            "line": 768,
+            "prompt_line": 768,
+            "agent": "research-synthesizer",
+            "subagent_type": "research-synthesizer",
+            "form": "literal",
+            "prompt_bytes": 415,
+            "reason": null
+          }
+        ],
+        "to": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-milestone.md",
+            "line": 195,
+            "prompt_line": 195,
+            "agent": "research-synthesizer",
+            "subagent_type": "research-synthesizer",
+            "form": "literal",
+            "prompt_bytes": 275,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-project.md",
+            "line": 768,
+            "prompt_line": 768,
+            "agent": "research-synthesizer",
+            "subagent_type": "research-synthesizer",
+            "form": "literal",
+            "prompt_bytes": 415,
+            "reason": null
+          }
+        ]
+      },
+      "named_at": {
+        "from": {
+          "paths": [],
+          "bytes": 0,
+          "missing": []
+        },
+        "to": {
+          "paths": [],
+          "bytes": 0,
+          "missing": []
+        }
+      },
+      "pack_fragments": {
+        "from": {},
+        "to": {}
+      }
+    },
+    {
+      "name": "project-researcher",
+      "path": {
+        "from": "plugins/aoforge/agents/project-researcher.md",
+        "to": "plugins/aoforge/agents/project-researcher.md"
+      },
+      "pack": {
+        "from": false,
+        "to": false
+      },
+      "defined": {
+        "from": true,
+        "to": true
+      },
+      "agent_bytes": {
+        "from": 6891,
+        "to": 6882,
+        "delta_bytes": -9,
+        "delta_pct": -0.13
+      },
+      "body_bytes": {
+        "from": 6634,
+        "to": 6625,
+        "delta_bytes": -9,
+        "delta_pct": -0.14
+      },
+      "max_spawn_bytes": {
+        "from": 1263,
+        "to": 1318,
+        "delta_bytes": 55,
+        "delta_pct": 4.35
+      },
+      "named_at_bytes": {
+        "from": 29340,
+        "to": 4936,
+        "delta_bytes": -24404,
+        "delta_pct": -83.18
+      },
+      "resident_bytes": {
+        "from": 7897,
+        "to": 7943,
+        "delta_bytes": 46,
+        "delta_pct": 0.58
+      },
+      "resident_tokens": {
+        "from": 1974,
+        "to": 1986,
+        "delta_tokens": 12,
+        "delta_pct": 0.61
+      },
+      "spawn_sites": {
+        "from": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-milestone.md",
+            "line": 153,
+            "prompt_line": 153,
+            "agent": "project-researcher",
+            "subagent_type": "project-researcher",
+            "form": "literal",
+            "prompt_bytes": 750,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-project.md",
+            "line": 588,
+            "prompt_line": 588,
+            "agent": "project-researcher",
+            "subagent_type": "project-researcher",
+            "form": "literal",
+            "prompt_bytes": 1261,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-project.md",
+            "line": 627,
+            "prompt_line": 627,
+            "agent": "project-researcher",
+            "subagent_type": "project-researcher",
+            "form": "literal",
+            "prompt_bytes": 1263,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-project.md",
+            "line": 666,
+            "prompt_line": 666,
+            "agent": "project-researcher",
+            "subagent_type": "project-researcher",
+            "form": "literal",
+            "prompt_bytes": 1226,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-project.md",
+            "line": 705,
+            "prompt_line": 705,
+            "agent": "project-researcher",
+            "subagent_type": "project-researcher",
+            "form": "literal",
+            "prompt_bytes": 1199,
+            "reason": null
+          }
+        ],
+        "to": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-milestone.md",
+            "line": 153,
+            "prompt_line": 153,
+            "agent": "project-researcher",
+            "subagent_type": "project-researcher",
+            "form": "literal",
+            "prompt_bytes": 750,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-project.md",
+            "line": 588,
+            "prompt_line": 588,
+            "agent": "project-researcher",
+            "subagent_type": "project-researcher",
+            "form": "literal",
+            "prompt_bytes": 1318,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-project.md",
+            "line": 627,
+            "prompt_line": 627,
+            "agent": "project-researcher",
+            "subagent_type": "project-researcher",
+            "form": "literal",
+            "prompt_bytes": 1263,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-project.md",
+            "line": 666,
+            "prompt_line": 666,
+            "agent": "project-researcher",
+            "subagent_type": "project-researcher",
+            "form": "literal",
+            "prompt_bytes": 1226,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-project.md",
+            "line": 705,
+            "prompt_line": 705,
+            "agent": "project-researcher",
+            "subagent_type": "project-researcher",
+            "form": "literal",
+            "prompt_bytes": 1199,
+            "reason": null
+          }
+        ]
+      },
+      "named_at": {
+        "from": {
+          "paths": [
+            "~/.claude/aoforge/references/research-tooling.md",
+            "~/.claude/aoforge/templates/research-project/SUMMARY.md",
+            "~/.claude/aoforge/templates/research-project/STACK.md",
+            "~/.claude/aoforge/templates/research-project/FEATURES.md",
+            "~/.claude/aoforge/templates/research-project/ARCHITECTURE.md",
+            "~/.claude/aoforge/templates/research-project/PITFALLS.md"
+          ],
+          "bytes": 29340,
+          "missing": []
+        },
+        "to": {
+          "paths": [
+            "~/.claude/aoforge/references/research-tooling.md"
+          ],
+          "bytes": 4936,
+          "missing": []
+        }
+      },
+      "pack_fragments": {
+        "from": {},
+        "to": {}
+      }
+    },
+    {
+      "name": "roadmapper",
+      "path": {
+        "from": "plugins/aoforge/agents/roadmapper.md",
+        "to": "plugins/aoforge/agents/roadmapper.md"
+      },
+      "pack": {
+        "from": false,
+        "to": false
+      },
+      "defined": {
+        "from": true,
+        "to": true
+      },
+      "agent_bytes": {
+        "from": 19721,
+        "to": 20132,
+        "delta_bytes": 411,
+        "delta_pct": 2.08
+      },
+      "body_bytes": {
+        "from": 19499,
+        "to": 19910,
+        "delta_bytes": 411,
+        "delta_pct": 2.11
+      },
+      "max_spawn_bytes": {
+        "from": 920,
+        "to": 920,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "named_at_bytes": {
+        "from": 0,
+        "to": 0,
+        "delta_bytes": 0,
+        "delta_pct": null
+      },
+      "resident_bytes": {
+        "from": 20419,
+        "to": 20830,
+        "delta_bytes": 411,
+        "delta_pct": 2.01
+      },
+      "resident_tokens": {
+        "from": 5105,
+        "to": 5208,
+        "delta_tokens": 103,
+        "delta_pct": 2.02
+      },
+      "spawn_sites": {
+        "from": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-milestone.md",
+            "line": 344,
+            "prompt_line": 344,
+            "agent": "roadmapper",
+            "subagent_type": "roadmapper",
+            "form": "literal",
+            "prompt_bytes": 879,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-project.md",
+            "line": 1024,
+            "prompt_line": 1024,
+            "agent": "roadmapper",
+            "subagent_type": "roadmapper",
+            "form": "literal",
+            "prompt_bytes": 920,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-project.md",
+            "line": 1128,
+            "prompt_line": 1128,
+            "agent": "roadmapper",
+            "subagent_type": "roadmapper",
+            "form": "literal",
+            "prompt_bytes": 234,
+            "reason": null
+          }
+        ],
+        "to": [
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-milestone.md",
+            "line": 347,
+            "prompt_line": 347,
+            "agent": "roadmapper",
+            "subagent_type": "roadmapper",
+            "form": "literal",
+            "prompt_bytes": 879,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-project.md",
+            "line": 1024,
+            "prompt_line": 1024,
+            "agent": "roadmapper",
+            "subagent_type": "roadmapper",
+            "form": "literal",
+            "prompt_bytes": 920,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/new-project.md",
+            "line": 1128,
+            "prompt_line": 1128,
+            "agent": "roadmapper",
+            "subagent_type": "roadmapper",
+            "form": "literal",
+            "prompt_bytes": 234,
+            "reason": null
+          }
+        ]
+      },
+      "named_at": {
+        "from": {
+          "paths": [],
+          "bytes": 0,
+          "missing": []
+        },
+        "to": {
+          "paths": [],
+          "bytes": 0,
+          "missing": []
+        }
+      },
+      "pack_fragments": {
+        "from": {},
+        "to": {}
+      }
+    },
+    {
+      "name": "debugger",
+      "path": {
+        "from": "plugins/aoforge/agents/debugger.md",
+        "to": "plugins/aoforge/agents/debugger.md"
+      },
+      "pack": {
+        "from": false,
+        "to": false
+      },
+      "defined": {
+        "from": true,
+        "to": true
+      },
+      "agent_bytes": {
+        "from": 19150,
+        "to": 20244,
+        "delta_bytes": 1094,
+        "delta_pct": 5.71
+      },
+      "body_bytes": {
+        "from": 18895,
+        "to": 19989,
+        "delta_bytes": 1094,
+        "delta_pct": 5.79
+      },
+      "max_spawn_bytes": {
+        "from": 565,
+        "to": 565,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "named_at_bytes": {
+        "from": 20326,
+        "to": 20326,
+        "delta_bytes": 0,
+        "delta_pct": 0
+      },
+      "resident_bytes": {
+        "from": 19460,
+        "to": 20554,
+        "delta_bytes": 1094,
+        "delta_pct": 5.62
+      },
+      "resident_tokens": {
+        "from": 4865,
+        "to": 5139,
+        "delta_tokens": 274,
+        "delta_pct": 5.63
+      },
+      "spawn_sites": {
+        "from": [
+          {
+            "file": "plugins/aoforge/aoforge/templates/debug-subagent-prompt.md",
+            "line": 56,
+            "prompt_line": 57,
+            "agent": "debugger",
+            "subagent_type": "debugger",
+            "form": "variable",
+            "prompt_bytes": null,
+            "reason": "prompt=filled_template: no fenced block labelled \"filled template\", no \"... prompt:\" block and no markdown block directly above the call, after the previous spawn site"
+          },
+          {
+            "file": "plugins/aoforge/aoforge/templates/debug-subagent-prompt.md",
+            "line": 65,
+            "prompt_line": 9,
+            "agent": "debugger",
+            "subagent_type": "debugger",
+            "form": "variable:label",
+            "prompt_bytes": 565,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/diagnose-issues.md",
+            "line": 96,
+            "prompt_line": 97,
+            "agent": "debugger",
+            "subagent_type": "debugger",
+            "form": "variable",
+            "prompt_bytes": null,
+            "reason": "prompt=filled_debug_subagent_prompt: no fenced block labelled \"filled debug subagent prompt\", no \"... prompt:\" block and no markdown block directly above the call, after the previous spawn site"
+          },
+          {
+            "file": "plugins/aoforge/skills/debug/SKILL.md",
+            "line": 159,
+            "prompt_line": 133,
+            "agent": "debugger",
+            "subagent_type": "debugger",
+            "form": "variable:adjacent-block",
+            "prompt_bytes": 519,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/skills/debug/SKILL.md",
+            "line": 238,
+            "prompt_line": 218,
+            "agent": "debugger",
+            "subagent_type": "debugger",
+            "form": "variable:adjacent-block",
+            "prompt_bytes": 289,
+            "reason": null
+          }
+        ],
+        "to": [
+          {
+            "file": "plugins/aoforge/aoforge/templates/debug-subagent-prompt.md",
+            "line": 56,
+            "prompt_line": 57,
+            "agent": "debugger",
+            "subagent_type": "debugger",
+            "form": "variable",
+            "prompt_bytes": null,
+            "reason": "prompt=filled_template: no fenced block labelled \"filled template\", no \"... prompt:\" block and no markdown block directly above the call, after the previous spawn site"
+          },
+          {
+            "file": "plugins/aoforge/aoforge/templates/debug-subagent-prompt.md",
+            "line": 65,
+            "prompt_line": 9,
+            "agent": "debugger",
+            "subagent_type": "debugger",
+            "form": "variable:label",
+            "prompt_bytes": 565,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/aoforge/workflows/diagnose-issues.md",
+            "line": 102,
+            "prompt_line": 103,
+            "agent": "debugger",
+            "subagent_type": "debugger",
+            "form": "variable",
+            "prompt_bytes": null,
+            "reason": "prompt=filled_debug_subagent_prompt: no fenced block labelled \"filled debug subagent prompt\", no \"... prompt:\" block and no markdown block directly above the call, after the previous spawn site"
+          },
+          {
+            "file": "plugins/aoforge/skills/debug/SKILL.md",
+            "line": 159,
+            "prompt_line": 133,
+            "agent": "debugger",
+            "subagent_type": "debugger",
+            "form": "variable:adjacent-block",
+            "prompt_bytes": 519,
+            "reason": null
+          },
+          {
+            "file": "plugins/aoforge/skills/debug/SKILL.md",
+            "line": 248,
+            "prompt_line": 228,
+            "agent": "debugger",
+            "subagent_type": "debugger",
+            "form": "variable:adjacent-block",
+            "prompt_bytes": 289,
+            "reason": null
+          }
+        ]
+      },
+      "named_at": {
+        "from": {
+          "paths": [
+            "~/.claude/aoforge/references/debugging-methods.md"
+          ],
+          "bytes": 20326,
+          "missing": []
+        },
+        "to": {
+          "paths": [
+            "~/.claude/aoforge/references/debugging-methods.md"
+          ],
+          "bytes": 20326,
+          "missing": []
+        }
+      },
+      "pack_fragments": {
+        "from": {},
+        "to": {}
+      }
+    },
+    {
+      "name": "ui-evaluator",
+      "path": {
+        "from": "plugins/aoforge/agents/ui-evaluator.md",
+        "to": "plugins/aoforge-stack-flutter/agents/ui-evaluator.md"
+      },
+      "pack": {
+        "from": false,
+        "to": true
+      },
+      "defined": {
+        "from": true,
+        "to": true
+      },
+      "agent_bytes": {
+        "from": 7610,
+        "to": 9926,
+        "delta_bytes": 2316,
+        "delta_pct": 30.43
+      },
+      "body_bytes": {
+        "from": 6981,
+        "to": 9297,
+        "delta_bytes": 2316,
+        "delta_pct": 33.18
+      },
+      "max_spawn_bytes": {
+        "from": null,
+        "to": 59,
+        "delta_bytes": null,
+        "delta_pct": null
+      },
+      "named_at_bytes": {
+        "from": 0,
+        "to": 0,
+        "delta_bytes": 0,
+        "delta_pct": null
+      },
+      "resident_bytes": {
+        "from": 6981,
+        "to": 9356,
+        "delta_bytes": 2375,
+        "delta_pct": 34.02
+      },
+      "resident_tokens": {
+        "from": 1745,
+        "to": 2339,
+        "delta_tokens": 594,
+        "delta_pct": 34.04
+      },
+      "spawn_sites": {
+        "from": [],
+        "to": [
+          {
+            "file": "plugins/aoforge-stack-flutter/skills/ui-eval/SKILL.md",
+            "line": 72,
+            "prompt_line": 75,
+            "agent": "ui-evaluator",
+            "subagent_type": "aoforge-stack-flutter:ui-evaluator",
+            "form": "literal",
+            "prompt_bytes": 59,
+            "reason": null
+          }
+        ]
+      },
+      "named_at": {
+        "from": {
+          "paths": [],
+          "bytes": 0,
+          "missing": []
+        },
+        "to": {
+          "paths": [],
+          "bytes": 0,
+          "missing": []
+        }
+      },
+      "pack_fragments": {
+        "from": {},
+        "to": {}
+      }
+    },
+    {
+      "name": "web-ui-verifier",
+      "path": {
+        "from": null,
+        "to": "plugins/aoforge-stack-web/agents/web-ui-verifier.md"
+      },
+      "pack": {
+        "from": null,
+        "to": true
+      },
+      "defined": {
+        "from": null,
+        "to": true
+      },
+      "agent_bytes": {
+        "from": null,
+        "to": 3689,
+        "delta_bytes": null,
+        "delta_pct": null
+      },
+      "body_bytes": {
+        "from": null,
+        "to": 2962,
+        "delta_bytes": null,
+        "delta_pct": null
+      },
+      "max_spawn_bytes": {
+        "from": null,
+        "to": 120,
+        "delta_bytes": null,
+        "delta_pct": null
+      },
+      "named_at_bytes": {
+        "from": null,
+        "to": 0,
+        "delta_bytes": null,
+        "delta_pct": null
+      },
+      "resident_bytes": {
+        "from": null,
+        "to": 3082,
+        "delta_bytes": null,
+        "delta_pct": null
+      },
+      "resident_tokens": {
+        "from": null,
+        "to": 771,
+        "delta_tokens": null,
+        "delta_pct": null
+      },
+      "spawn_sites": {
+        "from": null,
+        "to": [
+          {
+            "file": "plugins/aoforge-stack-web/fragments/verifier.md",
+            "line": 19,
+            "prompt_line": 22,
+            "agent": "web-ui-verifier",
+            "subagent_type": "aoforge-stack-web:web-ui-verifier",
+            "form": "literal",
+            "prompt_bytes": 120,
+            "reason": null
+          }
+        ]
+      },
+      "named_at": {
+        "from": null,
+        "to": {
+          "paths": [],
+          "bytes": 0,
+          "missing": []
+        }
+      },
+      "pack_fragments": {
+        "from": null,
+        "to": {}
+      }
+    }
+  ],
+  "totals": {
+    "core": {
+      "from": {
+        "count": 13,
+        "resident_bytes": 318035,
+        "resident_tokens": 79509
+      },
+      "to": {
+        "count": 12,
+        "resident_bytes": 271757,
+        "resident_tokens": 67939
+      },
+      "delta_bytes": -46278,
+      "delta_pct": -14.55
+    },
+    "core_both": {
+      "from": {
+        "count": 12,
+        "resident_bytes": 311054,
+        "resident_tokens": 77764
+      },
+      "to": {
+        "count": 12,
+        "resident_bytes": 271757,
+        "resident_tokens": 67939
+      },
+      "delta_bytes": -39297,
+      "delta_pct": -12.63
+    },
+    "pack": {
+      "from": {
+        "count": 0,
+        "resident_bytes": 0,
+        "resident_tokens": 0
+      },
+      "to": {
+        "count": 2,
+        "resident_bytes": 12438,
+        "resident_tokens": 3110
+      },
+      "delta_bytes": 12438,
+      "delta_pct": null
+    }
+  }
+}

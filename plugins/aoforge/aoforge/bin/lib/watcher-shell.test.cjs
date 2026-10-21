@@ -21,7 +21,7 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const { ShellSession, ShellSessionClosed } = require('./watcher-shell.cjs');
+const { ShellSession, ShellSessionClosed, sentinelMarkers, makeLiveFilter } = require('./watcher-shell.cjs');
 
 // Unit tests use non-interactive bash for speed and CI reliability.
 // The interactive=true path (loading user rc files for mise/nvm/conda/aliases)
@@ -123,8 +123,9 @@ describe('watcher-shell — lifecycle', () => {
 //   PTY-1:  spawn() ready when node-pty available; throws clear error when not
 //   PTY-2:  dispatch('p-1', 'echo hello') -> { stdout: 'hello\n', exit_code: 0, status: 'done' }
 //   PTY-3:  dispatch('p-2', 'false')      -> { exit_code: 1, status: 'failed' }
-//   PTY-4:  dispatch('p-3', 'echo err 1>&2') -> { stdout: '', stderr: 'err\n' }
-//           (sentinel-protocol gives separate streams even though PTY merges them)
+//   PTY-4:  dispatch('p-3', 'echo err 1>&2') -> { stdout: 'err\n', stderr: '' }
+//           (objective 73: both fds are the terminal, so PTY mode no longer
+//           separates the streams; it did before, via temp-file redirection)
 //   PTY-5:  env preserved across two dispatches (export FOO=bar; echo $FOO -> 'bar\n')
 //   PTY-6:  multi-line stdout preserved (printf 'a\nb\nc\n' -> 'a\nb\nc\n')
 //   PTY-7:  dispatch sends command with carriage-return terminator
@@ -192,13 +193,17 @@ describe('watcher-shell — PTY mode (interactive:true)', () => {
       });
     });
 
-  test('PTY-4: dispatch("echo err 1>&2") captures stderr separately via sentinel protocol',
+  // Objective 73 changed this contract. Both fds are the terminal in PTY mode
+  // (gap 1: a command must see a tty on fd 1 AND fd 2), so stderr arrives with
+  // stdout and the parsed `stderr` is ''. Pipe mode still separates them
+  // ('echo to stderr is captured separately' above stays as it was).
+  test('PTY-4: dispatch("echo err 1>&2") in PTY mode: both fds are the terminal, stderr arrives with stdout',
     ptySkip,
     async () => {
       await withPTYSession({}, async (s) => {
         const r = await s.dispatch('p-3', 'echo err 1>&2');
-        assert.equal(r.stdout, '');
-        assert.equal(r.stderr, 'err\n');
+        assert.equal(r.stdout, 'err\n');
+        assert.equal(r.stderr, '');
         assert.equal(r.exit_code, 0);
       });
     });
@@ -232,11 +237,13 @@ describe('watcher-shell — PTY mode (interactive:true)', () => {
         const origWrite = session.proc.write.bind(session.proc);
         session.proc.write = (s) => { writeCalls.push(s); return origWrite(s); };
         await session.dispatch('p-6', 'echo hello');
-        // Find the dispatch write (contains '__DFW_BEGIN_p-6__').
-        const dispatchWrite = writeCalls.find((s) => s.includes('__DFW_BEGIN_p-6__'));
+        // Find the dispatch write. Since objective 73 the bash/zsh PTY dispatch
+        // sends one `. '<script file>'` line (the file is named after the id,
+        // so it holds 'p-6.sh'); the BEGIN sentinel lives inside the file now.
+        const dispatchWrite = writeCalls.find((s) => /^\. '.*p-6\.sh'/.test(s));
         assert.ok(dispatchWrite, 'dispatch write not found in captured writes');
-        // Lines must be separated by \r, NOT \n.
-        assert.ok(dispatchWrite.includes('\r'),
+        // The line must end in \r, NOT \n.
+        assert.ok(dispatchWrite.endsWith('\r'),
           'expected \\r line terminator in PTY-mode dispatch write');
         assert.ok(!dispatchWrite.includes('\n'),
           'expected NO \\n in PTY-mode dispatch write');
@@ -645,5 +652,423 @@ describe('watcher-shell — PTY readiness handshake (issue #93)', () => {
       /_awaitShellReady\(\)/.test(spawnBody),
       'spawn() must wait on the readiness handshake'
     );
+  });
+});
+
+// =============================================================================
+// Objective 73, TRD 73-01: the PTY dispatch script (gaps 1 and 2, Ctrl+C)
+// =============================================================================
+// Objective 19 parked three handoff gaps (19-05-mock-auth-e2e-SUMMARY.md,
+// "Architectural Findings"). Two of them are properties of how the bash/zsh
+// wrapper runs a command in the daemon's PTY:
+//   gap 1  the command's stdout/stderr were redirected to temp files, so
+//          isatty(1) / isatty(2) were false (doctl's TUI: "unknown terminal");
+//   gap 2  all wrapper lines were queued on the tty in one write, so a command
+//          that reads stdin consumed the next wrapper line as its answer.
+// A third symptom: Ctrl+C makes the tty driver flush the queued wrapper lines,
+// so END is never printed and the dispatch runs to its 10-minute timeout.
+//
+// Test list (each of 1-9 runs under bash and, when installed, zsh):
+//   1  gap 1: [ -t 1 ] and [ -t 2 ] both hold; stderr is ''
+//   2  gap 2: a listener-injected answer reaches `read`
+//   3  Ctrl+C mid-command still yields END (exit 130) and a live session
+//   4  a trailing `# comment` does not swallow the wrapper
+//   5  a two-line command completes
+//   6  one input line per dispatch: `. '<script>'` + CR
+//   7  the script file is 0600 in a 0700 dir, removed on settle, dir removed on kill
+//   8  both fds are the terminal in PTY mode: stderr arrives with stdout
+//   9  the PTY shell never persists history
+//   SM sentinelMarkers(id) names BEGIN / DELIM / END
+// Readiness, not sleeps: injections fire on text seen in the stream (issue #93).
+// =============================================================================
+
+const { spawnSync: spawnSync73 } = require('node:child_process');
+
+const ZSH_AVAILABLE_73 = (() => {
+  try { return spawnSync73('zsh', ['-c', 'exit 0'], { timeout: 3000 }).status === 0; } catch { return false; }
+})();
+const SHELLS_73 = ['bash', 'zsh'];
+
+function skipFor73(shell) {
+  if (!PTY_AVAILABLE) return { skip: 'node-pty unavailable' };
+  if (shell === 'zsh' && !ZSH_AVAILABLE_73) return { skip: 'zsh not installed' };
+  return undefined;
+}
+
+/**
+ * Attach a listener that accumulates the stream and calls `onSeen` exactly once,
+ * the first time the accumulated text contains `text`.
+ */
+function listenUntil(session, text, onSeen) {
+  let buf = '';
+  let fired = false;
+  session.attachDataListener((chunk) => {
+    buf += chunk;
+    if (!fired && buf.includes(text)) {
+      fired = true;
+      onSeen();
+    }
+  });
+}
+
+const TTY_PROBE =
+  'if [ -t 1 ]; then echo out=tty; else echo out=file; fi; ' +
+  'if [ -t 2 ]; then echo err=tty >&2; else echo err=file >&2; fi';
+const READ_PROBE = "printf 'Enter value: ' > /dev/tty; read V; echo \"got=$V\"";
+const INT_PROBE = "sh -c 'echo started-73; exec sleep 5'";
+// GNU stat first (BSD stat rejects -c), then BSD.
+const SCRIPT_PROBE = [
+  'echo "script=$AOFW_SCRIPT"',
+  'ls -ld "$(dirname "$AOFW_SCRIPT")"',
+  'stat -c %a "$AOFW_SCRIPT" 2>/dev/null || stat -f %Lp "$AOFW_SCRIPT"',
+].join('\n');
+
+describe('watcher-shell — objective 73: PTY dispatch script', () => {
+  test('SM-1: sentinelMarkers(id) names the BEGIN / DELIM / END sentinels', () => {
+    assert.deepStrictEqual(sentinelMarkers('x-1'), {
+      begin: '__DFW_BEGIN_x-1__',
+      delim: '__DFW_DELIM_x-1__',
+      end: '__DFW_END_x-1__',
+    });
+  });
+
+  for (const shell of SHELLS_73) {
+    const skip = skipFor73(shell);
+
+    test(`73-PTY-1 [${shell}] gap 1: the dispatched command sees a terminal on fd 1 and fd 2`, skip, async () => {
+      await withPTYSession({ shell }, async (s) => {
+        const r = await s.dispatch('g1-1', TTY_PROBE, { timeout_ms: 8000 });
+        assert.match(r.stdout, /out=tty/, `stdout was ${JSON.stringify(r.stdout)}`);
+        assert.match(r.stdout, /err=tty/, `stdout was ${JSON.stringify(r.stdout)}`);
+        assert.equal(r.stderr, '');
+        assert.equal(r.exit_code, 0);
+      });
+    });
+
+    test(`73-PTY-2 [${shell}] gap 2: an answer injected after the prompt reaches \`read\``, skip, async () => {
+      await withPTYSession({ shell }, async (s) => {
+        listenUntil(s, 'Enter value:', () => s.injectInput('answer-73\r'));
+        const r = await s.dispatch('g2-1', READ_PROBE, { timeout_ms: 8000 });
+        assert.equal(r.status, 'done');
+        assert.equal(r.exit_code, 0);
+        assert.match(r.stdout, /got=answer-73/, `stdout was ${JSON.stringify(r.stdout)}`);
+      });
+    });
+
+    test(`73-PTY-3 [${shell}] Ctrl+C mid-command still produces END (exit 130) and the session survives`, skip, async () => {
+      await withPTYSession({ shell }, async (s) => {
+        listenUntil(s, 'started-73', () => s.injectInput('\x03'));
+        const t0 = Date.now();
+        const r = await s.dispatch('int-1', INT_PROBE, { timeout_ms: 8000 });
+        const elapsed = Date.now() - t0;
+        assert.ok(elapsed < 4000, `expected the dispatch to settle in under 4000 ms, took ${elapsed} ms (status ${r.status})`);
+        assert.equal(r.exit_code, 130);
+        assert.equal(r.status, 'failed');
+        const next = await s.dispatch('int-2', 'echo still-alive', { timeout_ms: 8000 });
+        assert.equal(next.stdout, 'still-alive\n');
+      });
+    });
+
+    test(`73-PTY-4 [${shell}] a command ending in a # comment completes`, skip, async () => {
+      await withPTYSession({ shell }, async (s) => {
+        const r = await s.dispatch('cm-1', 'echo a-73 # trailing comment', { timeout_ms: 5000 });
+        assert.equal(r.stdout, 'a-73\n');
+        assert.equal(r.exit_code, 0);
+      });
+    });
+
+    test(`73-PTY-5 [${shell}] a command containing a newline completes`, skip, async () => {
+      await withPTYSession({ shell }, async (s) => {
+        const r = await s.dispatch('nl-1', 'echo l1\necho l2', { timeout_ms: 5000 });
+        assert.equal(r.stdout, 'l1\nl2\n');
+        assert.equal(r.exit_code, 0);
+      });
+    });
+
+    test(`73-PTY-6 [${shell}] one dispatch writes exactly one line to the PTY: . '<script>' + CR`, skip, async () => {
+      const session = new ShellSession({ shell, interactive: true });
+      await session.spawn();
+      try {
+        const writes = [];
+        const origWrite = session.proc.write.bind(session.proc);
+        session.proc.write = (s) => { writes.push(s); return origWrite(s); };
+        await session.dispatch('p-one', 'echo one', { timeout_ms: 5000 });
+        assert.equal(writes.length, 1, `expected one write, got ${JSON.stringify(writes)}`);
+        assert.match(writes[0], /^\. '.+'\r$/, `write was ${JSON.stringify(writes[0])}`);
+      } finally {
+        try { await session.kill(); } catch {}
+      }
+    });
+
+    test(`73-PTY-7 [${shell}] the script is 0600 in a 0700 dir, removed on settle; kill() removes the dir`, skip, async () => {
+      const session = new ShellSession({ shell, interactive: true });
+      await session.spawn();
+      let dir = null;
+      try {
+        const r = await session.dispatch('sc-1', SCRIPT_PROBE, { timeout_ms: 5000 });
+        const m = r.stdout.match(/^script=(.+)$/m);
+        assert.ok(m, `AOFW_SCRIPT was not exported to the command; stdout was ${JSON.stringify(r.stdout)}`);
+        assert.match(r.stdout, /^drwx------/m, 'script directory must be 0700');
+        assert.match(r.stdout, /^600$/m, 'script file must be 0600');
+        assert.equal(fs.existsSync(m[1]), false, 'script file must be removed once the dispatch settles');
+        dir = session._scriptDir;
+        assert.ok(dir, 'expected the session to record its private script directory');
+      } finally {
+        try { await session.kill(); } catch {}
+      }
+      assert.equal(fs.existsSync(dir), false, 'kill() must remove the script directory');
+    });
+
+    test(`73-PTY-8 [${shell}] both fds are the terminal in PTY mode: stderr arrives with stdout`, skip, async () => {
+      await withPTYSession({ shell }, async (s) => {
+        const r = await s.dispatch('er-1', 'echo err 1>&2', { timeout_ms: 5000 });
+        assert.equal(r.stdout, 'err\n');
+        assert.equal(r.stderr, '');
+        assert.equal(r.exit_code, 0);
+      });
+    });
+
+    test(`73-PTY-9 [${shell}] the PTY shell never persists history (HISTFILE is unset)`, skip, async () => {
+      await withPTYSession({ shell }, async (s) => {
+        const r = await s.dispatch('hi-1', 'echo "${HISTFILE-unset}"', { timeout_ms: 5000 });
+        assert.equal(r.stdout, 'unset\n');
+      });
+    });
+
+    // The remaining settle paths. The script file holds the command text, so it
+    // must not outlive the dispatch on ANY of them (done is test 7).
+    test(`73-PTY-10 [${shell}] timeout: status timeout, script and directory removed, next dispatch is ShellSessionClosed`, skip, async () => {
+      const session = new ShellSession({ shell, interactive: true });
+      await session.spawn();
+      try {
+        const r = await session.dispatch('to-1', 'sleep 5', { timeout_ms: 300 });
+        assert.equal(r.status, 'timeout');
+        assert.equal(r.exit_code, -1);
+        assert.ok(session._scriptDir, 'expected a recorded script directory');
+        assert.equal(fs.existsSync(session._scriptDir), false, 'a timed-out dispatch must leave no script behind');
+        // 73-05's respawn relies on this exact rejection.
+        await assert.rejects(() => session.dispatch('to-2', 'echo hi'), ShellSessionClosed);
+      } finally {
+        try { await session.kill(); } catch {}
+      }
+    });
+
+    test(`73-PTY-11 [${shell}] kill() during a dispatch settles it as killed and removes the script directory`, skip, async () => {
+      const session = new ShellSession({ shell, interactive: true });
+      await session.spawn();
+      try {
+        const pending = session.dispatch('kd-1', 'sleep 5', { timeout_ms: 8000 });
+        // dispatch() prepares the script synchronously, before it returns.
+        const file = path.join(session._scriptDir, 'kd-1.sh');
+        assert.ok(fs.existsSync(file), 'the script file exists while the dispatch is in flight');
+        await session.kill();
+        const r = await pending;
+        assert.equal(r.status, 'killed');
+        assert.equal(fs.existsSync(session._scriptDir), false);
+      } finally {
+        try { await session.kill(); } catch {}
+      }
+    });
+
+    test(`73-PTY-12 [${shell}] the shell exiting mid-dispatch settles it as shell_died and removes the script directory`, skip, async () => {
+      const session = new ShellSession({ shell, interactive: true });
+      await session.spawn();
+      try {
+        const r = await session.dispatch('sd-1', 'exit 3', { timeout_ms: 8000 });
+        assert.equal(r.status, 'shell_died');
+        assert.equal(fs.existsSync(session._scriptDir), false);
+      } finally {
+        try { await session.kill(); } catch {}
+      }
+    });
+  }
+});
+
+// =============================================================================
+// TRD 73-03: live-only listeners (gap 3, "detector late match")
+// =============================================================================
+// A listener attached with { liveOnly: true } receives only the active
+// dispatch's LIVE window, never sentinel text, never replayed output, never
+// bytes from outside a dispatch:
+//   in-band protocol (bash/zsh PTY script)  bytes after the BEGIN line, up to DELIM
+//   replay protocol (pipe, fish, powershell) bytes from the start up to BEGIN
+//
+//   LV-1   pipe mode (replay): a liveOnly listener sees none of the replayed output
+//   LV-2   PTY bash (in-band): a liveOnly listener sees the output and no sentinel
+//   LV-3   PTY bash forced onto the replay protocol: the prompt is live, the replay is not
+//   LV-4   nothing outside a dispatch reaches a liveOnly listener
+//   LV-5   a plain listener still sees every chunk (DL-1..DL-8 are the other pin)
+//   MLF-1  in-band, markers split across chunks: the live text only
+//   MLF-2  replay: text up to BEGIN, nothing after
+//   MLF-3  a held-back suffix that turns out not to be a marker is emitted in full
+//   MLF-4  in-band: text before BEGIN and after DELIM is never emitted
+//   MLF-5  in-band: the live window starts after the newline that ends the BEGIN line
+//   MLF-6  once past the window the filter emits nothing, whatever arrives
+// =============================================================================
+
+/** Resolve once the accumulated stream contains `text`; reject (with what was seen) on timeout. */
+function waitForText(session, text, timeoutMs = 5000) {
+  return new Promise((resolve, reject) => {
+    let buf = '';
+    const fn = (chunk) => {
+      buf += chunk;
+      if (!buf.includes(text)) return;
+      clearTimeout(timer);
+      session.detachDataListener(fn);
+      resolve();
+    };
+    const timer = setTimeout(() => {
+      session.detachDataListener(fn);
+      reject(new Error(`timed out waiting for ${JSON.stringify(text)}; saw ${JSON.stringify(buf)}`));
+    }, timeoutMs);
+    session.attachDataListener(fn);
+  });
+}
+
+describe('watcher-shell — objective 73: live-only listeners', () => {
+  test('LV-1 pipe mode (replay protocol): a liveOnly listener sees none of the replayed output', async () => {
+    await withSession({}, async (s) => {
+      const live = [];
+      const plain = [];
+      s.attachDataListener((c) => live.push(c), { liveOnly: true });
+      s.attachDataListener((c) => plain.push(c));
+      // `(exit 3)`, not `exit 3`: the wrapper runs the command in the shell's own
+      // group, so a bare exit would end the shell and there would be no replay.
+      const r = await s.dispatch('lv-1', "echo 'Enter your access token:' 1>&2; echo out; (exit 3)");
+      assert.equal(r.exit_code, 3);
+      assert.match(r.stderr, /access token/, 'the dispatch itself captured the prompt text');
+      const liveText = live.join('');
+      assert.doesNotMatch(liveText, /access token/);
+      assert.doesNotMatch(liveText, /out/);
+      assert.doesNotMatch(liveText, /__DFW_/);
+      assert.match(plain.join(''), /out/, 'a plain listener still sees the replay');
+    });
+  });
+
+  for (const shell of ['bash']) {
+    const skip = skipFor73(shell);
+
+    test(`LV-2 [${shell}] PTY in-band: a liveOnly listener sees the command output and no sentinel`, skip, async () => {
+      await withPTYSession({ shell }, async (s) => {
+        const live = [];
+        s.attachDataListener((c) => live.push(c), { liveOnly: true });
+        const r = await s.dispatch('lv-2', 'echo live-73', { timeout_ms: 8000 });
+        assert.equal(r.status, 'done');
+        const liveText = live.join('');
+        assert.match(liveText, /live-73/);
+        assert.doesNotMatch(liveText, /__DFW_/);
+      });
+    });
+
+    test(`LV-3 [${shell}] PTY forced onto the replay protocol: the live prompt is delivered, the replay is not`, skip, async () => {
+      await withPTYSession({ shell }, async (s) => {
+        // fish and powershell take this path in production; getWrapper supports no other
+        // shell to test it with, so switch the bash session off its in-band script.
+        s._wrapper = { ...s._wrapper, ptyScript: undefined, sourceLine: undefined };
+        const live = [];
+        s.attachDataListener((c) => live.push(c), { liveOnly: true });
+        const r = await s.dispatch('lv-3', "printf 'Prompt-73: ' > /dev/tty; echo replayed-73", { timeout_ms: 8000 });
+        assert.equal(r.status, 'done');
+        assert.match(r.stdout, /replayed-73/);
+        const liveText = live.join('');
+        assert.match(liveText, /Prompt-73:/);
+        assert.doesNotMatch(liveText, /replayed-73/);
+        assert.doesNotMatch(liveText, /__DFW_/);
+      });
+    });
+
+    test(`LV-4 [${shell}] nothing outside a dispatch reaches a liveOnly listener`, skip, async () => {
+      const session = new ShellSession({ shell, interactive: true });
+      const live = [];
+      // Attached BEFORE spawn(): the init lines and the readiness probe are not a dispatch.
+      session.attachDataListener((c) => live.push(c), { liveOnly: true });
+      await session.spawn();
+      try {
+        assert.deepStrictEqual(live, [], 'the shell prelude is not live output');
+        let seen = waitForText(session, 'between-73');
+        session.injectInput('echo between-73\r');
+        await seen;
+        assert.deepStrictEqual(live, [], 'output between dispatches is not live output');
+        const r = await session.dispatch('lv-4', 'echo in-73', { timeout_ms: 8000 });
+        assert.equal(r.status, 'done');
+        assert.equal(live.join('').replace(/\r\n/g, '\n'), 'in-73\n');
+        const before = live.length;
+        seen = waitForText(session, 'after-73');
+        session.injectInput('echo after-73\r');
+        await seen;
+        assert.equal(live.length, before, 'output after the dispatch settled is not live output');
+      } finally {
+        try { await session.kill(); } catch {}
+      }
+    });
+  }
+
+  test('LV-5 a listener attached without options still sees every chunk, sentinels included', async () => {
+    await withSession({}, async (s) => {
+      const plain = [];
+      s.attachDataListener((c) => plain.push(c));
+      await s.dispatch('lv-5', 'echo hello');
+      const text = plain.join('');
+      assert.match(text, /__DFW_BEGIN_lv-5__/);
+      assert.match(text, /hello/);
+      assert.match(text, /__DFW_END_lv-5__:0/);
+    });
+  });
+});
+
+describe('watcher-shell — objective 73: makeLiveFilter', () => {
+  const M = sentinelMarkers('x');
+  const feed = (filter, chunks) => chunks.map((c) => filter(c));
+
+  test('MLF-1 in-band: markers split across chunks yield only the live text', () => {
+    const f = makeLiveFilter({ ...M, protocol: 'inband' });
+    const emits = feed(f, ['__DFW_BEG', 'IN_x__\r\nab', 'c__DFW_DE', 'LIM_x__\r\n__DFW_END_x__:0\r\n']);
+    assert.equal(emits.join(''), 'abc');
+    for (const e of emits) assert.doesNotMatch(e, /__DFW_/);
+  });
+
+  test('MLF-2 replay: text up to BEGIN is emitted, nothing after it', () => {
+    const f = makeLiveFilter({ ...M, protocol: 'replay' });
+    const emits = feed(f, ['Prompt: ', 'more', '\r\n__DFW_BEGIN_x__\r\nreplayed']);
+    assert.equal(emits.join(''), 'Prompt: more\r\n');
+    assert.equal(emits[0], 'Prompt: ', 'a prompt is delivered as it arrives, not at the end');
+    assert.equal(f('__DFW_DELIM_x__\r\nstderr text\r\n__DFW_END_x__:3\r\n'), '');
+  });
+
+  for (const protocol of ['inband', 'replay']) {
+    test(`MLF-3 [${protocol}] a held-back suffix that turns out not to be a marker is emitted in full`, () => {
+      const f = makeLiveFilter({ ...M, protocol });
+      // In-band only counts text after the BEGIN line, so open the window first.
+      const open = protocol === 'inband' ? f('__DFW_BEGIN_x__\r\n') : '';
+      assert.equal(open, '');
+      const first = f('ab__DF');
+      const second = f('Zq');
+      assert.equal(first, 'ab', 'the possible start of a marker is held back');
+      assert.equal(second, '__DFZq', 'and released, whole, once it is clear it was not one');
+    });
+  }
+
+  test('MLF-4 in-band: text before BEGIN and after DELIM is never emitted', () => {
+    const f = makeLiveFilter({ ...M, protocol: 'inband' });
+    const emits = feed(f, ['noise before\r\n__DFW_BEGIN_x__\r\nlive\r\n__DFW_DELIM_x__\r\nafter\r\n']);
+    assert.equal(emits.join(''), 'live\r\n');
+  });
+
+  test('MLF-5 in-band: the window opens after the newline that ends the BEGIN line, however it is split', () => {
+    const f = makeLiveFilter({ ...M, protocol: 'inband' });
+    const emits = feed(f, ['__DFW_BEGIN_x__', '\r', '\nhi']);
+    assert.equal(emits.join(''), 'hi');
+  });
+
+  test('MLF-6 once past the window the filter emits nothing, whatever arrives', () => {
+    for (const [protocol, chunks] of [
+      ['inband', ['__DFW_BEGIN_x__\n', 'a', '__DFW_DELIM_x__\n']],
+      ['replay', ['a', '__DFW_BEGIN_x__\n']],
+    ]) {
+      const f = makeLiveFilter({ ...M, protocol });
+      feed(f, chunks);
+      assert.equal(f('more output'), '', `${protocol}: nothing after the window`);
+      assert.equal(f('__DFW_BEGIN_x__ again'), '', `${protocol}: not even a repeated marker`);
+    }
   });
 });

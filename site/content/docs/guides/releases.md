@@ -48,12 +48,11 @@ The version-sync half exists because three-file drift is silent — the marketpl
 advertises one version, the plugin manifest another, and users get whichever the
 resolver happens to pick.
 
-{{< callout title="Both this gate and gate-interactive match on the raw command string" type="warn" >}}
-`gate-commits` was made invocation-aware so that heredoc bodies and quoted
-arguments are stripped before matching — text that merely *mentions* a command is
-not gated. `changelog-on-tag` and `gate-interactive` do not yet do the same, so
-writing documentation that contains a tag command or an auth command in a heredoc
-can trip them. Use the documented escape hatch when it happens.
+{{< callout title="A mention is not an invocation" type="ok" >}}
+`gate-commits` and this gate strip heredoc bodies and quoted arguments before
+matching, and `gate-interactive` matches each call of a command on its own words
+(objective 73), so text that merely *mentions* a tag command or an auth command,
+such as a heredoc writing documentation, is not gated.
 {{< /callout >}}
 
 ## Release notes on GitHub
@@ -73,7 +72,20 @@ creates or edits the GitHub release.
 1. Bump the three manifests to the same version.
 2. Generate the changelog entry:
    `aof-tools changelog update --version v2.6.0`
-3. Review it, then commit: `aof-tools commit "chore(release): v2.6.0"`
-4. Create the annotated tag. The gate verifies the changelog entry and the three
-   manifests before allowing it, then push with `--follow-tags`.
-5. Generate release notes: `aof-tools gh sync-release v2.6.0`
+3. Review it, then commit on a release branch: `aof-tools commit "chore(release): v2.6.0"`
+4. Push the branch, open a pull request to `main` and merge it once its required
+   checks are green.
+5. Create the annotated tag on the merge commit. The gate verifies the changelog
+   entry and the three manifests before allowing it. Then push the tag on its own:
+   `git push origin v2.6.0`.
+6. Generate release notes: `aof-tools gh sync-release v2.6.0`
+
+{{< callout title="AOForge's own main takes changes only through a pull request" type="warn" >}}
+In this repository `main` is protected by the ruleset `aoforge: default branch`
+(objective 74; its text is `.github/rulesets/main.json`). A direct push or a
+force-push to `main` is rejected, and `main` cannot be deleted. A change reaches
+`main` only through a pull request with the check `test (npm test, gated)` green.
+A repository admin can merge a pull request without waiting for its checks
+(`gh pr merge <number> --admin`), but never push or force-push to `main`. Tags are
+not covered by the ruleset, so pushing a release tag works as before.
+{{< /callout >}}

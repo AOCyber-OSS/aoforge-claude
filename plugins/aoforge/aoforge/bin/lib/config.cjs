@@ -5,6 +5,11 @@ const path = require('path');
 const { output, error } = require('./helpers.cjs');
 const { planningRoot, planningRel, userDotFile } = require('./compat.cjs');
 
+/** `v` when it is a non-null, non-array object; otherwise a fresh `{}`. */
+function plainObject(v) {
+  return v !== null && typeof v === 'object' && !Array.isArray(v) ? v : {};
+}
+
 function loadConfig(cwd) {
   const configPath = path.join(planningRoot(cwd), 'config.json');
   const defaults = {
@@ -24,6 +29,10 @@ function loadConfig(cwd) {
     brave_search: false,
     verifier_checkpoints: false,
     decision_queue: false,
+    // Per-agent model settings (quick 35): the tier map per profile, and the flat unfloored pin. init.cjs reads both;
+    // they used to be missing here, so neither ever reached a spawn.
+    agent_models: {},
+    model_overrides: {},
   };
 
   try {
@@ -65,6 +74,8 @@ function loadConfig(cwd) {
       brave_search: get('brave_search') ?? defaults.brave_search,
       verifier_checkpoints: get('verifier_checkpoints', { section: 'workflow', field: 'verifier_checkpoints' }) ?? autonomous,
       decision_queue: get('decision_queue', { section: 'workflow', field: 'decision_queue' }) ?? autonomous,
+      agent_models: plainObject(get('agent_models')),
+      model_overrides: plainObject(get('model_overrides')),
     };
   } catch {
     return defaults;
@@ -75,7 +86,7 @@ function cmdConfigEnsureSection(cwd, raw) {
   const configPath = path.join(planningRoot(cwd), 'config.json');
   const planningDir = planningRoot(cwd);
 
-  // Ensure the planning directory exists (.aoforge/ for a new project; a legacy one is used where it exists)
+  // Ensure the planning directory, .aoforge/, exists
   try {
     if (!fs.existsSync(planningDir)) {
       fs.mkdirSync(planningDir, { recursive: true });
@@ -91,13 +102,13 @@ function cmdConfigEnsureSection(cwd, raw) {
     return;
   }
 
-  // Detect Brave Search API key availability. User files are read from ~/.aoforge/ first and,
-  // for one release (objective 72, INST-03), from the legacy dot directory second.
+  // Detect Brave Search API key availability. User files are read from the runtime home,
+  // ~/.claude/aoforge/, only (compat.userDotFile, TRD 73-11; no fallback since TRD 78-11).
   const homedir = require('os').homedir();
   const braveKeyFile = userDotFile(homedir, 'brave_api_key');
   const hasBraveSearch = !!(process.env.BRAVE_API_KEY || fs.existsSync(braveKeyFile));
 
-  // Load user-level defaults from ~/.aoforge/defaults.json (else the legacy one) if available
+  // Load user-level defaults from the runtime home's defaults.json, if available
   const globalDefaultsPath = userDotFile(homedir, 'defaults.json');
   let userDefaults = {};
   try {

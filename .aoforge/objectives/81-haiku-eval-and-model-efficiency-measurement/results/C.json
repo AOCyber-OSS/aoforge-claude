@@ -1,0 +1,2728 @@
+{
+  "batch": "C",
+  "scored_at": "2026-10-17T22:40:18.593Z",
+  "planned": {
+    "haiku": 24,
+    "sonnet": 24
+  },
+  "roles": {
+    "codebase-mapper:tech": {
+      "primary": "recall",
+      "planned": {
+        "haiku": 4,
+        "sonnet": 4
+      },
+      "models": {
+        "haiku": {
+          "n_scored": 4,
+          "n_impaired": 0,
+          "planned": 4,
+          "metrics": {
+            "recall": {
+              "k": 45,
+              "n": 46
+            },
+            "error": {
+              "k": 1,
+              "n": 46
+            },
+            "missing": {
+              "k": 0,
+              "n": 46
+            },
+            "fabrications": {
+              "total": 17,
+              "runs": 4
+            },
+            "recall_by_codebase": {
+              "synthetic": {
+                "k": 22,
+                "n": 22
+              },
+              "fleet": {
+                "k": 23,
+                "n": 24
+              }
+            },
+            "fabrications_by_codebase": {
+              "synthetic": {
+                "total": 5,
+                "runs": 2
+              },
+              "fleet": {
+                "total": 12,
+                "runs": 2
+              }
+            }
+          },
+          "cost_usd": 0.061834,
+          "grader_cost_usd": 0.273982,
+          "mean_wall_ms": 49382
+        },
+        "sonnet": {
+          "n_scored": 4,
+          "n_impaired": 0,
+          "planned": 4,
+          "metrics": {
+            "recall": {
+              "k": 46,
+              "n": 46
+            },
+            "error": {
+              "k": 0,
+              "n": 46
+            },
+            "missing": {
+              "k": 0,
+              "n": 46
+            },
+            "fabrications": {
+              "total": 41,
+              "runs": 4
+            },
+            "recall_by_codebase": {
+              "synthetic": {
+                "k": 22,
+                "n": 22
+              },
+              "fleet": {
+                "k": 24,
+                "n": 24
+              }
+            },
+            "fabrications_by_codebase": {
+              "synthetic": {
+                "total": 3,
+                "runs": 2
+              },
+              "fleet": {
+                "total": 38,
+                "runs": 2
+              }
+            }
+          },
+          "cost_usd": 0.61098,
+          "grader_cost_usd": 0.228407,
+          "mean_wall_ms": 32442
+        }
+      }
+    },
+    "codebase-mapper:arch": {
+      "primary": "recall",
+      "planned": {
+        "haiku": 4,
+        "sonnet": 4
+      },
+      "models": {
+        "haiku": {
+          "n_scored": 4,
+          "n_impaired": 0,
+          "planned": 4,
+          "metrics": {
+            "recall": {
+              "k": 41,
+              "n": 46
+            },
+            "error": {
+              "k": 1,
+              "n": 46
+            },
+            "missing": {
+              "k": 4,
+              "n": 46
+            },
+            "fabrications": {
+              "total": 12,
+              "runs": 4
+            },
+            "recall_by_codebase": {
+              "synthetic": {
+                "k": 21,
+                "n": 22
+              },
+              "fleet": {
+                "k": 20,
+                "n": 24
+              }
+            },
+            "fabrications_by_codebase": {
+              "synthetic": {
+                "total": 6,
+                "runs": 2
+              },
+              "fleet": {
+                "total": 6,
+                "runs": 2
+              }
+            }
+          },
+          "cost_usd": 0.067883,
+          "grader_cost_usd": 0.298367,
+          "mean_wall_ms": 65483
+        },
+        "sonnet": {
+          "n_scored": 4,
+          "n_impaired": 0,
+          "planned": 4,
+          "metrics": {
+            "recall": {
+              "k": 39,
+              "n": 46
+            },
+            "error": {
+              "k": 1,
+              "n": 46
+            },
+            "missing": {
+              "k": 6,
+              "n": 46
+            },
+            "fabrications": {
+              "total": 3,
+              "runs": 4
+            },
+            "recall_by_codebase": {
+              "synthetic": {
+                "k": 20,
+                "n": 22
+              },
+              "fleet": {
+                "k": 19,
+                "n": 24
+              }
+            },
+            "fabrications_by_codebase": {
+              "synthetic": {
+                "total": 2,
+                "runs": 2
+              },
+              "fleet": {
+                "total": 1,
+                "runs": 2
+              }
+            }
+          },
+          "cost_usd": 0.549297,
+          "grader_cost_usd": 0.209867,
+          "mean_wall_ms": 37859
+        }
+      }
+    },
+    "codebase-mapper:quality": {
+      "primary": "recall",
+      "planned": {
+        "haiku": 4,
+        "sonnet": 4
+      },
+      "models": {
+        "haiku": {
+          "n_scored": 4,
+          "n_impaired": 0,
+          "planned": 4,
+          "metrics": {
+            "recall": {
+              "k": 38,
+              "n": 44
+            },
+            "error": {
+              "k": 3,
+              "n": 44
+            },
+            "missing": {
+              "k": 3,
+              "n": 44
+            },
+            "fabrications": {
+              "total": 8,
+              "runs": 4
+            },
+            "recall_by_codebase": {
+              "synthetic": {
+                "k": 21,
+                "n": 22
+              },
+              "fleet": {
+                "k": 17,
+                "n": 22
+              }
+            },
+            "fabrications_by_codebase": {
+              "synthetic": {
+                "total": 2,
+                "runs": 2
+              },
+              "fleet": {
+                "total": 6,
+                "runs": 2
+              }
+            }
+          },
+          "cost_usd": 0.116072,
+          "grader_cost_usd": 0.332674,
+          "mean_wall_ms": 111211
+        },
+        "sonnet": {
+          "n_scored": 3,
+          "n_impaired": 1,
+          "planned": 4,
+          "metrics": {
+            "recall": {
+              "k": 29,
+              "n": 33
+            },
+            "error": {
+              "k": 1,
+              "n": 33
+            },
+            "missing": {
+              "k": 3,
+              "n": 33
+            },
+            "fabrications": {
+              "total": 4,
+              "runs": 3
+            },
+            "recall_by_codebase": {
+              "synthetic": {
+                "k": 20,
+                "n": 22
+              },
+              "fleet": {
+                "k": 9,
+                "n": 11
+              }
+            },
+            "fabrications_by_codebase": {
+              "synthetic": {
+                "total": 4,
+                "runs": 2
+              },
+              "fleet": {
+                "total": 0,
+                "runs": 1
+              }
+            }
+          },
+          "cost_usd": 0.435721,
+          "grader_cost_usd": 0.162456,
+          "mean_wall_ms": 41288
+        }
+      }
+    },
+    "codebase-mapper:concerns": {
+      "primary": "recall",
+      "planned": {
+        "haiku": 4,
+        "sonnet": 4
+      },
+      "models": {
+        "haiku": {
+          "n_scored": 4,
+          "n_impaired": 0,
+          "planned": 4,
+          "metrics": {
+            "recall": {
+              "k": 21,
+              "n": 38
+            },
+            "error": {
+              "k": 2,
+              "n": 38
+            },
+            "missing": {
+              "k": 15,
+              "n": 38
+            },
+            "fabrications": {
+              "total": 5,
+              "runs": 4
+            },
+            "recall_by_codebase": {
+              "synthetic": {
+                "k": 14,
+                "n": 16
+              },
+              "fleet": {
+                "k": 7,
+                "n": 22
+              }
+            },
+            "fabrications_by_codebase": {
+              "synthetic": {
+                "total": 0,
+                "runs": 2
+              },
+              "fleet": {
+                "total": 5,
+                "runs": 2
+              }
+            }
+          },
+          "cost_usd": 0.054709,
+          "grader_cost_usd": 0.229787,
+          "mean_wall_ms": 61718
+        },
+        "sonnet": {
+          "n_scored": 4,
+          "n_impaired": 0,
+          "planned": 4,
+          "metrics": {
+            "recall": {
+              "k": 26,
+              "n": 38
+            },
+            "error": {
+              "k": 0,
+              "n": 38
+            },
+            "missing": {
+              "k": 12,
+              "n": 38
+            },
+            "fabrications": {
+              "total": 6,
+              "runs": 4
+            },
+            "recall_by_codebase": {
+              "synthetic": {
+                "k": 16,
+                "n": 16
+              },
+              "fleet": {
+                "k": 10,
+                "n": 22
+              }
+            },
+            "fabrications_by_codebase": {
+              "synthetic": {
+                "total": 1,
+                "runs": 2
+              },
+              "fleet": {
+                "total": 5,
+                "runs": 2
+              }
+            }
+          },
+          "cost_usd": 0.311806,
+          "grader_cost_usd": 0.185294,
+          "mean_wall_ms": 25504
+        }
+      }
+    },
+    "project-researcher:stack": {
+      "primary": "recall",
+      "planned": {
+        "haiku": 2,
+        "sonnet": 2
+      },
+      "models": {
+        "haiku": {
+          "n_scored": 2,
+          "n_impaired": 0,
+          "planned": 2,
+          "metrics": {
+            "recall": {
+              "k": 18,
+              "n": 20
+            },
+            "error": {
+              "k": 0,
+              "n": 20
+            },
+            "missing": {
+              "k": 2,
+              "n": 20
+            },
+            "fabrications": {
+              "total": 1,
+              "runs": 2
+            }
+          },
+          "cost_usd": 0.256517,
+          "grader_cost_usd": 0.126299,
+          "mean_wall_ms": 102901
+        },
+        "sonnet": {
+          "n_scored": 0,
+          "n_impaired": 0,
+          "planned": 2,
+          "metrics": {
+            "recall": {
+              "k": 0,
+              "n": 0
+            },
+            "error": {
+              "k": 0,
+              "n": 0
+            },
+            "missing": {
+              "k": 0,
+              "n": 0
+            },
+            "fabrications": {
+              "total": 0,
+              "runs": 0
+            }
+          },
+          "cost_usd": 0,
+          "grader_cost_usd": 0,
+          "mean_wall_ms": null
+        }
+      }
+    },
+    "project-researcher:features": {
+      "primary": "recall",
+      "planned": {
+        "haiku": 2,
+        "sonnet": 2
+      },
+      "models": {
+        "haiku": {
+          "n_scored": 2,
+          "n_impaired": 0,
+          "planned": 2,
+          "metrics": {
+            "recall": {
+              "k": 21,
+              "n": 22
+            },
+            "error": {
+              "k": 1,
+              "n": 22
+            },
+            "missing": {
+              "k": 0,
+              "n": 22
+            },
+            "fabrications": {
+              "total": 1,
+              "runs": 2
+            }
+          },
+          "cost_usd": 0.105794,
+          "grader_cost_usd": 0.135014,
+          "mean_wall_ms": 77157
+        },
+        "sonnet": {
+          "n_scored": 2,
+          "n_impaired": 0,
+          "planned": 2,
+          "metrics": {
+            "recall": {
+              "k": 22,
+              "n": 22
+            },
+            "error": {
+              "k": 0,
+              "n": 22
+            },
+            "missing": {
+              "k": 0,
+              "n": 22
+            },
+            "fabrications": {
+              "total": 0,
+              "runs": 2
+            }
+          },
+          "cost_usd": 0.270607,
+          "grader_cost_usd": 0.118294,
+          "mean_wall_ms": 64597
+        }
+      }
+    },
+    "project-researcher:architecture": {
+      "primary": "recall",
+      "planned": {
+        "haiku": 2,
+        "sonnet": 2
+      },
+      "models": {
+        "haiku": {
+          "n_scored": 2,
+          "n_impaired": 0,
+          "planned": 2,
+          "metrics": {
+            "recall": {
+              "k": 21,
+              "n": 22
+            },
+            "error": {
+              "k": 0,
+              "n": 22
+            },
+            "missing": {
+              "k": 1,
+              "n": 22
+            },
+            "fabrications": {
+              "total": 0,
+              "runs": 2
+            }
+          },
+          "cost_usd": 0.080452,
+          "grader_cost_usd": 0.134143,
+          "mean_wall_ms": 63171
+        },
+        "sonnet": {
+          "n_scored": 2,
+          "n_impaired": 0,
+          "planned": 2,
+          "metrics": {
+            "recall": {
+              "k": 17,
+              "n": 22
+            },
+            "error": {
+              "k": 0,
+              "n": 22
+            },
+            "missing": {
+              "k": 5,
+              "n": 22
+            },
+            "fabrications": {
+              "total": 0,
+              "runs": 2
+            }
+          },
+          "cost_usd": 0.265399,
+          "grader_cost_usd": 0.1172,
+          "mean_wall_ms": 60774
+        }
+      }
+    },
+    "project-researcher:pitfalls": {
+      "primary": "recall",
+      "planned": {
+        "haiku": 2,
+        "sonnet": 2
+      },
+      "models": {
+        "haiku": {
+          "n_scored": 2,
+          "n_impaired": 0,
+          "planned": 2,
+          "metrics": {
+            "recall": {
+              "k": 22,
+              "n": 22
+            },
+            "error": {
+              "k": 0,
+              "n": 22
+            },
+            "missing": {
+              "k": 0,
+              "n": 22
+            },
+            "fabrications": {
+              "total": 0,
+              "runs": 2
+            }
+          },
+          "cost_usd": 0.089259,
+          "grader_cost_usd": 0.184633,
+          "mean_wall_ms": 98605
+        },
+        "sonnet": {
+          "n_scored": 2,
+          "n_impaired": 0,
+          "planned": 2,
+          "metrics": {
+            "recall": {
+              "k": 21,
+              "n": 22
+            },
+            "error": {
+              "k": 0,
+              "n": 22
+            },
+            "missing": {
+              "k": 1,
+              "n": 22
+            },
+            "fabrications": {
+              "total": 0,
+              "runs": 2
+            }
+          },
+          "cost_usd": 0.368855,
+          "grader_cost_usd": 0.140952,
+          "mean_wall_ms": 92369
+        }
+      }
+    }
+  },
+  "runs": [
+    {
+      "id": "C-map-tech-a-s-1",
+      "model": "sonnet",
+      "role": "codebase-mapper:tech",
+      "fixture": "synthetic",
+      "verdict": "graded",
+      "outcome": "found 11, wrong 0, missing 0 of 11",
+      "contaminated": false,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-map-tech-a-h-1",
+      "model": "haiku",
+      "role": "codebase-mapper:tech",
+      "fixture": "synthetic",
+      "verdict": "graded",
+      "outcome": "found 11, wrong 0, missing 0 of 11",
+      "contaminated": false,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 2
+    },
+    {
+      "id": "C-map-tech-b-h-1",
+      "model": "haiku",
+      "role": "codebase-mapper:tech",
+      "fixture": "fleet",
+      "verdict": "graded",
+      "outcome": "found 11, wrong 1, missing 0 of 12",
+      "contaminated": false,
+      "found": 11,
+      "wrong": 1,
+      "missing": 0,
+      "items": 12,
+      "grader_fabrications": 0,
+      "path_fabrications": 5
+    },
+    {
+      "id": "C-map-tech-b-s-1",
+      "model": "sonnet",
+      "role": "codebase-mapper:tech",
+      "fixture": "fleet",
+      "verdict": "graded",
+      "outcome": "found 12, wrong 0, missing 0 of 12",
+      "contaminated": false,
+      "found": 12,
+      "wrong": 0,
+      "missing": 0,
+      "items": 12,
+      "grader_fabrications": 0,
+      "path_fabrications": 23
+    },
+    {
+      "id": "C-map-arch-a-h-1",
+      "model": "haiku",
+      "role": "codebase-mapper:arch",
+      "fixture": "synthetic",
+      "verdict": "graded",
+      "outcome": "found 11, wrong 0, missing 0 of 11",
+      "contaminated": false,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 3
+    },
+    {
+      "id": "C-map-arch-a-s-1",
+      "model": "sonnet",
+      "role": "codebase-mapper:arch",
+      "fixture": "synthetic",
+      "verdict": "graded",
+      "outcome": "found 11, wrong 0, missing 0 of 11",
+      "contaminated": false,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 1
+    },
+    {
+      "id": "C-map-arch-b-s-1",
+      "model": "sonnet",
+      "role": "codebase-mapper:arch",
+      "fixture": "fleet",
+      "verdict": "graded",
+      "outcome": "found 10, wrong 0, missing 2 of 12",
+      "contaminated": false,
+      "found": 10,
+      "wrong": 0,
+      "missing": 2,
+      "items": 12,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-map-arch-b-h-1",
+      "model": "haiku",
+      "role": "codebase-mapper:arch",
+      "fixture": "fleet",
+      "verdict": "graded",
+      "outcome": "found 9, wrong 0, missing 3 of 12",
+      "contaminated": false,
+      "found": 9,
+      "wrong": 0,
+      "missing": 3,
+      "items": 12,
+      "grader_fabrications": 0,
+      "path_fabrications": 2
+    },
+    {
+      "id": "C-map-quality-a-s-1",
+      "model": "sonnet",
+      "role": "codebase-mapper:quality",
+      "fixture": "synthetic",
+      "verdict": "graded",
+      "outcome": "found 10, wrong 0, missing 1 of 11",
+      "contaminated": false,
+      "found": 10,
+      "wrong": 0,
+      "missing": 1,
+      "items": 11,
+      "grader_fabrications": 1,
+      "path_fabrications": 3
+    },
+    {
+      "id": "C-map-quality-a-h-1",
+      "model": "haiku",
+      "role": "codebase-mapper:quality",
+      "fixture": "synthetic",
+      "verdict": "graded",
+      "outcome": "found 11, wrong 0, missing 0 of 11",
+      "contaminated": false,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-map-quality-b-h-1",
+      "model": "haiku",
+      "role": "codebase-mapper:quality",
+      "fixture": "fleet",
+      "verdict": "graded",
+      "outcome": "found 9, wrong 2, missing 0 of 11",
+      "contaminated": false,
+      "found": 9,
+      "wrong": 2,
+      "missing": 0,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 4
+    },
+    {
+      "id": "C-map-concerns-a-h-1",
+      "model": "haiku",
+      "role": "codebase-mapper:concerns",
+      "fixture": "synthetic",
+      "verdict": "graded",
+      "outcome": "found 7, wrong 0, missing 1 of 8",
+      "contaminated": false,
+      "found": 7,
+      "wrong": 0,
+      "missing": 1,
+      "items": 8,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-map-concerns-a-s-1",
+      "model": "sonnet",
+      "role": "codebase-mapper:concerns",
+      "fixture": "synthetic",
+      "verdict": "graded",
+      "outcome": "found 8, wrong 0, missing 0 of 8",
+      "contaminated": false,
+      "found": 8,
+      "wrong": 0,
+      "missing": 0,
+      "items": 8,
+      "grader_fabrications": 1,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-map-concerns-b-s-1",
+      "model": "sonnet",
+      "role": "codebase-mapper:concerns",
+      "fixture": "fleet",
+      "verdict": "graded",
+      "outcome": "found 5, wrong 0, missing 6 of 11",
+      "contaminated": false,
+      "found": 5,
+      "wrong": 0,
+      "missing": 6,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 1
+    },
+    {
+      "id": "C-map-concerns-b-h-1",
+      "model": "haiku",
+      "role": "codebase-mapper:concerns",
+      "fixture": "fleet",
+      "verdict": "graded",
+      "outcome": "found 4, wrong 1, missing 6 of 11",
+      "contaminated": false,
+      "found": 4,
+      "wrong": 1,
+      "missing": 6,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 4
+    },
+    {
+      "id": "C-map-tech-a-h-2",
+      "model": "haiku",
+      "role": "codebase-mapper:tech",
+      "fixture": "synthetic",
+      "verdict": "graded",
+      "outcome": "found 11, wrong 0, missing 0 of 11",
+      "contaminated": false,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 3
+    },
+    {
+      "id": "C-map-tech-a-s-2",
+      "model": "sonnet",
+      "role": "codebase-mapper:tech",
+      "fixture": "synthetic",
+      "verdict": "graded",
+      "outcome": "found 11, wrong 0, missing 0 of 11",
+      "contaminated": false,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "grader_fabrications": 3,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-map-tech-b-s-2",
+      "model": "sonnet",
+      "role": "codebase-mapper:tech",
+      "fixture": "fleet",
+      "verdict": "graded",
+      "outcome": "found 12, wrong 0, missing 0 of 12",
+      "contaminated": false,
+      "found": 12,
+      "wrong": 0,
+      "missing": 0,
+      "items": 12,
+      "grader_fabrications": 0,
+      "path_fabrications": 15
+    },
+    {
+      "id": "C-map-tech-b-h-2",
+      "model": "haiku",
+      "role": "codebase-mapper:tech",
+      "fixture": "fleet",
+      "verdict": "graded",
+      "outcome": "found 12, wrong 0, missing 0 of 12",
+      "contaminated": false,
+      "found": 12,
+      "wrong": 0,
+      "missing": 0,
+      "items": 12,
+      "grader_fabrications": 0,
+      "path_fabrications": 7
+    },
+    {
+      "id": "C-map-arch-a-s-2",
+      "model": "sonnet",
+      "role": "codebase-mapper:arch",
+      "fixture": "synthetic",
+      "verdict": "graded",
+      "outcome": "found 9, wrong 0, missing 2 of 11",
+      "contaminated": false,
+      "found": 9,
+      "wrong": 0,
+      "missing": 2,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 1
+    },
+    {
+      "id": "C-map-arch-a-h-2",
+      "model": "haiku",
+      "role": "codebase-mapper:arch",
+      "fixture": "synthetic",
+      "verdict": "graded",
+      "outcome": "found 10, wrong 0, missing 1 of 11",
+      "contaminated": false,
+      "found": 10,
+      "wrong": 0,
+      "missing": 1,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 3
+    },
+    {
+      "id": "C-map-arch-b-h-2",
+      "model": "haiku",
+      "role": "codebase-mapper:arch",
+      "fixture": "fleet",
+      "verdict": "graded",
+      "outcome": "found 11, wrong 1, missing 0 of 12",
+      "contaminated": false,
+      "found": 11,
+      "wrong": 1,
+      "missing": 0,
+      "items": 12,
+      "grader_fabrications": 0,
+      "path_fabrications": 4
+    },
+    {
+      "id": "C-map-arch-b-s-2",
+      "model": "sonnet",
+      "role": "codebase-mapper:arch",
+      "fixture": "fleet",
+      "verdict": "graded",
+      "outcome": "found 9, wrong 1, missing 2 of 12",
+      "contaminated": false,
+      "found": 9,
+      "wrong": 1,
+      "missing": 2,
+      "items": 12,
+      "grader_fabrications": 0,
+      "path_fabrications": 1
+    },
+    {
+      "id": "C-map-quality-a-h-2",
+      "model": "haiku",
+      "role": "codebase-mapper:quality",
+      "fixture": "synthetic",
+      "verdict": "graded",
+      "outcome": "found 10, wrong 0, missing 1 of 11",
+      "contaminated": false,
+      "found": 10,
+      "wrong": 0,
+      "missing": 1,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 2
+    },
+    {
+      "id": "C-map-quality-a-s-2",
+      "model": "sonnet",
+      "role": "codebase-mapper:quality",
+      "fixture": "synthetic",
+      "verdict": "graded",
+      "outcome": "found 10, wrong 0, missing 1 of 11",
+      "contaminated": false,
+      "found": 10,
+      "wrong": 0,
+      "missing": 1,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-map-quality-b-s-2",
+      "model": "sonnet",
+      "role": "codebase-mapper:quality",
+      "fixture": "fleet",
+      "verdict": "graded",
+      "outcome": "found 9, wrong 1, missing 1 of 11",
+      "contaminated": false,
+      "found": 9,
+      "wrong": 1,
+      "missing": 1,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-map-quality-b-h-2",
+      "model": "haiku",
+      "role": "codebase-mapper:quality",
+      "fixture": "fleet",
+      "verdict": "graded",
+      "outcome": "found 8, wrong 1, missing 2 of 11",
+      "contaminated": false,
+      "found": 8,
+      "wrong": 1,
+      "missing": 2,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 2
+    },
+    {
+      "id": "C-map-concerns-a-s-2",
+      "model": "sonnet",
+      "role": "codebase-mapper:concerns",
+      "fixture": "synthetic",
+      "verdict": "graded",
+      "outcome": "found 8, wrong 0, missing 0 of 8",
+      "contaminated": false,
+      "found": 8,
+      "wrong": 0,
+      "missing": 0,
+      "items": 8,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-map-concerns-a-h-2",
+      "model": "haiku",
+      "role": "codebase-mapper:concerns",
+      "fixture": "synthetic",
+      "verdict": "graded",
+      "outcome": "found 7, wrong 0, missing 1 of 8",
+      "contaminated": false,
+      "found": 7,
+      "wrong": 0,
+      "missing": 1,
+      "items": 8,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-map-concerns-b-h-2",
+      "model": "haiku",
+      "role": "codebase-mapper:concerns",
+      "fixture": "fleet",
+      "verdict": "graded",
+      "outcome": "found 3, wrong 1, missing 7 of 11",
+      "contaminated": false,
+      "found": 3,
+      "wrong": 1,
+      "missing": 7,
+      "items": 11,
+      "grader_fabrications": 1,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-map-concerns-b-s-2",
+      "model": "sonnet",
+      "role": "codebase-mapper:concerns",
+      "fixture": "fleet",
+      "verdict": "graded",
+      "outcome": "found 5, wrong 0, missing 6 of 11",
+      "contaminated": false,
+      "found": 5,
+      "wrong": 0,
+      "missing": 6,
+      "items": 11,
+      "grader_fabrications": 4,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-res-stack-h-1",
+      "model": "haiku",
+      "role": "project-researcher:stack",
+      "fixture": "topic",
+      "verdict": "graded",
+      "outcome": "found 9, wrong 0, missing 1 of 10",
+      "contaminated": false,
+      "found": 9,
+      "wrong": 0,
+      "missing": 1,
+      "items": 10,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-res-features-h-1",
+      "model": "haiku",
+      "role": "project-researcher:features",
+      "fixture": "topic",
+      "verdict": "graded",
+      "outcome": "found 11, wrong 0, missing 0 of 11",
+      "contaminated": false,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-res-features-s-1",
+      "model": "sonnet",
+      "role": "project-researcher:features",
+      "fixture": "topic",
+      "verdict": "graded",
+      "outcome": "found 11, wrong 0, missing 0 of 11",
+      "contaminated": false,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-res-architecture-s-1",
+      "model": "sonnet",
+      "role": "project-researcher:architecture",
+      "fixture": "topic",
+      "verdict": "graded",
+      "outcome": "found 8, wrong 0, missing 3 of 11",
+      "contaminated": false,
+      "found": 8,
+      "wrong": 0,
+      "missing": 3,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-res-architecture-h-1",
+      "model": "haiku",
+      "role": "project-researcher:architecture",
+      "fixture": "topic",
+      "verdict": "graded",
+      "outcome": "found 11, wrong 0, missing 0 of 11",
+      "contaminated": false,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-res-pitfalls-h-1",
+      "model": "haiku",
+      "role": "project-researcher:pitfalls",
+      "fixture": "topic",
+      "verdict": "graded",
+      "outcome": "found 11, wrong 0, missing 0 of 11",
+      "contaminated": false,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-res-pitfalls-s-1",
+      "model": "sonnet",
+      "role": "project-researcher:pitfalls",
+      "fixture": "topic",
+      "verdict": "graded",
+      "outcome": "found 11, wrong 0, missing 0 of 11",
+      "contaminated": false,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-res-stack-h-2",
+      "model": "haiku",
+      "role": "project-researcher:stack",
+      "fixture": "topic",
+      "verdict": "graded",
+      "outcome": "found 9, wrong 0, missing 1 of 10",
+      "contaminated": false,
+      "found": 9,
+      "wrong": 0,
+      "missing": 1,
+      "items": 10,
+      "grader_fabrications": 1,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-res-features-s-2",
+      "model": "sonnet",
+      "role": "project-researcher:features",
+      "fixture": "topic",
+      "verdict": "graded",
+      "outcome": "found 11, wrong 0, missing 0 of 11",
+      "contaminated": false,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-res-features-h-2",
+      "model": "haiku",
+      "role": "project-researcher:features",
+      "fixture": "topic",
+      "verdict": "graded",
+      "outcome": "found 10, wrong 1, missing 0 of 11",
+      "contaminated": false,
+      "found": 10,
+      "wrong": 1,
+      "missing": 0,
+      "items": 11,
+      "grader_fabrications": 1,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-res-architecture-h-2",
+      "model": "haiku",
+      "role": "project-researcher:architecture",
+      "fixture": "topic",
+      "verdict": "graded",
+      "outcome": "found 10, wrong 0, missing 1 of 11",
+      "contaminated": false,
+      "found": 10,
+      "wrong": 0,
+      "missing": 1,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-res-architecture-s-2",
+      "model": "sonnet",
+      "role": "project-researcher:architecture",
+      "fixture": "topic",
+      "verdict": "graded",
+      "outcome": "found 9, wrong 0, missing 2 of 11",
+      "contaminated": false,
+      "found": 9,
+      "wrong": 0,
+      "missing": 2,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-res-pitfalls-s-2",
+      "model": "sonnet",
+      "role": "project-researcher:pitfalls",
+      "fixture": "topic",
+      "verdict": "graded",
+      "outcome": "found 10, wrong 0, missing 1 of 11",
+      "contaminated": false,
+      "found": 10,
+      "wrong": 0,
+      "missing": 1,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    },
+    {
+      "id": "C-res-pitfalls-h-2",
+      "model": "haiku",
+      "role": "project-researcher:pitfalls",
+      "fixture": "topic",
+      "verdict": "graded",
+      "outcome": "found 11, wrong 0, missing 0 of 11",
+      "contaminated": false,
+      "found": 11,
+      "wrong": 0,
+      "missing": 0,
+      "items": 11,
+      "grader_fabrications": 0,
+      "path_fabrications": 0
+    }
+  ],
+  "excluded": [
+    {
+      "id": "C-map-quality-b-s-1",
+      "reason": "impaired: a permission denial blocked the agent's own runtime files (~/.claude) on its final attempt; excluded from the model rates (post-hoc 4)",
+      "model": "sonnet",
+      "role": "codebase-mapper:quality"
+    },
+    {
+      "id": "C-res-stack-s-1",
+      "reason": "model_ran false: the run did not use the requested model",
+      "model": "sonnet",
+      "role": "project-researcher:stack"
+    },
+    {
+      "id": "C-res-stack-s-2",
+      "reason": "model_ran false: the run did not use the requested model",
+      "model": "sonnet",
+      "role": "project-researcher:stack"
+    }
+  ],
+  "impaired": [
+    {
+      "id": "C-map-quality-b-s-1",
+      "model": "sonnet",
+      "role": "codebase-mapper:quality",
+      "fixture": "fleet",
+      "impaired_by": [
+        "~/.claude/aoforge/templates/codebase/"
+      ]
+    }
+  ],
+  "notes": [
+    "The mechanical path check applies to codebase-mapper runs only; a project-researcher run has no codebase to check against.",
+    "The mechanical path check exempts negated claims (81-DECISION-RULE.md, post-hoc 2): a back-ticked path that is not in the codebase counts unless every mention of it says it is absent (\"there is no `go.sum`\"); flagged and exempt paths are listed in the eval root (spotcheck/C-paths.md).",
+    "grader evidence quotes not found verbatim in the document: 1 of 437 (checked mechanically for every found or wrong verdict).",
+    "Grader spend on the 45 scored runs: $2.88 (also included in the ledger).",
+    "Post-hoc 4: 1 run impaired on the final attempt (a permission denial blocked the agent's own ~/.claude runtime files, after one re-run); excluded from the model rates and listed in `impaired` (haiku 0, sonnet 1).",
+    "A seeded spot-check sample of grader verdicts and the flagged-path review were written to the eval root (spotcheck/C.md and spotcheck/C-paths.md), not to --out: check them by hand."
+  ],
+  "include_fleet": true,
+  "spend": {
+    "ledger_version": 1,
+    "batch": "C",
+    "status": "complete",
+    "spent_usd": 7.424253,
+    "ledger_total_usd": 40.052491,
+    "entries": [
+      {
+        "id": "C-map-tech-a-s-1",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 2.234,
+        "reserve_usd": 2.7925,
+        "reported_usd": 0.12143829999999999,
+        "transcript_usd": 0.121438,
+        "charged_usd": 0.121438,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:19:45.280Z"
+      },
+      {
+        "id": "C-map-tech-a-h-1",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 0.5189,
+        "reserve_usd": 0.648625,
+        "reported_usd": 0.01060186,
+        "transcript_usd": 0.010602,
+        "charged_usd": 0.010602,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:20:18.846Z"
+      },
+      {
+        "id": "C-map-tech-b-h-1",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 0.5189,
+        "reserve_usd": 0.648625,
+        "reported_usd": 0.01801885,
+        "transcript_usd": 0.018019,
+        "charged_usd": 0.018019,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:21:19.433Z"
+      },
+      {
+        "id": "C-map-tech-b-s-1",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 2.234,
+        "reserve_usd": 2.7925,
+        "reported_usd": 0.16965749999999996,
+        "transcript_usd": 0.169657,
+        "charged_usd": 0.169657,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:22:00.045Z"
+      },
+      {
+        "id": "C-map-arch-a-h-1",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 0.5189,
+        "reserve_usd": 0.648625,
+        "reported_usd": 0.01120346,
+        "transcript_usd": 0.011203,
+        "charged_usd": 0.011203,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:23:25.729Z"
+      },
+      {
+        "id": "C-map-arch-a-s-1",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 2.234,
+        "reserve_usd": 2.7925,
+        "reported_usd": 0.1034205,
+        "transcript_usd": 0.103421,
+        "charged_usd": 0.103421,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:23:55.654Z"
+      },
+      {
+        "id": "C-map-arch-b-s-1@impaired1",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 2.234,
+        "reserve_usd": 2.7925,
+        "reported_usd": 0.14891329999999997,
+        "transcript_usd": 0.148913,
+        "charged_usd": 0.148913,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:24:41.140Z"
+      },
+      {
+        "id": "C-map-arch-b-h-1",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 0.5189,
+        "reserve_usd": 0.648625,
+        "reported_usd": 0.023820220000000003,
+        "transcript_usd": 0.02382,
+        "charged_usd": 0.02382,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:26:06.255Z"
+      },
+      {
+        "id": "C-map-quality-a-s-1",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 2.234,
+        "reserve_usd": 2.7925,
+        "reported_usd": 0.11840469999999999,
+        "transcript_usd": 0.118405,
+        "charged_usd": 0.118405,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:26:39.685Z"
+      },
+      {
+        "id": "C-map-quality-a-h-1",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 0.5189,
+        "reserve_usd": 0.648625,
+        "reported_usd": 0.02549285,
+        "transcript_usd": 0.025493,
+        "charged_usd": 0.025493,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:28:25.900Z"
+      },
+      {
+        "id": "C-map-quality-b-h-1",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 0.5189,
+        "reserve_usd": 0.648625,
+        "reported_usd": 0.03684704,
+        "transcript_usd": 0.036847,
+        "charged_usd": 0.036847,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:30:53.252Z"
+      },
+      {
+        "id": "C-map-quality-b-s-1@impaired1",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 2.234,
+        "reserve_usd": 2.7925,
+        "reported_usd": 0.1697069,
+        "transcript_usd": 0.169707,
+        "charged_usd": 0.169707,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:31:37.647Z"
+      },
+      {
+        "id": "C-map-arch-b-s-1",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 2.234,
+        "reserve_usd": 2.7925,
+        "reported_usd": 0.1742748,
+        "transcript_usd": 0.174275,
+        "charged_usd": 0.174275,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:47:20.044Z"
+      },
+      {
+        "id": "C-map-quality-b-s-1",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 2.234,
+        "reserve_usd": 2.7925,
+        "reported_usd": 0.18398369999999997,
+        "transcript_usd": 0.183984,
+        "charged_usd": 0.183984,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:48:16.010Z"
+      },
+      {
+        "id": "C-map-concerns-a-h-1",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 0.5189,
+        "reserve_usd": 0.648625,
+        "reported_usd": 0.011248979999999999,
+        "transcript_usd": 0.011249,
+        "charged_usd": 0.011249,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:49:13.595Z"
+      },
+      {
+        "id": "C-map-concerns-a-s-1",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 2.234,
+        "reserve_usd": 2.7925,
+        "reported_usd": 0.091679,
+        "transcript_usd": 0.091679,
+        "charged_usd": 0.091679,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:49:42.400Z"
+      },
+      {
+        "id": "C-map-concerns-b-s-1",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 2.234,
+        "reserve_usd": 2.7925,
+        "reported_usd": 0.0694694,
+        "transcript_usd": 0.069469,
+        "charged_usd": 0.069469,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:50:09.242Z"
+      },
+      {
+        "id": "C-map-concerns-b-h-1",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 0.5189,
+        "reserve_usd": 0.648625,
+        "reported_usd": 0.016105529999999996,
+        "transcript_usd": 0.016106,
+        "charged_usd": 0.016106,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:51:16.134Z"
+      },
+      {
+        "id": "C-map-tech-a-h-2",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 0.5189,
+        "reserve_usd": 0.648625,
+        "reported_usd": 0.00817029,
+        "transcript_usd": 0.00817,
+        "charged_usd": 0.00817,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:51:44.115Z"
+      },
+      {
+        "id": "C-map-tech-a-s-2",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 2.234,
+        "reserve_usd": 2.7925,
+        "reported_usd": 0.0826424,
+        "transcript_usd": 0.082642,
+        "charged_usd": 0.082642,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:52:03.903Z"
+      },
+      {
+        "id": "C-map-tech-b-s-2",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 2.234,
+        "reserve_usd": 2.7925,
+        "reported_usd": 0.23724220000000001,
+        "transcript_usd": 0.237242,
+        "charged_usd": 0.237242,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:52:53.377Z"
+      },
+      {
+        "id": "C-map-tech-b-h-2",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 0.5189,
+        "reserve_usd": 0.648625,
+        "reported_usd": 0.025043350000000006,
+        "transcript_usd": 0.025043,
+        "charged_usd": 0.025043,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:54:09.633Z"
+      },
+      {
+        "id": "C-map-arch-a-s-2",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 2.234,
+        "reserve_usd": 2.7925,
+        "reported_usd": 0.0841312,
+        "transcript_usd": 0.084131,
+        "charged_usd": 0.084131,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:54:33.943Z"
+      },
+      {
+        "id": "C-map-arch-a-h-2",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 0.5189,
+        "reserve_usd": 0.648625,
+        "reported_usd": 0.010911430000000001,
+        "transcript_usd": 0.010911,
+        "charged_usd": 0.010911,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:55:19.512Z"
+      },
+      {
+        "id": "C-map-arch-b-h-2",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 0.5189,
+        "reserve_usd": 0.648625,
+        "reported_usd": 0.02194763,
+        "transcript_usd": 0.021948,
+        "charged_usd": 0.021948,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:56:44.216Z"
+      },
+      {
+        "id": "C-map-arch-b-s-2",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 2.234,
+        "reserve_usd": 2.7925,
+        "reported_usd": 0.1874705,
+        "transcript_usd": 0.187471,
+        "charged_usd": 0.187471,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:57:35.309Z"
+      },
+      {
+        "id": "C-map-quality-a-h-2",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 0.5189,
+        "reserve_usd": 0.648625,
+        "reported_usd": 0.015278330000000001,
+        "transcript_usd": 0.015278,
+        "charged_usd": 0.015278,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:58:40.087Z"
+      },
+      {
+        "id": "C-map-quality-a-s-2",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 2.234,
+        "reserve_usd": 2.7925,
+        "reported_usd": 0.12622709999999998,
+        "transcript_usd": 0.126227,
+        "charged_usd": 0.126227,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T21:59:19.556Z"
+      },
+      {
+        "id": "C-map-quality-b-s-2",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 2.234,
+        "reserve_usd": 2.7925,
+        "reported_usd": 0.1910889,
+        "transcript_usd": 0.191089,
+        "charged_usd": 0.191089,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:00:11.331Z"
+      },
+      {
+        "id": "C-map-quality-b-h-2",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 0.5189,
+        "reserve_usd": 0.648625,
+        "reported_usd": 0.038453660000000014,
+        "transcript_usd": 0.038454,
+        "charged_usd": 0.038454,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:02:18.738Z"
+      },
+      {
+        "id": "C-map-concerns-a-s-2",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 2.234,
+        "reserve_usd": 2.7925,
+        "reported_usd": 0.0853312,
+        "transcript_usd": 0.085331,
+        "charged_usd": 0.085331,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:02:44.947Z"
+      },
+      {
+        "id": "C-map-concerns-a-h-2",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 0.5189,
+        "reserve_usd": 0.648625,
+        "reported_usd": 0.012823649999999999,
+        "transcript_usd": 0.012824,
+        "charged_usd": 0.012824,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:03:47.372Z"
+      },
+      {
+        "id": "C-map-concerns-b-h-2",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 0.5189,
+        "reserve_usd": 0.648625,
+        "reported_usd": 0.01453091,
+        "transcript_usd": 0.014531,
+        "charged_usd": 0.014531,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:04:48.304Z"
+      },
+      {
+        "id": "C-map-concerns-b-s-2",
+        "batch": "C",
+        "role": "codebase-mapper",
+        "status": "ok",
+        "cap_usd": 2.234,
+        "reserve_usd": 2.7925,
+        "reported_usd": 0.0653266,
+        "transcript_usd": 0.065327,
+        "charged_usd": 0.065327,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:05:09.535Z"
+      },
+      {
+        "id": "C-res-stack-s-1",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 3,
+        "reserve_usd": 3.75,
+        "reported_usd": 0.1963251,
+        "transcript_usd": 0.179418,
+        "charged_usd": 0.196325,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:06:48.452Z"
+      },
+      {
+        "id": "C-res-stack-h-1",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.7689,
+        "reserve_usd": 0.961125,
+        "reported_usd": 0.11009121000000004,
+        "transcript_usd": 0.014602,
+        "charged_usd": 0.110091,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:08:24.557Z"
+      },
+      {
+        "id": "C-res-features-h-1",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.7689,
+        "reserve_usd": 0.961125,
+        "reported_usd": 0.04603925,
+        "transcript_usd": 0.009994,
+        "charged_usd": 0.046039,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:09:41.262Z"
+      },
+      {
+        "id": "C-res-features-s-1",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 3,
+        "reserve_usd": 3.75,
+        "reported_usd": 0.1372748,
+        "transcript_usd": 0.137275,
+        "charged_usd": 0.137275,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:10:48.190Z"
+      },
+      {
+        "id": "C-res-architecture-s-1",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 3,
+        "reserve_usd": 3.75,
+        "reported_usd": 0.1310401,
+        "transcript_usd": 0.13104,
+        "charged_usd": 0.13104,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:11:47.956Z"
+      },
+      {
+        "id": "C-res-architecture-h-1",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.7689,
+        "reserve_usd": 0.961125,
+        "reported_usd": 0.04634779,
+        "transcript_usd": 0.010396,
+        "charged_usd": 0.046348,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:12:52.007Z"
+      },
+      {
+        "id": "C-res-pitfalls-h-1",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.7689,
+        "reserve_usd": 0.961125,
+        "reported_usd": 0.051826050000000005,
+        "transcript_usd": 0.015789,
+        "charged_usd": 0.051826,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:14:40.651Z"
+      },
+      {
+        "id": "C-res-pitfalls-s-1",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 3,
+        "reserve_usd": 3.75,
+        "reported_usd": 0.18108059999999998,
+        "transcript_usd": 0.181081,
+        "charged_usd": 0.181081,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:16:09.670Z"
+      },
+      {
+        "id": "C-res-stack-h-2",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.7689,
+        "reserve_usd": 0.961125,
+        "reported_usd": 0.14642554,
+        "transcript_usd": 0.016522,
+        "charged_usd": 0.146426,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:17:59.796Z"
+      },
+      {
+        "id": "C-res-stack-s-2",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 3,
+        "reserve_usd": 3.75,
+        "reported_usd": 0.15336849999999996,
+        "transcript_usd": 0.129874,
+        "charged_usd": 0.153368,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:19:04.204Z"
+      },
+      {
+        "id": "C-res-features-s-2",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 3,
+        "reserve_usd": 3.75,
+        "reported_usd": 0.1333324,
+        "transcript_usd": 0.133332,
+        "charged_usd": 0.133332,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:20:06.939Z"
+      },
+      {
+        "id": "C-res-features-h-2",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.7689,
+        "reserve_usd": 0.961125,
+        "reported_usd": 0.05975446,
+        "transcript_usd": 0.010552,
+        "charged_usd": 0.059754,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:21:24.961Z"
+      },
+      {
+        "id": "C-res-architecture-h-2",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.7689,
+        "reserve_usd": 0.961125,
+        "reported_usd": 0.03410437,
+        "transcript_usd": 0.010237,
+        "charged_usd": 0.034104,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:22:27.612Z"
+      },
+      {
+        "id": "C-res-architecture-s-2",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 3,
+        "reserve_usd": 3.75,
+        "reported_usd": 0.13435850000000002,
+        "transcript_usd": 0.134359,
+        "charged_usd": 0.134359,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:23:29.706Z"
+      },
+      {
+        "id": "C-res-pitfalls-s-2",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 3,
+        "reserve_usd": 3.75,
+        "reported_usd": 0.18777480000000002,
+        "transcript_usd": 0.187775,
+        "charged_usd": 0.187775,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:25:05.981Z"
+      },
+      {
+        "id": "C-res-pitfalls-h-2",
+        "batch": "C",
+        "role": "project-researcher",
+        "status": "ok",
+        "cap_usd": 0.7689,
+        "reserve_usd": 0.961125,
+        "reported_usd": 0.03743254,
+        "transcript_usd": 0.013393,
+        "charged_usd": 0.037433,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:26:35.023Z"
+      },
+      {
+        "id": "C-grade-C-map-tech-a-s-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.037762,
+        "transcript_usd": 0.037762,
+        "charged_usd": 0.037762,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:26:40.031Z"
+      },
+      {
+        "id": "C-grade-C-map-tech-a-h-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0513841,
+        "transcript_usd": 0.051384,
+        "charged_usd": 0.051384,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:26:48.421Z"
+      },
+      {
+        "id": "C-grade-C-map-tech-b-h-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0860559,
+        "transcript_usd": 0.086056,
+        "charged_usd": 0.086056,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:27:00.254Z"
+      },
+      {
+        "id": "C-grade-C-map-tech-b-s-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.069825,
+        "transcript_usd": 0.069825,
+        "charged_usd": 0.069825,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:27:14.680Z"
+      },
+      {
+        "id": "C-grade-C-map-arch-a-h-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0578615,
+        "transcript_usd": 0.057862,
+        "charged_usd": 0.057862,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:27:20.452Z"
+      },
+      {
+        "id": "C-grade-C-map-arch-a-s-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.049401600000000004,
+        "transcript_usd": 0.049402,
+        "charged_usd": 0.049402,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:27:30.362Z"
+      },
+      {
+        "id": "C-grade-C-map-arch-b-s-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0623645,
+        "transcript_usd": 0.062365,
+        "charged_usd": 0.062365,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:27:40.383Z"
+      },
+      {
+        "id": "C-grade-C-map-arch-b-h-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0970347,
+        "transcript_usd": 0.097035,
+        "charged_usd": 0.097035,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:27:50.809Z"
+      },
+      {
+        "id": "C-grade-C-map-quality-a-s-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0551726,
+        "transcript_usd": 0.055173,
+        "charged_usd": 0.055173,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:28:00.078Z"
+      },
+      {
+        "id": "C-grade-C-map-quality-a-h-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0678135,
+        "transcript_usd": 0.067814,
+        "charged_usd": 0.067814,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:28:05.213Z"
+      },
+      {
+        "id": "C-grade-C-map-quality-b-h-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.10140060000000001,
+        "transcript_usd": 0.101401,
+        "charged_usd": 0.101401,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:28:15.473Z"
+      },
+      {
+        "id": "C-grade-C-map-quality-b-s-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0493955,
+        "transcript_usd": 0.049396,
+        "charged_usd": 0.049396,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:28:20.032Z"
+      },
+      {
+        "id": "C-grade-C-map-concerns-a-h-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.052678100000000005,
+        "transcript_usd": 0.052678,
+        "charged_usd": 0.052678,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:28:27.594Z"
+      },
+      {
+        "id": "C-grade-C-map-concerns-a-s-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0464558,
+        "transcript_usd": 0.046456,
+        "charged_usd": 0.046456,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:28:36.987Z"
+      },
+      {
+        "id": "C-grade-C-map-concerns-b-s-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0446422,
+        "transcript_usd": 0.044642,
+        "charged_usd": 0.044642,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:28:44.816Z"
+      },
+      {
+        "id": "C-grade-C-map-concerns-b-h-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0595614,
+        "transcript_usd": 0.059561,
+        "charged_usd": 0.059561,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:28:52.995Z"
+      },
+      {
+        "id": "C-grade-C-map-tech-a-h-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0490872,
+        "transcript_usd": 0.049087,
+        "charged_usd": 0.049087,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:29:01.268Z"
+      },
+      {
+        "id": "C-grade-C-map-tech-a-s-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0481356,
+        "transcript_usd": 0.048136,
+        "charged_usd": 0.048136,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:29:11.090Z"
+      },
+      {
+        "id": "C-grade-C-map-tech-b-s-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0726842,
+        "transcript_usd": 0.072684,
+        "charged_usd": 0.072684,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:29:23.258Z"
+      },
+      {
+        "id": "C-grade-C-map-tech-b-h-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0874552,
+        "transcript_usd": 0.087455,
+        "charged_usd": 0.087455,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:29:33.983Z"
+      },
+      {
+        "id": "C-grade-C-map-arch-a-s-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0348835,
+        "transcript_usd": 0.034884,
+        "charged_usd": 0.034884,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:29:38.949Z"
+      },
+      {
+        "id": "C-grade-C-map-arch-a-h-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.053345500000000004,
+        "transcript_usd": 0.053346,
+        "charged_usd": 0.053346,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:29:44.112Z"
+      },
+      {
+        "id": "C-grade-C-map-arch-b-h-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0901255,
+        "transcript_usd": 0.090126,
+        "charged_usd": 0.090126,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:29:50.384Z"
+      },
+      {
+        "id": "C-grade-C-map-arch-b-s-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0632172,
+        "transcript_usd": 0.063217,
+        "charged_usd": 0.063217,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:30:00.736Z"
+      },
+      {
+        "id": "C-grade-C-map-quality-a-h-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0647175,
+        "transcript_usd": 0.064718,
+        "charged_usd": 0.064718,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:30:05.677Z"
+      },
+      {
+        "id": "C-grade-C-map-quality-a-s-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.043707499999999996,
+        "transcript_usd": 0.043708,
+        "charged_usd": 0.043708,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:30:10.433Z"
+      },
+      {
+        "id": "C-grade-C-map-quality-b-s-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0635763,
+        "transcript_usd": 0.063576,
+        "charged_usd": 0.063576,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:30:19.726Z"
+      },
+      {
+        "id": "C-grade-C-map-quality-b-h-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0987422,
+        "transcript_usd": 0.098742,
+        "charged_usd": 0.098742,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:30:29.005Z"
+      },
+      {
+        "id": "C-grade-C-map-concerns-a-s-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0434565,
+        "transcript_usd": 0.043456,
+        "charged_usd": 0.043457,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:30:38.269Z"
+      },
+      {
+        "id": "C-grade-C-map-concerns-a-h-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0541139,
+        "transcript_usd": 0.054114,
+        "charged_usd": 0.054114,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:30:46.457Z"
+      },
+      {
+        "id": "C-grade-C-map-concerns-b-h-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0634336,
+        "transcript_usd": 0.063434,
+        "charged_usd": 0.063434,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:30:55.502Z"
+      },
+      {
+        "id": "C-grade-C-map-concerns-b-s-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.050739900000000004,
+        "transcript_usd": 0.05074,
+        "charged_usd": 0.05074,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:31:05.764Z"
+      },
+      {
+        "id": "C-grade-C-res-stack-h-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0582204,
+        "transcript_usd": 0.05822,
+        "charged_usd": 0.05822,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:31:15.090Z"
+      },
+      {
+        "id": "C-grade-C-res-features-h-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0681244,
+        "transcript_usd": 0.068124,
+        "charged_usd": 0.068124,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:31:23.032Z"
+      },
+      {
+        "id": "C-grade-C-res-features-s-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.059891799999999995,
+        "transcript_usd": 0.059892,
+        "charged_usd": 0.059892,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:31:30.695Z"
+      },
+      {
+        "id": "C-grade-C-res-architecture-s-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.058164999999999994,
+        "transcript_usd": 0.058165,
+        "charged_usd": 0.058165,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:31:39.063Z"
+      },
+      {
+        "id": "C-grade-C-res-architecture-h-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0651193,
+        "transcript_usd": 0.065119,
+        "charged_usd": 0.065119,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:31:47.542Z"
+      },
+      {
+        "id": "C-grade-C-res-pitfalls-h-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.093921,
+        "transcript_usd": 0.093921,
+        "charged_usd": 0.093921,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:31:56.754Z"
+      },
+      {
+        "id": "C-grade-C-res-pitfalls-s-1",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0628735,
+        "transcript_usd": 0.062874,
+        "charged_usd": 0.062874,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:32:02.180Z"
+      },
+      {
+        "id": "C-grade-C-res-stack-h-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0680785,
+        "transcript_usd": 0.068079,
+        "charged_usd": 0.068079,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:32:11.719Z"
+      },
+      {
+        "id": "C-grade-C-res-features-s-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.058401999999999996,
+        "transcript_usd": 0.058402,
+        "charged_usd": 0.058402,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:32:19.473Z"
+      },
+      {
+        "id": "C-grade-C-res-features-h-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0668894,
+        "transcript_usd": 0.066889,
+        "charged_usd": 0.066889,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:32:27.866Z"
+      },
+      {
+        "id": "C-grade-C-res-architecture-h-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0690239,
+        "transcript_usd": 0.069024,
+        "charged_usd": 0.069024,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:32:36.298Z"
+      },
+      {
+        "id": "C-grade-C-res-architecture-s-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.059035199999999996,
+        "transcript_usd": 0.059035,
+        "charged_usd": 0.059035,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:32:44.812Z"
+      },
+      {
+        "id": "C-grade-C-res-pitfalls-s-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.0780786,
+        "transcript_usd": 0.078079,
+        "charged_usd": 0.078079,
+        "cost_source": "transcript_sum",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:32:53.480Z"
+      },
+      {
+        "id": "C-grade-C-res-pitfalls-h-2",
+        "batch": "C",
+        "role": "grader",
+        "status": "ok",
+        "cap_usd": 0.6008,
+        "reserve_usd": 0.751,
+        "reported_usd": 0.09071219999999999,
+        "transcript_usd": 0.090712,
+        "charged_usd": 0.090712,
+        "cost_source": "reported",
+        "overshoot_usd": 0,
+        "at": "2026-10-17T22:33:04.074Z"
+      }
+    ]
+  }
+}

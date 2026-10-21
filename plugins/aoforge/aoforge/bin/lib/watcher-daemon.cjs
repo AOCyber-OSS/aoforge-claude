@@ -121,8 +121,11 @@ function _resolveSecrets(secrets, handoffId, stashGetter) {
 }
 
 /**
- * Build a chunk-handler that scans the accumulated PTY/pipe buffer for any
- * unconsumed prompt regex. On match it writes the resolved value + CR via
+ * Build a chunk-handler that scans the accumulated buffer of LIVE output for
+ * any unconsumed prompt regex. It is fed live bytes only: processOnce attaches it
+ * with `{ liveOnly: true }`, so what it sees is what the running command printed
+ * while it ran, never the replay of captured output after it has exited (a late
+ * match there is not a prompt and must not be answered). On match it writes the resolved value + CR via
  * sessionInjector. On duplicate match (already consumed) or on first match
  * after a resolution failure, it injects Ctrl+C and reports an error.
  *
@@ -275,7 +278,9 @@ async function processOnce(pending, deps) {
       (s) => session.injectInput(s),
       (msg) => { if (!detectorErr) detectorErr = msg; },
     );
-    session.attachDataListener(detector);
+    // Live window only (TRD 73-03, gap 3): the detector must never see a tool's
+    // error text replayed after the command has exited, nor sentinel lines.
+    session.attachDataListener(detector, { liveOnly: true });
   }
 
   // TRD 20-01: dispatch-start notification (if notifier injected).
@@ -291,7 +296,8 @@ async function processOnce(pending, deps) {
   }
 
   // Log the COMMAND, never the resolved secret values. Audit-grep for
-  // "dispatching " in ~/.aoforge/aoforge-watch.log should show only cmd lines.
+  // "dispatching " in the daemon log (~/.claude/aoforge/state/watch/aoforge-watch.log)
+  // should show only cmd lines.
   logFn('info', `dispatching ${pending.id}: ${pending.cmd}`);
   let result;
   try {
@@ -386,9 +392,8 @@ function runLoop(opts) {
     // TRD 20-03: re-read watching:[] from PID file each tick. Empty / missing
     // PID file falls back to opts.projectRoot (back-compat for unit tests
     // that construct runLoop directly without a PID file).
-    // A `legacy` record is the pre-rename daemon's file, never this daemon's watch list.
     const pidInfo = state.readPidFile();
-    const watching = (pidInfo && !pidInfo.legacy && Array.isArray(pidInfo.watching) && pidInfo.watching.length > 0)
+    const watching = (pidInfo && Array.isArray(pidInfo.watching) && pidInfo.watching.length > 0)
       ? pidInfo.watching
       : [projectRoot];
     for (const projRoot of watching) {
