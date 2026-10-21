@@ -11,9 +11,20 @@
  * or that CLOUDFLARE_API_TOKEN cannot see this one. A secret cannot be read back, so this
  * script asks the Cloudflare API instead, with the same two secrets the deploy uses:
  *
- *   GET /client/v4/accounts/{id}                 the configured account's name
- *   GET /client/v4/accounts?per_page=50          the accounts the token can see
- *   GET /client/v4/accounts/{id}/pages/projects  the account's Pages project names
+ *   GET /client/v4/accounts/{id}                         the configured account's name
+ *   GET /client/v4/accounts?per_page=50                  the accounts the token can see
+ *   GET /client/v4/accounts/{id}/pages/projects/{name}   the Pages project the deploy targets
+ *
+ * The project is read directly, never listed: Cloudflare refused the listing
+ * `pages/projects?per_page=100` with code 8000024 (run 39595433242, 2026-10-21). An answer
+ * of code 8000007 (project not found) is reported as ABSENT.
+ *
+ * Reach is decided from both reads. A token scoped to Pages alone has no Account Settings:
+ * Read, so its account read is refused (code 9109) and its account list is empty, yet it
+ * reads the project and the deploy succeeds (the same run). So the account is called out
+ * of this token's reach only when the account read AND the project read are both refused;
+ * when the account read is refused and the project is not found, the report says it cannot
+ * tell those two apart.
  *
  * What it guarantees:
  *
@@ -37,9 +48,8 @@
 const API_BASE = 'https://api.cloudflare.com';
 const LINE_PREFIX = 'cloudflare target: ';
 const REQUEST_TIMEOUT_MS = 15000;
-// The Pages list is paginated; ask for a page big enough that one request normally holds
-// every project, and say so when the API reports more than it returned.
-const PROJECTS_PER_PAGE = 100;
+// Cloudflare Pages' "Project not found" error code (the code wrangler reports too).
+const PROJECT_NOT_FOUND = 8000007;
 const USAGE = 'usage: node scripts/ci-cloudflare-target.cjs --project <name>';
 
 // ─── scrubbing ───────────────────────────────────────────────────────────────
@@ -79,63 +89,84 @@ function failureText(envelope) {
     .join('; ');
 }
 
+/** True when a failed envelope carries the given error code. */
+function hasCode(envelope, code) {
+  return Array.isArray(envelope.errors) && envelope.errors.some((e) => e && Number(e.code) === code);
+}
+
+/** `production branch main, subdomain x.pages.dev`, from the fields the API returned. */
+function projectDetails(result) {
+  const r = result || {};
+  return [r.production_branch && `production branch ${r.production_branch}`, r.subdomain && `subdomain ${r.subdomain}`]
+    .filter(Boolean)
+    .join(', ');
+}
+
 /**
  * Turn the three API answers into the lines to print.
  *
- * Each of `account`, `accounts` and `projects` is a Cloudflare envelope
+ * Each of `account`, `accounts` and `pagesProject` is a Cloudflare envelope
  * (`{ success, errors, result }`) or `{ error: <message> }` when the call itself failed.
- * `accountVisible` and `projectPresent` are true, false, or null when the answer could not
- * be had. Every returned line has been scrubbed.
+ * `accountVisible` and `projectPresent` are true, false, or null when the answers cannot
+ * decide it. Every returned line has been scrubbed.
  */
-function summarizeTarget({ account, accounts, projects }, { accountId, project, token }) {
+function summarizeTarget({ account, accounts, pagesProject }, { accountId, project, token }) {
   const secrets = [accountId, token];
   const lines = [];
   const add = (line) => lines.push(scrub(line, secrets));
 
-  // The configured account, by name.
-  if (unreachable(account)) add(unreachableLine(account));
-  else if (account.success !== true) add(`account: could not be read: ${failureText(account)}`);
-  else add(`account: ${(account.result && account.result.name) || '(unnamed)'} (named by CLOUDFLARE_ACCOUNT_ID)`);
+  const accountRead = !unreachable(account) && account.success === true;
+  const accountRefused = !unreachable(account) && account.success !== true;
+  const projectRead = !unreachable(pagesProject) && pagesProject.success === true;
+  const projectNotFound = !unreachable(pagesProject) && !projectRead && hasCode(pagesProject, PROJECT_NOT_FOUND);
+  const projectRefused = !unreachable(pagesProject) && !projectRead && !projectNotFound;
 
-  // Is it among the accounts this token can see? Others are counted, never named.
-  let accountVisible = null;
+  // The configured account, by name. A refused read next to a readable project is a
+  // token without Account Settings: Read, not an account out of reach.
+  if (unreachable(account)) add(unreachableLine(account));
+  else if (accountRead) add(`account: ${(account.result && account.result.name) || '(unnamed)'} (named by CLOUDFLARE_ACCOUNT_ID)`);
+  else if (projectRead) {
+    add(`account: name not readable (the token lacks Account Settings: Read); Pages project ${project} is reachable in the configured account`);
+  } else add(`account: could not be read: ${failureText(account)}`);
+
+  // The other accounts this token can see: counted, never named.
+  let listed = false;
   if (unreachable(accounts)) {
     add(unreachableLine(accounts));
   } else if (accounts.success !== true) {
     add(`accounts the token can see could not be listed: ${failureText(accounts)}`);
   } else {
     const list = Array.isArray(accounts.result) ? accounts.result : [];
-    accountVisible = list.some((a) => a && a.id === accountId);
+    listed = list.some((a) => a && a.id === accountId);
     add(`other accounts the token can see: ${list.filter((a) => !(a && a.id === accountId)).length}`);
-    if (!accountVisible) {
-      add('the token cannot see the configured account: CLOUDFLARE_ACCOUNT_ID names an account outside this token\'s reach');
-    }
   }
-  if (accountVisible === null && !unreachable(account) && account.success === true) accountVisible = true;
 
-  // The Pages projects, and whether the one we deploy to is among them.
+  // The Pages project the deploy targets, read directly.
   let projectPresent = null;
-  if (unreachable(projects)) {
-    add(unreachableLine(projects));
-  } else if (projects.success !== true) {
-    add(`Pages projects could not be listed: ${failureText(projects)}`);
+  if (unreachable(pagesProject)) {
+    add(unreachableLine(pagesProject));
+  } else if (projectRead) {
+    projectPresent = true;
+    const name = (pagesProject.result && pagesProject.result.name) || project;
+    const details = projectDetails(pagesProject.result);
+    add(`Pages project ${name}: present${details ? ` (${details})` : ''}`);
+  } else if (projectNotFound) {
+    projectPresent = false;
+    add(`${project}: ABSENT in this account`);
+    add(`to create it: Cloudflare dashboard > Workers & Pages > Create > Pages > Direct upload; project name ${project}, production branch main`);
   } else {
-    const names = (Array.isArray(projects.result) ? projects.result : []).map((p) => p && p.name).filter(Boolean);
-    const info = projects.result_info;
-    const total = info && Number.isFinite(info.total_count) ? info.total_count : names.length;
-    const partial = total > names.length;
-    add(`Pages projects in this account (${names.length}${partial ? ` of ${total}` : ''}): ${names.join(', ') || 'none'}`);
-    if (partial) add(`listing is partial: ${names.length} of ${total}`);
-    if (names.includes(project)) {
-      projectPresent = true;
-      add(`${project}: present`);
-    } else if (partial) {
-      add(`${project}: not in the ${names.length} project(s) listed`);
-    } else {
-      projectPresent = false;
-      add(`${project}: ABSENT in this account`);
-      add(`to create it: Cloudflare dashboard > Workers & Pages > Create > Pages > Direct upload; project name ${project}, production branch main`);
-    }
+    add(`Pages project ${project} could not be read: ${failureText(pagesProject)}`);
+  }
+
+  // Reach: out of it only when both reads were refused.
+  let accountVisible = null;
+  if (accountRead || projectRead || listed) {
+    accountVisible = true;
+  } else if (accountRefused && projectRefused) {
+    accountVisible = false;
+    add(`the token cannot see the configured account: neither its name nor Pages project ${project} could be read, so CLOUDFLARE_ACCOUNT_ID names an account outside this token's reach (or the token has no Pages permission there)`);
+  } else if (accountRefused && projectNotFound) {
+    add(`the account name could not be read, so this cannot tell a missing ${project} from a CLOUDFLARE_ACCOUNT_ID outside this token's reach`);
   }
 
   return { lines: [...new Set(lines)], accountVisible, projectPresent };
@@ -209,14 +240,14 @@ async function main(argv = process.argv.slice(2), io = {}) {
 
   say(`checking the deploy target for Pages project ${project}`);
   const account = `/client/v4/accounts/${encodeURIComponent(accountId)}`;
-  const [accountAnswer, accountsAnswer, projectsAnswer] = await Promise.all([
+  const [accountAnswer, accountsAnswer, projectAnswer] = await Promise.all([
     get(fetchImpl, account, token),
     get(fetchImpl, '/client/v4/accounts?per_page=50', token),
-    get(fetchImpl, `${account}/pages/projects?per_page=${PROJECTS_PER_PAGE}`, token),
+    get(fetchImpl, `${account}/pages/projects/${encodeURIComponent(project)}`, token),
   ]);
 
   const report = summarizeTarget(
-    { account: accountAnswer, accounts: accountsAnswer, projects: projectsAnswer },
+    { account: accountAnswer, accounts: accountsAnswer, pagesProject: projectAnswer },
     { accountId, project, token }
   );
   for (const line of report.lines) say(line);
