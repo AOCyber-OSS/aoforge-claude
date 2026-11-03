@@ -55,7 +55,7 @@ jobs:
           private-key: ${{ secrets.OSS_MIRROR_WRITE_APP_PRIVATE_KEY }}
           owner: ${{ vars.OSS_MIRROR_OWNER }}
           repositories: aoforge-claude
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
