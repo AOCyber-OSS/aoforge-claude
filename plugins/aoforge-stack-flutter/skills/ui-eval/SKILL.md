@@ -97,7 +97,9 @@ Task(
    Task(
      subagent_type="aoforge-stack-flutter:ui-judge",
      model="{judge tier from the block}",
-     prompt="Batch file: {request_file}. Read every screenshot it names with the Read tool before answering it.",
+     prompt="Batch file: {request_file}. Read every screenshot it names with the Read tool before answering it.
+     AOForge runtime: {runtime_root}
+     ",
      description="UI judge {batch_id}"
    )
    ```

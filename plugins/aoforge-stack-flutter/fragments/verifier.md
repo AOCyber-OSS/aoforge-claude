@@ -138,13 +138,7 @@ Machine-judge visual correctness of every captured Flutter UI surface BEFORE esc
 UI_EVAL=$(node ~/.claude/aoforge/stacks/flutter/bin/aof-flutter.cjs verify flutter-ui-eval "$OBJECTIVE" --raw)
 ```
 
-When `/aoforge-stack-flutter:ui-eval` already ran the session judge for this objective (`evidence/ui_eval/judge-requests.json` and a `judge-responses/` dir beside the manifest), re-score those answers instead; the step is offline and deterministic, and it re-checks every nonce and PNG sha256, so a screenshot recaptured since the judges looked comes back `unjudged`:
-
-```bash
-UI_EVAL=$(node ~/.claude/aoforge/stacks/flutter/bin/aof-flutter.cjs verify flutter-ui-eval "$OBJECTIVE" --judge session --score --responses ".aoforge/objectives/$OBJECTIVE_DIR/evidence/ui_eval/judge-responses" --raw)
-```
-
-You cannot spawn the judges yourself; with no session answers on disk, the default call above stays advisory.
+When `/aoforge-stack-flutter:ui-eval` already ran the session judge for this objective (`evidence/ui_eval/judge-requests.json` and a `judge-responses/` dir beside the manifest), append `--judge session --score --responses ".aoforge/objectives/$OBJECTIVE_DIR/evidence/ui_eval/judge-responses"` to the call above to re-score those answers. The step is offline and deterministic, and it re-checks every nonce and PNG sha256, so a screenshot recaptured since the judges looked comes back `unjudged`. You cannot spawn the judges yourself; with no session answers on disk the plain call stays advisory.
 
 The engine resolves `"$OBJECTIVE"` to a manifest — or explains why it could not — via `resolveUIEvalTarget` (`bin/lib/flutter-ui-eval-resolve.cjs`), and reports one of four honest `resolution` values. **Route by `resolution` first — only a `resolved` result carries a scoreRun rollup at all.**
 
