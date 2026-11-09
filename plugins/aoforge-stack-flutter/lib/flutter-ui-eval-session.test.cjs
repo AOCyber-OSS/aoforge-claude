@@ -15,6 +15,7 @@
 //     SP3 batches cover every request exactly once and never hold the same state twice
 //     SP4 a state whose screenshot is missing gets no request and is named in unjudgeable[]
 //     SP5 the request prompt is byte-for-byte the live (buildVisionRequest) prompt
+//     SP6 each batch gets its own request file (only its requests) and a named response file
 //   score
 //     SS1 valid answers for every request -> gate:'binding', judge:'session', per-state evidence
 //         'vision', judged_by names the batch and model, rollup reports the model
@@ -159,6 +160,23 @@ test.describe('session judge — prepare', () => {
       assert.ok(!doc.requests.some((r) => r.state_id === 'never-captured'));
       assert.deepStrictEqual(doc.unjudgeable.map((u) => u.state_id), ['never-captured']);
       assert.deepStrictEqual(out.unjudgeable, ['never-captured']);
+    } finally { fx.cleanup(); }
+  });
+
+  test('SP6 — each batch gets its own request file holding only its requests, and a responses dir is named', () => {
+    const fx = makeSessionManifestDir({ samples: 2 });
+    try {
+      const { out, doc } = prepare(fx);
+      assert.ok(path.isAbsolute(out.responses_dir));
+      assert.strictEqual(path.dirname(out.responses_dir), path.dirname(out.requests_path));
+      for (const b of out.batches) {
+        assert.ok(path.isAbsolute(b.request_file));
+        assert.strictEqual(b.response_file, path.join(out.responses_dir, `${b.batch_id}.json`));
+        const batchDoc = JSON.parse(fs.readFileSync(b.request_file, 'utf-8'));
+        assert.strictEqual(batchDoc.batch_id, b.batch_id);
+        assert.strictEqual(batchDoc.response_file, b.response_file);
+        assert.deepStrictEqual(batchDoc.requests, doc.requests.filter((r) => b.request_ids.includes(r.request_id)));
+      }
     } finally { fx.cleanup(); }
   });
 
