@@ -138,6 +138,14 @@ Machine-judge visual correctness of every captured Flutter UI surface BEFORE esc
 UI_EVAL=$(node ~/.claude/aoforge/stacks/flutter/bin/aof-flutter.cjs verify flutter-ui-eval "$OBJECTIVE" --raw)
 ```
 
+When `/aoforge-stack-flutter:ui-eval` already ran the session judge for this objective (`evidence/ui_eval/judge-requests.json` and a `judge-responses/` dir beside the manifest), re-score those answers instead; the step is offline and deterministic, and it re-checks every nonce and PNG sha256, so a screenshot recaptured since the judges looked comes back `unjudged`:
+
+```bash
+UI_EVAL=$(node ~/.claude/aoforge/stacks/flutter/bin/aof-flutter.cjs verify flutter-ui-eval "$OBJECTIVE" --judge session --score --responses ".aoforge/objectives/$OBJECTIVE_DIR/evidence/ui_eval/judge-responses" --raw)
+```
+
+You cannot spawn the judges yourself; with no session answers on disk, the default call above stays advisory.
+
 The engine resolves `"$OBJECTIVE"` to a manifest — or explains why it could not — via `resolveUIEvalTarget` (`bin/lib/flutter-ui-eval-resolve.cjs`), and reports one of four honest `resolution` values. **Route by `resolution` first — only a `resolved` result carries a scoreRun rollup at all.**
 
 **Route by `resolution` (the load-bearing contract):**
@@ -153,7 +161,7 @@ The engine resolves `"$OBJECTIVE"` to a manifest — or explains why it could no
 
 **Parse the scoreRun rollup (`resolution: 'resolved'` only):**
 
-Rollup shape: `{ verdict: 'pass'|'pass-with-reviews'|'fail', gate: 'binding'|'advisory', counts, reviews[], fails[], unjudged[], known_broken[], states[] }`. `gate` is the run's STANDING — what authority its verdict carries, independent of outcome. `gate: 'binding'` ONLY when the engine ran with `--judge live` (a real vision comparison per state). `gate: 'advisory'` on the default invocation (no `--judge`, or `--judge labels`) — the offline label-echo judge (network:false), which is a labels LOOKUP, not a visual gate, and must never be treated as one regardless of how clean its verdict is. Each `states[]` entry: `{ state_id, verdict: 'pass'|'review'|'fail', is_broken, defects[], errors[], evidence: 'vision'|'label', known_broken?, max_severity? }`.
+Rollup shape: `{ verdict: 'pass'|'pass-with-reviews'|'fail', gate: 'binding'|'advisory', counts, reviews[], fails[], unjudged[], known_broken[], states[] }`. `gate` is the run's STANDING — what authority its verdict carries, independent of outcome. `gate: 'binding'` ONLY when the engine ran with `--judge live` (a real vision comparison per state) or `--judge session --score` (session `ui-judge` subagents' answers, each bound to its request by nonce and PNG sha256; `judge: 'session'`, per-state `judged_by[]`). `gate: 'advisory'` on the default invocation (no `--judge`, or `--judge labels`) — the offline label-echo judge (network:false), which is a labels LOOKUP, not a visual gate, and must never be treated as one regardless of how clean its verdict is. Each `states[]` entry: `{ state_id, verdict: 'pass'|'review'|'fail', is_broken, defects[], errors[], evidence: 'vision'|'label', known_broken?, max_severity? }`.
 
 **Route per verdict (the load-bearing contract, `resolution: 'resolved'` only):**
 
@@ -161,7 +169,7 @@ Rollup shape: `{ verdict: 'pass'|'pass-with-reviews'|'fail', gate: 'binding'|'ad
 - `verdict: pass-with-reviews` OR any state in `reviews[]` → append `notes:` entries + a partial section; that surface STAYS on the Step 9 human-verification list.
 - Any state in `unjudged[]` (aodex#485 — nothing examined it, distinct from a genuine judge disagreement) → append a `notes:` entry naming it as never judged; that surface STAYS on the Step 9 human-verification list regardless of `gate` or the run's overall verdict.
 - Any state in `known_broken[]` (#72 — judged BROKEN, but only MEDIUM/LOW, so below the HIGH-only blocking bar and still `verdict: pass`) → append a `notes:` entry naming it with its `max_severity` and defects. It never fails the gate, but it is a known defect, not a clean pass: that surface STAYS on the Step 9 human-verification list.
-- `gate: 'binding'` AND `verdict: pass` (no fails, no reviews, no unjudged, no known_broken) → REMOVE that surface from the Step 9 `human_verification:` list. **This is the ONLY route that may retire a human visual check.** The payoff — machine-judged visual correctness drops off the human queue — requires a binding gate; an offline pass alone never earns it.
+- `gate: 'binding'` AND `verdict: pass` (no fails, no reviews, no unjudged, no known_broken; live or session) → REMOVE that surface from the Step 9 `human_verification:` list. **This is the ONLY route that may retire a human visual check.** The payoff — machine-judged visual correctness drops off the human queue — requires a binding gate; an offline pass alone never earns it.
 - `gate: 'advisory'` → NEVER removes a surface from the Step 9 list, whatever the verdict. Even a clean `verdict: pass` on the default (offline label-echo) path is a labels lookup, not a machine judgment of the pixels — append a `notes:` entry (e.g. "advisory pass — offline label-echo judge, not machine-verified against a binding gate") and leave the surface queued for human visual verification.
 
 For non-Flutter objectives: skip this subroutine.
@@ -221,7 +229,7 @@ For non-Flutter objectives: skip this subroutine.
 
 ## Step 9: human verification and UAT
 
-- **Surfaces that Step 8c scored `pass` UNDER `gate: 'binding'` (a real `--judge live` comparison) are visual-correctness-verified by the machine judge and MUST NOT appear in this human-verification list.** A `pass` under `gate: 'advisory'` (the default offline label-echo path) is a labels lookup, not a machine judgment — it STAYS on this list. Step 8c `review`/`unjudged`/SKIPPED surfaces also escalate here for visual UX.
+- **Surfaces that Step 8c scored `pass` UNDER `gate: 'binding'` (a real `--judge live` or `--judge session` comparison) are visual-correctness-verified by the machine judge and MUST NOT appear in this human-verification list.** A `pass` under `gate: 'advisory'` (the default offline label-echo path) is a labels lookup, not a machine judgment — it STAYS on this list. Step 8c `review`/`unjudged`/SKIPPED surfaces also escalate here for visual UX.
 
 ### Step 9 (REQ-10-06): Auto-generate UAT for Flutter UI objectives
 

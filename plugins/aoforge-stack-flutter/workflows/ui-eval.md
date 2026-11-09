@@ -16,7 +16,7 @@ The engine emits a `scoreRun` rollup with three verdicts. Each maps to exactly o
 - `pass-with-reviews` (or any per-state `review`) → advisory. Emit `notes:` + a partial section; the surface STAYS on the human-verify list.
 - `pass` (no fails, no reviews) → machine-verified. REMOVE that surface from the human-verification list.
 
-The engine is offline (label-echo judge, `network:false`) — no pixels leave the machine, no Docker, no network. The agent never picks a vision model id; the engine resolves it via `references/model-profiles.json` (`ui-evaluator`).
+Three judges: `labels` (offline label-echo, `network:false`, ADVISORY), `live` (the engine calls the Anthropic API, BINDING) and `session` (fresh `ui-judge` subagents of this session Read each PNG; the engine binds their answers to the requests and votes, BINDING, `network:false`). The agent never picks a vision model id; the engine resolves it via `references/model-profiles.json` (`ui-evaluator`).
 </philosophy>
 
 <process>
@@ -68,6 +68,8 @@ Run the engine consumer arm against the manifest and parse the `scoreRun` rollup
 UI_EVAL=$(node ~/.claude/aoforge/stacks/flutter/bin/aof-flutter.cjs verify flutter-ui-eval "<manifest-path>" --raw)
 # (equivalent arm: node ~/.claude/aoforge/stacks/flutter/bin/aof-flutter.cjs flutter-ui eval "<manifest-path>" --raw)
 ```
+
+Add the judge the skill chose: `--judge live`, or for `session` the two steps `--judge session --prepare` (before the judges run) and `--judge session --score --responses <dir>` (after); the skill's process section runs the judges between them.
 
 Rollup shape (only present when `resolution: 'resolved'`): `{ verdict: 'pass'|'pass-with-reviews'|'fail', counts, reviews[], fails[], states[] }`.
 Each `states[]` entry: `{ state_id, verdict: 'pass'|'review'|'fail', is_broken, defects[], errors[] }`.
