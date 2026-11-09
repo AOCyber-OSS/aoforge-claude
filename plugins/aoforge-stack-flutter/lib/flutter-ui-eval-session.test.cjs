@@ -172,3 +172,219 @@ test.describe('session judge — prepare', () => {
     } finally { fx.cleanup(); }
   });
 });
+
+// ──────────────────────────────────────────────────────────────────────────────
+// score
+// ──────────────────────────────────────────────────────────────────────────────
+
+// good-dashboard is answered not-broken, broken-overflow broken/high, unless a case says otherwise.
+const truthful = (r) => (r.state_id === 'broken-overflow' ? { broken: true } : {});
+
+function stateOf(rollup, id) {
+  const s = rollup.states.find((x) => x.state_id === id);
+  assert.ok(s, `state ${id} in the rollup`);
+  return s;
+}
+
+test.describe('session judge — score', () => {
+  test('SS1 — valid bound answers for every request -> a binding, judged rollup', () => {
+    const fx = makeSessionManifestDir({ samples: 3 });
+    try {
+      const { doc } = prepare(fx);
+      const responses = path.join(fx.dir, 'responses');
+      answerAllBatches(doc, responses, truthful);
+      const r = score(fx, responses);
+      assert.strictEqual(r.status, 1, 'a HIGH defect fails the run, so the exit is 1');
+      const rollup = r.json;
+      assert.strictEqual(rollup.gate, 'binding');
+      assert.strictEqual(rollup.judge, 'session');
+      assert.strictEqual(rollup.network, false, 'the engine itself made no network call');
+      assert.strictEqual(rollup.model, 'claude-sonnet-test-fixture');
+      assert.strictEqual(rollup.judge_tier, doc.judge_tier);
+      assert.strictEqual(rollup.samples, 3);
+      assert.strictEqual(rollup.verdict, 'fail');
+      assert.deepStrictEqual(rollup.fails, ['broken-overflow']);
+      assert.deepStrictEqual(rollup.unjudged, []);
+      const good = stateOf(rollup, 'good-dashboard');
+      assert.strictEqual(good.verdict, 'pass');
+      assert.strictEqual(good.evidence, 'vision');
+      assert.deepStrictEqual(good.votes, { broken: 0, ok: 3 });
+      assert.deepStrictEqual(good.judged_by.map((j) => j.batch_id).sort(), ['s0-b0', 's1-b0', 's2-b0']);
+      assert.ok(good.judged_by.every((j) => j.model === 'claude-sonnet-test-fixture'));
+      assert.strictEqual(stateOf(rollup, 'broken-overflow').verdict, 'fail');
+    } finally { fx.cleanup(); }
+  });
+
+  test('SS1b — a clean run scores pass, exit 0, and still binding', () => {
+    const fx = makeSessionManifestDir({ states: [{ state_id: 'good-dashboard', png: 'good' }] });
+    try {
+      const { doc } = prepare(fx);
+      const responses = path.join(fx.dir, 'responses');
+      answerAllBatches(doc, responses);
+      const r = score(fx, responses);
+      assert.strictEqual(r.status, 0);
+      assert.strictEqual(r.json.verdict, 'pass');
+      assert.strictEqual(r.json.gate, 'binding');
+    } finally { fx.cleanup(); }
+  });
+
+  test('SS2 — a missing answer makes that state unjudged, never a pass', () => {
+    const fx = makeSessionManifestDir({ states: [{ state_id: 'good-dashboard', png: 'good' }, { state_id: 'other', png: 'good' }] });
+    try {
+      const { doc } = prepare(fx);
+      const responses = path.join(fx.dir, 'responses');
+      answerAllBatches(doc, responses, (r) => (r.request_id === 'other#2' ? null : {}));
+      const r = score(fx, responses);
+      assert.strictEqual(r.status, 0);
+      assert.deepStrictEqual(r.json.unjudged, ['other']);
+      assert.strictEqual(r.json.verdict, 'pass-with-reviews');
+      const other = stateOf(r.json, 'other');
+      assert.strictEqual(other.unjudged, true);
+      assert.notStrictEqual(other.verdict, 'pass');
+      assert.ok(other.errors.some((e) => /other#2/.test(e) && /no answer/.test(e)), other.errors.join('; '));
+      assert.strictEqual(stateOf(r.json, 'good-dashboard').verdict, 'pass');
+    } finally { fx.cleanup(); }
+  });
+
+  function oneBadAnswer(t, mutate, errorPattern) {
+    const fx = makeSessionManifestDir({ states: [{ state_id: 'good-dashboard', png: 'good' }] });
+    try {
+      const { doc } = prepare(fx);
+      const responses = path.join(fx.dir, 'responses');
+      answerAllBatches(doc, responses, (r) => (r.sample === 1 ? mutate(r) : {}));
+      const r = score(fx, responses);
+      assert.deepStrictEqual(r.json.unjudged, ['good-dashboard']);
+      const s = stateOf(r.json, 'good-dashboard');
+      assert.strictEqual(s.unjudged, true);
+      assert.ok(s.errors.some((e) => errorPattern.test(e)), `errors: ${s.errors.join('; ')}`);
+      assert.strictEqual(r.json.verdict, 'pass-with-reviews');
+      return r;
+    } finally { fx.cleanup(); }
+  }
+
+  test('SS3 — a nonce mismatch is unjudged', (t) => {
+    oneBadAnswer(t, () => ({ nonce: '0'.repeat(32) }), /nonce/);
+  });
+
+  test('SS4 — a sha256 mismatch in the answer is unjudged', (t) => {
+    oneBadAnswer(t, () => ({ screenshot_sha256: 'f'.repeat(64) }), /sha256/);
+  });
+
+  test('SS6a — an answer without is_broken is unjudged (never coerced to false)', (t) => {
+    oneBadAnswer(t, () => ({ is_broken: undefined }), /is_broken/);
+  });
+
+  test('SS6b — a defect outside the taxonomy is unjudged', (t) => {
+    oneBadAnswer(t, () => ({ broken: true, defects: [{ type: 'ugly', severity: 'high', region: 'x', rationale: 'y' }] }), /taxonomy/);
+  });
+
+  test('SS9 — an explicit cannot_judge answer is unjudged with its reason', (t) => {
+    oneBadAnswer(t, (r) => ({ is_broken: undefined, matches_expected: undefined, confidence: undefined, defects: undefined, screenshot_sha256: undefined, cannot_judge: true, reason: 'image did not load' }), /image did not load/);
+  });
+
+  test('SS5 — a screenshot changed on disk after prepare is unjudged', () => {
+    const fx = makeSessionManifestDir({ states: [{ state_id: 'good-dashboard', png: 'good' }] });
+    try {
+      const { doc } = prepare(fx);
+      const responses = path.join(fx.dir, 'responses');
+      answerAllBatches(doc, responses);
+      fs.appendFileSync(path.join(fx.dir, 'good-dashboard.png'), Buffer.from([0]));
+      const r = score(fx, responses);
+      assert.deepStrictEqual(r.json.unjudged, ['good-dashboard']);
+      assert.ok(stateOf(r.json, 'good-dashboard').errors.some((e) => /changed since prepare/.test(e)));
+    } finally { fx.cleanup(); }
+  });
+
+  test('SS6c — a non-JSON batch file is named and its requests are unjudged', () => {
+    const fx = makeSessionManifestDir({ states: [{ state_id: 'good-dashboard', png: 'good' }] });
+    try {
+      const { doc } = prepare(fx);
+      const responses = path.join(fx.dir, 'responses');
+      answerAllBatches(doc, responses);
+      writeBatchResponses(responses, 's0-b0', 'Here is my verdict: looks fine!');
+      const r = score(fx, responses);
+      assert.deepStrictEqual(r.json.unjudged, ['good-dashboard']);
+      assert.ok(r.json.response_errors.some((e) => /s0-b0/.test(e) && /JSON/.test(e)), r.json.response_errors.join('; '));
+    } finally { fx.cleanup(); }
+  });
+
+  test('SS7 — an answer filed under a batch that does not hold its request is rejected', () => {
+    const fx = makeSessionManifestDir({ states: [{ state_id: 'good-dashboard', png: 'good' }] });
+    try {
+      const { doc } = prepare(fx);
+      const responses = path.join(fx.dir, 'responses');
+      answerAllBatches(doc, responses);
+      // batch s0-b0 also answers sample 1: one subagent casting two of a state's votes
+      const r1 = doc.requests.find((r) => r.request_id === 'good-dashboard#1');
+      const r0 = doc.requests.find((r) => r.request_id === 'good-dashboard#0');
+      writeBatchResponses(responses, 's0-b0', [makeSessionResponse(r0), makeSessionResponse(r1)]);
+      fs.rmSync(path.join(responses, 's1-b0.json'));
+      const r = score(fx, responses);
+      assert.deepStrictEqual(r.json.unjudged, ['good-dashboard']);
+      assert.ok(r.json.response_errors.some((e) => /good-dashboard#1/.test(e) && /not in batch s0-b0/.test(e)), r.json.response_errors.join('; '));
+    } finally { fx.cleanup(); }
+  });
+
+  test('SS8 — two answers to one request are unjudged', () => {
+    const fx = makeSessionManifestDir({ states: [{ state_id: 'good-dashboard', png: 'good' }] });
+    try {
+      const { doc } = prepare(fx);
+      const responses = path.join(fx.dir, 'responses');
+      answerAllBatches(doc, responses);
+      const r0 = doc.requests.find((r) => r.request_id === 'good-dashboard#0');
+      writeBatchResponses(responses, 's0-b0', [makeSessionResponse(r0), makeSessionResponse(r0, { broken: true })]);
+      const r = score(fx, responses);
+      assert.deepStrictEqual(r.json.unjudged, ['good-dashboard']);
+      assert.ok(stateOf(r.json, 'good-dashboard').errors.some((e) => /more than one answer/.test(e)));
+    } finally { fx.cleanup(); }
+  });
+
+  test('SS10 — a single responses FILE (array of answers) is accepted as well as a directory', () => {
+    const fx = makeSessionManifestDir({ states: [{ state_id: 'good-dashboard', png: 'good' }], samples: 1 });
+    try {
+      const { doc } = prepare(fx);
+      const file = writeBatchResponses(path.join(fx.dir, 'responses'), 's0-b0', [makeSessionResponse(doc.requests[0])]);
+      const r = score(fx, file);
+      assert.strictEqual(r.json.verdict, 'pass');
+      assert.deepStrictEqual(stateOf(r.json, 'good-dashboard').judged_by.map((j) => j.batch_id), ['s0-b0']);
+    } finally { fx.cleanup(); }
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// voting / flake — the same aggregateVotes/scoreState the live path uses
+// ──────────────────────────────────────────────────────────────────────────────
+
+test.describe('session judge — voting and flake', () => {
+  test('SV1 — 2 broken (high) / 1 ok -> fail, exit 1', () => {
+    const fx = makeSessionManifestDir({ states: [{ state_id: 'good-dashboard', png: 'good' }] });
+    try {
+      const { doc } = prepare(fx);
+      const responses = path.join(fx.dir, 'responses');
+      answerAllBatches(doc, responses, (r) => (r.sample < 2 ? { broken: true } : {}));
+      const r = score(fx, responses);
+      assert.strictEqual(r.status, 1);
+      const s = stateOf(r.json, 'good-dashboard');
+      assert.strictEqual(s.verdict, 'fail');
+      assert.deepStrictEqual(s.votes, { broken: 2, ok: 1 });
+      assert.strictEqual(s.flake, true);
+    } finally { fx.cleanup(); }
+  });
+
+  test('SV2 — 1 broken / 2 ok -> review, flake, and a split-vote escalation request', () => {
+    const fx = makeSessionManifestDir({ states: [{ state_id: 'good-dashboard', png: 'good' }] });
+    try {
+      const { doc } = prepare(fx);
+      const responses = path.join(fx.dir, 'responses');
+      answerAllBatches(doc, responses, (r) => (r.sample === 0 ? { broken: true } : {}));
+      const r = score(fx, responses);
+      assert.strictEqual(r.status, 0);
+      const s = stateOf(r.json, 'good-dashboard');
+      assert.strictEqual(s.verdict, 'review');
+      assert.strictEqual(s.flake, true);
+      assert.deepStrictEqual(r.json.reviews, ['good-dashboard']);
+      assert.strictEqual(r.json.tier_escalation.requested, true);
+      assert.strictEqual(r.json.tier_escalation.from_tier, doc.judge_tier);
+    } finally { fx.cleanup(); }
+  });
+});
