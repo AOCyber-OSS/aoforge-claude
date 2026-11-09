@@ -140,7 +140,23 @@ function prepare({ cwd, manifestPath, manifest, requestsArg, samplesArg, batchSi
     batches,
     unjudgeable,
   };
-  fs.mkdirSync(path.dirname(requestsPath), { recursive: true });
+  // Each judge subagent Reads only its own batch file (small, no other state's nonces) and writes
+  // its answers to the named response file; --score reads the responses dir by batch id.
+  const baseDir = path.dirname(requestsPath);
+  const batchDir = path.join(baseDir, 'judge-batches');
+  const responsesDir = path.join(baseDir, 'judge-responses');
+  fs.mkdirSync(batchDir, { recursive: true });
+  for (const b of batches) {
+    b.request_file = path.join(batchDir, `${b.batch_id}.request.json`);
+    b.response_file = path.join(responsesDir, `${b.batch_id}.json`);
+    const wanted = new Set(b.request_ids);
+    fs.writeFileSync(b.request_file, JSON.stringify({
+      kind: 'ui-eval-judge-batch',
+      batch_id: b.batch_id,
+      response_file: b.response_file,
+      requests: requests.filter((r) => wanted.has(r.request_id)),
+    }, null, 2), 'utf-8');
+  }
   fs.writeFileSync(requestsPath, JSON.stringify(doc, null, 2), 'utf-8');
 
   output({
@@ -158,7 +174,8 @@ function prepare({ cwd, manifestPath, manifest, requestsArg, samplesArg, batchSi
     samples,
     batch_size: batchSize,
     request_count: requests.length,
-    batches: batches.map((b) => ({ batch_id: b.batch_id, sample: b.sample, request_ids: b.request_ids })),
+    responses_dir: responsesDir,
+    batches: batches.map((b) => ({ batch_id: b.batch_id, sample: b.sample, request_ids: b.request_ids, request_file: b.request_file, response_file: b.response_file })),
     unjudgeable: unjudgeable.map((u) => u.state_id),
   }, raw);
 }
