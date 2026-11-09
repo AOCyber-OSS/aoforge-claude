@@ -388,3 +388,91 @@ test.describe('session judge — voting and flake', () => {
     } finally { fx.cleanup(); }
   });
 });
+
+// ──────────────────────────────────────────────────────────────────────────────
+// gate standing
+// ──────────────────────────────────────────────────────────────────────────────
+
+test.describe('session judge — gate standing', () => {
+  test('SG1 — labels stays advisory, prepare claims nothing, only session score is binding', () => {
+    const fx = makeSessionManifestDir({ states: [{ state_id: 'good-dashboard', png: 'good' }] });
+    try {
+      const labels = run(['verify', 'flutter-ui-eval', fx.manifest, '--raw']);
+      assert.strictEqual(labels.json.gate, 'advisory');
+      const { out, doc } = prepare(fx);
+      assert.strictEqual(out.gate, 'pending');
+      assert.ok(!('verdict' in out), 'prepare carries no verdict');
+      const responses = path.join(fx.dir, 'responses');
+      answerAllBatches(doc, responses);
+      assert.strictEqual(score(fx, responses).json.gate, 'binding');
+    } finally { fx.cleanup(); }
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// CLI usage errors
+// ──────────────────────────────────────────────────────────────────────────────
+
+test.describe('session judge — usage errors', () => {
+  const usage = (argv, pattern) => {
+    const r = run(argv);
+    assert.strictEqual(r.status, 1, `${argv.join(' ')} exits 1 (stdout: ${r.stdout})`);
+    assert.match(r.stderr, pattern);
+  };
+  let fx;
+  test.before(() => { fx = makeSessionManifestDir({ states: [{ state_id: 'good-dashboard', png: 'good' }] }); });
+  test.after(() => fx.cleanup());
+
+  test('SU1 — --judge session with no step', () => {
+    usage(['verify', 'flutter-ui-eval', fx.manifest, '--judge', 'session', '--raw'], /exactly one step/);
+  });
+  test('SU2 — both --prepare and --score', () => {
+    usage(['verify', 'flutter-ui-eval', fx.manifest, '--judge', 'session', '--prepare', '--score', '--responses', fx.dir, '--raw'], /exactly one step/);
+  });
+  test('SU3 — --score without --responses', () => {
+    usage(['verify', 'flutter-ui-eval', fx.manifest, '--judge', 'session', '--score', '--raw'], /--responses/);
+  });
+  test('SU4 — session step flags without --judge session', () => {
+    usage(['verify', 'flutter-ui-eval', fx.manifest, '--prepare', '--raw'], /applies only to --judge session/);
+    usage(['verify', 'flutter-ui-eval', fx.manifest, '--judge', 'live', '--score', '--responses', fx.dir, '--raw'], /applies only to --judge session/);
+  });
+  test('SU5 — --score with no requests file', () => {
+    usage(['verify', 'flutter-ui-eval', fx.manifest, '--judge', 'session', '--score', '--responses', fx.dir, '--requests', path.join(fx.dir, 'nope.json'), '--raw'], /run --judge session --prepare first/);
+  });
+  test('SU6 — a requests file prepared for a different manifest', () => {
+    const other = makeSessionManifestDir({ states: [{ state_id: 'good-dashboard', png: 'good' }] });
+    try {
+      const { out } = prepare(other);
+      usage(['verify', 'flutter-ui-eval', fx.manifest, '--judge', 'session', '--score', '--responses', fx.dir, '--requests', out.requests_path, '--raw'], /were prepared for/);
+    } finally { other.cleanup(); }
+  });
+  test('SU7 — an unknown --judge value names session among the accepted values', () => {
+    usage(['verify', 'flutter-ui-eval', fx.manifest, '--judge', 'sesion', '--raw'], /'session'/);
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// live unchanged
+// ──────────────────────────────────────────────────────────────────────────────
+
+test.describe('session judge — the live path is unchanged', () => {
+  test('SL1 — --judge live with no credential: live-vision, binding, network, each state a credential review', () => {
+    const fx = makeSessionManifestDir({ samples: 2 });
+    try {
+      const r = run(['verify', 'flutter-ui-eval', fx.manifest, '--judge', 'live', '--raw']);
+      // two credential reviews exceed the default flake budget of 1 -> fail, exit 1 (pre-existing rule)
+      assert.strictEqual(r.status, 1);
+      assert.strictEqual(r.json.verdict, 'fail');
+      assert.deepStrictEqual(r.json.reviews.sort(), ['broken-overflow', 'good-dashboard']);
+      assert.strictEqual(r.json.judge, 'live-vision');
+      assert.strictEqual(r.json.gate, 'binding');
+      assert.strictEqual(r.json.network, true);
+      assert.strictEqual(r.json.samples, 2);
+      assert.ok(!('judged_by' in r.json.states[0]), 'live states carry no session provenance');
+      for (const s of r.json.states) {
+        assert.strictEqual(s.verdict, 'review');
+        assert.ok(s.errors.some((e) => /no credential/.test(e)), s.errors.join('; '));
+      }
+    } finally { fx.cleanup(); }
+  });
+});
