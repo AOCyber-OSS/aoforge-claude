@@ -571,11 +571,23 @@ function judgeEscalation({ live, judgeTier: tier, reviews = [], states = [] } = 
   };
 }
 
+/**
+ * PURE — the judge prompt for one screenshot. One source for both judges that look at pixels:
+ * the live API call (buildVisionRequest) and the session judge's prepared request
+ * (flutter-ui-eval-session.cjs), so the two can never be asked different questions.
+ */
+function visionPromptText(request) {
+  const taxonomy = `defect types: ${DEFECT_TYPES.join(', ')}; severities: ${SEVERITIES.join(', ')}`;
+  return `You are a strict UI-defect detector. Evaluate this screenshot for state ` +
+    `"${request.state_id}".\nExpected appearance: ${request.expected}\n` +
+    `Score DEVIATION from expected, not open-ended aesthetics. Taxonomy — ${taxonomy}.\n` +
+    `If it matches expected with no defects, return is_broken:false, defects:[].`;
+}
+
 function buildVisionRequest(request) {
   const model = judgeModel(judgeProfile(), request.judge_tier);
 
   const b64 = fs.readFileSync(request.screenshot_path).toString('base64');
-  const taxonomy = `defect types: ${DEFECT_TYPES.join(', ')}; severities: ${SEVERITIES.join(', ')}`;
   const body = {
     model,
     max_tokens: 1024,
@@ -583,14 +595,7 @@ function buildVisionRequest(request) {
       role: 'user',
       content: [
         { type: 'image', source: { type: 'base64', media_type: 'image/png', data: b64 } },
-        {
-          type: 'text',
-          text:
-            `You are a strict UI-defect detector. Evaluate this screenshot for state ` +
-            `"${request.state_id}".\nExpected appearance: ${request.expected}\n` +
-            `Score DEVIATION from expected, not open-ended aesthetics. Taxonomy — ${taxonomy}.\n` +
-            `If it matches expected with no defects, return is_broken:false, defects:[].`,
-        },
+        { type: 'text', text: visionPromptText(request) },
       ],
     }],
     output_config: { format: { type: 'json_schema', schema: visionPerceptualSchema() } },
@@ -724,6 +729,42 @@ function outputRollup(result, verdict) {
   process.exitCode = verdict === 'fail' ? 1 : 0;
 }
 
+/**
+ * One manifest state's inputs, shared by every judge path (labels, live, session).
+ * 32-02 (A1): resolve the state's id, preferring the canonical `state_id` key. Fall back to
+ * `st.id` (the shape buildManifestStub used to emit, pre-32-02) ONLY when `state_id` is absent —
+ * and NEVER silently: an advisory records that the manifest used a non-canonical key, so the
+ * shape mismatch stays visible rather than becoming a permanent, invisible second-accepted-shape.
+ * Without this, an unnameable state (`state_id: undefined`) rolls up as `null` in
+ * reviews[]/unjudged[] — a finding nobody can act on.
+ * The Shape-B capture loads from `capture_path` (relative to the manifest dir) when present;
+ * `screenshot_path` is the capture's (else the state's), made absolute against the manifest dir.
+ */
+function resolveStateInput(st, manifestDir) {
+  const idAdvisories = [];
+  let stateId = st.state_id;
+  if (stateId === undefined && st.id !== undefined) {
+    stateId = st.id;
+    idAdvisories.push(
+      `manifest state used non-canonical key 'id' (value: '${st.id}') instead of 'state_id' — resolved via fallback`,
+    );
+  }
+
+  let capture = null;
+  if (st.capture_path) {
+    const capPath = path.isAbsolute(st.capture_path)
+      ? st.capture_path
+      : path.join(manifestDir, st.capture_path);
+    if (fs.existsSync(capPath)) capture = JSON.parse(fs.readFileSync(capPath, 'utf-8'));
+  }
+  if (!capture) {
+    capture = { state_id: stateId, surface: st.surface, screenshot_path: st.screenshot_path, metadata: { expected: st.expected } };
+  }
+  const sp = (capture && capture.screenshot_path) || st.screenshot_path;
+  const screenshot_path = sp && !path.isAbsolute(sp) ? path.join(manifestDir, sp) : sp;
+  return { stateId, idAdvisories, capture, screenshot_path };
+}
+
 function cmdVerifyFlutterUIEval(cwd, args, raw) {
   const list = Array.isArray(args) ? args : [args].filter(Boolean);
   const positional = list.filter(a => a && !a.startsWith('--'));
@@ -734,8 +775,8 @@ function cmdVerifyFlutterUIEval(cwd, args, raw) {
   // `flutter-ui eval -h` answered `"objective '-h' not found"`.
   if (!manifestArg || hasHelpFlag(list)) {
     output({
-      usage: 'verify flutter-ui-eval <manifest|captureResults> [--raw] [--judge live|labels] [--judge-tier haiku|sonnet|opus] [--samples N]',
-      description: 'Score a UI visual-eval manifest. Default (no --judge, or --judge labels): offline label-echo judge (deterministic, NO network) — this is an ADVISORY labels lookup, not a visual gate; its rollup carries gate:"advisory" and CANNOT clear a surface from human verification. --judge live runs the REAL Anthropic vision judge (needs ANTHROPIC_API_KEY, or ANTHROPIC_AUTH_TOKEN+ANTHROPIC_BASE_URL) N times/state -> real N-sample voting (flake) + per-page token cost; its rollup carries gate:"binding" — the ONLY standing that may retire a surface from human verification. An unrecognised --judge value is rejected with a usage error. --judge-tier (live only) sets the rung the vision calls use; /aoforge:ui-eval sets it on a one-rung escalation after split votes.',
+      usage: 'verify flutter-ui-eval <manifest|captureResults> [--raw] [--judge live|session|labels] [--judge-tier haiku|sonnet|opus] [--samples N] [--prepare [--batch-size N] | --score --responses <file|dir>] [--requests <file>]',
+      description: 'Score a UI visual-eval manifest. Default (no --judge, or --judge labels): offline label-echo judge (deterministic, NO network) — this is an ADVISORY labels lookup, not a visual gate; its rollup carries gate:"advisory" and CANNOT clear a surface from human verification. --judge live runs the REAL Anthropic vision judge (needs ANTHROPIC_API_KEY, or ANTHROPIC_AUTH_TOKEN+ANTHROPIC_BASE_URL) N times/state -> real N-sample voting (flake) + per-page token cost; its rollup carries gate:"binding" — the ONLY standing that may retire a surface from human verification. --judge session is the same judgement made by the Claude Code session instead of an API key, in two steps: --prepare writes judge-requests.json (one request per state x sample: PNG path, sha256, nonce, the live prompt, the answer schema, and batches that never hold one state twice); fresh judge subagents Read each PNG and write <batch_id>.json answers; --score --responses <file|dir> binds each answer to its request (nonce, sha256, batch), votes exactly as live does and emits gate:"binding", judge:"session". A missing or unbound answer leaves the state unjudged, never a pass. An unrecognised --judge value is rejected with a usage error. --judge-tier (live only) sets the rung the vision calls use; /aoforge:ui-eval sets it on a one-rung escalation after split votes.',
       ok: true,
     }, raw);
     return;
@@ -750,20 +791,47 @@ function cmdVerifyFlutterUIEval(cwd, args, raw) {
   let judgeMode;
   if (judgeArg === undefined) {
     judgeMode = 'labels';
-  } else if (judgeArg === 'live' || judgeArg === 'labels') {
+  } else if (judgeArg === 'live' || judgeArg === 'labels' || judgeArg === 'session') {
     judgeMode = judgeArg;
   } else {
-    error(`unrecognised --judge value '${judgeArg}' — expected 'live' or 'labels' (bare invocation defaults to 'labels'); refusing to silently fall through to the offline path`);
+    error(`unrecognised --judge value '${judgeArg}' — expected 'live', 'session' or 'labels' (bare invocation defaults to 'labels'); refusing to silently fall through to the offline path`);
     return; // unreachable — error() calls process.exit(1); kept for readability/testability
   }
 
-  // quick 42: --judge-tier picks the rung the live vision calls use (a one-rung escalation from
-  // /aoforge:ui-eval). Strict, like --judge: live only, and only a known tier, never silently.
+  // The session judge's step flags mean nothing on any other path; refuse them rather than
+  // ignore them, so `--score --responses x` without `--judge session` can never quietly run labels.
+  const sessionFlags = ['--prepare', '--score', '--responses', '--requests', '--batch-size'].filter((f) => list.includes(f));
+  if (judgeMode !== 'session' && sessionFlags.length > 0) {
+    error(`${sessionFlags.join(', ')} applies only to --judge session`);
+    return;
+  }
+  let sessionStep = null;
+  if (judgeMode === 'session') {
+    const p = list.includes('--prepare');
+    const s = list.includes('--score');
+    if (p === s) {
+      error('--judge session needs exactly one step: --prepare (write the judge requests) or --score --responses <file|dir> (score the judge subagents\' answers)');
+      return;
+    }
+    sessionStep = p ? 'prepare' : 'score';
+    if (sessionStep === 'score') {
+      const ri = list.indexOf('--responses');
+      const rv = ri >= 0 ? list[ri + 1] : undefined;
+      if (!rv || rv.startsWith('--')) {
+        error('--judge session --score needs --responses <file|dir> (the judge subagents\' answers)');
+        return;
+      }
+    }
+  }
+
+  // quick 42: --judge-tier picks the rung the vision calls use (a one-rung escalation from
+  // /aoforge:ui-eval). Strict, like --judge: a model-backed judge only (live, or session, where it
+  // names the rung the judge subagents are spawned on), and only a known tier, never silently.
   const judgeTierIdx = list.indexOf('--judge-tier');
   const judgeTierArg = judgeTierIdx >= 0 ? list[judgeTierIdx + 1] : undefined;
   if (judgeTierIdx >= 0) {
-    if (judgeMode !== 'live') {
-      error('--judge-tier applies only to --judge live (the labels path calls no model)');
+    if (judgeMode !== 'live' && judgeMode !== 'session') {
+      error('--judge-tier applies only to --judge live or --judge session (the labels path calls no model)');
       return;
     }
     if (!JUDGE_TIERS.includes(judgeTierArg)) {
@@ -834,6 +902,22 @@ function cmdVerifyFlutterUIEval(cwd, args, raw) {
   // do NOT re-read/re-parse the file here; that would duplicate the resolver's own work
   // and re-create the drift this objective closes.
 
+  if (judgeMode === 'session') {
+    const flagValue = (f) => { const i = list.indexOf(f); return i >= 0 ? list[i + 1] : undefined; };
+    return require('./flutter-ui-eval-session.cjs').runSessionStep({
+      cwd,
+      step: sessionStep,
+      manifestPath: absManifest,
+      manifest,
+      requestsArg: flagValue('--requests'),
+      responsesArg: flagValue('--responses'),
+      samplesArg: flagValue('--samples'),
+      batchSizeArg: flagValue('--batch-size'),
+      judgeTierArg,
+      raw,
+    });
+  }
+
   const manifestDir = path.dirname(absManifest);
   const samples = typeof manifest.samples === 'number' ? manifest.samples : 3;
   const flakeBudget = typeof manifest.flakeBudget === 'number' ? manifest.flakeBudget : 1;
@@ -865,39 +949,11 @@ function cmdVerifyFlutterUIEval(cwd, args, raw) {
   let liveModel = null;
 
   for (const st of manifest.states) {
-    // 32-02 (A1): resolve the state's id, preferring the canonical `state_id` key. Fall
-    // back to `st.id` (the shape buildManifestStub used to emit, pre-32-02) ONLY when
-    // `state_id` is absent — and NEVER silently: an advisory records that the manifest
-    // used a non-canonical key, so the shape mismatch stays visible rather than becoming
-    // a permanent, invisible second-accepted-shape. Without this, an unnameable state
-    // (`state_id: undefined`) rolls up as `null` in reviews[]/unjudged[] — a finding
-    // nobody can act on.
-    const idAdvisories = [];
-    let stateId = st.state_id;
-    if (stateId === undefined && st.id !== undefined) {
-      stateId = st.id;
-      idAdvisories.push(
-        `manifest state used non-canonical key 'id' (value: '${st.id}') instead of 'state_id' — resolved via fallback`,
-      );
-    }
-
-    // Load the Shape-B capture for this state (relative to the manifest dir).
-    let capture = null;
-    if (st.capture_path) {
-      const capPath = path.isAbsolute(st.capture_path)
-        ? st.capture_path
-        : path.join(manifestDir, st.capture_path);
-      if (fs.existsSync(capPath)) capture = JSON.parse(fs.readFileSync(capPath, 'utf-8'));
-    }
-    if (!capture) {
-      capture = { state_id: stateId, surface: st.surface, screenshot_path: st.screenshot_path, metadata: { expected: st.expected } };
-    }
+    const { stateId, idAdvisories, capture, screenshot_path } = resolveStateInput(st, manifestDir);
 
     if (liveJudge) {
       // LIVE: N INDEPENDENT real vision calls per state → genuine N-sample voting (flake) +
       // per-page token cost. A refusal / credential / network error downgrades the state to review.
-      const sp = (capture && capture.screenshot_path) || st.screenshot_path;
-      const screenshot_path = sp && !path.isAbsolute(sp) ? path.join(manifestDir, sp) : sp;
       const request = { state_id: stateId, surface: st.surface, screenshot_path, expected: st.expected, defect_types: DEFECT_TYPES, severities: SEVERITIES, judge_tier: tier };
       const liveSamples = [];
       let liveErr = null;
@@ -1028,6 +1084,9 @@ module.exports = {
   buildVisionRequest,
   parseVisionResponse,
   visionPerceptualSchema,
+  visionPromptText,
+  resolveStateInput,
+  outputRollup,
   cmdVerifyFlutterUIEval,
   DEFECT_TYPES,
   SEVERITIES,

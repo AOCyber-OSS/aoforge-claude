@@ -95,4 +95,112 @@ function makeFakeVisionJudge(scriptedReturn) {
   return fn;
 }
 
-module.exports = { makeCaptureResult, makeJudgeResult, makeFakeVisionJudge };
+// ─── Session-judge fixtures (--judge session: prepare -> subagents -> score) ──────
+//
+// Hand-built builders for the session judge tests. The PNGs are the two checked-in stub
+// fixtures (copied, never generated); the "judge answers" are built from the prepared request
+// itself plus explicit overrides, so every value a test asserts on is chosen by the test.
+
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+
+const FIXTURE_PNG_DIR = path.join(__dirname, '__fixtures__', 'flutter-ui-eval');
+const FIXTURE_PNGS = {
+  good: path.join(FIXTURE_PNG_DIR, 'good-dashboard.png'),
+  broken: path.join(FIXTURE_PNG_DIR, 'broken-overflow.png'),
+};
+
+/**
+ * Build a temp manifest dir for the session judge: one PNG per state (copied from the
+ * checked-in fixtures) and a manifest.json naming them.
+ *
+ * @param {object} [opts]
+ * @param {Array<{state_id:string, png?:'good'|'broken'|null, expect?:string}>} [opts.states]
+ *   png:null writes the state WITHOUT its screenshot (a capture that never happened).
+ * @param {number} [opts.samples=3]
+ * @returns {{dir:string, manifest:string, cleanup:function}}
+ */
+function makeSessionManifestDir({ states, samples = 3 } = {}) {
+  const list = states || [
+    { state_id: 'good-dashboard', png: 'good' },
+    { state_id: 'broken-overflow', png: 'broken' },
+  ];
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ui-eval-session-'));
+  const manifestStates = list.map((s) => {
+    if (s.png) fs.copyFileSync(FIXTURE_PNGS[s.png], path.join(dir, `${s.state_id}.png`));
+    return {
+      state_id: s.state_id,
+      route: '/dashboard',
+      data_state: 'populated',
+      viewport: { width: 1280, height: 800 },
+      expected: `State ${s.state_id}: a populated revenue chart and a non-empty table; no overflow.`,
+      screenshot_path: `./${s.state_id}.png`,
+      ...(s.expect ? { expect: s.expect } : {}),
+    };
+  });
+  const manifest = path.join(dir, 'manifest.json');
+  fs.writeFileSync(manifest, JSON.stringify({
+    objective: 'SESSION-JUDGE', samples, flakeBudget: 1, states: manifestStates,
+  }, null, 2), 'utf-8');
+  return { dir, manifest, cleanup: () => fs.rmSync(dir, { recursive: true, force: true }) };
+}
+
+/**
+ * One judge subagent's answer to one prepared request: echoes the request's binding fields
+ * (request_id, nonce, screenshot_sha256) and carries the perceptual verdict. Default is a clean
+ * not-broken answer; `broken: true` adds one HIGH overflow defect. `overrides` replace fields
+ * wholesale (pass `undefined` to delete one).
+ */
+function makeSessionResponse(request, { broken = false, severity = 'high', ...overrides } = {}) {
+  const base = {
+    request_id: request.request_id,
+    nonce: request.nonce,
+    screenshot_sha256: request.screenshot_sha256,
+    model: 'claude-sonnet-test-fixture',
+    is_broken: broken,
+    matches_expected: !broken,
+    confidence: 0.8,
+    defects: broken
+      ? [{ type: 'overflow', severity, region: 'body', rationale: 'fixture: content clipped on the right edge' }]
+      : [],
+  };
+  const out = { ...base, ...overrides };
+  for (const k of Object.keys(out)) if (out[k] === undefined) delete out[k];
+  return out;
+}
+
+/** Write one batch's answers where a judge subagent would: <responsesDir>/<batch_id>.json. */
+function writeBatchResponses(responsesDir, batchId, responses) {
+  fs.mkdirSync(responsesDir, { recursive: true });
+  const p = path.join(responsesDir, `${batchId}.json`);
+  fs.writeFileSync(p, typeof responses === 'string' ? responses : JSON.stringify(responses, null, 2), 'utf-8');
+  return p;
+}
+
+/**
+ * Answer every batch of a prepared requests file. `decide(request)` returns the
+ * makeSessionResponse options for that request (or null to leave it unanswered).
+ */
+function answerAllBatches(requestsDoc, responsesDir, decide = () => ({})) {
+  const byId = new Map(requestsDoc.requests.map((r) => [r.request_id, r]));
+  for (const b of requestsDoc.batches) {
+    const answers = [];
+    for (const id of b.request_ids) {
+      const opts = decide(byId.get(id));
+      if (opts !== null) answers.push(makeSessionResponse(byId.get(id), opts));
+    }
+    writeBatchResponses(responsesDir, b.batch_id, answers);
+  }
+}
+
+module.exports = {
+  makeCaptureResult,
+  makeJudgeResult,
+  makeFakeVisionJudge,
+  makeSessionManifestDir,
+  makeSessionResponse,
+  writeBatchResponses,
+  answerAllBatches,
+  FIXTURE_PNGS,
+};

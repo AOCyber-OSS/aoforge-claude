@@ -4,6 +4,37 @@ All notable changes to the aoforge-stack-flutter stack pack. Released with tags 
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-09
+
+### Added
+
+- `verify flutter-ui-eval --judge session`: the binding visual judge without an API key. The Claude Code session's
+  own subagents look at the screenshots and the engine makes no model call. It runs in two steps.
+  `--prepare` writes `judge-requests.json` and one `judge-batches/<batch_id>.request.json` per batch, with one
+  request per state and sample. Each request carries the absolute PNG path, its sha256, the expected anchor, the
+  live prompt (shared `visionPromptText`), the answer schema and a random nonce. Batches are sample-major, so no
+  batch holds one state twice. `--score --responses <file|dir>` accepts an answer only from the batch that was
+  handed its request, and only when it echoes that request's nonce and sha256. It re-hashes the PNG and validates
+  the verdict through `validateJudgeResult` with no coercion. A state counts only when every one of its samples is
+  valid; otherwise it is `unjudged`, never a pass. Valid states are voted with the same `aggregateVotes` and
+  `scoreState` as live. The rollup carries `gate: 'binding'`, `judge: 'session'`, `network: false`, the models the
+  judges reported, `response_errors[]` and each state's `judged_by[]` (batch, model). `--judge-tier` now applies to
+  session as well as live. Session step flags are a usage error on any other `--judge`.
+- The `ui-judge` agent: one fresh, Read-and-Write-only subagent per batch. It Reads each PNG, answers in the schema
+  and writes its batch's response file.
+- `/aoforge-stack-flutter:ui-eval` picks the judge explicitly and writes it into every command. An explicit
+  `--judge` wins; otherwise the skill uses `live` when an Anthropic credential is set and `session` when none is.
+  The skill spawns the judges between the ui-evaluator's prepare spawn (`## JUDGE REQUESTS READY`) and its scoring
+  re-spawn, because subagents cannot spawn. SKILL.md states what the session gate cannot prove: that a judge opened
+  the image, or that the session did not write an answer itself.
+- The verifier fragment's Step 8c re-scores a session run's saved answers offline when they are on disk. Step 8c
+  and Step 9 treat a session `binding` pass like a live one.
+
+### Changed
+
+- `--judge live` is unchanged in behaviour. Its prompt text now comes from `visionPromptText`, byte for byte the
+  same, and the per-state input resolution moved into `resolveStateInput`, which all three judges share.
+
 ## [1.0.0] - 2026-10-17
 
 ### Added
