@@ -168,8 +168,204 @@ function runSessionStep(opts) {
   return score(opts);
 }
 
-function score() {
-  error('--judge session --score is not implemented yet');
+/** Read the answers: a directory of <batch_id>.json files, or one such file. */
+function loadAnswers(responsesPath) {
+  const files = [];
+  const stat = fs.existsSync(responsesPath) ? fs.statSync(responsesPath) : null;
+  if (!stat) return { answers: [], errors: [`no responses at ${responsesPath}`] };
+  if (stat.isDirectory()) {
+    for (const f of fs.readdirSync(responsesPath).filter((n) => n.endsWith('.json')).sort()) {
+      files.push(path.join(responsesPath, f));
+    }
+  } else {
+    files.push(responsesPath);
+  }
+  const answers = [];
+  const errors = [];
+  for (const f of files) {
+    const batchId = path.basename(f, '.json');
+    let parsed;
+    try { parsed = JSON.parse(fs.readFileSync(f, 'utf-8')); }
+    catch (e) { errors.push(`batch ${batchId}: answer file is not JSON (${e.message})`); continue; }
+    const list = Array.isArray(parsed) ? parsed
+      : (parsed && Array.isArray(parsed.responses)) ? parsed.responses
+        : [parsed];
+    for (const a of list) answers.push({ batchId, file: f, answer: a });
+  }
+  return { answers, errors };
+}
+
+/** One answer -> a single-sample Shape-C JudgeResult, or the reason it cannot count. NO coercion. */
+function judgeSample(req, answer, currentSha) {
+  if (answer.nonce !== req.nonce) return { error: `${req.request_id}: nonce does not match the request` };
+  if (answer.cannot_judge === true) {
+    return { error: `${req.request_id}: the judge could not judge it: ${answer.reason || '(no reason given)'}` };
+  }
+  if (answer.screenshot_sha256 !== req.screenshot_sha256) {
+    return { error: `${req.request_id}: screenshot_sha256 does not match the request (answer is bound to another file)` };
+  }
+  if (currentSha !== req.screenshot_sha256) {
+    return { error: `${req.request_id}: the screenshot changed since prepare (${currentSha ? 'different sha256' : 'file missing'})` };
+  }
+  const ev = require('./flutter-ui-eval.cjs');
+  const result = {
+    state_id: req.state_id,
+    is_broken: answer.is_broken,
+    defects: answer.defects,
+    matches_expected: answer.matches_expected,
+    confidence: answer.confidence,
+    evidence: 'vision',
+    samples: 1,
+    votes: answer.is_broken === true ? { broken: 1, ok: 0 } : { broken: 0, ok: 1 },
+  };
+  const v = ev.validateJudgeResult(result);
+  if (!v.valid) return { error: `${req.request_id}: ${v.errors.join('; ')}` };
+  return { result };
+}
+
+function score({ cwd, manifestPath, manifest, requestsArg, responsesArg }) {
+  const ev = require('./flutter-ui-eval.cjs');
+  const requestsPath = requestsPathFor(manifestPath, requestsArg, cwd);
+  if (!fs.existsSync(requestsPath)) {
+    error(`no judge requests at ${requestsPath} — run --judge session --prepare first`);
+    return;
+  }
+  let doc;
+  try { doc = JSON.parse(fs.readFileSync(requestsPath, 'utf-8')); }
+  catch (e) { error(`judge requests at ${requestsPath} are not JSON: ${e.message}`); return; }
+  if (!doc || doc.kind !== 'ui-eval-judge-requests' || !Array.isArray(doc.requests) || !Array.isArray(doc.batches)) {
+    error(`${requestsPath} is not a judge-requests file`);
+    return;
+  }
+  if (path.resolve(doc.manifest_path) !== path.resolve(manifestPath)) {
+    error(`judge requests at ${requestsPath} were prepared for ${doc.manifest_path}, not ${manifestPath}`);
+    return;
+  }
+
+  const manifestDir = path.dirname(manifestPath);
+  const responsesPath = path.isAbsolute(responsesArg) ? responsesArg : path.join(cwd, responsesArg);
+  const { answers, errors: responseErrors } = loadAnswers(responsesPath);
+
+  const reqById = new Map(doc.requests.map((r) => [r.request_id, r]));
+  const batchById = new Map(doc.batches.map((b) => [b.batch_id, new Set(b.request_ids)]));
+  const failedBatches = new Set(responseErrors.map((e) => (/^batch (\S+):/.exec(e) || [])[1]).filter(Boolean));
+
+  // Accept an answer only from the batch (subagent) that was handed its request.
+  const accepted = new Map(); // request_id -> [{batchId, answer}]
+  for (const { batchId, answer } of answers) {
+    const rid = answer && typeof answer === 'object' ? answer.request_id : undefined;
+    if (typeof rid !== 'string' || !reqById.has(rid)) {
+      responseErrors.push(`batch ${batchId}: answer with unknown request_id ${JSON.stringify(rid)} ignored`);
+      continue;
+    }
+    const batch = batchById.get(batchId);
+    if (!batch || !batch.has(rid)) {
+      responseErrors.push(`${rid} is not in batch ${batchId}${batch ? '' : ' (no such batch)'} — answer ignored`);
+      continue;
+    }
+    if (!accepted.has(rid)) accepted.set(rid, []);
+    accepted.get(rid).push({ batchId, answer });
+  }
+
+  const currentSha = new Map();
+  for (const r of doc.requests) {
+    if (!currentSha.has(r.screenshot_path)) {
+      currentSha.set(r.screenshot_path, fs.existsSync(r.screenshot_path) ? sha256File(r.screenshot_path) : null);
+    }
+  }
+
+  const flakeBudget = typeof manifest.flakeBudget === 'number' ? manifest.flakeBudget : 1;
+  const unjudgedPolicy = manifest.unjudgedPolicy === 'fail' ? 'fail' : 'review';
+  const stateResults = [];
+  const stateDetail = [];
+  const models = new Set();
+  const unjudgeable = new Map((doc.unjudgeable || []).map((u) => [u.state_id, u.reason]));
+
+  const markUnjudged = (stateId, st, idAdvisories, errs) => {
+    stateResults.push({ state_id: stateId, verdict: 'review', advisories: [...idAdvisories, ...errs], expect: st.expect, unjudged: true });
+    stateDetail.push({ state_id: stateId, verdict: 'review', is_broken: null, defects: [], errors: errs, advisories: [...idAdvisories, ...errs], unjudged: true });
+  };
+
+  for (const st of manifest.states) {
+    const { stateId, idAdvisories } = ev.resolveStateInput(st, manifestDir);
+    const reqs = doc.requests.filter((r) => r.state_id === stateId).sort((a, b) => a.sample - b.sample);
+    if (reqs.length === 0) {
+      markUnjudged(stateId, st, idAdvisories, [
+        `unjudged: ${unjudgeable.get(stateId) || 'no judge request was prepared for this state (manifest changed since prepare?)'}`,
+      ]);
+      continue;
+    }
+    const samples = [];
+    const judgedBy = [];
+    const errs = [];
+    for (const req of reqs) {
+      const got = accepted.get(req.request_id) || [];
+      if (got.length === 0) {
+        const b = doc.batches.find((x) => x.request_ids.includes(req.request_id));
+        const why = b && failedBatches.has(b.batch_id) ? ` (batch ${b.batch_id} file was unreadable)` : '';
+        errs.push(`${req.request_id}: no answer${why}`);
+        continue;
+      }
+      if (got.length > 1) { errs.push(`${req.request_id}: more than one answer — votes are not independent`); continue; }
+      const { batchId, answer } = got[0];
+      const s = judgeSample(req, answer, currentSha.get(req.screenshot_path));
+      if (s.error) { errs.push(s.error); continue; }
+      samples.push(s.result);
+      const model = typeof answer.model === 'string' && answer.model ? answer.model : null;
+      if (model) models.add(model);
+      judgedBy.push({ sample: req.sample, batch_id: batchId, model, ...(answer.agent_id ? { agent_id: String(answer.agent_id) } : {}) });
+    }
+    if (errs.length > 0) {
+      // Every vote or none: a state with N-1 good answers was not judged the way the gate says it was.
+      markUnjudged(stateId, st, idAdvisories, errs.map((e) => `unjudged: ${e}`));
+      continue;
+    }
+    const agg = ev.aggregateVotes(samples);
+    const stateScore = ev.scoreState({ samples });
+    stateResults.push({ state_id: stateId, verdict: stateScore.verdict, advisories: [...idAdvisories, ...stateScore.advisories], expect: st.expect, known_broken: stateScore.known_broken === true });
+    stateDetail.push({
+      state_id: stateId,
+      verdict: stateScore.verdict,
+      is_broken: agg.is_broken,
+      flake: agg.split === true || agg.tie === true,
+      votes: agg.votes,
+      defects: samples.flatMap((s) => s.defects || []),
+      evidence: 'vision',
+      judged_by: judgedBy,
+      ...(stateScore.known_broken ? { known_broken: true, max_severity: stateScore.max_severity } : {}),
+      advisories: [...idAdvisories, ...stateScore.advisories],
+    });
+  }
+
+  const rollup = ev.scoreRun(stateResults, { flakeBudget, unjudgedPolicy });
+  const modelList = [...models].sort();
+  ev.outputRollup({
+    engine_version: rollup.engine_version,
+    schema_version: rollup.schema_version,
+    resolution: 'resolved',
+    manifest_path: manifestPath,
+    requests_path: requestsPath,
+    responses_path: responsesPath,
+    network: false,          // the engine made no call; the session's subagents did the looking
+    judge: 'session',
+    gate: 'binding',
+    model: modelList.length === 0 ? null : modelList.length === 1 ? modelList[0] : modelList,
+    judge_tier: doc.judge_tier,
+    samples: doc.samples,
+    flakeBudget,
+    unjudgedPolicy,
+    verdict: rollup.verdict,
+    counts: rollup.counts,
+    reviews: rollup.reviews,
+    fails: rollup.fails,
+    known_failing: rollup.known_failing,
+    resolved: rollup.resolved,
+    unjudged: rollup.unjudged,
+    known_broken: rollup.known_broken,
+    tier_escalation: ev.judgeEscalation({ live: true, judgeTier: doc.judge_tier, reviews: rollup.reviews, states: stateDetail }),
+    response_errors: responseErrors,
+    states: stateDetail,
+  }, rollup.verdict);
 }
 
 module.exports = {
