@@ -4,6 +4,8 @@ All notable changes to the aoforge-stack-flutter stack pack. Released with tags 
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-09
+
 ### Added
 
 - `verify flutter-ui-eval --judge session`: the binding visual judge without an API key. The Claude Code session's

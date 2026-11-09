@@ -22,7 +22,7 @@
     {
       "name": "aoforge-stack-flutter",
       "description": "AOForge stack pack for Flutter and Dart: UI verification gates, the visual-eval judge, the design critic and Flutter-aware planning. Needs aoforge.",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "AO Cyber Systems",
         "email": "dev@aocodex.ai"

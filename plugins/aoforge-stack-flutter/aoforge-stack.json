@@ -2,7 +2,7 @@
   "schema": 1,
   "name": "flutter",
   "plugin": "aoforge-stack-flutter",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "contract": 1,
   "description": "Flutter and Dart: UI test bootstrap, per-task and post-task gates, state coverage, Maestro and flutter drive verification, the visual-eval judge and design critic, and auto-generated UAT.",
   "profiles": [
